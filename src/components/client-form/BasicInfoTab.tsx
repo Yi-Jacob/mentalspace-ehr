@@ -98,7 +98,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
                 <SelectValue placeholder="-- Unassigned --" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">-- Unassigned --</SelectItem>
+                <SelectItem value="unassigned">-- Unassigned --</SelectItem>
                 {/* Future: Add clinicians from database */}
               </SelectContent>
             </Select>

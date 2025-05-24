@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
 
@@ -12,7 +11,7 @@ export const useClientForm = () => {
     preferred_name: '',
     pronouns: '',
     date_of_birth: '',
-    assigned_clinician_id: '',
+    assigned_clinician_id: 'unassigned',
     // Contact Info
     email: '',
     address_1: '',
@@ -65,7 +64,7 @@ export const useClientForm = () => {
       preferred_name: '',
       pronouns: '',
       date_of_birth: '',
-      assigned_clinician_id: '',
+      assigned_clinician_id: 'unassigned',
       email: '',
       address_1: '',
       address_2: '',
