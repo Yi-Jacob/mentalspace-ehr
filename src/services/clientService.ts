@@ -11,7 +11,7 @@ export const createClient = async (
 ) => {
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
-    .insert([{
+    .insert({
       first_name: formData.first_name,
       middle_name: formData.middle_name || null,
       last_name: formData.last_name,
@@ -24,24 +24,24 @@ export const createClient = async (
       address_1: formData.address_1 || null,
       address_2: formData.address_2 || null,
       city: formData.city || null,
-      state: formData.state || null,
+      state: formData.state as any,
       zip_code: formData.zip_code || null,
       timezone: formData.timezone as any,
-      administrative_sex: formData.administrative_sex || null,
-      gender_identity: formData.gender_identity || null,
-      sexual_orientation: formData.sexual_orientation || null,
+      administrative_sex: formData.administrative_sex as any,
+      gender_identity: formData.gender_identity as any,
+      sexual_orientation: formData.sexual_orientation as any,
       race: formData.race || null,
       ethnicity: formData.ethnicity || null,
       languages: formData.languages || null,
-      marital_status: formData.marital_status || null,
-      employment_status: formData.employment_status || null,
+      marital_status: formData.marital_status as any,
+      employment_status: formData.employment_status as any,
       religious_affiliation: formData.religious_affiliation || null,
-      smoking_status: formData.smoking_status || null,
+      smoking_status: formData.smoking_status as any,
       appointment_reminders: formData.appointment_reminders as any,
       hipaa_signed: formData.hipaa_signed,
       pcp_release: formData.pcp_release as any,
       patient_comments: formData.patient_comments || null,
-    }])
+    })
     .select()
     .single();
 
@@ -76,19 +76,19 @@ export const updateClient = async (
       address_1: formData.address_1 || null,
       address_2: formData.address_2 || null,
       city: formData.city || null,
-      state: formData.state || null,
+      state: formData.state as any,
       zip_code: formData.zip_code || null,
       timezone: formData.timezone as any,
-      administrative_sex: formData.administrative_sex || null,
-      gender_identity: formData.gender_identity || null,
-      sexual_orientation: formData.sexual_orientation || null,
+      administrative_sex: formData.administrative_sex as any,
+      gender_identity: formData.gender_identity as any,
+      sexual_orientation: formData.sexual_orientation as any,
       race: formData.race || null,
       ethnicity: formData.ethnicity || null,
       languages: formData.languages || null,
-      marital_status: formData.marital_status || null,
-      employment_status: formData.employment_status || null,
+      marital_status: formData.marital_status as any,
+      employment_status: formData.employment_status as any,
       religious_affiliation: formData.religious_affiliation || null,
-      smoking_status: formData.smoking_status || null,
+      smoking_status: formData.smoking_status as any,
       appointment_reminders: formData.appointment_reminders as any,
       hipaa_signed: formData.hipaa_signed,
       pcp_release: formData.pcp_release as any,
