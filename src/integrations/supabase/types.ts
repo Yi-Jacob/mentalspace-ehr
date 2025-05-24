@@ -348,45 +348,6 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string | null
-          id: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string | null
-        }
-        Insert: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["user_role"]
-          user_id?: string | null
-        }
-        Update: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_assigned_by_fkey"
-            columns: ["assigned_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       users: {
         Row: {
           auth_user_id: string | null

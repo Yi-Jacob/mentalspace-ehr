@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ClientFormData } from '../AddClientModal';
 
@@ -54,6 +55,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
               id="suffix"
               value={formData.suffix}
               onChange={(e) => setFormData({...formData, suffix: e.target.value})}
+              placeholder="Jr., Sr., III, etc."
             />
           </div>
 
@@ -72,6 +74,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
               id="pronouns"
               value={formData.pronouns}
               onChange={(e) => setFormData({...formData, pronouns: e.target.value})}
+              placeholder="he/him, she/her, they/them, etc."
             />
           </div>
 
@@ -83,6 +86,22 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
               value={formData.date_of_birth}
               onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
             />
+          </div>
+
+          <div>
+            <Label htmlFor="assigned_clinician_id">Assigned Clinician</Label>
+            <Select 
+              value={formData.assigned_clinician_id} 
+              onValueChange={(value) => setFormData({...formData, assigned_clinician_id: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="-- Unassigned --" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">-- Unassigned --</SelectItem>
+                {/* Future: Add clinicians from database */}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
