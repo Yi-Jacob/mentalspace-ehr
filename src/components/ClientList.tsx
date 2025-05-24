@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ const ClientList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchClients = async () => {
     try {
@@ -91,6 +92,10 @@ const ClientList = () => {
     });
   };
 
+  const handleClientClick = (clientId: string) => {
+    navigate(`/client/${clientId}`);
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -133,7 +138,11 @@ const ClientList = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredClients.map((client) => (
-          <Card key={client.id} className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-blue-500">
+          <Card 
+            key={client.id} 
+            className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-blue-500"
+            onClick={() => handleClientClick(client.id)}
+          >
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-start justify-between">
                 <div>
