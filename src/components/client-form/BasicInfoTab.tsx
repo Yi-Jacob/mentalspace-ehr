@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,16 +32,21 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
   const [dateInputValue, setDateInputValue] = useState(getDisplayDate(formData.date_of_birth));
   const [showCalendar, setShowCalendar] = useState(false);
 
+  // Update the display value when formData changes (e.g., when editing a client)
+  useEffect(() => {
+    setDateInputValue(getDisplayDate(formData.date_of_birth));
+  }, [formData.date_of_birth]);
+
   const handleDateOfBirthChange = (date: Date | undefined) => {
     if (date) {
       // Format the date as YYYY-MM-DD for database storage
       const formattedDate = format(date, 'yyyy-MM-dd');
-      setFormData({...formData, date_of_birth: formattedDate});
+      setFormData(prev => ({...prev, date_of_birth: formattedDate}));
       // Display in M/D/Y format
       setDateInputValue(format(date, 'M/d/yyyy'));
       setShowCalendar(false);
     } else {
-      setFormData({...formData, date_of_birth: ''});
+      setFormData(prev => ({...prev, date_of_birth: ''}));
       setDateInputValue('');
     }
   };
@@ -64,9 +69,9 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
     
     if (parsedDate && isValid(parsedDate) && parsedDate <= new Date() && parsedDate >= new Date("1900-01-01")) {
       const formattedDate = format(parsedDate, 'yyyy-MM-dd');
-      setFormData({...formData, date_of_birth: formattedDate});
+      setFormData(prev => ({...prev, date_of_birth: formattedDate}));
     } else if (value === '') {
-      setFormData({...formData, date_of_birth: ''});
+      setFormData(prev => ({...prev, date_of_birth: ''}));
     }
   };
 
@@ -84,7 +89,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Input
               id="first_name"
               value={formData.first_name}
-              onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+              onChange={(e) => setFormData(prev => ({...prev, first_name: e.target.value}))}
               required
             />
           </div>
@@ -94,7 +99,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Input
               id="last_name"
               value={formData.last_name}
-              onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+              onChange={(e) => setFormData(prev => ({...prev, last_name: e.target.value}))}
               required
             />
           </div>
@@ -104,7 +109,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Input
               id="middle_name"
               value={formData.middle_name}
-              onChange={(e) => setFormData({...formData, middle_name: e.target.value})}
+              onChange={(e) => setFormData(prev => ({...prev, middle_name: e.target.value}))}
             />
           </div>
 
@@ -113,7 +118,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Input
               id="suffix"
               value={formData.suffix}
-              onChange={(e) => setFormData({...formData, suffix: e.target.value})}
+              onChange={(e) => setFormData(prev => ({...prev, suffix: e.target.value}))}
               placeholder="Jr., Sr., III, etc."
             />
           </div>
@@ -123,7 +128,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Input
               id="preferred_name"
               value={formData.preferred_name}
-              onChange={(e) => setFormData({...formData, preferred_name: e.target.value})}
+              onChange={(e) => setFormData(prev => ({...prev, preferred_name: e.target.value}))}
             />
           </div>
 
@@ -132,7 +137,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Input
               id="pronouns"
               value={formData.pronouns}
-              onChange={(e) => setFormData({...formData, pronouns: e.target.value})}
+              onChange={(e) => setFormData(prev => ({...prev, pronouns: e.target.value}))}
               placeholder="he/him, she/her, they/them, etc."
             />
           </div>
@@ -176,7 +181,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             <Label htmlFor="assigned_clinician_id">Assigned Clinician</Label>
             <Select 
               value={formData.assigned_clinician_id} 
-              onValueChange={(value) => setFormData({...formData, assigned_clinician_id: value})}
+              onValueChange={(value) => setFormData(prev => ({...prev, assigned_clinician_id: value}))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="-- Unassigned --" />
@@ -195,7 +200,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
         <Textarea
           id="patient_comments"
           value={formData.patient_comments}
-          onChange={(e) => setFormData({...formData, patient_comments: e.target.value})}
+          onChange={(e) => setFormData(prev => ({...prev, patient_comments: e.target.value}))}
           placeholder="Non-clinical information such as scheduling or billing comments..."
           rows={3}
         />
