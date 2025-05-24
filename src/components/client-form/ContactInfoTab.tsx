@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus } from 'lucide-react';
-import { ClientFormData, PhoneNumber, EmergencyContact, PrimaryCareProvider } from '../AddClientModal';
+import { ClientFormData, PhoneNumber, EmergencyContact, PrimaryCareProvider } from '@/types/client';
 
 interface ContactInfoTabProps {
   formData: ClientFormData;
