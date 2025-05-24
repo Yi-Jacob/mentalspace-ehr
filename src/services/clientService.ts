@@ -50,6 +50,100 @@ export const createClient = async (
   }
 
   console.log('Client created successfully:', clientData);
+
+  // Save phone numbers
+  if (phoneNumbers.length > 0) {
+    const phoneNumbersToInsert = phoneNumbers
+      .filter(phone => phone.number.trim() !== '')
+      .map(phone => ({
+        client_id: clientData.id,
+        phone_type: phone.type as any,
+        phone_number: phone.number,
+        message_preference: phone.message_preference as any,
+      }));
+
+    if (phoneNumbersToInsert.length > 0) {
+      const { error: phoneError } = await supabase
+        .from('client_phone_numbers')
+        .insert(phoneNumbersToInsert);
+
+      if (phoneError) {
+        console.error('Error saving phone numbers:', phoneError);
+      }
+    }
+  }
+
+  // Save emergency contacts
+  if (emergencyContacts.length > 0) {
+    const contactsToInsert = emergencyContacts
+      .filter(contact => contact.name.trim() !== '')
+      .map(contact => ({
+        client_id: clientData.id,
+        name: contact.name,
+        relationship: contact.relationship || null,
+        phone_number: contact.phone_number || null,
+        email: contact.email || null,
+        is_primary: contact.is_primary,
+      }));
+
+    if (contactsToInsert.length > 0) {
+      const { error: contactError } = await supabase
+        .from('client_emergency_contacts')
+        .insert(contactsToInsert);
+
+      if (contactError) {
+        console.error('Error saving emergency contacts:', contactError);
+      }
+    }
+  }
+
+  // Save insurance information
+  if (insuranceInfo.length > 0) {
+    const insuranceToInsert = insuranceInfo
+      .filter(insurance => insurance.insurance_company.trim() !== '')
+      .map(insurance => ({
+        client_id: clientData.id,
+        insurance_type: insurance.insurance_type,
+        insurance_company: insurance.insurance_company,
+        policy_number: insurance.policy_number || null,
+        group_number: insurance.group_number || null,
+        subscriber_name: insurance.subscriber_name || null,
+        subscriber_relationship: insurance.subscriber_relationship || null,
+        subscriber_dob: insurance.subscriber_dob || null,
+        effective_date: insurance.effective_date || null,
+        termination_date: insurance.termination_date || null,
+        copay_amount: insurance.copay_amount || null,
+        deductible_amount: insurance.deductible_amount || null,
+      }));
+
+    if (insuranceToInsert.length > 0) {
+      const { error: insuranceError } = await supabase
+        .from('client_insurance')
+        .insert(insuranceToInsert);
+
+      if (insuranceError) {
+        console.error('Error saving insurance information:', insuranceError);
+      }
+    }
+  }
+
+  // Save primary care provider
+  if (primaryCareProvider.provider_name.trim() !== '') {
+    const { error: pcpError } = await supabase
+      .from('client_primary_care_providers')
+      .insert({
+        client_id: clientData.id,
+        provider_name: primaryCareProvider.provider_name,
+        practice_name: primaryCareProvider.practice_name || null,
+        phone_number: primaryCareProvider.phone_number || null,
+        address: primaryCareProvider.address || null,
+      });
+
+    if (pcpError) {
+      console.error('Error saving primary care provider:', pcpError);
+    }
+  }
+
   return clientData;
 };
 
@@ -104,5 +198,107 @@ export const updateClient = async (
   }
 
   console.log('Client updated successfully:', clientData);
+
+  // Delete existing related records and insert new ones
+  await Promise.all([
+    supabase.from('client_phone_numbers').delete().eq('client_id', clientId),
+    supabase.from('client_emergency_contacts').delete().eq('client_id', clientId),
+    supabase.from('client_insurance').delete().eq('client_id', clientId),
+    supabase.from('client_primary_care_providers').delete().eq('client_id', clientId),
+  ]);
+
+  // Save phone numbers
+  if (phoneNumbers.length > 0) {
+    const phoneNumbersToInsert = phoneNumbers
+      .filter(phone => phone.number.trim() !== '')
+      .map(phone => ({
+        client_id: clientId,
+        phone_type: phone.type as any,
+        phone_number: phone.number,
+        message_preference: phone.message_preference as any,
+      }));
+
+    if (phoneNumbersToInsert.length > 0) {
+      const { error: phoneError } = await supabase
+        .from('client_phone_numbers')
+        .insert(phoneNumbersToInsert);
+
+      if (phoneError) {
+        console.error('Error updating phone numbers:', phoneError);
+      }
+    }
+  }
+
+  // Save emergency contacts
+  if (emergencyContacts.length > 0) {
+    const contactsToInsert = emergencyContacts
+      .filter(contact => contact.name.trim() !== '')
+      .map(contact => ({
+        client_id: clientId,
+        name: contact.name,
+        relationship: contact.relationship || null,
+        phone_number: contact.phone_number || null,
+        email: contact.email || null,
+        is_primary: contact.is_primary,
+      }));
+
+    if (contactsToInsert.length > 0) {
+      const { error: contactError } = await supabase
+        .from('client_emergency_contacts')
+        .insert(contactsToInsert);
+
+      if (contactError) {
+        console.error('Error updating emergency contacts:', contactError);
+      }
+    }
+  }
+
+  // Save insurance information
+  if (insuranceInfo.length > 0) {
+    const insuranceToInsert = insuranceInfo
+      .filter(insurance => insurance.insurance_company.trim() !== '')
+      .map(insurance => ({
+        client_id: clientId,
+        insurance_type: insurance.insurance_type,
+        insurance_company: insurance.insurance_company,
+        policy_number: insurance.policy_number || null,
+        group_number: insurance.group_number || null,
+        subscriber_name: insurance.subscriber_name || null,
+        subscriber_relationship: insurance.subscriber_relationship || null,
+        subscriber_dob: insurance.subscriber_dob || null,
+        effective_date: insurance.effective_date || null,
+        termination_date: insurance.termination_date || null,
+        copay_amount: insurance.copay_amount || null,
+        deductible_amount: insurance.deductible_amount || null,
+      }));
+
+    if (insuranceToInsert.length > 0) {
+      const { error: insuranceError } = await supabase
+        .from('client_insurance')
+        .insert(insuranceToInsert);
+
+      if (insuranceError) {
+        console.error('Error updating insurance information:', insuranceError);
+      }
+    }
+  }
+
+  // Save primary care provider
+  if (primaryCareProvider.provider_name.trim() !== '') {
+    const { error: pcpError } = await supabase
+      .from('client_primary_care_providers')
+      .insert({
+        client_id: clientId,
+        provider_name: primaryCareProvider.provider_name,
+        practice_name: primaryCareProvider.practice_name || null,
+        phone_number: primaryCareProvider.phone_number || null,
+        address: primaryCareProvider.address || null,
+      });
+
+    if (pcpError) {
+      console.error('Error updating primary care provider:', pcpError);
+    }
+  }
+
   return clientData;
 };
