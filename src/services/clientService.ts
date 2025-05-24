@@ -11,7 +11,7 @@ export const createClient = async (
 ) => {
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
-    .insert({
+    .insert([{
       first_name: formData.first_name,
       middle_name: formData.middle_name || null,
       last_name: formData.last_name,
@@ -26,7 +26,7 @@ export const createClient = async (
       city: formData.city || null,
       state: formData.state || null,
       zip_code: formData.zip_code || null,
-      timezone: formData.timezone,
+      timezone: formData.timezone as any,
       administrative_sex: formData.administrative_sex || null,
       gender_identity: formData.gender_identity || null,
       sexual_orientation: formData.sexual_orientation || null,
@@ -37,11 +37,11 @@ export const createClient = async (
       employment_status: formData.employment_status || null,
       religious_affiliation: formData.religious_affiliation || null,
       smoking_status: formData.smoking_status || null,
-      appointment_reminders: formData.appointment_reminders,
+      appointment_reminders: formData.appointment_reminders as any,
       hipaa_signed: formData.hipaa_signed,
-      pcp_release: formData.pcp_release,
+      pcp_release: formData.pcp_release as any,
       patient_comments: formData.patient_comments || null,
-    })
+    }])
     .select()
     .single();
 
@@ -78,7 +78,7 @@ export const updateClient = async (
       city: formData.city || null,
       state: formData.state || null,
       zip_code: formData.zip_code || null,
-      timezone: formData.timezone,
+      timezone: formData.timezone as any,
       administrative_sex: formData.administrative_sex || null,
       gender_identity: formData.gender_identity || null,
       sexual_orientation: formData.sexual_orientation || null,
@@ -89,9 +89,9 @@ export const updateClient = async (
       employment_status: formData.employment_status || null,
       religious_affiliation: formData.religious_affiliation || null,
       smoking_status: formData.smoking_status || null,
-      appointment_reminders: formData.appointment_reminders,
+      appointment_reminders: formData.appointment_reminders as any,
       hipaa_signed: formData.hipaa_signed,
-      pcp_release: formData.pcp_release,
+      pcp_release: formData.pcp_release as any,
       patient_comments: formData.patient_comments || null,
       updated_at: new Date().toISOString(),
     })
