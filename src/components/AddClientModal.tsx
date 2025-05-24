@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useClientForm } from '@/hooks/useClientForm';
 import { createClient, updateClient } from '@/services/clientService';
+import { supabase } from '@/integrations/supabase/client';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
 import { DemographicsTab } from './client-form/DemographicsTab';
@@ -53,9 +54,85 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
     if (editingClient && isOpen) {
       console.log('Loading client data for editing:', editingClient);
       setFormData(editingClient);
-      // TODO: Load related data (phone numbers, emergency contacts, etc.) when those tables are implemented
+      
+      // Load related data when editing
+      const loadRelatedData = async () => {
+        try {
+          // Load phone numbers
+          const { data: phoneData } = await supabase
+            .from('client_phone_numbers')
+            .select('*')
+            .eq('client_id', editingClient.id);
+
+          if (phoneData && phoneData.length > 0) {
+            setPhoneNumbers(phoneData.map(phone => ({
+              type: phone.phone_type as any,
+              number: phone.phone_number,
+              message_preference: phone.message_preference as any
+            })));
+          }
+
+          // Load emergency contacts
+          const { data: contactData } = await supabase
+            .from('client_emergency_contacts')
+            .select('*')
+            .eq('client_id', editingClient.id);
+
+          if (contactData && contactData.length > 0) {
+            setEmergencyContacts(contactData.map(contact => ({
+              name: contact.name,
+              relationship: contact.relationship || '',
+              phone_number: contact.phone_number || '',
+              email: contact.email || '',
+              is_primary: contact.is_primary || false
+            })));
+          }
+
+          // Load insurance information
+          const { data: insuranceData } = await supabase
+            .from('client_insurance')
+            .select('*')
+            .eq('client_id', editingClient.id);
+
+          if (insuranceData && insuranceData.length > 0) {
+            setInsuranceInfo(insuranceData.map(insurance => ({
+              insurance_type: insurance.insurance_type as any,
+              insurance_company: insurance.insurance_company || '',
+              policy_number: insurance.policy_number || '',
+              group_number: insurance.group_number || '',
+              subscriber_name: insurance.subscriber_name || '',
+              subscriber_relationship: insurance.subscriber_relationship || '',
+              subscriber_dob: insurance.subscriber_dob || '',
+              effective_date: insurance.effective_date || '',
+              termination_date: insurance.termination_date || '',
+              copay_amount: insurance.copay_amount || 0,
+              deductible_amount: insurance.deductible_amount || 0
+            })));
+          }
+
+          // Load primary care provider
+          const { data: pcpData } = await supabase
+            .from('client_primary_care_providers')
+            .select('*')
+            .eq('client_id', editingClient.id)
+            .single();
+
+          if (pcpData) {
+            setPrimaryCareProvider({
+              provider_name: pcpData.provider_name || '',
+              practice_name: pcpData.practice_name || '',
+              phone_number: pcpData.phone_number || '',
+              address: pcpData.address || ''
+            });
+          }
+        } catch (error) {
+          console.error('Error loading related data:', error);
+        }
+      };
+
+      loadRelatedData();
     }
-  }, [editingClient?.id, isOpen, setFormData]);
+  }, [editingClient?.id, isOpen, setFormData, setPhoneNumbers, setEmergencyContacts, setInsuranceInfo, setPrimaryCareProvider]);
 
   // Reset form when modal closes and not editing
   useEffect(() => {

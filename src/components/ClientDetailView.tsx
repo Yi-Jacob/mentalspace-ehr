@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Edit, Phone, Mail, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
 import AddClientModal from './AddClientModal';
 
 const ClientDetailView = () => {
@@ -16,6 +15,10 @@ const ClientDetailView = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [client, setClient] = useState<ClientFormData | null>(null);
+  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([]);
+  const [insuranceInfo, setInsuranceInfo] = useState<InsuranceInfo[]>([]);
+  const [primaryCareProvider, setPrimaryCareProvider] = useState<PrimaryCareProvider | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -23,23 +26,94 @@ const ClientDetailView = () => {
     if (!clientId) return;
     
     try {
-      const { data, error } = await supabase
+      // Fetch client data
+      const { data: clientData, error: clientError } = await supabase
         .from('clients')
         .select('*')
         .eq('id', clientId)
         .single();
 
-      if (error) {
-        console.error('Error fetching client:', error);
+      if (clientError) {
+        console.error('Error fetching client:', clientError);
         toast({
           title: "Error",
           description: "Failed to load client details",
           variant: "destructive",
         });
         navigate('/');
-      } else {
-        setClient(data);
+        return;
       }
+
+      setClient(clientData);
+
+      // Fetch phone numbers
+      const { data: phoneData } = await supabase
+        .from('client_phone_numbers')
+        .select('*')
+        .eq('client_id', clientId);
+
+      if (phoneData) {
+        setPhoneNumbers(phoneData.map(phone => ({
+          type: phone.phone_type as any,
+          number: phone.phone_number,
+          message_preference: phone.message_preference as any
+        })));
+      }
+
+      // Fetch emergency contacts
+      const { data: contactData } = await supabase
+        .from('client_emergency_contacts')
+        .select('*')
+        .eq('client_id', clientId);
+
+      if (contactData) {
+        setEmergencyContacts(contactData.map(contact => ({
+          name: contact.name,
+          relationship: contact.relationship || '',
+          phone_number: contact.phone_number || '',
+          email: contact.email || '',
+          is_primary: contact.is_primary || false
+        })));
+      }
+
+      // Fetch insurance information
+      const { data: insuranceData } = await supabase
+        .from('client_insurance')
+        .select('*')
+        .eq('client_id', clientId);
+
+      if (insuranceData) {
+        setInsuranceInfo(insuranceData.map(insurance => ({
+          insurance_type: insurance.insurance_type as any,
+          insurance_company: insurance.insurance_company || '',
+          policy_number: insurance.policy_number || '',
+          group_number: insurance.group_number || '',
+          subscriber_name: insurance.subscriber_name || '',
+          subscriber_relationship: insurance.subscriber_relationship || '',
+          subscriber_dob: insurance.subscriber_dob || '',
+          effective_date: insurance.effective_date || '',
+          termination_date: insurance.termination_date || '',
+          copay_amount: insurance.copay_amount || 0,
+          deductible_amount: insurance.deductible_amount || 0
+        })));
+      }
+
+      // Fetch primary care provider
+      const { data: pcpData } = await supabase
+        .from('client_primary_care_providers')
+        .select('*')
+        .eq('client_id', clientId)
+        .single();
+
+      if (pcpData) {
+        setPrimaryCareProvider({
+          provider_name: pcpData.provider_name || '',
+          practice_name: pcpData.practice_name || '',
+          phone_number: pcpData.phone_number || '',
+          address: pcpData.address || ''
+        });
+      }
+
     } catch (err) {
       console.error('Unexpected error:', err);
       navigate('/');
@@ -247,6 +321,23 @@ const ClientDetailView = () => {
                         <div>{client.email}</div>
                       </div>
                     )}
+                    
+                    {phoneNumbers.length > 0 && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Phone Numbers</label>
+                        <div className="space-y-1">
+                          {phoneNumbers.map((phone, index) => (
+                            <div key={index} className="text-sm">
+                              <span className="font-medium">{phone.type}:</span> {phone.number}
+                              {phone.message_preference !== 'No messages' && (
+                                <span className="text-gray-500 ml-2">({phone.message_preference})</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     {(client.address_1 || client.city || client.state) && (
                       <div>
                         <label className="text-sm font-medium text-gray-500">Address</label>
@@ -260,6 +351,65 @@ const ClientDetailView = () => {
                   </div>
                 </div>
               </div>
+
+              {emergencyContacts.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-4">Emergency Contacts</h3>
+                  <div className="space-y-3">
+                    {emergencyContacts.map((contact, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Name</label>
+                            <div className="font-medium">{contact.name}</div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Relationship</label>
+                            <div>{contact.relationship}</div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Phone</label>
+                            <div>{contact.phone_number}</div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Email</label>
+                            <div>{contact.email}</div>
+                          </div>
+                        </div>
+                        {contact.is_primary && (
+                          <Badge variant="outline" className="mt-2">Primary Contact</Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {primaryCareProvider && primaryCareProvider.provider_name && (
+                <div>
+                  <h3 className="font-semibold text-lg mb-4">Primary Care Provider</h3>
+                  <div className="border rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Provider Name</label>
+                        <div className="font-medium">{primaryCareProvider.provider_name}</div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Practice Name</label>
+                        <div>{primaryCareProvider.practice_name}</div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Phone</label>
+                        <div>{primaryCareProvider.phone_number}</div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Address</label>
+                        <div>{primaryCareProvider.address}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {client.patient_comments && (
                 <div>
@@ -318,9 +468,61 @@ const ClientDetailView = () => {
               <CardTitle>Billing Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                No billing information found. This feature will be implemented in a future update.
-              </div>
+              {insuranceInfo.length > 0 ? (
+                <div className="space-y-6">
+                  {insuranceInfo.map((insurance, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-semibold text-lg">{insurance.insurance_type} Insurance</h4>
+                        <Badge variant="outline">{insurance.insurance_company}</Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {insurance.policy_number && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Policy Number</label>
+                            <div>{insurance.policy_number}</div>
+                          </div>
+                        )}
+                        {insurance.group_number && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Group Number</label>
+                            <div>{insurance.group_number}</div>
+                          </div>
+                        )}
+                        {insurance.subscriber_name && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Subscriber</label>
+                            <div>{insurance.subscriber_name} ({insurance.subscriber_relationship})</div>
+                          </div>
+                        )}
+                        {insurance.effective_date && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Effective Date</label>
+                            <div>{new Date(insurance.effective_date).toLocaleDateString()}</div>
+                          </div>
+                        )}
+                        {insurance.copay_amount > 0 && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Copay</label>
+                            <div>${insurance.copay_amount}</div>
+                          </div>
+                        )}
+                        {insurance.deductible_amount > 0 && (
+                          <div>
+                            <label className="text-sm font-medium text-gray-500">Deductible</label>
+                            <div>${insurance.deductible_amount}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No insurance information found.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -331,9 +533,28 @@ const ClientDetailView = () => {
               <CardTitle>Billing Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                No billing settings found. This feature will be implemented in a future update.
-              </div>
+              {insuranceInfo.length > 0 ? (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Insurance Information</h4>
+                    <div className="space-y-2">
+                      {insuranceInfo.map((insurance, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <span className="font-medium">{insurance.insurance_type}: </span>
+                            <span>{insurance.insurance_company}</span>
+                          </div>
+                          <Badge variant="outline">Active</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No billing settings configured.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
