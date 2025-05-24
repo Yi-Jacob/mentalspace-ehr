@@ -9,6 +9,9 @@ export const createClient = async (
   insuranceInfo: InsuranceInfo[],
   primaryCareProvider: PrimaryCareProvider
 ) => {
+  // Format date of birth properly for database storage
+  const dateOfBirth = formData.date_of_birth ? formData.date_of_birth : null;
+  
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
     .insert({
@@ -18,7 +21,7 @@ export const createClient = async (
       suffix: formData.suffix || null,
       preferred_name: formData.preferred_name || null,
       pronouns: formData.pronouns || null,
-      date_of_birth: formData.date_of_birth || null,
+      date_of_birth: dateOfBirth,
       assigned_clinician_id: formData.assigned_clinician_id === 'unassigned' ? null : formData.assigned_clinician_id,
       email: formData.email || null,
       address_1: formData.address_1 || null,
@@ -46,6 +49,7 @@ export const createClient = async (
     .single();
 
   if (clientError) {
+    console.error('Error creating client:', clientError);
     throw new Error(`Failed to create client: ${clientError.message}`);
   }
 
@@ -155,6 +159,9 @@ export const updateClient = async (
   insuranceInfo: InsuranceInfo[],
   primaryCareProvider: PrimaryCareProvider
 ) => {
+  // Format date of birth properly for database storage
+  const dateOfBirth = formData.date_of_birth ? formData.date_of_birth : null;
+  
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
     .update({
@@ -164,7 +171,7 @@ export const updateClient = async (
       suffix: formData.suffix || null,
       preferred_name: formData.preferred_name || null,
       pronouns: formData.pronouns || null,
-      date_of_birth: formData.date_of_birth || null,
+      date_of_birth: dateOfBirth,
       assigned_clinician_id: formData.assigned_clinician_id === 'unassigned' ? null : formData.assigned_clinician_id,
       email: formData.email || null,
       address_1: formData.address_1 || null,
@@ -194,6 +201,7 @@ export const updateClient = async (
     .single();
 
   if (clientError) {
+    console.error('Error updating client:', clientError);
     throw new Error(`Failed to update client: ${clientError.message}`);
   }
 

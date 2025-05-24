@@ -5,6 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { ClientFormData } from '@/types/client';
 
 interface BasicInfoTabProps {
@@ -13,6 +19,18 @@ interface BasicInfoTabProps {
 }
 
 export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormData }) => {
+  const handleDateOfBirthChange = (date: Date | undefined) => {
+    if (date) {
+      // Format the date as YYYY-MM-DD for database storage
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      setFormData({...formData, date_of_birth: formattedDate});
+    } else {
+      setFormData({...formData, date_of_birth: ''});
+    }
+  };
+
+  const dateOfBirthValue = formData.date_of_birth ? new Date(formData.date_of_birth) : undefined;
+
   return (
     <>
       <Card>
@@ -80,12 +98,30 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
 
           <div>
             <Label htmlFor="date_of_birth">Date of Birth</Label>
-            <Input
-              id="date_of_birth"
-              type="date"
-              value={formData.date_of_birth}
-              onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !dateOfBirthValue && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateOfBirthValue ? format(dateOfBirthValue, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateOfBirthValue}
+                  onSelect={handleDateOfBirthChange}
+                  disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div>
