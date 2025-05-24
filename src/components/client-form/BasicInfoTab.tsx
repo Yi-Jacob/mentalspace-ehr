@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,17 @@ interface BasicInfoTabProps {
 }
 
 export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormData }) => {
-  const [dateInputValue, setDateInputValue] = useState(formData.date_of_birth);
+  // Convert database format (YYYY-MM-DD) to display format (M/D/Y) for initial value
+  const getDisplayDate = (dbDate: string) => {
+    if (!dbDate) return '';
+    const date = new Date(dbDate);
+    if (isValid(date)) {
+      return format(date, 'M/d/yyyy');
+    }
+    return '';
+  };
+
+  const [dateInputValue, setDateInputValue] = useState(getDisplayDate(formData.date_of_birth));
   const [showCalendar, setShowCalendar] = useState(false);
 
   const handleDateOfBirthChange = (date: Date | undefined) => {
@@ -26,7 +37,8 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
       // Format the date as YYYY-MM-DD for database storage
       const formattedDate = format(date, 'yyyy-MM-dd');
       setFormData({...formData, date_of_birth: formattedDate});
-      setDateInputValue(formattedDate);
+      // Display in M/D/Y format
+      setDateInputValue(format(date, 'M/d/yyyy'));
       setShowCalendar(false);
     } else {
       setFormData({...formData, date_of_birth: ''});
@@ -38,20 +50,16 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
     const value = e.target.value;
     setDateInputValue(value);
     
-    // Try to parse the date in various formats
+    // Try to parse the date in M/D/Y format
     let parsedDate: Date | null = null;
     
-    // Try YYYY-MM-DD format first
-    if (value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      parsedDate = new Date(value);
+    // Try M/D/YYYY format
+    if (value.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+      parsedDate = parse(value, 'M/d/yyyy', new Date());
     }
-    // Try MM/DD/YYYY format
-    else if (value.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-      parsedDate = parse(value, 'MM/dd/yyyy', new Date());
-    }
-    // Try MM-DD-YYYY format
-    else if (value.match(/^\d{1,2}-\d{1,2}-\d{4}$/)) {
-      parsedDate = parse(value, 'MM-dd-yyyy', new Date());
+    // Try M/D/YY format
+    else if (value.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/)) {
+      parsedDate = parse(value, 'M/d/yy', new Date());
     }
     
     if (parsedDate && isValid(parsedDate) && parsedDate <= new Date() && parsedDate >= new Date("1900-01-01")) {
@@ -137,7 +145,7 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
                 type="text"
                 value={dateInputValue}
                 onChange={handleDateInputChange}
-                placeholder="YYYY-MM-DD or MM/DD/YYYY"
+                placeholder="M/D/YYYY"
                 className="flex-1"
               />
               <Popover open={showCalendar} onOpenChange={setShowCalendar}>
