@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import ModulePage from '@/components/ModulePage';
 import ClientList from '@/components/ClientList';
+import Documentation from '@/pages/Documentation';
 
 const moduleConfigs = {
   clients: {
@@ -14,7 +15,7 @@ const moduleConfigs = {
   documentation: {
     title: 'Clinical Documentation',
     description: 'Create and manage clinical notes, treatment plans, and assessments',
-    features: ['Session Notes', 'Treatment Plans', 'Assessment Tools', 'Progress Notes', 'Intake Forms', 'Discharge Summaries']
+    features: ['Intake Assessments', 'Progress Notes', 'Treatment Plans', 'Cancellation Notes', 'Contact Notes', 'Consultation Notes', 'Signing System', 'Approval Workflow', 'Compliance Tracking']
   },
   scheduling: {
     title: 'Appointment Scheduling',
@@ -68,6 +69,10 @@ const Index = () => {
 
     if (activeModule === 'clients') {
       return <ClientList />;
+    }
+
+    if (activeModule === 'documentation') {
+      return <Documentation />;
     }
 
     const config = moduleConfigs[activeModule as keyof typeof moduleConfigs];

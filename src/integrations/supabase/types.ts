@@ -115,6 +115,56 @@ export type Database = {
           },
         ]
       }
+      client_medications: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          dosage: string | null
+          end_date: string | null
+          frequency: string | null
+          id: string
+          is_active: boolean | null
+          medication_name: string
+          prescribing_doctor: string | null
+          start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          dosage?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          medication_name: string
+          prescribing_doctor?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          dosage?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          medication_name?: string
+          prescribing_doctor?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_medications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_phone_numbers: {
         Row: {
           client_id: string | null
@@ -187,6 +237,97 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "client_primary_care_providers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_substance_history: {
+        Row: {
+          amount: string | null
+          client_id: string | null
+          created_at: string | null
+          end_date: string | null
+          frequency: string | null
+          id: string
+          is_current: boolean | null
+          notes: string | null
+          start_date: string | null
+          substance_type: Database["public"]["Enums"]["substance_type"]
+        }
+        Insert: {
+          amount?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          start_date?: string | null
+          substance_type: Database["public"]["Enums"]["substance_type"]
+        }
+        Update: {
+          amount?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          start_date?: string | null
+          substance_type?: Database["public"]["Enums"]["substance_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_substance_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_treatment_history: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          effectiveness_rating: number | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          provider_name: string | null
+          start_date: string | null
+          treatment_type: Database["public"]["Enums"]["treatment_type"]
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          effectiveness_rating?: number | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          provider_name?: string | null
+          start_date?: string | null
+          treatment_type: Database["public"]["Enums"]["treatment_type"]
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          effectiveness_rating?: number | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          provider_name?: string | null
+          start_date?: string | null
+          treatment_type?: Database["public"]["Enums"]["treatment_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_treatment_history_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
@@ -348,6 +489,281 @@ export type Database = {
           },
         ]
       }
+      clinical_notes: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          client_id: string | null
+          co_signed_at: string | null
+          co_signed_by: string | null
+          content: Json
+          created_at: string | null
+          id: string
+          locked_at: string | null
+          note_type: Database["public"]["Enums"]["note_type"]
+          provider_id: string | null
+          signed_at: string | null
+          signed_by: string | null
+          status: Database["public"]["Enums"]["note_status"] | null
+          title: string
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          client_id?: string | null
+          co_signed_at?: string | null
+          co_signed_by?: string | null
+          content?: Json
+          created_at?: string | null
+          id?: string
+          locked_at?: string | null
+          note_type: Database["public"]["Enums"]["note_type"]
+          provider_id?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
+          status?: Database["public"]["Enums"]["note_status"] | null
+          title: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          client_id?: string | null
+          co_signed_at?: string | null
+          co_signed_by?: string | null
+          content?: Json
+          created_at?: string | null
+          id?: string
+          locked_at?: string | null
+          note_type?: Database["public"]["Enums"]["note_type"]
+          provider_id?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
+          status?: Database["public"]["Enums"]["note_status"] | null
+          title?: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_notes_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_notes_co_signed_by_fkey"
+            columns: ["co_signed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_notes_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_notes_signed_by_fkey"
+            columns: ["signed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_objectives: {
+        Row: {
+          completed_date: string | null
+          created_at: string | null
+          goal_id: string | null
+          id: string
+          is_completed: boolean | null
+          objective_text: string
+        }
+        Insert: {
+          completed_date?: string | null
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          is_completed?: boolean | null
+          objective_text: string
+        }
+        Update: {
+          completed_date?: string | null
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          is_completed?: boolean | null
+          objective_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_objectives_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_reminders: {
+        Row: {
+          created_at: string | null
+          due_date: string
+          id: string
+          is_dismissed: boolean | null
+          note_id: string | null
+          provider_id: string | null
+          reminder_type: string
+          sent_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          due_date: string
+          id?: string
+          is_dismissed?: boolean | null
+          note_id?: string | null
+          provider_id?: string | null
+          reminder_type: string
+          sent_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          due_date?: string
+          id?: string
+          is_dismissed?: boolean | null
+          note_id?: string | null
+          provider_id?: string | null
+          reminder_type?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_reminders_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_reminders_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_versions: {
+        Row: {
+          content: Json
+          created_at: string | null
+          created_by: string | null
+          id: string
+          note_id: string | null
+          version: number
+        }
+        Insert: {
+          content: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          note_id?: string | null
+          version: number
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          note_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_versions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_goals: {
+        Row: {
+          achieved_date: string | null
+          client_id: string | null
+          created_at: string | null
+          goal_text: string
+          id: string
+          is_achieved: boolean | null
+          priority: number | null
+          target_date: string | null
+          treatment_plan_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          achieved_date?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          goal_text: string
+          id?: string
+          is_achieved?: boolean | null
+          priority?: number | null
+          target_date?: string | null
+          treatment_plan_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          achieved_date?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          goal_text?: string
+          id?: string
+          is_achieved?: boolean | null
+          priority?: number | null
+          target_date?: string | null
+          treatment_plan_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_goals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_goals_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           auth_user_id: string | null
@@ -428,12 +844,44 @@ export type Database = {
         | "Voice messages OK"
         | "Text messages OK"
         | "Voice/Text messages OK"
+      note_status:
+        | "draft"
+        | "signed"
+        | "submitted_for_review"
+        | "approved"
+        | "rejected"
+        | "locked"
+      note_type:
+        | "intake"
+        | "progress_note"
+        | "treatment_plan"
+        | "cancellation_note"
+        | "contact_note"
+        | "consultation_note"
+        | "miscellaneous_note"
       pcp_release_status:
         | "Not set"
         | "Patient consented to release information"
         | "Patient declined to release information"
         | "Not applicable"
       phone_type: "Mobile" | "Home" | "Work" | "Other"
+      presenting_problem:
+        | "Anxiety"
+        | "Depression"
+        | "Trauma / PTSD"
+        | "Stress Management"
+        | "Relationship Issues"
+        | "Grief / Loss"
+        | "Anger Management"
+        | "Substance Use / Addiction"
+        | "Behavioral Issues"
+        | "Bipolar Symptoms"
+        | "Psychosis / Schizophrenia"
+        | "Eating Disorder Concerns"
+        | "Personality Disorder Concerns"
+        | "Sexual / Gender Identity Concerns"
+        | "Other"
+      progress_note_format: "SOAP" | "DAP"
       reminder_preference:
         | "Default Practice Setting"
         | "No reminders"
@@ -455,6 +903,29 @@ export type Database = {
         | "Former smoker"
         | "Never smoker"
         | "Chose not to disclose"
+      substance_type:
+        | "Alcohol"
+        | "Tobacco/Nicotine"
+        | "Cannabis"
+        | "Stimulants (cocaine, methamphetamine, etc.)"
+        | "Opioids (heroin, prescription pain medications, etc.)"
+        | "Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)"
+        | "Other Substances"
+      symptom_onset:
+        | "Recent (Less than 1 month)"
+        | "Acute (1-3 months)"
+        | "Subacute (3-6 months)"
+        | "Chronic (6+ months)"
+        | "Episodic (Comes and goes)"
+        | "Longstanding (Years)"
+        | "Since childhood"
+        | "Unknown / Not specified"
+      symptom_severity:
+        | "Mild"
+        | "Moderate"
+        | "Severe"
+        | "Extreme"
+        | "Fluctuating"
       timezone_type:
         | "Not Set"
         | "HAST"
@@ -475,6 +946,18 @@ export type Database = {
         | "NT"
         | "EGT/EGST"
         | "CVT"
+      treatment_type:
+        | "Individual Therapy"
+        | "Group Therapy"
+        | "Family Therapy"
+        | "Couples Therapy"
+        | "Psychiatric Medication"
+        | "Substance Abuse Treatment"
+        | "Inpatient Hospitalization"
+        | "Partial Hospitalization (PHP)"
+        | "Intensive Outpatient Program (IOP)"
+        | "Support Group"
+        | "Other"
       us_state:
         | "AL"
         | "AK"
@@ -696,6 +1179,23 @@ export const Constants = {
         "Text messages OK",
         "Voice/Text messages OK",
       ],
+      note_status: [
+        "draft",
+        "signed",
+        "submitted_for_review",
+        "approved",
+        "rejected",
+        "locked",
+      ],
+      note_type: [
+        "intake",
+        "progress_note",
+        "treatment_plan",
+        "cancellation_note",
+        "contact_note",
+        "consultation_note",
+        "miscellaneous_note",
+      ],
       pcp_release_status: [
         "Not set",
         "Patient consented to release information",
@@ -703,6 +1203,24 @@ export const Constants = {
         "Not applicable",
       ],
       phone_type: ["Mobile", "Home", "Work", "Other"],
+      presenting_problem: [
+        "Anxiety",
+        "Depression",
+        "Trauma / PTSD",
+        "Stress Management",
+        "Relationship Issues",
+        "Grief / Loss",
+        "Anger Management",
+        "Substance Use / Addiction",
+        "Behavioral Issues",
+        "Bipolar Symptoms",
+        "Psychosis / Schizophrenia",
+        "Eating Disorder Concerns",
+        "Personality Disorder Concerns",
+        "Sexual / Gender Identity Concerns",
+        "Other",
+      ],
+      progress_note_format: ["SOAP", "DAP"],
       reminder_preference: [
         "Default Practice Setting",
         "No reminders",
@@ -727,6 +1245,32 @@ export const Constants = {
         "Never smoker",
         "Chose not to disclose",
       ],
+      substance_type: [
+        "Alcohol",
+        "Tobacco/Nicotine",
+        "Cannabis",
+        "Stimulants (cocaine, methamphetamine, etc.)",
+        "Opioids (heroin, prescription pain medications, etc.)",
+        "Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)",
+        "Other Substances",
+      ],
+      symptom_onset: [
+        "Recent (Less than 1 month)",
+        "Acute (1-3 months)",
+        "Subacute (3-6 months)",
+        "Chronic (6+ months)",
+        "Episodic (Comes and goes)",
+        "Longstanding (Years)",
+        "Since childhood",
+        "Unknown / Not specified",
+      ],
+      symptom_severity: [
+        "Mild",
+        "Moderate",
+        "Severe",
+        "Extreme",
+        "Fluctuating",
+      ],
       timezone_type: [
         "Not Set",
         "HAST",
@@ -747,6 +1291,19 @@ export const Constants = {
         "NT",
         "EGT/EGST",
         "CVT",
+      ],
+      treatment_type: [
+        "Individual Therapy",
+        "Group Therapy",
+        "Family Therapy",
+        "Couples Therapy",
+        "Psychiatric Medication",
+        "Substance Abuse Treatment",
+        "Inpatient Hospitalization",
+        "Partial Hospitalization (PHP)",
+        "Intensive Outpatient Program (IOP)",
+        "Support Group",
+        "Other",
       ],
       us_state: [
         "AL",
