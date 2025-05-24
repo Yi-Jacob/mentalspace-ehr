@@ -60,8 +60,8 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
 
   const handleSave = async (createAnother: boolean = false) => {
     try {
-      if (isEditing && editingClient) {
-        await updateClient(editingClient.id!, formData, phoneNumbers, emergencyContacts, insuranceInfo, primaryCareProvider);
+      if (isEditing && editingClient?.id) {
+        await updateClient(editingClient.id, formData, phoneNumbers, emergencyContacts, insuranceInfo, primaryCareProvider);
         toast({
           title: "Success",
           description: "Client updated successfully",
@@ -121,6 +121,8 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
               setPhoneNumbers={setPhoneNumbers}
               emergencyContacts={emergencyContacts}
               setEmergencyContacts={setEmergencyContacts}
+              primaryCareProvider={primaryCareProvider}
+              setPrimaryCareProvider={setPrimaryCareProvider}
             />
           </TabsContent>
 
@@ -132,8 +134,6 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
             <BillingTab
               insuranceInfo={insuranceInfo}
               setInsuranceInfo={setInsuranceInfo}
-              primaryCareProvider={primaryCareProvider}
-              setPrimaryCareProvider={setPrimaryCareProvider}
             />
           </TabsContent>
 

@@ -11,7 +11,7 @@ export const createClient = async (
 ) => {
   const { data: clientData, error: clientError } = await supabase
     .from('clients')
-    .insert([{
+    .insert({
       first_name: formData.first_name,
       middle_name: formData.middle_name || null,
       last_name: formData.last_name,
@@ -41,7 +41,7 @@ export const createClient = async (
       hipaa_signed: formData.hipaa_signed,
       pcp_release: formData.pcp_release,
       patient_comments: formData.patient_comments || null,
-    }])
+    })
     .select()
     .single();
 

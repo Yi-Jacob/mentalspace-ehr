@@ -43,6 +43,7 @@ export interface PrimaryCareProvider {
 }
 
 export interface ClientFormData {
+  id?: string; // Add optional id property for editing
   // Basic Info
   first_name: string;
   middle_name: string;
