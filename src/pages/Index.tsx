@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import ModulePage from '@/components/ModulePage';
+import ClientList from '@/components/ClientList';
 
 const moduleConfigs = {
   clients: {
@@ -63,6 +64,10 @@ const Index = () => {
   const renderContent = () => {
     if (activeModule === 'dashboard') {
       return <Dashboard />;
+    }
+
+    if (activeModule === 'clients') {
+      return <ClientList />;
     }
 
     const config = moduleConfigs[activeModule as keyof typeof moduleConfigs];

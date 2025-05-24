@@ -11,9 +11,12 @@ import {
   UserPlus, 
   Shield, 
   Settings,
-  Stethoscope
+  Stethoscope,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
   activeItem: string;
@@ -35,8 +38,10 @@ const menuItems = [
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
+  const { signOut } = useAuth();
+
   return (
-    <div className="bg-gradient-to-b from-blue-900 to-blue-800 w-64 min-h-screen p-4 shadow-xl">
+    <div className="bg-gradient-to-b from-blue-900 to-blue-800 w-64 min-h-screen p-4 shadow-xl flex flex-col">
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-2">
           <img 
@@ -48,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
         <p className="text-blue-200 text-sm">Electronic Health Records</p>
       </div>
       
-      <nav className="space-y-2">
+      <nav className="space-y-2 flex-1">
         {menuItems.map((item) => {
           const IconComponent = item.icon;
           return (
@@ -68,6 +73,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
           );
         })}
       </nav>
+
+      <div className="mt-auto pt-4 border-t border-blue-700">
+        <Button
+          onClick={signOut}
+          variant="ghost"
+          className="w-full flex items-center space-x-3 px-4 py-3 text-blue-100 hover:bg-blue-700 hover:text-white"
+        >
+          <LogOut size={20} />
+          <span className="font-medium">Sign Out</span>
+        </Button>
+      </div>
     </div>
   );
 };
