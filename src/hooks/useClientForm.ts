@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useCallback } from 'react';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
 
 export const useClientForm = () => {
@@ -55,7 +56,7 @@ export const useClientForm = () => {
     address: ''
   });
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setFormData({
       first_name: '',
       middle_name: '',
@@ -96,7 +97,7 @@ export const useClientForm = () => {
       phone_number: '',
       address: ''
     });
-  };
+  }, []);
 
   return {
     formData,

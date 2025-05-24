@@ -51,15 +51,23 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   // Load client data when editing
   useEffect(() => {
     if (editingClient && isOpen) {
+      console.log('Loading client data for editing:', editingClient);
       setFormData(editingClient);
       // TODO: Load related data (phone numbers, emergency contacts, etc.) when those tables are implemented
-    } else if (!isOpen) {
+    }
+  }, [editingClient?.id, isOpen, setFormData]);
+
+  // Reset form when modal closes and not editing
+  useEffect(() => {
+    if (!isOpen && !isEditing) {
       resetForm();
     }
-  }, [editingClient, isOpen, setFormData, resetForm]);
+  }, [isOpen, isEditing, resetForm]);
 
   const handleSave = async (createAnother: boolean = false) => {
     try {
+      console.log('Saving client data:', formData);
+      
       if (isEditing && editingClient?.id) {
         await updateClient(editingClient.id, formData, phoneNumbers, emergencyContacts, insuranceInfo, primaryCareProvider);
         toast({
