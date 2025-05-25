@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationButtonsProps {
   currentSection: number;
@@ -19,19 +21,31 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onSaveDraft,
   isLoading,
 }) => {
+  const navigate = useNavigate();
+
   if (currentSection >= totalSections - 1) {
     return null; // Don't show navigation for the finalize section
   }
 
   return (
     <div className="flex justify-between mt-8 pt-6 border-t">
-      <Button
-        variant="outline"
-        onClick={onPrevious}
-        disabled={currentSection === 0}
-      >
-        Previous
-      </Button>
+      <div className="flex space-x-2">
+        <Button
+          variant="outline"
+          onClick={() => navigate('/documentation')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Documentation
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={onPrevious}
+          disabled={currentSection === 0}
+        >
+          Previous
+        </Button>
+      </div>
       
       <div className="flex space-x-2">
         <Button

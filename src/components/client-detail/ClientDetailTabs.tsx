@@ -7,6 +7,7 @@ import { ClientBillingTab } from './tabs/ClientBillingTab';
 import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
 import { ClientNotesTab } from './tabs/ClientNotesTab';
+import { ClientDocumentsTab } from './tabs/ClientDocumentsTab';
 import { PlaceholderTab } from './tabs/PlaceholderTab';
 
 interface ClientDetailTabsProps {
@@ -60,10 +61,7 @@ export const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="documents">
-        <PlaceholderTab
-          title="Documents & Notes"
-          message="No documents found. This feature will be implemented in a future update."
-        />
+        <ClientDocumentsTab client={client} />
       </TabsContent>
 
       <TabsContent value="billing">
