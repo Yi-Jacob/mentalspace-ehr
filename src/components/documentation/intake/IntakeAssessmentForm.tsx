@@ -207,7 +207,7 @@ const IntakeAssessmentForm = () => {
       if (!noteId) throw new Error('No note ID');
       
       const finalData = { ...formData, ...data };
-      const status = isDraft ? 'draft' : finalData.isFinalized ? 'signed' : 'pending_signature';
+      const status = isDraft ? 'draft' : finalData.isFinalized ? 'signed' : 'draft';
       
       console.log('Saving note with status:', status, 'isDraft:', isDraft, 'data:', finalData);
       
@@ -233,12 +233,12 @@ const IntakeAssessmentForm = () => {
       if (isDraft) {
         toast({
           title: 'Draft Saved',
-          description: 'Your intake assessment has been saved as a draft. A confirmation email will be sent.',
+          description: 'Your intake assessment has been saved as a draft.',
         });
       } else if (isFinalized) {
         toast({
           title: 'Assessment Completed',
-          description: 'Your intake assessment has been finalized and signed. A confirmation email will be sent.',
+          description: 'Your intake assessment has been finalized and signed.',
         });
       }
       
@@ -261,7 +261,7 @@ const IntakeAssessmentForm = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (noteId && !note?.status?.includes('signed')) {
-        saveNoteMutation.mutate(formData);
+        saveNoteMutation.mutate({ data: formData, isDraft: true });
       }
     }, 30000);
 
@@ -392,8 +392,10 @@ const IntakeAssessmentForm = () => {
                   formData={formData}
                   updateFormData={updateFormData}
                   clientData={note.clients}
-                  onSave={currentSection === SECTIONS.length - 1 ? handleSave : undefined}
-                  isLoading={saveNoteMutation.isPending}
+                  {...(currentSection === SECTIONS.length - 1 && {
+                    onSave: handleSave,
+                    isLoading: saveNoteMutation.isPending
+                  })}
                 />
                 
                 {/* Navigation - only show for sections other than Finalize */}
