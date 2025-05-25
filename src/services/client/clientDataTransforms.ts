@@ -1,9 +1,10 @@
-
 import { ClientFormData } from '@/types/client';
 
 export const transformClientDataForDatabase = (formData: ClientFormData) => {
-  // Format date of birth properly for database storage
+  // Keep date of birth as-is if it's in YYYY-MM-DD format from our form
   const dateOfBirth = formData.date_of_birth ? formData.date_of_birth : null;
+  
+  console.log('Transforming date for database:', dateOfBirth);
   
   // Helper function to convert empty strings to null for enum fields
   const nullifyEmptyString = (value: string) => value === '' ? null : value;

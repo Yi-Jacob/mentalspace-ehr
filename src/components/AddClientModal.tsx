@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import {
   Dialog,
@@ -53,7 +52,13 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   useEffect(() => {
     if (editingClient && isOpen) {
       console.log('Loading client data for editing:', editingClient);
-      setFormData(editingClient);
+      // Ensure date_of_birth is in proper format when loading for editing
+      const clientData = {
+        ...editingClient,
+        date_of_birth: editingClient.date_of_birth || ''
+      };
+      console.log('Date of birth loaded:', clientData.date_of_birth);
+      setFormData(clientData);
       
       // Load related data when editing
       const loadRelatedData = async () => {
@@ -144,6 +149,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   const handleSave = async (createAnother: boolean = false) => {
     try {
       console.log('Saving client data:', formData);
+      console.log('Date of birth being saved:', formData.date_of_birth);
       
       if (isEditing && editingClient?.id) {
         await updateClient(editingClient.id, formData, phoneNumbers, emergencyContacts, insuranceInfo, primaryCareProvider);
