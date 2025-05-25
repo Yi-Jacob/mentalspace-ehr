@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useSaveNote } from './hooks/useSaveNote';
 import IntakeNavigationHeader from './components/IntakeNavigationHeader';
 import SectionNavigation from './components/SectionNavigation';
 import NavigationButtons from './components/NavigationButtons';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const IntakeAssessmentForm = () => {
   const { noteId } = useParams();
@@ -138,52 +140,56 @@ const IntakeAssessmentForm = () => {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <IntakeNavigationHeader
-        clientName={clientName}
-        progress={progress}
-        currentSection={currentSection}
-        totalSections={SECTIONS.length}
-      />
-      
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <SectionNavigation
-            sections={SECTIONS}
-            currentSection={currentSection}
-            onSectionClick={handleSectionClick}
-          />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <IntakeNavigationHeader
+          clientName={clientName}
+          progress={progress}
+          currentSection={currentSection}
+          totalSections={SECTIONS.length}
+        />
+        
+        <div className="max-w-6xl mx-auto p-6 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <SectionNavigation
+              sections={SECTIONS}
+              currentSection={currentSection}
+              onSectionClick={handleSectionClick}
+            />
 
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>{SECTIONS[currentSection].title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CurrentSectionComponent
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  clientData={note.clients}
-                  {...(currentSection === SECTIONS.length - 1 && {
-                    onSave: handleSave,
-                    isLoading: saveNoteMutation.isPending
-                  })}
-                />
-                
-                <NavigationButtons
-                  currentSection={currentSection}
-                  totalSections={SECTIONS.length}
-                  onPrevious={handlePrevious}
-                  onNext={handleNext}
-                  onSaveDraft={handleSaveDraft}
-                  isLoading={saveNoteMutation.isPending}
-                />
-              </CardContent>
-            </Card>
+            <div className="lg:col-span-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{SECTIONS[currentSection].title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ErrorBoundary>
+                    <CurrentSectionComponent
+                      formData={formData}
+                      updateFormData={updateFormData}
+                      clientData={note.clients}
+                      {...(currentSection === SECTIONS.length - 1 && {
+                        onSave: handleSave,
+                        isLoading: saveNoteMutation.isPending
+                      })}
+                    />
+                  </ErrorBoundary>
+                  
+                  <NavigationButtons
+                    currentSection={currentSection}
+                    totalSections={SECTIONS.length}
+                    onPrevious={handlePrevious}
+                    onNext={handleNext}
+                    onSaveDraft={handleSaveDraft}
+                    isLoading={saveNoteMutation.isPending}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

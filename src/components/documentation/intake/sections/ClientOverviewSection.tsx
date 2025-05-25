@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { IntakeFormData } from '../types/IntakeFormData';
+import ValidatedInput from '@/components/form/ValidatedInput';
+import FormErrorBoundary from '@/components/FormErrorBoundary';
+import { validationSchemas, sanitizeInput } from '@/utils/validation';
 
 interface ClientOverviewSectionProps {
   formData: IntakeFormData;
@@ -19,6 +20,8 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   console.log('ClientOverviewSection - clientData:', clientData);
 
   // Fetch CPT codes from database
@@ -57,112 +60,121 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
     }
   }, [clientData, formData.primaryPhone, formData.primaryInsurance, primaryPhone, primaryInsurance, updateFormData]);
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="font-medium text-blue-800 mb-2">Client Overview</h4>
-        <p className="text-blue-700 text-sm">
-          Basic client information and contact details for this intake assessment.
-        </p>
-      </div>
+  const handleValidationChange = (field: string) => (isValid: boolean, error?: string) => {
+    setValidationErrors(prev => ({
+      ...prev,
+      [field]: error || ''
+    }));
+  };
 
-      {/* Client Information Display */}
-      {clientData && (
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-medium text-gray-800 mb-3">Client Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-600">Full Name</Label>
-              <p className="text-gray-900">{`${clientData.first_name} ${clientData.last_name}`}</p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-600">Date of Birth</Label>
-              <p className="text-gray-900">{clientData.date_of_birth || 'Not provided'}</p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-600">Address</Label>
-              <p className="text-gray-900">
-                {clientData.address_1 ? 
-                  `${clientData.address_1}${clientData.address_2 ? `, ${clientData.address_2}` : ''}, ${clientData.city || ''} ${clientData.state || ''} ${clientData.zip_code || ''}`.trim() 
-                  : 'Not provided'
-                }
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-600">Gender Identity</Label>
-              <p className="text-gray-900">{clientData.gender_identity || 'Not provided'}</p>
+  return (
+    <FormErrorBoundary formName="Client Overview">
+      <div className="space-y-6">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h4 className="font-medium text-blue-800 mb-2">Client Overview</h4>
+          <p className="text-blue-700 text-sm">
+            Basic client information and contact details for this intake assessment.
+          </p>
+        </div>
+
+        {/* Client Information Display */}
+        {clientData && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-medium text-gray-800 mb-3">Client Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm font-medium text-gray-600">Full Name</span>
+                <p className="text-gray-900">{`${clientData.first_name} ${clientData.last_name}`}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">Date of Birth</span>
+                <p className="text-gray-900">{clientData.date_of_birth || 'Not provided'}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">Address</span>
+                <p className="text-gray-900">
+                  {clientData.address_1 ? 
+                    `${clientData.address_1}${clientData.address_2 ? `, ${clientData.address_2}` : ''}, ${clientData.city || ''} ${clientData.state || ''} ${clientData.zip_code || ''}`.trim() 
+                    : 'Not provided'
+                  }
+                </p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">Gender Identity</span>
+                <p className="text-gray-900">{clientData.gender_identity || 'Not provided'}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="intakeDate">Intake Date</Label>
-          <Input
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ValidatedInput
             id="intakeDate"
+            label="Intake Date"
             type="date"
             value={formData.intakeDate}
-            onChange={(e) => updateFormData({ intakeDate: e.target.value })}
-            className="mt-1"
+            onChange={(value) => updateFormData({ intakeDate: value })}
+            onValidationChange={handleValidationChange('intakeDate')}
+            validation={validationSchemas.date}
+            required
           />
-        </div>
 
-        <div>
-          <Label htmlFor="primaryPhone">Primary Phone</Label>
-          <Input
+          <ValidatedInput
             id="primaryPhone"
+            label="Primary Phone"
             type="tel"
             value={formData.primaryPhone}
-            onChange={(e) => updateFormData({ primaryPhone: e.target.value })}
+            onChange={(value) => updateFormData({ primaryPhone: value })}
+            onValidationChange={handleValidationChange('primaryPhone')}
+            validation={validationSchemas.phone}
+            sanitizer={sanitizeInput.phone}
             placeholder="Enter primary phone number"
-            className="mt-1"
           />
-        </div>
 
-        <div>
-          <Label htmlFor="primaryEmail">Primary Email</Label>
-          <Input
+          <ValidatedInput
             id="primaryEmail"
+            label="Primary Email"
             type="email"
             value={formData.primaryEmail}
-            onChange={(e) => updateFormData({ primaryEmail: e.target.value })}
+            onChange={(value) => updateFormData({ primaryEmail: value })}
+            onValidationChange={handleValidationChange('primaryEmail')}
+            validation={validationSchemas.email}
+            sanitizer={sanitizeInput.email}
             placeholder="Enter primary email address"
-            className="mt-1"
           />
-        </div>
 
-        <div>
-          <Label htmlFor="primaryInsurance">Primary Insurance</Label>
-          <Input
+          <ValidatedInput
             id="primaryInsurance"
+            label="Primary Insurance"
             value={formData.primaryInsurance}
-            onChange={(e) => updateFormData({ primaryInsurance: e.target.value })}
+            onChange={(value) => updateFormData({ primaryInsurance: value })}
+            onValidationChange={handleValidationChange('primaryInsurance')}
+            validation={validationSchemas.textArea}
+            sanitizer={sanitizeInput.text}
             placeholder="Enter primary insurance"
-            className="mt-1"
           />
-        </div>
 
-        <div className="md:col-span-2">
-          <Label htmlFor="cptCode">CPT Code</Label>
-          <Select
-            value={formData.cptCode}
-            onValueChange={(value) => updateFormData({ cptCode: value })}
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select CPT Code" />
-            </SelectTrigger>
-            <SelectContent>
-              {cptCodes.map((cpt) => (
-                <SelectItem key={cpt.code} value={cpt.code}>
-                  {cpt.code} - {cpt.description}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="md:col-span-2">
+            <span className="text-sm font-medium">CPT Code</span>
+            <Select
+              value={formData.cptCode}
+              onValueChange={(value) => updateFormData({ cptCode: value })}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select CPT Code" />
+              </SelectTrigger>
+              <SelectContent>
+                {cptCodes.map((cpt) => (
+                  <SelectItem key={cpt.code} value={cpt.code}>
+                    {cpt.code} - {cpt.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
-    </div>
+    </FormErrorBoundary>
   );
 };
 
