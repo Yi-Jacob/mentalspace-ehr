@@ -5,7 +5,7 @@ import DiagnosisGuidelines from './diagnosis/DiagnosisGuidelines';
 import PriorDiagnosesDisplay from './diagnosis/PriorDiagnosesDisplay';
 import PrimaryDiagnosisSelector from './diagnosis/PrimaryDiagnosisSelector';
 import SecondaryDiagnosesManager from './diagnosis/SecondaryDiagnosesManager';
-import { MOCK_DIAGNOSES } from './diagnosis/mockDiagnoses';
+import { useDiagnosesData } from '../hooks/useDiagnosesData';
 
 interface DiagnosisSectionProps {
   formData: IntakeFormData;
@@ -18,6 +18,8 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
+  const { data: availableDiagnoses = [] } = useDiagnosesData();
+
   const handlePrimaryDiagnosisSelect = (diagnosis: string) => {
     updateFormData({ primaryDiagnosis: diagnosis });
   };
@@ -54,14 +56,14 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
       <PrimaryDiagnosisSelector
         primaryDiagnosis={formData.primaryDiagnosis}
         onSelect={handlePrimaryDiagnosisSelect}
-        availableDiagnoses={MOCK_DIAGNOSES}
+        availableDiagnoses={availableDiagnoses}
       />
 
       <SecondaryDiagnosesManager
         secondaryDiagnoses={formData.secondaryDiagnoses}
         onAdd={handleSecondaryDiagnosisAdd}
         onRemove={handleSecondaryDiagnosisRemove}
-        availableDiagnoses={MOCK_DIAGNOSES}
+        availableDiagnoses={availableDiagnoses}
       />
     </div>
   );

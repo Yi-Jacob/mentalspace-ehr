@@ -9,6 +9,56 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_diagnoses: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          diagnosed_date: string | null
+          diagnosis_code: string
+          diagnosis_description: string
+          id: string
+          is_primary: boolean
+          notes: string | null
+          provider_name: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          diagnosed_date?: string | null
+          diagnosis_code: string
+          diagnosis_description: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          provider_name?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          diagnosed_date?: string | null
+          diagnosis_code?: string
+          diagnosis_description?: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          provider_name?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_diagnoses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_emergency_contacts: {
         Row: {
           client_id: string | null
@@ -584,6 +634,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cpt_codes: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
       }
       goal_objectives: {
         Row: {

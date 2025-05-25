@@ -10,7 +10,7 @@ export const useNoteData = (noteId: string | undefined) => {
       
       console.log('Fetching note with ID:', noteId);
       
-      // First fetch the note without joining clients
+      // First fetch the note
       const { data: noteData, error: noteError } = await supabase
         .from('clinical_notes')
         .select('*')
@@ -24,11 +24,12 @@ export const useNoteData = (noteId: string | undefined) => {
       
       console.log('Note data:', noteData);
       
-      // If note has a client_id, fetch the client data separately
+      // If note has a client_id, fetch the client data with related information
       if (noteData.client_id) {
+        // Fetch client basic data
         const { data: clientData, error: clientError } = await supabase
           .from('clients')
-          .select('id, first_name, last_name, date_of_birth')
+          .select('*')
           .eq('id', noteData.client_id)
           .single();
         
@@ -36,10 +37,42 @@ export const useNoteData = (noteId: string | undefined) => {
           console.error('Error fetching client:', clientError);
           // Don't throw error for client fetch failure, just proceed without client data
         }
+
+        let clientWithRelatedData = clientData;
+
+        if (clientData) {
+          // Fetch phone numbers
+          const { data: phoneData } = await supabase
+            .from('client_phone_numbers')
+            .select('*')
+            .eq('client_id', noteData.client_id);
+
+          // Fetch insurance data
+          const { data: insuranceData } = await supabase
+            .from('client_insurance')
+            .select('*')
+            .eq('client_id', noteData.client_id)
+            .eq('is_active', true);
+
+          // Fetch prior diagnoses
+          const { data: diagnosesData } = await supabase
+            .from('client_diagnoses')
+            .select('diagnosis_code, diagnosis_description, is_primary, diagnosed_date, status')
+            .eq('client_id', noteData.client_id)
+            .eq('status', 'active')
+            .order('diagnosed_date', { ascending: false });
+
+          clientWithRelatedData = {
+            ...clientData,
+            client_phone_numbers: phoneData || [],
+            client_insurance: insuranceData || [],
+            prior_diagnoses: diagnosesData?.map(d => `${d.diagnosis_code} - ${d.diagnosis_description}`) || []
+          };
+        }
         
         return {
           ...noteData,
-          clients: clientData
+          clients: clientWithRelatedData
         };
       }
       

@@ -1,21 +1,12 @@
 
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 import { IntakeFormData } from '../types/IntakeFormData';
-
-// CPT Codes for mental health services
-const CPT_CODES = [
-  { code: '90791', description: 'Psychiatric diagnostic evaluation' },
-  { code: '90792', description: 'Psychiatric diagnostic evaluation with medical services' },
-  { code: '90834', description: 'Psychotherapy, 45 minutes' },
-  { code: '90837', description: 'Psychotherapy, 60 minutes' },
-  { code: '90847', description: 'Family psychotherapy with patient present' },
-  { code: '90853', description: 'Group psychotherapy' },
-  { code: '90901', description: 'Biofeedback training' },
-];
 
 interface ClientOverviewSectionProps {
   formData: IntakeFormData;
@@ -29,6 +20,21 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   clientData,
 }) => {
   console.log('ClientOverviewSection - clientData:', clientData);
+
+  // Fetch CPT codes from database
+  const { data: cptCodes = [] } = useQuery({
+    queryKey: ['cpt-codes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('cpt_codes')
+        .select('code, description, category')
+        .eq('is_active', true)
+        .order('code');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // Get primary phone number
   const primaryPhone = clientData?.client_phone_numbers?.find(
@@ -87,20 +93,6 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
               <p className="text-gray-900">{clientData.gender_identity || 'Not provided'}</p>
             </div>
           </div>
-
-          {/* Prior Diagnoses */}
-          {clientData.prior_diagnoses && clientData.prior_diagnoses.length > 0 && (
-            <div className="mt-4">
-              <Label className="text-sm font-medium text-gray-600">Prior Diagnoses on Record</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {clientData.prior_diagnoses.map((diagnosis: string, index: number) => (
-                  <Badge key={index} variant="outline" className="text-sm">
-                    {diagnosis}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -161,7 +153,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
               <SelectValue placeholder="Select CPT Code" />
             </SelectTrigger>
             <SelectContent>
-              {CPT_CODES.map((cpt) => (
+              {cptCodes.map((cpt) => (
                 <SelectItem key={cpt.code} value={cpt.code}>
                   {cpt.code} - {cpt.description}
                 </SelectItem>
