@@ -56,7 +56,7 @@ export const useNotesQuery = (
   ].join(', ');
 
   return useOptimizedQuery(
-    ['clinical-notes', statusFilter, typeFilter, page, pageSize],
+    ['clinical-notes', statusFilter, typeFilter, page.toString(), pageSize.toString()],
     async () => {
       let query = supabase
         .from('clinical_notes')
@@ -80,7 +80,7 @@ export const useNotesQuery = (
       if (error) throw error;
       
       return {
-        data: data as ClinicalNote[],
+        data: (data || []) as ClinicalNote[],
         totalCount: count || 0,
         currentPage: page,
         pageSize,

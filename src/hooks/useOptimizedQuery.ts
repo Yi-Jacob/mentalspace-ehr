@@ -1,5 +1,5 @@
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 interface OptimizedQueryOptions<T> extends Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'> {
@@ -31,18 +31,14 @@ export const useOptimizedQuery = <T>(
 };
 
 export const useInvalidateQueries = () => {
-  const { queryClient } = useQuery({
-    queryKey: ['dummy'],
-    queryFn: () => null,
-    enabled: false,
-  });
+  const queryClient = useQueryClient();
 
   const invalidateQueries = useCallback((queryKey: string[]) => {
-    queryClient?.invalidateQueries({ queryKey });
+    queryClient.invalidateQueries({ queryKey });
   }, [queryClient]);
 
   const removeQueries = useCallback((queryKey: string[]) => {
-    queryClient?.removeQueries({ queryKey });
+    queryClient.removeQueries({ queryKey });
   }, [queryClient]);
 
   return { invalidateQueries, removeQueries };
