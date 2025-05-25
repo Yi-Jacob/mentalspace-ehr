@@ -79,7 +79,7 @@ export const useNotesQuery = (
       const { data, error, count } = await query;
       if (error) throw error;
       
-      // Ensure we have valid data before type assertion
+      // Ensure we have valid data before processing
       if (!data || !Array.isArray(data)) {
         return {
           data: [],
@@ -90,11 +90,30 @@ export const useNotesQuery = (
         };
       }
       
-      // Type assertion is now safe since we've verified data is an array
-      const clinicalNotes = data as ClinicalNote[];
+      // Validate and filter data to ensure it matches ClinicalNote interface
+      const validNotes: ClinicalNote[] = data
+        .filter((item): item is any => 
+          item && 
+          typeof item === 'object' && 
+          'id' in item && 
+          'title' in item && 
+          'note_type' in item && 
+          'status' in item
+        )
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          note_type: item.note_type,
+          status: item.status,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          client_id: item.client_id,
+          clients: item.clients,
+          provider: item.provider
+        }));
       
       return {
-        data: clinicalNotes,
+        data: validNotes,
         totalCount: count || 0,
         currentPage: page,
         pageSize,
