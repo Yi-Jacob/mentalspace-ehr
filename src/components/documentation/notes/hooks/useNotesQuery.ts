@@ -79,8 +79,11 @@ export const useNotesQuery = (
       const { data, error, count } = await query;
       if (error) throw error;
       
+      // Ensure we return the correct type - data should be ClinicalNote[] or null
+      const clinicalNotes: ClinicalNote[] = data || [];
+      
       return {
-        data: (data || []) as ClinicalNote[],
+        data: clinicalNotes,
         totalCount: count || 0,
         currentPage: page,
         pageSize,
