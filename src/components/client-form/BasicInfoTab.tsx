@@ -39,8 +39,12 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
 
   const handleDateOfBirthChange = (date: Date | undefined) => {
     if (date) {
-      // Format the date as YYYY-MM-DD for database storage
-      const formattedDate = format(date, 'yyyy-MM-dd');
+      // Use local date formatting to avoid timezone issues
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
       setFormData(prev => ({...prev, date_of_birth: formattedDate}));
       // Display in M/D/Y format
       setDateInputValue(format(date, 'M/d/yyyy'));
@@ -68,14 +72,18 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
     }
     
     if (parsedDate && isValid(parsedDate) && parsedDate <= new Date() && parsedDate >= new Date("1900-01-01")) {
-      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      // Use the same local date formatting method
+      const year = parsedDate.getFullYear();
+      const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(parsedDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
       setFormData(prev => ({...prev, date_of_birth: formattedDate}));
     } else if (value === '') {
       setFormData(prev => ({...prev, date_of_birth: ''}));
     }
   };
 
-  const dateOfBirthValue = formData.date_of_birth ? new Date(formData.date_of_birth) : undefined;
+  const dateOfBirthValue = formData.date_of_birth ? new Date(formData.date_of_birth + 'T00:00:00') : undefined;
 
   return (
     <>
