@@ -3,6 +3,7 @@ import React, { Component, ReactNode } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { errorLogger } from '@/services/errorLogging';
 
 interface Props {
   children: ReactNode;
@@ -27,6 +28,16 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Enhanced error logging
+    errorLogger.logError(error, {
+      component: 'ErrorBoundary',
+      action: 'Component Crash',
+      metadata: {
+        componentStack: errorInfo.componentStack,
+      },
+    }, 'critical');
+    
     this.props.onError?.(error, errorInfo);
   }
 

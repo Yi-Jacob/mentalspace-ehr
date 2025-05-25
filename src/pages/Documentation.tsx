@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +9,8 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import NotesList from '@/components/documentation/NotesList';
 import CreateNoteModal from '@/components/documentation/CreateNoteModal';
 import PendingApprovals from '@/components/documentation/PendingApprovals';
@@ -22,6 +23,9 @@ const Documentation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { handleError, handleAPIError } = useErrorHandler({
+    component: 'Documentation',
+  });
 
   const noteTypes = [
     {
@@ -139,98 +143,116 @@ const Documentation = () => {
     },
     onError: (error) => {
       console.error('Full error object:', error);
-      toast({
-        title: 'Error creating intake assessment',
-        description: 'There was an error creating the intake assessment. Please try again.',
-        variant: 'destructive',
-      });
+      handleAPIError(error, '/clinical-notes', 'POST');
     },
   });
 
   const handleCreateNote = (noteType: string) => {
-    if (noteType === 'intake') {
-      createIntakeAssessmentMutation.mutate();
-    } else {
-      setSelectedNoteType(noteType);
-      setShowCreateModal(true);
+    try {
+      if (noteType === 'intake') {
+        createIntakeAssessmentMutation.mutate();
+      } else {
+        setSelectedNoteType(noteType);
+        setShowCreateModal(true);
+      }
+    } catch (error) {
+      handleError(error as Error, 'handleCreateNote');
     }
   };
 
   return (
-    <div className="flex-1 space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Clinical Documentation</h1>
-          <p className="text-gray-600">Create and manage clinical notes, assessments, and documentation</p>
-        </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all-notes">All Notes</TabsTrigger>
-          <TabsTrigger value="create">Create New</TabsTrigger>
-          <TabsTrigger value="approvals">Pending Approvals</TabsTrigger>
-          <TabsTrigger value="compliance">Compliance</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all-notes" className="space-y-6">
-          <NotesList />
-        </TabsContent>
-
-        <TabsContent value="create" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {noteTypes.map((noteType) => {
-              const IconComponent = noteType.icon;
-              return (
-                <Card key={noteType.type} className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg ${noteType.color} text-white`}>
-                        <IconComponent className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{noteType.title}</CardTitle>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="mb-4">{noteType.description}</CardDescription>
-                    <Button 
-                      onClick={() => handleCreateNote(noteType.type)}
-                      className="w-full"
-                      disabled={noteType.type === 'intake' && createIntakeAssessmentMutation.isPending}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {noteType.type === 'intake' && createIntakeAssessmentMutation.isPending 
-                        ? 'Creating...' 
-                        : `Create ${noteType.title}`
-                      }
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+    <EnhancedErrorBoundary 
+      componentName="Documentation"
+      showErrorDetails={process.env.NODE_ENV === 'development'}
+    >
+      <div className="flex-1 space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Clinical Documentation</h1>
+            <p className="text-gray-600">Create and manage clinical notes, assessments, and documentation</p>
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="approvals" className="space-y-6">
-          <PendingApprovals />
-        </TabsContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all-notes">All Notes</TabsTrigger>
+            <TabsTrigger value="create">Create New</TabsTrigger>
+            <TabsTrigger value="approvals">Pending Approvals</TabsTrigger>
+            <TabsTrigger value="compliance">Compliance</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="compliance" className="space-y-6">
-          <ComplianceTracker />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="all-notes" className="space-y-6">
+            <NotesList />
+          </TabsContent>
 
-      <CreateNoteModal 
-        isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          setSelectedNoteType(null);
-        }}
-        noteType={selectedNoteType}
-      />
-    </div>
+          <TabsContent value="create" className="space-y-6">
+            <EnhancedErrorBoundary 
+              componentName="CreateNoteGrid"
+              fallback={
+                <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+                  <p className="text-sm text-red-600">Failed to load note creation options</p>
+                </div>
+              }
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {noteTypes.map((noteType) => {
+                  const IconComponent = noteType.icon;
+                  return (
+                    <Card key={noteType.type} className="hover:shadow-lg transition-shadow cursor-pointer">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${noteType.color} text-white`}>
+                            <IconComponent className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{noteType.title}</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription className="mb-4">{noteType.description}</CardDescription>
+                        <Button 
+                          onClick={() => handleCreateNote(noteType.type)}
+                          className="w-full"
+                          disabled={noteType.type === 'intake' && createIntakeAssessmentMutation.isPending}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          {noteType.type === 'intake' && createIntakeAssessmentMutation.isPending 
+                            ? 'Creating...' 
+                            : `Create ${noteType.title}`
+                          }
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </EnhancedErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="approvals" className="space-y-6">
+            <EnhancedErrorBoundary componentName="PendingApprovals">
+              <PendingApprovals />
+            </EnhancedErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="compliance" className="space-y-6">
+            <EnhancedErrorBoundary componentName="ComplianceTracker">
+              <ComplianceTracker />
+            </EnhancedErrorBoundary>
+          </TabsContent>
+        </Tabs>
+
+        <CreateNoteModal 
+          isOpen={showCreateModal}
+          onClose={() => {
+            setShowCreateModal(false);
+            setSelectedNoteType(null);
+          }}
+          noteType={selectedNoteType}
+        />
+      </div>
+    </EnhancedErrorBoundary>
   );
 };
 
