@@ -201,23 +201,59 @@ const IntakeAssessmentForm = () => {
     }
   }, [note]);
 
-  // Auto-save mutation
+  // Updated save mutation with proper finalization handling
   const saveNoteMutation = useMutation({
-    mutationFn: async (data: Partial<IntakeFormData>) => {
+    mutationFn: async ({ data, isDraft }: { data: Partial<IntakeFormData>; isDraft: boolean }) => {
       if (!noteId) throw new Error('No note ID');
+      
+      const finalData = { ...formData, ...data };
+      const status = isDraft ? 'draft' : finalData.isFinalized ? 'signed' : 'pending_signature';
+      
+      console.log('Saving note with status:', status, 'isDraft:', isDraft, 'data:', finalData);
       
       const { error } = await supabase
         .from('clinical_notes')
         .update({
-          content: { ...formData, ...data },
+          content: finalData,
+          status: status,
           updated_at: new Date().toISOString(),
+          ...(finalData.isFinalized && {
+            signed_by: user?.id,
+            signed_at: new Date().toISOString(),
+          }),
         })
         .eq('id', noteId);
       
       if (error) throw error;
+      return { isDraft, isFinalized: finalData.isFinalized };
     },
-    onSuccess: () => {
+    onSuccess: ({ isDraft, isFinalized }) => {
       queryClient.invalidateQueries({ queryKey: ['clinical-note', noteId] });
+      
+      if (isDraft) {
+        toast({
+          title: 'Draft Saved',
+          description: 'Your intake assessment has been saved as a draft. A confirmation email will be sent.',
+        });
+      } else if (isFinalized) {
+        toast({
+          title: 'Assessment Completed',
+          description: 'Your intake assessment has been finalized and signed. A confirmation email will be sent.',
+        });
+      }
+      
+      // Redirect to documentation page
+      setTimeout(() => {
+        navigate('/documentation');
+      }, 2000);
+    },
+    onError: (error) => {
+      console.error('Error saving note:', error);
+      toast({
+        title: 'Error saving assessment',
+        description: 'There was an error saving the intake assessment. Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -234,6 +270,11 @@ const IntakeAssessmentForm = () => {
 
   const updateFormData = (updates: Partial<IntakeFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleSave = async (isDraft: boolean) => {
+    console.log('handleSave called with isDraft:', isDraft, 'formData:', formData);
+    await saveNoteMutation.mutateAsync({ data: formData, isDraft });
   };
 
   const handleNext = () => {
@@ -351,44 +392,36 @@ const IntakeAssessmentForm = () => {
                   formData={formData}
                   updateFormData={updateFormData}
                   clientData={note.clients}
+                  onSave={currentSection === SECTIONS.length - 1 ? handleSave : undefined}
+                  isLoading={saveNoteMutation.isPending}
                 />
                 
-                {/* Navigation */}
-                <div className="flex justify-between mt-8 pt-6 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handlePrevious}
-                    disabled={currentSection === 0}
-                  >
-                    Previous
-                  </Button>
-                  
-                  <div className="flex space-x-2">
+                {/* Navigation - only show for sections other than Finalize */}
+                {currentSection < SECTIONS.length - 1 && (
+                  <div className="flex justify-between mt-8 pt-6 border-t">
                     <Button
                       variant="outline"
-                      onClick={() => saveNoteMutation.mutate(formData)}
-                      disabled={saveNoteMutation.isPending}
+                      onClick={handlePrevious}
+                      disabled={currentSection === 0}
                     >
-                      {saveNoteMutation.isPending ? 'Saving...' : 'Save Draft'}
+                      Previous
                     </Button>
                     
-                    {currentSection < SECTIONS.length - 1 ? (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => saveNoteMutation.mutate({ data: formData, isDraft: true })}
+                        disabled={saveNoteMutation.isPending}
+                      >
+                        {saveNoteMutation.isPending ? 'Saving...' : 'Save Draft'}
+                      </Button>
+                      
                       <Button onClick={handleNext}>
                         Next
                       </Button>
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          // Handle finalization in the FinalizeSection component
-                        }}
-                        disabled={!formData.isFinalized}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Complete Assessment
-                      </Button>
-                    )}
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -12,7 +12,7 @@ interface FinalizeSectionProps {
   formData: IntakeFormData;
   updateFormData: (updates: Partial<IntakeFormData>) => void;
   clientData: any;
-  onSave: (isDraft: boolean) => void;
+  onSave: (isDraft: boolean) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -50,6 +50,25 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
 
   const handleReviewChange = (checked: boolean) => {
     setReviewCompleted(checked);
+  };
+
+  const handleSaveAsDraft = async () => {
+    await onSave(true);
+  };
+
+  const handleFinalizeAndSign = async () => {
+    if (!isReadyToSign) return;
+    
+    // Update form data with signature information
+    const signatureData = {
+      isFinalized: true,
+      signedBy: user?.email || 'Current User',
+      signedAt: new Date().toISOString(),
+      signature: `${user?.email || 'Current User'} - ${new Date().toLocaleString()}`,
+    };
+    
+    updateFormData(signatureData);
+    await onSave(false);
   };
 
   return (
@@ -132,14 +151,14 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
           <div className="flex space-x-4 pt-4">
             <Button 
               variant="outline" 
-              onClick={() => onSave(true)}
+              onClick={handleSaveAsDraft}
               disabled={isLoading}
               className="flex-1"
             >
               {isLoading ? 'Saving...' : 'Save as Draft'}
             </Button>
             <Button 
-              onClick={() => onSave(false)}
+              onClick={handleFinalizeAndSign}
               disabled={!isReadyToSign || isLoading}
               className="flex-1"
             >
