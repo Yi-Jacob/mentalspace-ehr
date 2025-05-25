@@ -1,3 +1,4 @@
+
 interface AnalyticsEvent {
   id: string;
   name: string;
@@ -232,6 +233,37 @@ class AnalyticsService {
         interactions: this.session.interactions,
       },
     };
+  }
+
+  // Get event count by category
+  getEventCount(category: AnalyticsEvent['category']): number {
+    return this.events.filter(e => e.category === category).length;
+  }
+
+  // Get feature usage statistics
+  getFeatureUsageStats(): Record<string, number> {
+    const featureEvents = this.events.filter(e => e.category === 'feature_usage');
+    const stats: Record<string, number> = {};
+    
+    featureEvents.forEach(event => {
+      const feature = event.properties?.feature || event.name;
+      stats[feature] = (stats[feature] || 0) + 1;
+    });
+    
+    return stats;
+  }
+
+  // Get user action statistics
+  getUserActionStats(): Record<string, number> {
+    const actionEvents = this.events.filter(e => e.category === 'user_action');
+    const stats: Record<string, number> = {};
+    
+    actionEvents.forEach(event => {
+      const action = event.properties?.action || event.name;
+      stats[action] = (stats[action] || 0) + 1;
+    });
+    
+    return stats;
   }
 
   // Get events by category

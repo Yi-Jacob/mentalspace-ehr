@@ -29,7 +29,7 @@ const MonitoringDashboard = () => {
       // Get analytics summary - use available methods
       const analyticsMetrics = {
         pageViews: { total: analytics.getEventCount('page_view') },
-        activeUsers: analytics.getEventCount('user_session'),
+        activeUsers: analytics.getEventCount('user_action'),
         featureUsage: analytics.getFeatureUsageStats(),
         userActions: analytics.getUserActionStats(),
       };
@@ -40,13 +40,6 @@ const MonitoringDashboard = () => {
       setIsRefreshing(false);
     }
   };
-
-  useEffect(() => {
-    refreshData();
-    // Refresh every 30 seconds
-    const interval = setInterval(refreshData, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
@@ -76,6 +69,13 @@ const MonitoringDashboard = () => {
         return <Clock className="h-4 w-4" />;
     }
   };
+
+  useEffect(() => {
+    refreshData();
+    // Refresh every 30 seconds
+    const interval = setInterval(refreshData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
@@ -274,35 +274,6 @@ const MonitoringDashboard = () => {
       </Tabs>
     </div>
   );
-
-  function getStatusBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
-    switch (status) {
-      case 'critical':
-        return 'destructive';
-      case 'high':
-        return 'destructive';
-      case 'medium':
-        return 'outline';
-      case 'low':
-        return 'secondary';
-      default:
-        return 'default';
-    }
-  }
-
-  function getStatusIcon(status: string) {
-    switch (status) {
-      case 'critical':
-      case 'high':
-        return <XCircle className="h-4 w-4" />;
-      case 'medium':
-        return <AlertTriangle className="h-4 w-4" />;
-      case 'low':
-        return <CheckCircle className="h-4 w-4" />;
-      default:
-        return <Clock className="h-4 w-4" />;
-    }
-  }
 };
 
 export default MonitoringDashboard;
