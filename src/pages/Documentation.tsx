@@ -77,17 +77,41 @@ const Documentation = () => {
 
   const createIntakeAssessmentMutation = useMutation({
     mutationFn: async () => {
-      // Get the user's ID from the users table
-      const { data: userData, error: userError } = await supabase
+      console.log('Creating intake assessment for user:', user?.id);
+      
+      // First, try to get the user's ID from the users table
+      let { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id')
+        .select('id, first_name, last_name')
         .eq('auth_user_id', user?.id)
         .single();
 
-      if (userError) {
+      // If user doesn't exist, create the profile
+      if (userError && userError.code === 'PGRST116') {
+        console.log('User profile not found, creating one...');
+        const { data: newUserData, error: createUserError } = await supabase
+          .from('users')
+          .insert([{
+            auth_user_id: user?.id,
+            email: user?.email || '',
+            first_name: user?.user_metadata?.first_name || 'User',
+            last_name: user?.user_metadata?.last_name || '',
+          }])
+          .select()
+          .single();
+
+        if (createUserError) {
+          console.error('Error creating user profile:', createUserError);
+          throw new Error('Could not create user profile');
+        }
+        
+        userData = newUserData;
+      } else if (userError) {
         console.error('Error fetching user:', userError);
         throw new Error('Could not find user profile');
       }
+
+      console.log('User data found/created:', userData);
 
       const { data, error } = await supabase
         .from('clinical_notes')
@@ -101,19 +125,25 @@ const Documentation = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating clinical note:', error);
+        throw error;
+      }
+      
+      console.log('Created clinical note:', data);
       return data;
     },
     onSuccess: (data) => {
+      console.log('Intake assessment created successfully, navigating to:', `/documentation/note/${data.id}/edit`);
       navigate(`/documentation/note/${data.id}/edit`);
     },
     onError: (error) => {
+      console.error('Full error object:', error);
       toast({
         title: 'Error creating intake assessment',
         description: 'There was an error creating the intake assessment. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error creating intake assessment:', error);
     },
   });
 
