@@ -52,10 +52,12 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
         });
       }
       
-      // Redirect to documentation page
-      setTimeout(() => {
-        navigate('/documentation');
-      }, 2000);
+      // Navigate back to documentation page
+      if (!isDraft || isFinalized) {
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      }
     },
     onError: (error) => {
       console.error('Error saving note:', error);

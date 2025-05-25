@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { useParams } from 'react-router-dom';
 import { IntakeFormData } from '../types/IntakeFormData';
 
 interface ClientOverviewSectionProps {
@@ -22,6 +23,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { noteId } = useParams();
 
   // Fetch all active clients for selection
   const { data: clients } = useQuery({
@@ -40,15 +42,19 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   // Mutation to update the note with selected client
   const updateNoteMutation = useMutation({
     mutationFn: async (clientId: string) => {
-      const noteId = window.location.pathname.split('/').pop()?.replace('/edit', '');
       if (!noteId) throw new Error('No note ID found');
+      
+      console.log('Updating note with ID:', noteId, 'and client ID:', clientId);
       
       const { error } = await supabase
         .from('clinical_notes')
         .update({ client_id: clientId })
         .eq('id', noteId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating note with client:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -60,12 +66,12 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
       window.location.reload();
     },
     onError: (error) => {
+      console.error('Error assigning client:', error);
       toast({
         title: 'Error assigning client',
         description: 'There was an error assigning the client. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error updating note with client:', error);
     },
   });
 

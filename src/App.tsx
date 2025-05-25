@@ -28,6 +28,11 @@ const App = () => (
                 <Index />
               </ProtectedRoute>
             } />
+            <Route path="/documentation" element={
+              <ProtectedRoute>
+                <Index />
+              </ProtectedRoute>
+            } />
             <Route path="/client/:clientId" element={
               <ProtectedRoute>
                 <ClientDetailView />
