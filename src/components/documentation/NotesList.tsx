@@ -29,11 +29,14 @@ interface ClinicalNote {
   };
 }
 
+type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
+type NoteType = 'all' | 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
+
 const NotesList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<NoteStatus>('all');
+  const [typeFilter, setTypeFilter] = useState<NoteType>('all');
 
   const { data: notes, isLoading } = useQuery({
     queryKey: ['clinical-notes', searchTerm, statusFilter, typeFilter],
@@ -85,6 +88,14 @@ const NotesList = () => {
     ).join(' ');
   };
 
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value as NoteStatus);
+  };
+
+  const handleTypeChange = (value: string) => {
+    setTypeFilter(value as NoteType);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -119,7 +130,7 @@ const NotesList = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={handleStatusChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
@@ -136,7 +147,7 @@ const NotesList = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Note Type</label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter} onValueChange={handleTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
