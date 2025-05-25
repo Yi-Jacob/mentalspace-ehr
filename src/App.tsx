@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ClientDetailView from "./components/ClientDetailView";
+import IntakeAssessmentForm from "./components/documentation/intake/IntakeAssessmentForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,11 @@ const App = () => (
             <Route path="/client/:clientId" element={
               <ProtectedRoute>
                 <ClientDetailView />
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/note/:noteId/edit" element={
+              <ProtectedRoute>
+                <IntakeAssessmentForm />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

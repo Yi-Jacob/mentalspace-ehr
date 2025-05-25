@@ -43,9 +43,24 @@ const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) =>
 
   const createNoteMutation = useMutation({
     mutationFn: async (noteData: any) => {
+      // First, get the user's ID from the users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user?.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user:', userError);
+        throw new Error('Could not find user profile');
+      }
+
       const { data, error } = await supabase
         .from('clinical_notes')
-        .insert([noteData])
+        .insert([{
+          ...noteData,
+          provider_id: userData.id
+        }])
         .select()
         .single();
       if (error) throw error;
@@ -86,7 +101,6 @@ const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) =>
       title,
       client_id: selectedClientId,
       note_type: noteType,
-      provider_id: user?.id,
       content: { description },
       status: 'draft',
     };

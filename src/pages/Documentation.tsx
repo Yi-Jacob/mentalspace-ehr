@@ -5,6 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, FileText, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import NotesList from '@/components/documentation/NotesList';
 import CreateNoteModal from '@/components/documentation/CreateNoteModal';
 import PendingApprovals from '@/components/documentation/PendingApprovals';
@@ -14,6 +19,9 @@ const Documentation = () => {
   const [activeTab, setActiveTab] = useState('all-notes');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedNoteType, setSelectedNoteType] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   const noteTypes = [
     {
@@ -67,9 +75,55 @@ const Documentation = () => {
     }
   ];
 
+  const createIntakeAssessmentMutation = useMutation({
+    mutationFn: async () => {
+      // Get the user's ID from the users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user?.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user:', userError);
+        throw new Error('Could not find user profile');
+      }
+
+      const { data, error } = await supabase
+        .from('clinical_notes')
+        .insert([{
+          title: 'New Intake Assessment',
+          note_type: 'intake',
+          provider_id: userData.id,
+          content: {},
+          status: 'draft',
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      navigate(`/documentation/note/${data.id}/edit`);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error creating intake assessment',
+        description: 'There was an error creating the intake assessment. Please try again.',
+        variant: 'destructive',
+      });
+      console.error('Error creating intake assessment:', error);
+    },
+  });
+
   const handleCreateNote = (noteType: string) => {
-    setSelectedNoteType(noteType);
-    setShowCreateModal(true);
+    if (noteType === 'intake') {
+      createIntakeAssessmentMutation.mutate();
+    } else {
+      setSelectedNoteType(noteType);
+      setShowCreateModal(true);
+    }
   };
 
   return (
@@ -114,9 +168,13 @@ const Documentation = () => {
                     <Button 
                       onClick={() => handleCreateNote(noteType.type)}
                       className="w-full"
+                      disabled={noteType.type === 'intake' && createIntakeAssessmentMutation.isPending}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Create {noteType.title}
+                      {noteType.type === 'intake' && createIntakeAssessmentMutation.isPending 
+                        ? 'Creating...' 
+                        : `Create ${noteType.title}`
+                      }
                     </Button>
                   </CardContent>
                 </Card>
