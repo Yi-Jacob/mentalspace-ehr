@@ -18,6 +18,10 @@ const IntakeAssessmentForm = () => {
   const [formData, setFormData] = useState<IntakeFormData>({
     clientId: '',
     intakeDate: new Date().toISOString().split('T')[0],
+    primaryPhone: '',
+    primaryEmail: '',
+    primaryInsurance: '',
+    cptCode: '90791',
     primaryProblem: '',
     additionalConcerns: [],
     symptomOnset: '',

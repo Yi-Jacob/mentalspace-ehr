@@ -4,6 +4,12 @@ export interface IntakeFormData {
   clientId: string;
   intakeDate: string;
   
+  // Client Contact & Insurance Info
+  primaryPhone: string;
+  primaryEmail: string;
+  primaryInsurance: string;
+  cptCode: string;
+  
   // Presenting Problem
   primaryProblem: string;
   additionalConcerns: string[];

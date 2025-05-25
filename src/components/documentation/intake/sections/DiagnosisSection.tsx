@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -27,9 +28,12 @@ interface DiagnosisSectionProps {
 const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
   formData,
   updateFormData,
+  clientData,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showPrimarySuggestions, setShowPrimarySuggestions] = useState(false);
+  const [showSecondarySuggestions, setShowSecondarySuggestions] = useState(false);
+  const [secondarySearchTerm, setSecondarySearchTerm] = useState('');
 
   const filteredDiagnoses = MOCK_DIAGNOSES.filter(
     (diagnosis) =>
@@ -37,10 +41,16 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
       diagnosis.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const filteredSecondaryDiagnoses = MOCK_DIAGNOSES.filter(
+    (diagnosis) =>
+      diagnosis.code.toLowerCase().includes(secondarySearchTerm.toLowerCase()) ||
+      diagnosis.description.toLowerCase().includes(secondarySearchTerm.toLowerCase())
+  );
+
   const handlePrimaryDiagnosisSelect = (diagnosis: string) => {
     updateFormData({ primaryDiagnosis: diagnosis });
     setSearchTerm('');
-    setShowSuggestions(false);
+    setShowPrimarySuggestions(false);
   };
 
   const addSecondaryDiagnosis = (diagnosis: string) => {
@@ -49,14 +59,19 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
         secondaryDiagnoses: [...formData.secondaryDiagnoses, diagnosis]
       });
     }
-    setSearchTerm('');
-    setShowSuggestions(false);
+    setSecondarySearchTerm('');
+    setShowSecondarySuggestions(false);
   };
 
   const removeSecondaryDiagnosis = (diagnosis: string) => {
     updateFormData({
       secondaryDiagnoses: formData.secondaryDiagnoses.filter(d => d !== diagnosis)
     });
+  };
+
+  const showAddSecondaryForm = () => {
+    setSecondarySearchTerm('');
+    setShowSecondarySuggestions(true);
   };
 
   return (
@@ -69,6 +84,38 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
           secondary diagnoses as needed.
         </p>
       </div>
+
+      {/* Prior Diagnoses from Client Record */}
+      {clientData?.prior_diagnoses && clientData.prior_diagnoses.length > 0 && (
+        <div className="bg-yellow-50 p-4 rounded-lg">
+          <h4 className="font-medium text-yellow-800 mb-2">Prior Diagnoses on Record</h4>
+          <div className="flex flex-wrap gap-2">
+            {clientData.prior_diagnoses.map((diagnosis: string, index: number) => (
+              <Badge key={index} variant="outline" className="text-sm p-2 bg-yellow-100">
+                {diagnosis}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (!formData.primaryDiagnosis) {
+                      handlePrimaryDiagnosisSelect(diagnosis);
+                    } else {
+                      addSecondaryDiagnosis(diagnosis);
+                    }
+                  }}
+                  className="ml-2 h-4 w-4 p-0"
+                  title="Use this diagnosis"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </Badge>
+            ))}
+          </div>
+          <p className="text-yellow-700 text-sm mt-2">
+            Click the + button to use any of these prior diagnoses.
+          </p>
+        </div>
+      )}
 
       <div>
         <Label htmlFor="primaryDiagnosis">Primary Diagnosis</Label>
@@ -95,14 +142,14 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setShowSuggestions(e.target.value.length > 0);
+                  setShowPrimarySuggestions(e.target.value.length > 0);
                 }}
-                onFocus={() => setShowSuggestions(searchTerm.length > 0)}
+                onFocus={() => setShowPrimarySuggestions(searchTerm.length > 0)}
                 className="pl-10"
               />
             </div>
             
-            {showSuggestions && (
+            {showPrimarySuggestions && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                 {filteredDiagnoses.map((diagnosis) => (
                   <button
@@ -128,19 +175,14 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
       <div>
         <div className="flex items-center justify-between mb-3">
           <Label>Secondary Diagnoses</Label>
-          {!showSuggestions && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSearchTerm('');
-                setShowSuggestions(true);
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Diagnosis
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={showAddSecondaryForm}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Secondary Diagnosis
+          </Button>
         </div>
 
         {formData.secondaryDiagnoses.length > 0 && (
@@ -161,22 +203,22 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
           </div>
         )}
 
-        {showSuggestions && !formData.primaryDiagnosis && (
-          <div className="relative">
+        {showSecondarySuggestions && (
+          <div className="relative mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search ICD-10/DSM-5 diagnoses..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                placeholder="Search ICD-10/DSM-5 diagnoses for secondary diagnosis..."
+                value={secondarySearchTerm}
+                onChange={(e) => setSecondarySearchTerm(e.target.value)}
+                onBlur={() => setTimeout(() => setShowSecondarySuggestions(false), 200)}
                 className="pl-10"
                 autoFocus
               />
             </div>
             
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {filteredDiagnoses.map((diagnosis) => (
+              {filteredSecondaryDiagnoses.map((diagnosis) => (
                 <button
                   key={diagnosis.code}
                   onClick={() => addSecondaryDiagnosis(`${diagnosis.code} - ${diagnosis.description}`)}
@@ -186,9 +228,9 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
                   <div className="text-gray-600 text-sm">{diagnosis.description}</div>
                 </button>
               ))}
-              {filteredDiagnoses.length === 0 && (
+              {filteredSecondaryDiagnoses.length === 0 && (
                 <div className="px-4 py-3 text-gray-500 text-sm">
-                  No diagnoses found matching "{searchTerm}"
+                  No diagnoses found matching "{secondarySearchTerm}"
                 </div>
               )}
             </div>

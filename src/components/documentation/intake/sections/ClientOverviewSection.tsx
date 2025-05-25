@@ -10,6 +10,20 @@ import { format } from 'date-fns';
 import { useParams } from 'react-router-dom';
 import { IntakeFormData } from '../types/IntakeFormData';
 
+// Mental Health CPT Codes
+const MENTAL_HEALTH_CPT_CODES = [
+  { code: '90791', description: 'Psychiatric diagnostic evaluation' },
+  { code: '90792', description: 'Psychiatric diagnostic evaluation with medical services' },
+  { code: '90834', description: 'Psychotherapy, 45 minutes' },
+  { code: '90837', description: 'Psychotherapy, 60 minutes' },
+  { code: '90847', description: 'Family psychotherapy with patient present' },
+  { code: '90853', description: 'Group psychotherapy' },
+  { code: '90901', description: 'Biofeedback training' },
+  { code: '96116', description: 'Neurobehavioral status exam' },
+  { code: '96118', description: 'Neuropsychological testing' },
+  { code: '96125', description: 'Standardized cognitive performance testing' },
+];
+
 interface ClientOverviewSectionProps {
   formData: IntakeFormData;
   updateFormData: (updates: Partial<IntakeFormData>) => void;
@@ -37,6 +51,35 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch client contact info and insurance when client is selected
+  const { data: clientDetails } = useQuery({
+    queryKey: ['client-details', clientData?.id],
+    queryFn: async () => {
+      if (!clientData?.id) return null;
+      
+      console.log('Fetching client details for:', clientData.id);
+      
+      // Get phone numbers
+      const { data: phoneNumbers } = await supabase
+        .from('client_phone_numbers')
+        .select('*')
+        .eq('client_id', clientData.id);
+      
+      // Get insurance info
+      const { data: insurance } = await supabase
+        .from('client_insurance')
+        .select('*')
+        .eq('client_id', clientData.id)
+        .eq('is_active', true);
+      
+      return {
+        phoneNumbers: phoneNumbers || [],
+        insurance: insurance || []
+      };
+    },
+    enabled: !!clientData?.id,
   });
 
   // Mutation to update the note with selected client
@@ -80,6 +123,24 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
     updateNoteMutation.mutate(clientId);
   };
 
+  // Auto-populate fields when client details are loaded
+  React.useEffect(() => {
+    if (clientDetails && clientData) {
+      const primaryPhone = clientDetails.phoneNumbers.find(p => p.phone_type === 'Primary')?.phone_number || 
+                          clientDetails.phoneNumbers[0]?.phone_number || '';
+      
+      const primaryInsurance = clientDetails.insurance.find(i => i.insurance_type === 'Primary')?.insurance_company ||
+                              clientDetails.insurance[0]?.insurance_company || '';
+      
+      updateFormData({
+        primaryPhone,
+        primaryEmail: clientData.email || '',
+        primaryInsurance,
+        cptCode: formData.cptCode || '90791' // Default to intake assessment code
+      });
+    }
+  }, [clientDetails, clientData]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -112,29 +173,85 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Client Name</Label>
-              <Input
-                value={`${clientData?.first_name || ''} ${clientData?.last_name || ''}`}
-                disabled
-                className="bg-gray-50"
-              />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Client Name</Label>
+                <Input
+                  value={`${clientData?.first_name || ''} ${clientData?.last_name || ''}`}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+              <div>
+                <Label>Date of Birth</Label>
+                <Input
+                  value={clientData?.date_of_birth ? format(new Date(clientData.date_of_birth), 'MMM d, yyyy') : 'Not specified'}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
             </div>
-            <div>
-              <Label>Date of Birth</Label>
-              <Input
-                value={clientData?.date_of_birth ? format(new Date(clientData.date_of_birth), 'MMM d, yyyy') : 'Not specified'}
-                disabled
-                className="bg-gray-50"
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="intakeDate">Intake Date *</Label>
+                <Input
+                  id="intakeDate"
+                  type="date"
+                  value={formData.intakeDate}
+                  onChange={(e) => updateFormData({ intakeDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="cptCode">CPT Code *</Label>
+                <Select 
+                  value={formData.cptCode || '90791'} 
+                  onValueChange={(value) => updateFormData({ cptCode: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select CPT Code" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MENTAL_HEALTH_CPT_CODES.map((cpt) => (
+                      <SelectItem key={cpt.code} value={cpt.code}>
+                        {cpt.code} - {cpt.description}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="primaryPhone">Primary Phone</Label>
+                <Input
+                  id="primaryPhone"
+                  value={formData.primaryPhone || ''}
+                  onChange={(e) => updateFormData({ primaryPhone: e.target.value })}
+                  placeholder="Phone number"
+                />
+              </div>
+              <div>
+                <Label htmlFor="primaryEmail">Email Address</Label>
+                <Input
+                  id="primaryEmail"
+                  type="email"
+                  value={formData.primaryEmail || ''}
+                  onChange={(e) => updateFormData({ primaryEmail: e.target.value })}
+                  placeholder="Email address"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label>Intake Date *</Label>
+              <Label htmlFor="primaryInsurance">Primary Insurance</Label>
               <Input
-                type="date"
-                value={formData.intakeDate}
-                onChange={(e) => updateFormData({ intakeDate: e.target.value })}
+                id="primaryInsurance"
+                value={formData.primaryInsurance || ''}
+                onChange={(e) => updateFormData({ primaryInsurance: e.target.value })}
+                placeholder="Insurance company name"
               />
             </div>
           </div>
