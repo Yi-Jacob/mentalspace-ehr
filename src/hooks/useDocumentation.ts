@@ -26,9 +26,9 @@ export const useDocumentation = () => {
   });
 
   const createIntakeAssessmentMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (clientId: string) => {
       return await executeWithRetry(async () => {
-        console.log('Creating intake assessment for user:', user?.id);
+        console.log('Creating intake assessment for user:', user?.id, 'and client:', clientId);
         
         // First, try to get the user's ID from the users table
         let { data: userData, error: userError } = await supabase
@@ -70,6 +70,7 @@ export const useDocumentation = () => {
             title: 'New Intake Assessment',
             note_type: 'intake',
             provider_id: userData.id,
+            client_id: clientId,
             content: {},
             status: 'draft',
           }])
@@ -97,12 +98,9 @@ export const useDocumentation = () => {
 
   const handleCreateNote = (noteType: string) => {
     try {
-      if (noteType === 'intake') {
-        createIntakeAssessmentMutation.mutate();
-      } else {
-        setSelectedNoteType(noteType);
-        setShowCreateModal(true);
-      }
+      // Always show the modal to select a client, regardless of note type
+      setSelectedNoteType(noteType);
+      setShowCreateModal(true);
     } catch (error) {
       console.error('Error in handleCreateNote:', error);
     }

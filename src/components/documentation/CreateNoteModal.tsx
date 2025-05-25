@@ -16,9 +16,10 @@ interface CreateNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   noteType: string | null;
+  createIntakeAssessmentMutation?: any;
 }
 
-const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) => {
+const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMutation }: CreateNoteModalProps) => {
   const [title, setTitle] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [description, setDescription] = useState('');
@@ -88,7 +89,24 @@ const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) =>
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !selectedClientId || !noteType) {
+    if (!selectedClientId || !noteType) {
+      toast({
+        title: 'Missing information',
+        description: 'Please select a client.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Handle intake assessment differently
+    if (noteType === 'intake' && createIntakeAssessmentMutation) {
+      createIntakeAssessmentMutation.mutate(selectedClientId);
+      onClose();
+      return;
+    }
+
+    // Handle other note types
+    if (!title) {
       toast({
         title: 'Missing information',
         description: 'Please fill in all required fields.',
@@ -126,6 +144,20 @@ const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) =>
     }
   }, [isOpen]);
 
+  // Set default title for intake assessments
+  React.useEffect(() => {
+    if (noteType === 'intake') {
+      setTitle('New Intake Assessment');
+    } else {
+      setTitle('');
+    }
+  }, [noteType]);
+
+  const isIntakeAssessment = noteType === 'intake';
+  const isLoading = isIntakeAssessment 
+    ? createIntakeAssessmentMutation?.isPending 
+    : createNoteMutation.isPending;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -152,27 +184,31 @@ const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) =>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={`Enter ${noteType ? formatNoteType(noteType).toLowerCase() : 'note'} title`}
-              required
-            />
-          </div>
+          {!isIntakeAssessment && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={`Enter ${noteType ? formatNoteType(noteType).toLowerCase() : 'note'} title`}
+                  required
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Initial Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter a brief description or initial notes..."
-              rows={3}
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Initial Description</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Enter a brief description or initial notes..."
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
@@ -180,9 +216,9 @@ const CreateNoteModal = ({ isOpen, onClose, noteType }: CreateNoteModalProps) =>
             </Button>
             <Button 
               type="submit" 
-              disabled={createNoteMutation.isPending}
+              disabled={isLoading}
             >
-              {createNoteMutation.isPending ? 'Creating...' : 'Create Note'}
+              {isLoading ? 'Creating...' : 'Create Note'}
             </Button>
           </div>
         </form>

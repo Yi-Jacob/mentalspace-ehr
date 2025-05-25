@@ -40,6 +40,7 @@ const Documentation = () => {
           isOpen={showCreateModal}
           onClose={handleCloseModal}
           noteType={selectedNoteType}
+          createIntakeAssessmentMutation={createIntakeAssessmentMutation}
         />
       </div>
     </EnhancedErrorBoundary>
