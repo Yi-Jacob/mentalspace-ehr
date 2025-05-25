@@ -68,6 +68,8 @@ const Index = () => {
   useEffect(() => {
     if (location.pathname === '/documentation') {
       setActiveModule('documentation');
+    } else if (location.pathname === '/clients') {
+      setActiveModule('clients');
     } else if (location.pathname === '/') {
       setActiveModule('dashboard');
     }

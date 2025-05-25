@@ -33,7 +33,7 @@ export const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client, 
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/clients')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Clients

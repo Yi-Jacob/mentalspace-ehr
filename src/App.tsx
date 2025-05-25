@@ -31,6 +31,11 @@ const App = () => (
                 <Index />
               </ProtectedRoute>
             } />
+            <Route path="/clients" element={
+              <ProtectedRoute>
+                <Index />
+              </ProtectedRoute>
+            } />
             <Route path="/documentation" element={
               <ProtectedRoute>
                 <Index />
