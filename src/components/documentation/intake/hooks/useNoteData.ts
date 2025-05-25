@@ -38,7 +38,7 @@ export const useNoteData = (noteId: string | undefined) => {
           // Don't throw error for client fetch failure, just proceed without client data
         }
 
-        let clientWithRelatedData = clientData;
+        let enhancedClientData = null;
 
         if (clientData) {
           // Fetch phone numbers
@@ -62,17 +62,17 @@ export const useNoteData = (noteId: string | undefined) => {
             .eq('status', 'active')
             .order('diagnosed_date', { ascending: false });
 
-          clientWithRelatedData = {
+          enhancedClientData = {
             ...clientData,
-            client_phone_numbers: phoneData || [],
-            client_insurance: insuranceData || [],
+            phone_numbers: phoneData || [],
+            insurance_info: insuranceData || [],
             prior_diagnoses: diagnosesData?.map(d => `${d.diagnosis_code} - ${d.diagnosis_description}`) || []
           };
         }
         
         return {
           ...noteData,
-          clients: clientWithRelatedData
+          clients: enhancedClientData
         };
       }
       

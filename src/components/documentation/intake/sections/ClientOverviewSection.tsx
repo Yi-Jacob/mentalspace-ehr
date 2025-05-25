@@ -37,12 +37,12 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   });
 
   // Get primary phone number
-  const primaryPhone = clientData?.client_phone_numbers?.find(
+  const primaryPhone = clientData?.phone_numbers?.find(
     (phone: any) => phone.phone_type === 'Mobile' || phone.phone_type === 'Home' || phone.phone_type === 'Work' || phone.phone_type === 'Other'
   )?.phone_number || '';
 
   // Get primary insurance
-  const primaryInsurance = clientData?.client_insurance?.find(
+  const primaryInsurance = clientData?.insurance_info?.find(
     (insurance: any) => insurance.is_active
   )?.insurance_company || '';
 
