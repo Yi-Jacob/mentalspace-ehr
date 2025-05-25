@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ClientFormData, PhoneNumber, EmergencyContact, PrimaryCareProvider } from '@/types/client';
+import { format } from 'date-fns';
 
 interface ClientInfoTabProps {
   client: ClientFormData;
@@ -17,17 +17,47 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
   emergencyContacts,
   primaryCareProvider
 }) => {
+  const formatDateOfBirth = (dateOfBirth: string | null) => {
+    if (!dateOfBirth) return '';
+    
+    // Parse the database date as YYYY-MM-DD and create a local date
+    const parts = dateOfBirth.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1; // months are 0-indexed
+      const day = parseInt(parts[2]);
+      const date = new Date(year, month, day);
+      
+      console.log('ClientInfoTab - Original date string:', dateOfBirth);
+      console.log('ClientInfoTab - Parsed date object:', date);
+      console.log('ClientInfoTab - Formatted date:', format(date, 'M/d/yyyy'));
+      
+      return format(date, 'M/d/yyyy');
+    }
+    return dateOfBirth;
+  };
+
   const formatAge = (dateOfBirth: string | null) => {
     if (!dateOfBirth) return '';
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
     
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return `${age - 1} years`;
+    // Parse the database date as YYYY-MM-DD and create a local date
+    const parts = dateOfBirth.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1; // months are 0-indexed
+      const day = parseInt(parts[2]);
+      const birthDate = new Date(year, month, day);
+      
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        return `${age - 1} years`;
+      }
+      return `${age} years`;
     }
-    return `${age} years`;
+    return '';
   };
 
   return (
@@ -59,7 +89,7 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
               {client.date_of_birth && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                  <div>{new Date(client.date_of_birth).toLocaleDateString()} ({formatAge(client.date_of_birth)})</div>
+                  <div>{formatDateOfBirth(client.date_of_birth)} ({formatAge(client.date_of_birth)})</div>
                 </div>
               )}
             </div>
