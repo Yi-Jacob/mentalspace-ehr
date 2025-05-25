@@ -30,7 +30,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   const calculateCompletion = () => {
     const fields = [
       formData.intakeDate,
-      formData.primaryPresentingProblem,
+      formData.primaryProblem,
       formData.detailedDescription,
       formData.medicalConditions,
       formData.relationshipStatus,
