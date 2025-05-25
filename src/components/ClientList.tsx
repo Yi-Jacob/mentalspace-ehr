@@ -7,6 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Phone, Mail, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/ui/pagination-controls';
+import { OptimizedImage } from '@/components/ui/optimized-image';
+import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import AddClientModal from './AddClientModal';
 
 interface Client {
@@ -24,41 +28,44 @@ interface Client {
 }
 
 const ClientList = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const fetchClients = async () => {
-    try {
+  // Optimized query with specific field selection
+  const { data: clients = [], isLoading, error, refetch } = useOptimizedQuery(
+    ['clients', 'active'],
+    async () => {
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          preferred_name,
+          date_of_birth,
+          email,
+          city,
+          state,
+          assigned_clinician_id,
+          is_active,
+          created_at
+        `)
         .eq('is_active', true)
         .order('last_name', { ascending: true });
 
       if (error) {
         console.error('Error fetching clients:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load clients",
-          variant: "destructive",
-        });
-      } else {
-        setClients(data || []);
+        throw error;
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-    } finally {
-      setLoading(false);
+      return data || [];
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
     }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  );
 
   const filteredClients = clients.filter(client => {
     const fullName = `${client.first_name} ${client.last_name}`.toLowerCase();
@@ -69,6 +76,21 @@ const ClientList = () => {
            preferredName.includes(search) ||
            client.email?.toLowerCase().includes(search);
   });
+
+  // Pagination for filtered clients
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    nextPage,
+    previousPage,
+    canGoNext,
+    canGoPrevious,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination(filteredClients, { pageSize: 12 });
 
   const formatAge = (dateOfBirth: string | null) => {
     if (!dateOfBirth) return '';
@@ -84,7 +106,7 @@ const ClientList = () => {
   };
 
   const handleClientAdded = () => {
-    fetchClients();
+    refetch();
     setShowAddModal(false);
     toast({
       title: "Success",
@@ -96,7 +118,19 @@ const ClientList = () => {
     navigate(`/client/${clientId}`);
   };
 
-  if (loading) {
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Error loading clients</h2>
+          <p className="text-gray-600 mb-4">Failed to load client data. Please try again.</p>
+          <Button onClick={() => refetch()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
@@ -121,7 +155,7 @@ const ClientList = () => {
         </Button>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
@@ -131,13 +165,20 @@ const ClientList = () => {
             className="pl-10"
           />
         </div>
-        <Badge variant="secondary" className="text-sm">
-          {filteredClients.length} clients
-        </Badge>
+        <div className="flex items-center space-x-4">
+          <Badge variant="secondary" className="text-sm">
+            {totalItems} total clients
+          </Badge>
+          {totalPages > 1 && (
+            <Badge variant="outline" className="text-sm">
+              Showing {startIndex + 1}-{endIndex} of {totalItems}
+            </Badge>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredClients.map((client) => (
+        {paginatedData.map((client) => (
           <Card 
             key={client.id} 
             className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-blue-500"
@@ -199,7 +240,18 @@ const ClientList = () => {
         ))}
       </div>
 
-      {filteredClients.length === 0 && !loading && (
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
+        </div>
+      )}
+
+      {filteredClients.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
             <svg fill="currentColor" viewBox="0 0 24 24">

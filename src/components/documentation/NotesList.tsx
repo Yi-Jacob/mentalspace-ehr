@@ -6,8 +6,10 @@ import EmptyNotesState from './notes/EmptyNotesState';
 import LoadingSpinner from './notes/LoadingSpinner';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import { useNotesQuery } from './notes/hooks/useNotesQuery';
 import { filterNotesBySearch } from './notes/utils/noteFilters';
+import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 
 type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
@@ -17,6 +19,8 @@ const NotesList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<NoteStatus>('all');
   const [typeFilter, setTypeFilter] = useState<NoteType>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   const { 
     handleError, 
@@ -34,9 +38,19 @@ const NotesList = () => {
     }
   });
 
-  const { data: notes, isLoading, error, refetch } = useNotesQuery(statusFilter, typeFilter);
-  
-  const filteredNotes = filterNotesBySearch(notes, searchTerm);
+  const { 
+    data: notesData, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useNotesQuery(statusFilter, typeFilter, {
+    page: currentPage,
+    pageSize,
+    selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id']
+  });
+
+  // Apply search filter to current page data
+  const filteredNotes = filterNotesBySearch(notesData?.data || [], searchTerm);
 
   const handleRetry = async () => {
     try {
@@ -47,6 +61,10 @@ const NotesList = () => {
     } catch (retryError) {
       handleAPIError(retryError, '/clinical-notes', 'GET');
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -76,6 +94,16 @@ const NotesList = () => {
           loadingComponent={<LoadingSpinner />}
         >
           <div className="space-y-4">
+            {/* Show pagination info */}
+            {notesData && notesData.totalCount > 0 && (
+              <div className="flex justify-between items-center text-sm text-gray-600">
+                <span>
+                  Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, notesData.totalCount)} of {notesData.totalCount} notes
+                </span>
+                <span>Page {currentPage} of {notesData.totalPages}</span>
+              </div>
+            )}
+
             {filteredNotes?.map((note) => (
               <EnhancedErrorBoundary 
                 key={note.id}
@@ -91,6 +119,17 @@ const NotesList = () => {
             ))}
             
             {filteredNotes?.length === 0 && <EmptyNotesState />}
+
+            {/* Pagination */}
+            {notesData && notesData.totalPages > 1 && (
+              <div className="flex justify-center mt-6">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={notesData.totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
           </div>
         </LoadingWithError>
       </div>
