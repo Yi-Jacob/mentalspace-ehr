@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { IntakeFormData } from './types/IntakeFormData';
 import { SECTIONS } from './constants/sections';
 import { useNoteData } from './hooks/useNoteData';
 import { useSaveNote } from './hooks/useSaveNote';
-import IntakeHeader from './components/IntakeHeader';
+import IntakeNavigationHeader from './components/IntakeNavigationHeader';
 import SectionNavigation from './components/SectionNavigation';
 import NavigationButtons from './components/NavigationButtons';
 
@@ -135,15 +134,15 @@ const IntakeAssessmentForm = () => {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <IntakeHeader
-          clientName={clientName}
-          progress={progress}
-          currentSection={currentSection}
-          totalSections={SECTIONS.length}
-        />
-
+    <div className="min-h-screen bg-gray-50">
+      <IntakeNavigationHeader
+        clientName={clientName}
+        progress={progress}
+        currentSection={currentSection}
+        totalSections={SECTIONS.length}
+      />
+      
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <SectionNavigation
             sections={SECTIONS}
