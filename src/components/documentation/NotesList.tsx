@@ -8,7 +8,7 @@ import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';
 import { useNotesQuery } from './notes/hooks/useNotesQuery';
 import { filterNotesBySearch } from './notes/utils/noteFilters';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 
 type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
 type NoteType = 'all' | 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
@@ -18,9 +18,20 @@ const NotesList = () => {
   const [statusFilter, setStatusFilter] = useState<NoteStatus>('all');
   const [typeFilter, setTypeFilter] = useState<NoteType>('all');
 
-  const { handleError, handleAPIError, retry, retryCount, canRetry } = useErrorHandler({
+  const { 
+    handleError, 
+    handleAPIError, 
+    executeWithRetry, 
+    retryCount, 
+    canRetry,
+    isRetrying 
+  } = useEnhancedErrorHandler({
     component: 'NotesList',
-    maxRetries: 3,
+    retryConfig: { 
+      maxRetries: 3,
+      baseDelay: 1000,
+      timeoutMs: 15000 
+    }
   });
 
   const { data: notes, isLoading, error, refetch } = useNotesQuery(statusFilter, typeFilter);
@@ -29,7 +40,10 @@ const NotesList = () => {
 
   const handleRetry = async () => {
     try {
-      await retry(() => refetch());
+      await executeWithRetry(
+        () => refetch(),
+        'Load Clinical Notes'
+      );
     } catch (retryError) {
       handleAPIError(retryError, '/clinical-notes', 'GET');
     }
@@ -52,7 +66,7 @@ const NotesList = () => {
         />
 
         <LoadingWithError
-          isLoading={isLoading}
+          isLoading={isLoading || isRetrying}
           error={error}
           onRetry={canRetry ? handleRetry : undefined}
           retryCount={retryCount}

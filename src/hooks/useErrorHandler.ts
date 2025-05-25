@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { errorLogger } from '@/services/errorLogging';
+import { useEnhancedErrorHandler } from './useEnhancedErrorHandler';
 
 interface UseErrorHandlerOptions {
   maxRetries?: number;
@@ -14,6 +15,16 @@ export const useErrorHandler = (options: UseErrorHandlerOptions = {}) => {
   const { toast } = useToast();
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
+
+  // Use the enhanced error handler for better functionality
+  const {
+    handleError: enhancedHandleError,
+    handleAPIError: enhancedHandleAPIError,
+    executeWithRetry,
+  } = useEnhancedErrorHandler({
+    component,
+    retryConfig: { maxRetries, baseDelay: retryDelay },
+  });
 
   const handleError = useCallback((error: any, context?: string, showToast = true) => {
     const errorMessage = error?.message || 'An unexpected error occurred';
@@ -91,5 +102,9 @@ export const useErrorHandler = (options: UseErrorHandlerOptions = {}) => {
     retryCount,
     isRetrying,
     canRetry: retryCount < maxRetries,
+    // Enhanced methods
+    executeWithRetry,
+    enhancedHandleError,
+    enhancedHandleAPIError,
   };
 };
