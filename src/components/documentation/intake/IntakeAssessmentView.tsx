@@ -33,7 +33,7 @@ const IntakeAssessmentView = () => {
     );
   }
 
-  const formData = note.content as IntakeFormData;
+  const formData = note.content as unknown as IntakeFormData;
   const clientName = note.clients 
     ? `${note.clients.first_name} ${note.clients.last_name}`
     : 'Unknown Client';
