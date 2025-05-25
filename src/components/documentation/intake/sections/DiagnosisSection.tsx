@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, Plus, Search } from 'lucide-react';
-import { IntakeFormData } from '../IntakeAssessmentForm';
+import { IntakeFormData } from '../types/IntakeFormData';
 
 // Mock ICD-10/DSM-5 codes for demonstration
 const MOCK_DIAGNOSES = [

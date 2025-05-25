@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, X } from 'lucide-react';
-import { IntakeFormData } from '../IntakeAssessmentForm';
+import { IntakeFormData } from '../types/IntakeFormData';
 
 interface MedicalHistorySectionProps {
   formData: IntakeFormData;

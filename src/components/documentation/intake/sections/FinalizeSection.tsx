@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, CheckCircle, FileSignature } from 'lucide-react';
-import { IntakeFormData } from '../IntakeAssessmentForm';
+import { IntakeFormData } from '../types/IntakeFormData';
 import { useAuth } from '@/hooks/useAuth';
 
 interface FinalizeSectionProps {

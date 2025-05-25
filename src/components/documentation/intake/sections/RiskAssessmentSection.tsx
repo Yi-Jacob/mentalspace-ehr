@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
-import { IntakeFormData } from '../IntakeAssessmentForm';
+import { IntakeFormData } from '../types/IntakeFormData';
 
 const RISK_FACTORS = [
   'Current Suicidal Ideation',
