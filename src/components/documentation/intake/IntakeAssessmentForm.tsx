@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -140,21 +139,52 @@ const IntakeAssessmentForm = () => {
     signedAt: '',
   });
 
-  // Load existing note data
+  // Load existing note data - Modified to handle notes without clients
   const { data: note, isLoading } = useQuery({
     queryKey: ['clinical-note', noteId],
     queryFn: async () => {
       if (!noteId) return null;
-      const { data, error } = await supabase
+      
+      console.log('Fetching note with ID:', noteId);
+      
+      // First fetch the note without joining clients
+      const { data: noteData, error: noteError } = await supabase
         .from('clinical_notes')
-        .select(`
-          *,
-          clients!inner(first_name, last_name, date_of_birth, id)
-        `)
+        .select('*')
         .eq('id', noteId)
         .single();
-      if (error) throw error;
-      return data;
+      
+      if (noteError) {
+        console.error('Error fetching note:', noteError);
+        throw noteError;
+      }
+      
+      console.log('Note data:', noteData);
+      
+      // If note has a client_id, fetch the client data separately
+      if (noteData.client_id) {
+        const { data: clientData, error: clientError } = await supabase
+          .from('clients')
+          .select('id, first_name, last_name, date_of_birth')
+          .eq('id', noteData.client_id)
+          .single();
+        
+        if (clientError) {
+          console.error('Error fetching client:', clientError);
+          // Don't throw error for client fetch failure, just proceed without client data
+        }
+        
+        return {
+          ...noteData,
+          clients: clientData
+        };
+      }
+      
+      // Return note without client data if no client is linked
+      return {
+        ...noteData,
+        clients: null
+      };
     },
     enabled: !!noteId,
   });
@@ -254,7 +284,11 @@ const IntakeAssessmentForm = () => {
               <div>
                 <CardTitle className="text-2xl">Intake Assessment</CardTitle>
                 <p className="text-gray-600 mt-1">
-                  Client: {note.clients?.first_name} {note.clients?.last_name}
+                  {note.clients ? (
+                    `Client: ${note.clients.first_name} ${note.clients.last_name}`
+                  ) : (
+                    'No client assigned - Please select a client in the overview section'
+                  )}
                 </p>
               </div>
               <div className="text-right">
