@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ClientDetailView from "./components/ClientDetailView";
@@ -12,6 +13,7 @@ import IntakeAssessmentForm from "./components/documentation/intake/IntakeAssess
 import IntakeAssessmentView from "./components/documentation/intake/IntakeAssessmentView";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import Sidebar from "./components/Sidebar";
 
 const queryClient = new QueryClient();
 
@@ -41,12 +43,26 @@ const App = () => (
             } />
             <Route path="/documentation/note/:noteId/edit" element={
               <ProtectedRoute>
-                <IntakeAssessmentForm />
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <IntakeAssessmentForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
               </ProtectedRoute>
             } />
             <Route path="/documentation/note/:noteId" element={
               <ProtectedRoute>
-                <IntakeAssessmentView />
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <IntakeAssessmentView />
+                    </div>
+                  </div>
+                </SidebarProvider>
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

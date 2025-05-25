@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Menu } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface IntakeNavigationHeaderProps {
@@ -19,27 +20,12 @@ const IntakeNavigationHeader: React.FC<IntakeNavigationHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const toggleSidebar = () => {
-    // This will work if we're inside a SidebarProvider context
-    const sidebarTrigger = document.querySelector('[data-sidebar="trigger"]') as HTMLButtonElement;
-    if (sidebarTrigger) {
-      sidebarTrigger.click();
-    }
-  };
-
   return (
     <div className="bg-white border-b shadow-sm">
       <div className="max-w-6xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="p-2"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            <SidebarTrigger />
             
             <Button
               variant="ghost"
