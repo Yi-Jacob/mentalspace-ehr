@@ -79,8 +79,19 @@ export const useNotesQuery = (
       const { data, error, count } = await query;
       if (error) throw error;
       
-      // Ensure we return the correct type - data should be ClinicalNote[] or null
-      const clinicalNotes: ClinicalNote[] = data || [];
+      // Ensure we have valid data before type assertion
+      if (!data || !Array.isArray(data)) {
+        return {
+          data: [],
+          totalCount: count || 0,
+          currentPage: page,
+          pageSize,
+          totalPages: Math.ceil((count || 0) / pageSize)
+        };
+      }
+      
+      // Type assertion is now safe since we've verified data is an array
+      const clinicalNotes = data as ClinicalNote[];
       
       return {
         data: clinicalNotes,

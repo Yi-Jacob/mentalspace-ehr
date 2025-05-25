@@ -47,6 +47,22 @@ class ErrorLoggingService {
     // Log to console for development
     console.error('Error logged:', errorLog);
 
+    // Send to production logger
+    import('./productionLogging').then(({ productionLogger }) => {
+      productionLogger.error(error.message, {
+        component: context.component,
+        action: context.action,
+        severity,
+        stack: error.stack,
+        ...context.metadata,
+      });
+    });
+
+    // Send to analytics
+    import('./analytics').then(({ analytics }) => {
+      analytics.trackError('application_error', error.message, error.stack);
+    });
+
     // In production, you would send this to your logging service
     // this.sendToLoggingService(errorLog);
   }
