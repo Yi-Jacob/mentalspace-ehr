@@ -6,6 +6,7 @@ import { ClientInfoTab } from './tabs/ClientInfoTab';
 import { ClientBillingTab } from './tabs/ClientBillingTab';
 import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
+import { ClientNotesTab } from './tabs/ClientNotesTab';
 import { PlaceholderTab } from './tabs/PlaceholderTab';
 
 interface ClientDetailTabsProps {
@@ -27,7 +28,7 @@ export const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
     <Tabs defaultValue="info" className="space-y-6">
       <TabsList className="grid w-full grid-cols-10">
         <TabsTrigger value="info">Info</TabsTrigger>
-        <TabsTrigger value="todo">To-Do</TabsTrigger>
+        <TabsTrigger value="notes">Notes</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
         <TabsTrigger value="documents">Documents</TabsTrigger>
         <TabsTrigger value="billing">Billing</TabsTrigger>
@@ -47,11 +48,8 @@ export const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
         />
       </TabsContent>
 
-      <TabsContent value="todo">
-        <PlaceholderTab
-          title="To-Do Items"
-          message="No to-do items found. This feature will be implemented in a future update."
-        />
+      <TabsContent value="notes">
+        <ClientNotesTab client={client} />
       </TabsContent>
 
       <TabsContent value="schedule">

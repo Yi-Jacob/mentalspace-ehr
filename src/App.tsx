@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ClientDetailView from "./components/ClientDetailView";
 import IntakeAssessmentForm from "./components/documentation/intake/IntakeAssessmentForm";
+import IntakeAssessmentView from "./components/documentation/intake/IntakeAssessmentView";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,11 @@ const App = () => (
             <Route path="/documentation/note/:noteId/edit" element={
               <ProtectedRoute>
                 <IntakeAssessmentForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/note/:noteId" element={
+              <ProtectedRoute>
+                <IntakeAssessmentView />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
