@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,14 +9,19 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { cleanupAuthState, validateEmail, validatePassword } from '@/utils/authUtils';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -27,29 +33,90 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const validateForm = (isSignUp: boolean = false) => {
+    const newErrors: Record<string, string> = {};
+
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (isSignUp) {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.errors[0];
+      }
+    }
+
+    if (isSignUp) {
+      if (!firstName.trim()) {
+        newErrors.firstName = 'First name is required';
+      }
+
+      if (!lastName.trim()) {
+        newErrors.lastName = 'Last name is required';
+      }
+
+      if (!confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (password !== confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
-    setError('');
+    setErrors({});
 
     try {
+      // Clean up existing state
+      cleanupAuthState();
+      
+      // Attempt global sign out
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+        console.log('Global signout failed, continuing with login');
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
-        setError(error.message);
+        if (error.message.includes('Invalid login credentials')) {
+          setErrors({ general: 'Invalid email or password. Please check your credentials and try again.' });
+        } else if (error.message.includes('Email not confirmed')) {
+          setErrors({ general: 'Please check your email and click the confirmation link before signing in.' });
+        } else {
+          setErrors({ general: error.message });
+        }
       } else if (data.user) {
         toast({
-          title: "Success!",
+          title: "Welcome back!",
           description: "You have been logged in successfully.",
         });
-        // Force immediate navigation
-        navigate('/');
+        // Force immediate navigation with page refresh
+        window.location.href = '/';
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      console.error('Login error:', err);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -57,47 +124,73 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm(true)) {
+      return;
+    }
+
     setLoading(true);
-    setError('');
+    setErrors({});
 
     try {
+      // Clean up existing state
+      cleanupAuthState();
+
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           data: {
-            first_name: firstName,
-            last_name: lastName,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
           }
         }
       });
 
       if (error) {
-        setError(error.message);
-      } else if (data.user) {
-        // Create user in public.users table
-        const { error: userError } = await supabase
-          .from('users')
-          .insert({
-            auth_user_id: data.user.id,
-            email,
-            first_name: firstName,
-            last_name: lastName,
-          });
-
-        if (userError) {
-          console.error('Error creating user profile:', userError);
+        if (error.message.includes('User already registered')) {
+          setErrors({ general: 'An account with this email already exists. Please sign in instead.' });
+        } else if (error.message.includes('Password should be')) {
+          setErrors({ password: error.message });
+        } else {
+          setErrors({ general: error.message });
         }
-
-        toast({
-          title: "Success!",
-          description: "Account created successfully. You can now log in.",
-        });
+      } else if (data.user) {
+        // Check if email confirmation is required
+        if (!data.session) {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+          });
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Your account has been created successfully. You can now sign in.",
+          });
+        }
+        
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFirstName('');
+        setLastName('');
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      console.error('Signup error:', err);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearFieldError = (field: string) => {
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
@@ -111,13 +204,13 @@ const Auth = () => {
             className="h-16 w-auto mx-auto mb-4"
           />
           <CardTitle className="text-2xl font-bold text-blue-900">MentalSpace EHR</CardTitle>
-          <CardDescription>Access your practice management system</CardDescription>
+          <CardDescription>Secure access to your practice management system</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Create Account</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
@@ -125,28 +218,56 @@ const Auth = () => {
                 <div>
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder="Email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      clearFieldError('email');
+                      clearFieldError('general');
+                    }}
+                    className={errors.email ? 'border-red-500' : ''}
                     required
+                    autoComplete="email"
                   />
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
-                <div>
+                <div className="relative">
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      clearFieldError('password');
+                      clearFieldError('general');
+                    }}
+                    className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
                     required
+                    autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                  {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                 </div>
-                {error && (
+                {errors.general && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>{errors.general}</AlertDescription>
                   </Alert>
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
                 </Button>
               </form>
             </TabsContent>
@@ -154,46 +275,125 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                  />
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        clearFieldError('firstName');
+                        clearFieldError('general');
+                      }}
+                      className={errors.firstName ? 'border-red-500' : ''}
+                      required
+                      autoComplete="given-name"
+                    />
+                    {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        clearFieldError('lastName');
+                        clearFieldError('general');
+                      }}
+                      className={errors.lastName ? 'border-red-500' : ''}
+                      required
+                      autoComplete="family-name"
+                    />
+                    {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
+                  </div>
                 </div>
                 <div>
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder="Email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      clearFieldError('email');
+                      clearFieldError('general');
+                    }}
+                    className={errors.email ? 'border-red-500' : ''}
                     required
+                    autoComplete="email"
                   />
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
-                <div>
+                <div className="relative">
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      clearFieldError('password');
+                      clearFieldError('general');
+                    }}
+                    className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
                     required
+                    autoComplete="new-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                  {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                 </div>
-                {error && (
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      clearFieldError('confirmPassword');
+                      clearFieldError('general');
+                    }}
+                    className={errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'}
+                    required
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                  {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                </div>
+                
+                <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded">
+                  <p className="font-medium mb-1">Password requirements:</p>
+                  <ul className="space-y-1">
+                    <li>• At least 8 characters long</li>
+                    <li>• Contains uppercase and lowercase letters</li>
+                    <li>• Contains at least one number</li>
+                  </ul>
+                </div>
+                
+                {errors.general && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>{errors.general}</AlertDescription>
                   </Alert>
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
                 </Button>
               </form>
             </TabsContent>
