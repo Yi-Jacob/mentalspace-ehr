@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import ModulePage from '@/components/ModulePage';
@@ -60,7 +61,17 @@ const moduleConfigs = {
 };
 
 const Index = () => {
+  const location = useLocation();
   const [activeModule, setActiveModule] = useState('dashboard');
+
+  // Update active module based on current route
+  useEffect(() => {
+    if (location.pathname === '/documentation') {
+      setActiveModule('documentation');
+    } else if (location.pathname === '/') {
+      setActiveModule('dashboard');
+    }
+  }, [location.pathname]);
 
   const renderContent = () => {
     if (activeModule === 'dashboard') {
