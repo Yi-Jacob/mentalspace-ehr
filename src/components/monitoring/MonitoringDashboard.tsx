@@ -18,16 +18,21 @@ const MonitoringDashboard = () => {
   const refreshData = async () => {
     setIsRefreshing(true);
     try {
-      // Get performance metrics
-      const metrics = performanceMonitor.getMetrics();
+      // Get performance metrics - use correct method name
+      const metrics = performanceMonitor.getPerformanceSummary();
       setPerformanceMetrics(metrics);
 
       // Get recent error logs
       const logs = errorLogger.getRecentLogs();
       setErrorLogs(logs);
 
-      // Get analytics summary
-      const analyticsMetrics = analytics.getMetrics();
+      // Get analytics summary - use available methods
+      const analyticsMetrics = {
+        pageViews: { total: analytics.getEventCount('page_view') },
+        activeUsers: analytics.getEventCount('user_session'),
+        featureUsage: analytics.getFeatureUsageStats(),
+        userActions: analytics.getUserActionStats(),
+      };
       setAnalyticsData(analyticsMetrics);
     } catch (error) {
       console.error('Failed to refresh monitoring data:', error);
@@ -117,7 +122,8 @@ const MonitoringDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {performanceMetrics?.errorRate || '0'}%
+                  {performanceMetrics?.slowOperations ? 
+                    Math.round((performanceMetrics.slowOperations / performanceMetrics.totalMetrics) * 100) : 0}%
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Current error rate
@@ -131,7 +137,7 @@ const MonitoringDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {performanceMetrics?.avgResponseTime || 0}ms
+                  {performanceMetrics?.averageAPICall || 0}ms
                 </div>
                 <p className="text-xs text-muted-foreground">
                   API response time
@@ -169,15 +175,15 @@ const MonitoringDashboard = () => {
                   <div className="grid gap-4 md:grid-cols-3">
                     <div>
                       <h4 className="font-medium">Page Load Time</h4>
-                      <p className="text-2xl font-bold">{performanceMetrics.avgPageLoad || 0}ms</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.averagePageLoad || 0}ms</p>
                     </div>
                     <div>
                       <h4 className="font-medium">API Calls</h4>
-                      <p className="text-2xl font-bold">{performanceMetrics.totalApiCalls || 0}</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.totalMetrics || 0}</p>
                     </div>
                     <div>
-                      <h4 className="font-medium">Memory Usage</h4>
-                      <p className="text-2xl font-bold">{performanceMetrics.memoryUsage || 0}MB</p>
+                      <h4 className="font-medium">Slow Operations</h4>
+                      <p className="text-2xl font-bold">{performanceMetrics.slowOperations || 0}</p>
                     </div>
                   </div>
                 </div>
@@ -268,6 +274,35 @@ const MonitoringDashboard = () => {
       </Tabs>
     </div>
   );
+
+  function getStatusBadgeVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+    switch (status) {
+      case 'critical':
+        return 'destructive';
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'outline';
+      case 'low':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  }
+
+  function getStatusIcon(status: string) {
+    switch (status) {
+      case 'critical':
+      case 'high':
+        return <XCircle className="h-4 w-4" />;
+      case 'medium':
+        return <AlertTriangle className="h-4 w-4" />;
+      case 'low':
+        return <CheckCircle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  }
 };
 
 export default MonitoringDashboard;

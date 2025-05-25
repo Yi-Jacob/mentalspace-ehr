@@ -91,16 +91,18 @@ export const useNotesQuery = (
       }
       
       // Validate and filter data to ensure it matches ClinicalNote interface
+      // Fix: Use proper type assertion and null checking
       const validNotes: ClinicalNote[] = data
-        .filter((item): item is any => 
-          item && 
+        .filter((item: any): item is NonNullable<typeof item> => 
+          item !== null && 
+          item !== undefined &&
           typeof item === 'object' && 
           'id' in item && 
           'title' in item && 
           'note_type' in item && 
           'status' in item
         )
-        .map((item) => ({
+        .map((item: any): ClinicalNote => ({
           id: item.id,
           title: item.title,
           note_type: item.note_type,
