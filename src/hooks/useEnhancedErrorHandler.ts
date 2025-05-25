@@ -20,6 +20,67 @@ export const useEnhancedErrorHandler = (options: UseEnhancedErrorHandlerOptions 
 
   const finalRetryConfig = { ...DEFAULT_RETRY_CONFIG, ...retryConfig };
 
+  const getErrorSeverity = useCallback((errorType: APIErrorType): 'low' | 'medium' | 'high' | 'critical' => {
+    switch (errorType) {
+      case APIErrorType.AUTHENTICATION_ERROR:
+      case APIErrorType.AUTHORIZATION_ERROR:
+        return 'critical';
+      case APIErrorType.SERVER_ERROR:
+      case APIErrorType.DATABASE_ERROR:
+        return 'high';
+      case APIErrorType.VALIDATION_ERROR:
+      case APIErrorType.NOT_FOUND_ERROR:
+        return 'medium';
+      default:
+        return 'low';
+    }
+  }, []);
+
+  const getErrorTitle = useCallback((errorType: APIErrorType): string => {
+    switch (errorType) {
+      case APIErrorType.NETWORK_ERROR:
+        return 'Connection Error';
+      case APIErrorType.TIMEOUT_ERROR:
+        return 'Request Timeout';
+      case APIErrorType.AUTHENTICATION_ERROR:
+        return 'Authentication Error';
+      case APIErrorType.AUTHORIZATION_ERROR:
+        return 'Permission Denied';
+      case APIErrorType.VALIDATION_ERROR:
+        return 'Invalid Data';
+      case APIErrorType.NOT_FOUND_ERROR:
+        return 'Not Found';
+      case APIErrorType.RATE_LIMIT_ERROR:
+        return 'Rate Limit Exceeded';
+      case APIErrorType.SERVER_ERROR:
+        return 'Server Error';
+      case APIErrorType.DATABASE_ERROR:
+        return 'Database Error';
+      default:
+        return 'Error';
+    }
+  }, []);
+
+  const getToastConfig = useCallback((apiError: APIError) => {
+    const baseConfig = {
+      variant: 'destructive' as const,
+      title: getErrorTitle(apiError.type),
+      description: apiError.message,
+    };
+
+    // Add retry suggestion for retryable errors
+    if (apiError.retryable && retryCount < finalRetryConfig.maxRetries) {
+      baseConfig.description += ' The system will automatically retry this operation.';
+    }
+
+    return baseConfig;
+  }, [getErrorTitle, retryCount, finalRetryConfig.maxRetries]);
+
+  const showErrorToast = useCallback((apiError: APIError) => {
+    const toastConfig = getToastConfig(apiError);
+    toast(toastConfig);
+  }, [toast, getToastConfig]);
+
   const handleError = useCallback((error: any, context?: string, showToast = showToastOnError) => {
     const apiError = APIErrorClassifier.classifyError(error, context);
     
@@ -32,15 +93,15 @@ export const useEnhancedErrorHandler = (options: UseEnhancedErrorHandlerOptions 
         statusCode: apiError.statusCode,
         retryable: apiError.retryable,
       },
-    }, this.getErrorSeverity(apiError.type));
+    }, getErrorSeverity(apiError.type));
 
     // Show appropriate toast notification
     if (showToast) {
-      this.showErrorToast(apiError);
+      showErrorToast(apiError);
     }
 
     return apiError;
-  }, [component, showToastOnError, toast]);
+  }, [component, showToastOnError, getErrorSeverity, showErrorToast]);
 
   const handleAPIError = useCallback((error: any, endpoint: string, method: string) => {
     const apiError = APIErrorClassifier.classifyError(error, endpoint, method);
@@ -53,9 +114,9 @@ export const useEnhancedErrorHandler = (options: UseEnhancedErrorHandlerOptions 
       },
     });
 
-    this.showErrorToast(apiError);
+    showErrorToast(apiError);
     return apiError;
-  }, [component, retryCount, toast]);
+  }, [component, retryCount, showErrorToast]);
 
   const executeWithRetry = useCallback(async <T>(
     operation: () => Promise<T>,
@@ -79,73 +140,12 @@ export const useEnhancedErrorHandler = (options: UseEnhancedErrorHandlerOptions 
       setRetryCount(0);
       return result;
     } catch (error) {
-      const apiError = this.handleError(error, operationName, true);
+      const apiError = handleError(error, operationName, true);
       throw apiError;
     } finally {
       setIsRetrying(false);
     }
   }, [finalRetryConfig, handleError]);
-
-  const showErrorToast = useCallback((apiError: APIError) => {
-    const toastConfig = this.getToastConfig(apiError);
-    toast(toastConfig);
-  }, [toast]);
-
-  const getToastConfig = (apiError: APIError) => {
-    const baseConfig = {
-      variant: 'destructive' as const,
-      title: this.getErrorTitle(apiError.type),
-      description: apiError.message,
-    };
-
-    // Add retry suggestion for retryable errors
-    if (apiError.retryable && retryCount < finalRetryConfig.maxRetries) {
-      baseConfig.description += ' The system will automatically retry this operation.';
-    }
-
-    return baseConfig;
-  };
-
-  const getErrorTitle = (errorType: APIErrorType): string => {
-    switch (errorType) {
-      case APIErrorType.NETWORK_ERROR:
-        return 'Connection Error';
-      case APIErrorType.TIMEOUT_ERROR:
-        return 'Request Timeout';
-      case APIErrorType.AUTHENTICATION_ERROR:
-        return 'Authentication Error';
-      case APIErrorType.AUTHORIZATION_ERROR:
-        return 'Permission Denied';
-      case APIErrorType.VALIDATION_ERROR:
-        return 'Invalid Data';
-      case APIErrorType.NOT_FOUND_ERROR:
-        return 'Not Found';
-      case APIErrorType.RATE_LIMIT_ERROR:
-        return 'Rate Limit Exceeded';
-      case APIErrorType.SERVER_ERROR:
-        return 'Server Error';
-      case APIErrorType.DATABASE_ERROR:
-        return 'Database Error';
-      default:
-        return 'Error';
-    }
-  };
-
-  const getErrorSeverity = (errorType: APIErrorType): 'low' | 'medium' | 'high' | 'critical' => {
-    switch (errorType) {
-      case APIErrorType.AUTHENTICATION_ERROR:
-      case APIErrorType.AUTHORIZATION_ERROR:
-        return 'critical';
-      case APIErrorType.SERVER_ERROR:
-      case APIErrorType.DATABASE_ERROR:
-        return 'high';
-      case APIErrorType.VALIDATION_ERROR:
-      case APIErrorType.NOT_FOUND_ERROR:
-        return 'medium';
-      default:
-        return 'low';
-    }
-  };
 
   return {
     handleError,
