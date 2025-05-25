@@ -7,7 +7,6 @@ import { ClientBillingTab } from './tabs/ClientBillingTab';
 import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
 import { ClientNotesTab } from './tabs/ClientNotesTab';
-import { ClientDocumentsTab } from './tabs/ClientDocumentsTab';
 import { PlaceholderTab } from './tabs/PlaceholderTab';
 
 interface ClientDetailTabsProps {
@@ -27,11 +26,10 @@ export const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="info" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-10">
+      <TabsList className="grid w-full grid-cols-9">
         <TabsTrigger value="info">Info</TabsTrigger>
         <TabsTrigger value="notes">Notes</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger value="documents">Documents</TabsTrigger>
         <TabsTrigger value="billing">Billing</TabsTrigger>
         <TabsTrigger value="billing-settings">Billing Settings</TabsTrigger>
         <TabsTrigger value="clinicians">Clinicians</TabsTrigger>
@@ -58,10 +56,6 @@ export const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
           title="Appointment Schedule"
           message="No appointments found. This feature will be implemented in a future update."
         />
-      </TabsContent>
-
-      <TabsContent value="documents">
-        <ClientDocumentsTab client={client} />
       </TabsContent>
 
       <TabsContent value="billing">
