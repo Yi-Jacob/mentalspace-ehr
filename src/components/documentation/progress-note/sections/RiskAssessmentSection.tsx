@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -97,6 +96,17 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
     if (!riskArea) return;
     
     const currentFactors = riskArea[type] || '';
+    
+    // Check if factor already exists (case-insensitive)
+    const existingFactors = currentFactors
+      .split(',')
+      .map(f => f.trim().toLowerCase())
+      .filter(f => f.length > 0);
+    
+    if (existingFactors.includes(factor.toLowerCase())) {
+      return; // Don't add duplicate factor
+    }
+    
     const newFactors = currentFactors 
       ? `${currentFactors}, ${factor}`
       : factor;
@@ -249,19 +259,29 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
                     className="mt-1"
                   />
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {RISK_FACTOR_SUGGESTIONS.map((factor) => (
-                      <Button
-                        key={factor}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addQuickFactor(index, 'riskFactors', factor)}
-                        className="text-xs h-7"
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        {factor}
-                      </Button>
-                    ))}
+                    {RISK_FACTOR_SUGGESTIONS.map((factor) => {
+                      const currentFactors = riskArea.riskFactors || '';
+                      const existingFactors = currentFactors
+                        .split(',')
+                        .map(f => f.trim().toLowerCase())
+                        .filter(f => f.length > 0);
+                      const isAlreadyAdded = existingFactors.includes(factor.toLowerCase());
+                      
+                      return (
+                        <Button
+                          key={factor}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addQuickFactor(index, 'riskFactors', factor)}
+                          disabled={isAlreadyAdded}
+                          className={`text-xs h-7 ${isAlreadyAdded ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {factor}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -276,19 +296,29 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
                     className="mt-1"
                   />
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {PROTECTIVE_FACTOR_SUGGESTIONS.map((factor) => (
-                      <Button
-                        key={factor}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addQuickFactor(index, 'protectiveFactors', factor)}
-                        className="text-xs h-7"
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        {factor}
-                      </Button>
-                    ))}
+                    {PROTECTIVE_FACTOR_SUGGESTIONS.map((factor) => {
+                      const currentFactors = riskArea.protectiveFactors || '';
+                      const existingFactors = currentFactors
+                        .split(',')
+                        .map(f => f.trim().toLowerCase())
+                        .filter(f => f.length > 0);
+                      const isAlreadyAdded = existingFactors.includes(factor.toLowerCase());
+                      
+                      return (
+                        <Button
+                          key={factor}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addQuickFactor(index, 'protectiveFactors', factor)}
+                          disabled={isAlreadyAdded}
+                          className={`text-xs h-7 ${isAlreadyAdded ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {factor}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
 
