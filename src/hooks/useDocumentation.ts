@@ -28,7 +28,7 @@ export const useDocumentation = () => {
   const createNoteMutation = useMutation({
     mutationFn: async ({ clientId, noteType }: { clientId: string; noteType: string }) => {
       return await executeWithRetry(async () => {
-        console.log('Creating note for user:', user?.id, 'client:', clientId, 'type:', noteType);
+        console.log('Starting note creation for user:', user?.id, 'client:', clientId, 'type:', noteType);
         
         // First, try to get the user's ID from the users table
         let { data: userData, error: userError } = await supabase
@@ -72,6 +72,15 @@ export const useDocumentation = () => {
         // Ensure noteType matches the database enum values
         const validNoteType = noteType as 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
 
+        console.log('Creating clinical note with data:', {
+          title,
+          note_type: validNoteType,
+          provider_id: userData.id,
+          client_id: clientId,
+          content: {},
+          status: 'draft',
+        });
+
         const { data, error } = await supabase
           .from('clinical_notes')
           .insert({
@@ -90,65 +99,82 @@ export const useDocumentation = () => {
           throw error;
         }
 
-        // Create note completion tracking record without ON CONFLICT
-        try {
-          const { error: trackingError } = await supabase
-            .from('note_completion_tracking')
-            .insert({
-              note_id: data.id,
-              user_id: userData.id,
-              completion_percentage: 0,
-            });
-          
-          if (trackingError) {
-            console.error('Error creating note completion tracking:', trackingError);
-            // Don't throw error for tracking failure, just log it
-          }
-        } catch (trackingErr) {
-          console.error('Failed to create tracking record:', trackingErr);
-          // Continue without tracking
+        console.log('Clinical note created successfully:', data);
+
+        // Create note completion tracking record with ON CONFLICT handling (now that constraint exists)
+        console.log('Creating note completion tracking for note:', data.id, 'user:', userData.id);
+        
+        const { error: trackingError } = await supabase
+          .from('note_completion_tracking')
+          .insert({
+            note_id: data.id,
+            user_id: userData.id,
+            completion_percentage: 0,
+          })
+          .select()
+          .single();
+        
+        if (trackingError) {
+          console.error('Error creating note completion tracking:', trackingError);
+          // Don't throw error for tracking failure, just log it
+        } else {
+          console.log('Note completion tracking created successfully');
         }
         
-        console.log('Created clinical note:', data);
+        console.log('Note creation process completed successfully');
         return data;
       }, `Create ${noteType}`);
     },
     onSuccess: (data) => {
-      console.log('Note created successfully, navigating to edit view for note type:', data.note_type);
+      console.log('=== MUTATION SUCCESS ===');
+      console.log('Note created successfully, preparing navigation for note type:', data.note_type);
+      console.log('Note data:', data);
       
       // Close the modal first
       setShowCreateModal(false);
       setSelectedNoteType(null);
       
-      // Navigate based on note type
+      // Navigate based on note type with detailed logging
       if (data.note_type === 'progress_note') {
-        console.log('Navigating to progress note edit:', `/documentation/progress-note/${data.id}/edit`);
-        navigate(`/documentation/progress-note/${data.id}/edit`);
+        const route = `/documentation/progress-note/${data.id}/edit`;
+        console.log('Navigating to progress note edit route:', route);
+        navigate(route);
       } else if (data.note_type === 'treatment_plan') {
-        console.log('Navigating to treatment plan edit:', `/documentation/treatment-plan/${data.id}/edit`);
-        navigate(`/documentation/treatment-plan/${data.id}/edit`);
+        const route = `/documentation/treatment-plan/${data.id}/edit`;
+        console.log('Navigating to treatment plan edit route:', route);
+        navigate(route);
       } else {
-        console.log('Navigating to general note edit:', `/documentation/note/${data.id}/edit`);
-        navigate(`/documentation/note/${data.id}/edit`);
+        const route = `/documentation/note/${data.id}/edit`;
+        console.log('Navigating to general note edit route:', route);
+        navigate(route);
       }
+      
+      console.log('=== NAVIGATION COMPLETED ===');
     },
     onError: (error) => {
+      console.error('=== MUTATION ERROR ===');
       console.error('Full error object:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       handleAPIError(error, '/clinical-notes', 'POST');
     },
   });
 
   const handleCreateNote = (noteType: string) => {
     try {
+      console.log('=== STARTING NOTE CREATION ===');
+      console.log('Note type requested:', noteType);
       // Always show the modal to select a client, regardless of note type
       setSelectedNoteType(noteType);
       setShowCreateModal(true);
+      console.log('Modal should be open now for note type:', noteType);
     } catch (error) {
       console.error('Error in handleCreateNote:', error);
     }
   };
 
   const handleCloseModal = () => {
+    console.log('Closing modal');
     setShowCreateModal(false);
     setSelectedNoteType(null);
   };

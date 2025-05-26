@@ -40,6 +40,11 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('=== MODAL SUBMIT ===');
+    console.log('Selected client ID:', selectedClientId);
+    console.log('Note type:', noteType);
+    console.log('Create mutation available:', !!createNoteMutation);
+    
     if (!selectedClientId || !noteType) {
       toast({
         title: 'Missing information',
@@ -51,8 +56,8 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
 
     // Handle structured notes (intake, progress_note, treatment_plan) with special routing
     if ((noteType === 'intake' || noteType === 'progress_note' || noteType === 'treatment_plan') && createNoteMutation) {
+      console.log('Creating structured note type:', noteType, 'for client:', selectedClientId);
       createNoteMutation.mutate({ clientId: selectedClientId, noteType });
-      onClose();
       return;
     }
 
@@ -66,8 +71,8 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
       return;
     }
 
+    console.log('Creating unstructured note type:', noteType, 'for client:', selectedClientId);
     createNoteMutation?.mutate({ clientId: selectedClientId, noteType });
-    onClose();
   };
 
   const formatNoteType = (type: string) => {
@@ -103,6 +108,8 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
 
   const isStructuredNote = noteType === 'intake' || noteType === 'progress_note' || noteType === 'treatment_plan';
   const isLoading = createNoteMutation?.isPending;
+
+  console.log('Modal render - isOpen:', isOpen, 'noteType:', noteType, 'isLoading:', isLoading);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
