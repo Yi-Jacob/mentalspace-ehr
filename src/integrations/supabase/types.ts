@@ -692,6 +692,33 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnosis_codes: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       goal_objectives: {
         Row: {
           completed_date: string | null
