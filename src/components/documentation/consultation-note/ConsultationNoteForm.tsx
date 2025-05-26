@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -74,9 +73,10 @@ const ConsultationNoteForm = () => {
 
   useEffect(() => {
     if (noteData?.content) {
+      const contentData = noteData.content as Record<string, any>;
       setFormData(prev => ({
         ...prev,
-        ...noteData.content,
+        ...contentData,
         clientId: noteData.client_id
       }));
     }
@@ -167,7 +167,7 @@ const ConsultationNoteForm = () => {
     setIsLoading(true);
     try {
       const updateData = {
-        content: formData,
+        content: formData as any,
         status: isDraft ? 'draft' : 'signed',
         ...(isDraft ? {} : {
           signed_at: new Date().toISOString(),

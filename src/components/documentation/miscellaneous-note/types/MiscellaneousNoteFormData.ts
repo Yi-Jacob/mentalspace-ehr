@@ -42,4 +42,7 @@ export interface MiscellaneousNoteFormData {
   isFinalized: boolean;
   signedBy?: string;
   signedAt?: string;
+  
+  // Index signature for Json compatibility
+  [key: string]: any;
 }
