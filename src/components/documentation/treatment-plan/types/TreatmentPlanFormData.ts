@@ -2,33 +2,51 @@
 export interface TreatmentPlanFormData {
   clientId: string;
   
-  // Diagnosis Section
+  // Client Overview fields (matching intake form)
+  treatmentPlanDate?: string;
+  primaryPhone?: string;
+  primaryEmail?: string;
+  primaryInsurance?: string;
+  cptCode?: string;
+  
+  // Diagnosis
   primaryDiagnosis: string;
   secondaryDiagnoses: string[];
   
   // Presenting Problem
   presentingProblem: string;
+  functionalImpairments: string[];
+  strengths: string[];
   
   // Treatment Goals
   treatmentGoals: Array<{
+    id: string;
     goalText: string;
     objectives: Array<{
-      objectiveText: string;
-      estimatedCompletion: string;
-      completionDate: string;
-      strategies: string[];
+      id: string;
+      text: string;
+      targetDate: string;
+      method: string;
+      frequency: string;
     }>;
+    targetDate: string;
+    priority: 'High' | 'Medium' | 'Low';
   }>;
   
-  // Discharge Criteria/Planning
-  dischargeCriteria: string;
+  // Discharge Planning
+  dischargeCriteria: string[];
+  estimatedDuration: string;
+  aftercareRecommendations: string;
   
   // Additional Information
-  additionalInformation: string;
+  medicalConsiderations: string;
+  psychosocialFactors: string;
+  culturalConsiderations: string;
   
-  // Frequency of Treatment
-  prescribedFrequency: string;
-  medicalNecessityDeclaration: boolean;
+  // Frequency
+  sessionFrequency: string;
+  sessionDuration: string;
+  modality: string;
   
   // Finalization
   isFinalized: boolean;
