@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar, AlertTriangle } from 'lucide-react';
+import { Plus, Calendar, AlertTriangle, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAppointmentForm } from './appointment-form/hooks/useAppointmentForm';
 import { useConflictDetection } from './hooks/useConflictDetection';
@@ -25,7 +25,15 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   selectedDate,
   selectedTime
 }) => {
-  const { formData, updateFormData, handleSubmit, isSubmitting, resetForm } = useAppointmentForm({
+  const { 
+    formData, 
+    updateFormData, 
+    handleSubmit, 
+    isSubmitting, 
+    resetForm, 
+    errors, 
+    isValid 
+  } = useAppointmentForm({
     onSuccess: () => {
       onOpenChange(false);
       resetForm();
@@ -41,7 +49,7 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
     ? new Date(`${formData.date}T${formData.end_time}`).toISOString()
     : '';
 
-  const { data: conflictData } = useConflictDetection({
+  const { data: conflictData, isLoading: isCheckingConflicts } = useConflictDetection({
     providerId: formData.provider_id || '',
     clientId: formData.client_id,
     startTime: startDateTime,
@@ -53,23 +61,54 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
     resetForm();
   };
 
+  const hasConflicts = conflictData?.hasConflicts;
+  const canSubmit = !isSubmitting && !isCheckingConflicts && formData.client_id && !hasConflicts && isValid;
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30">
+      <DialogContent 
+        className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30"
+        aria-describedby="create-appointment-description"
+      >
         <DialogHeader className="pb-6">
-          <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
-            <div className="p-2 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg text-white">
-              <Plus className="h-6 w-6" />
-            </div>
-            <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-              Create New Appointment
-            </span>
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
+              <div className="p-2 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg text-white">
+                <Plus className="h-6 w-6" />
+              </div>
+              <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+                Create New Appointment
+              </span>
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="text-gray-500 hover:text-gray-700"
+              aria-label="Close modal"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div id="create-appointment-description" className="sr-only">
+          Create a new appointment by filling out the form below. All required fields must be completed.
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          {/* General Error Alert */}
+          {errors.general && (
+            <Alert className="border-red-200 bg-gradient-to-r from-red-50 to-pink-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                {errors.general}
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Conflict Warning */}
-          {conflictData?.hasConflicts && (
+          {hasConflicts && (
             <Alert className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
@@ -85,9 +124,20 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             </Alert>
           )}
 
+          {/* Loading State for Conflict Check */}
+          {isCheckingConflicts && formData.client_id && (
+            <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+                <span className="text-blue-800 text-sm">Checking for scheduling conflicts...</span>
+              </div>
+            </Alert>
+          )}
+
           <ClientSelectionSection 
             value={formData.client_id}
             onChange={(value) => updateFormData('client_id', value)}
+            error={errors.client_id}
           />
 
           <AppointmentTypeSection
@@ -106,6 +156,11 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             onDateChange={(value) => updateFormData('date', format(value, 'yyyy-MM-dd'))}
             onStartTimeChange={(value) => updateFormData('start_time', value)}
             onEndTimeChange={(value) => updateFormData('end_time', value)}
+            errors={{
+              date: errors.date,
+              start_time: errors.start_time,
+              end_time: errors.end_time
+            }}
           />
 
           <LocationSection
@@ -121,13 +176,14 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
               variant="outline"
               onClick={handleClose}
               className="hover:bg-gray-50 transition-colors"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !formData.client_id || conflictData?.hasConflicts}
-              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              disabled={!canSubmit}
+              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <Calendar className="h-4 w-4 mr-2" />
               {isSubmitting ? 'Creating...' : 'Create Appointment'}

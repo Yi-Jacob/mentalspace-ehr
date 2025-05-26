@@ -1,12 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Calendar, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import TimePickerGrid from './TimePickerGrid';
 
 interface DateTimeSectionProps {
   date: Date;
@@ -15,6 +12,11 @@ interface DateTimeSectionProps {
   onDateChange: (date: Date) => void;
   onStartTimeChange: (time: string) => void;
   onEndTimeChange: (time: string) => void;
+  errors?: {
+    date?: string;
+    start_time?: string;
+    end_time?: string;
+  };
 }
 
 const DateTimeSection: React.FC<DateTimeSectionProps> = ({
@@ -23,91 +25,94 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
   endTime,
   onDateChange,
   onStartTimeChange,
-  onEndTimeChange
+  onEndTimeChange,
+  errors
 }) => {
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-
-  const formatDisplayTime = (timeString: string) => {
-    const time = new Date(`2000-01-01T${timeString}`);
-    return format(time, 'h:mm a');
-  };
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const dateValue = format(date, 'yyyy-MM-dd');
 
   return (
-    <>
-      <div className="space-y-2">
-        <Label>Date</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {format(date, 'PPP')}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => selectedDate && onDateChange(selectedDate)}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Date */}
         <div className="space-y-2">
-          <Label>Start Time</Label>
-          <Popover open={showStartTimePicker} onOpenChange={setShowStartTimePicker}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal"
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                {formatDisplayTime(startTime)}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <TimePickerGrid
-                selectedTime={startTime}
-                onTimeSelect={(time) => {
-                  onStartTimeChange(time);
-                  setShowStartTimePicker(false);
-                }}
-              />
-            </PopoverContent>
-          </Popover>
+          <Label htmlFor="date" className="flex items-center space-x-2 text-gray-700 font-medium">
+            <Calendar className="h-4 w-4 text-green-500" />
+            <span>Date *</span>
+          </Label>
+          <Input
+            id="date"
+            type="date"
+            value={dateValue}
+            min={today}
+            onChange={(e) => {
+              const newDate = new Date(e.target.value);
+              if (!isNaN(newDate.getTime())) {
+                onDateChange(newDate);
+              }
+            }}
+            className={`bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
+              errors?.date ? 'border-red-400 focus:border-red-400' : ''
+            }`}
+            aria-describedby={errors?.date ? 'date-error' : undefined}
+          />
+          {errors?.date && (
+            <div id="date-error" className="text-sm text-red-600 flex items-center space-x-1">
+              <AlertCircle className="h-3 w-3" />
+              <span>{errors.date}</span>
+            </div>
+          )}
         </div>
 
+        {/* Start Time */}
         <div className="space-y-2">
-          <Label>End Time</Label>
-          <Popover open={showEndTimePicker} onOpenChange={setShowEndTimePicker}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal"
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                {formatDisplayTime(endTime)}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <TimePickerGrid
-                selectedTime={endTime}
-                onTimeSelect={(time) => {
-                  onEndTimeChange(time);
-                  setShowEndTimePicker(false);
-                }}
-              />
-            </PopoverContent>
-          </Popover>
+          <Label htmlFor="start_time" className="flex items-center space-x-2 text-gray-700 font-medium">
+            <Clock className="h-4 w-4 text-purple-500" />
+            <span>Start Time *</span>
+          </Label>
+          <Input
+            id="start_time"
+            type="time"
+            value={startTime}
+            onChange={(e) => onStartTimeChange(e.target.value)}
+            className={`bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
+              errors?.start_time ? 'border-red-400 focus:border-red-400' : ''
+            }`}
+            aria-describedby={errors?.start_time ? 'start-time-error' : undefined}
+          />
+          {errors?.start_time && (
+            <div id="start-time-error" className="text-sm text-red-600 flex items-center space-x-1">
+              <AlertCircle className="h-3 w-3" />
+              <span>{errors.start_time}</span>
+            </div>
+          )}
+        </div>
+
+        {/* End Time */}
+        <div className="space-y-2">
+          <Label htmlFor="end_time" className="flex items-center space-x-2 text-gray-700 font-medium">
+            <Clock className="h-4 w-4 text-orange-500" />
+            <span>End Time *</span>
+          </Label>
+          <Input
+            id="end_time"
+            type="time"
+            value={endTime}
+            onChange={(e) => onEndTimeChange(e.target.value)}
+            className={`bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
+              errors?.end_time ? 'border-red-400 focus:border-red-400' : ''
+            }`}
+            aria-describedby={errors?.end_time ? 'end-time-error' : undefined}
+          />
+          {errors?.end_time && (
+            <div id="end-time-error" className="text-sm text-red-600 flex items-center space-x-1">
+              <AlertCircle className="h-3 w-3" />
+              <span>{errors.end_time}</span>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

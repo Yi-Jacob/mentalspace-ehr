@@ -22,26 +22,57 @@ export const useAppointmentMutations = () => {
   const updateAppointment = useMutation({
     mutationFn: async (data: UpdateAppointmentData) => {
       console.log('Updating appointment:', data);
+      
+      // Validate required fields
+      if (!data.id) {
+        throw new Error('Appointment ID is required');
+      }
+
+      const updateData: any = {
+        title: data.title,
+        location: data.location,
+        room_number: data.room_number,
+        notes: data.notes,
+        updated_at: new Date().toISOString()
+      };
+
+      // Only include these fields if they're provided and valid
+      if (data.start_time) {
+        updateData.start_time = data.start_time;
+      }
+      
+      if (data.end_time) {
+        updateData.end_time = data.end_time;
+      }
+
+      if (data.status) {
+        const validStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'];
+        if (validStatuses.includes(data.status)) {
+          updateData.status = data.status;
+        } else {
+          throw new Error(`Invalid status: ${data.status}`);
+        }
+      }
+
+      if (data.appointment_type) {
+        const validTypes = ['initial_consultation', 'follow_up', 'therapy_session', 'group_therapy', 'assessment', 'medication_management', 'crisis_intervention', 'other'];
+        if (validTypes.includes(data.appointment_type)) {
+          updateData.appointment_type = data.appointment_type;
+        } else {
+          throw new Error(`Invalid appointment type: ${data.appointment_type}`);
+        }
+      }
+
       const { data: result, error } = await supabase
         .from('appointments')
-        .update({
-          title: data.title,
-          start_time: data.start_time,
-          end_time: data.end_time,
-          status: data.status as 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled',
-          location: data.location,
-          room_number: data.room_number,
-          notes: data.notes,
-          appointment_type: data.appointment_type as 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other',
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', data.id)
         .select()
         .single();
 
       if (error) {
         console.error('Update error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to update appointment');
       }
       return result;
     },
@@ -66,6 +97,11 @@ export const useAppointmentMutations = () => {
   const deleteAppointment = useMutation({
     mutationFn: async (appointmentId: string) => {
       console.log('Deleting appointment:', appointmentId);
+      
+      if (!appointmentId) {
+        throw new Error('Appointment ID is required');
+      }
+
       const { error } = await supabase
         .from('appointments')
         .delete()
@@ -73,7 +109,7 @@ export const useAppointmentMutations = () => {
 
       if (error) {
         console.error('Delete error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to delete appointment');
       }
     },
     onSuccess: () => {
@@ -97,21 +133,44 @@ export const useAppointmentMutations = () => {
   const updateAppointmentStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       console.log('Updating appointment status:', { id, status });
+      
+      if (!id || !status) {
+        throw new Error('Appointment ID and status are required');
+      }
+
+      const validStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'];
+      if (!validStatuses.includes(status)) {
+        throw new Error(`Invalid status: ${status}`);
+      }
+
+      const updateData: any = { 
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      // Add timestamp fields for specific statuses
+      if (status === 'completed') {
+        updateData.completed_at = new Date().toISOString();
+      }
+      
+      if (status === 'checked_in') {
+        updateData.checked_in_at = new Date().toISOString();
+      }
+
+      if (status === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+      }
+
       const { data, error } = await supabase
         .from('appointments')
-        .update({ 
-          status: status as 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled',
-          updated_at: new Date().toISOString(),
-          ...(status === 'completed' && { completed_at: new Date().toISOString() }),
-          ...(status === 'checked_in' && { checked_in_at: new Date().toISOString() })
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
 
       if (error) {
         console.error('Status update error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to update appointment status');
       }
       return data;
     },

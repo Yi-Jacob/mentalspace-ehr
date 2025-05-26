@@ -28,6 +28,14 @@ interface UseAppointmentFormOptions {
   selectedTime?: string | null;
 }
 
+interface FormErrors {
+  client_id?: string;
+  start_time?: string;
+  end_time?: string;
+  date?: string;
+  general?: string;
+}
+
 export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: UseAppointmentFormOptions) => {
   const [formData, setFormData] = useState<AppointmentFormData>({
     client_id: '',
@@ -47,6 +55,9 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
     appointment_alert: '',
     notes: ''
   });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isValidating, setIsValidating] = useState(false);
 
   const mutation = useAppointmentMutation(onSuccess);
 
@@ -77,26 +88,88 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
     setFormData(prev => ({ ...prev, end_time: endTime }));
   }, [formData.duration_minutes, formData.start_time]);
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.client_id.trim()) {
+      newErrors.client_id = 'Client selection is required';
+    }
+
+    if (!formData.date) {
+      newErrors.date = 'Date is required';
+    }
+
+    if (!formData.start_time) {
+      newErrors.start_time = 'Start time is required';
+    }
+
+    if (!formData.end_time) {
+      newErrors.end_time = 'End time is required';
+    }
+
+    // Validate that end time is after start time
+    if (formData.start_time && formData.end_time) {
+      const startTime = new Date(`2000-01-01T${formData.start_time}`);
+      const endTime = new Date(`2000-01-01T${formData.end_time}`);
+      
+      if (endTime <= startTime) {
+        newErrors.end_time = 'End time must be after start time';
+      }
+    }
+
+    // Validate date is not in the past
+    if (formData.date) {
+      const selectedDate = new Date(formData.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        newErrors.date = 'Cannot schedule appointments in the past';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const updateFormData = (field: keyof AppointmentFormData, value: string | number | boolean | Date) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear specific field error when user starts typing
+    if (errors[field as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsValidating(true);
     
-    const appointmentData = {
-      client_id: formData.client_id,
-      appointment_type: formData.appointment_type,
-      title: formData.title || null,
-      location: formData.location || null,
-      room_number: formData.room_number || null,
-      notes: formData.notes || null,
-      date: new Date(formData.date),
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-    };
+    try {
+      if (!validateForm()) {
+        setIsValidating(false);
+        return;
+      }
 
-    await mutation.mutateAsync(appointmentData);
+      const appointmentData = {
+        client_id: formData.client_id,
+        appointment_type: formData.appointment_type,
+        title: formData.title || null,
+        location: formData.location || null,
+        room_number: formData.room_number || null,
+        notes: formData.notes || null,
+        date: new Date(formData.date),
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+      };
+
+      await mutation.mutateAsync(appointmentData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setErrors({ general: 'Failed to create appointment. Please try again.' });
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const resetForm = () => {
@@ -118,6 +191,7 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
       appointment_alert: '',
       notes: ''
     });
+    setErrors({});
   };
 
   return {
@@ -125,7 +199,10 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
     updateFormData,
     setFormData,
     handleSubmit,
-    isSubmitting: mutation.isPending,
-    resetForm
+    isSubmitting: mutation.isPending || isValidating,
+    resetForm,
+    errors,
+    isValid: Object.keys(errors).length === 0,
+    validateForm
   };
 };
