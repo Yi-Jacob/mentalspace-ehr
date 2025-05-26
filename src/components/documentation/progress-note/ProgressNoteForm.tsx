@@ -142,6 +142,34 @@ const ProgressNoteForm = () => {
     ? `${note.clients.first_name} ${note.clients.last_name}`
     : undefined;
 
+  // Determine which props to pass based on the section
+  const getSectionProps = () => {
+    const baseProps = {
+      formData,
+      updateFormData,
+    };
+
+    // Add clientData only for sections that need it
+    if (SECTIONS[currentSection].id === 'client-overview') {
+      return {
+        ...baseProps,
+        clientData: note.clients,
+      };
+    }
+
+    // Add save props only for the finalize section
+    if (currentSection === SECTIONS.length - 1) {
+      return {
+        ...baseProps,
+        clientData: note.clients,
+        onSave: handleSave,
+        isLoading: saveNoteMutation.isPending,
+      };
+    }
+
+    return baseProps;
+  };
+
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50">
@@ -168,13 +196,7 @@ const ProgressNoteForm = () => {
                 <CardContent>
                   <ErrorBoundary>
                     <CurrentSectionComponent
-                      formData={formData}
-                      updateFormData={updateFormData}
-                      clientData={note.clients}
-                      {...(currentSection === SECTIONS.length - 1 && {
-                        onSave: handleSave,
-                        isLoading: saveNoteMutation.isPending
-                      })}
+                      {...getSectionProps()}
                     />
                   </ErrorBoundary>
                   
