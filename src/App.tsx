@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import Sidebar from '@/components/Sidebar';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
@@ -38,19 +39,23 @@ function App() {
                   path="/*"
                   element={
                     <ProtectedRoute>
-                      <div className="flex h-screen">
-                        <Sidebar />
-                        <main className="flex-1 overflow-auto">
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/documentation" element={<Documentation />} />
-                            <Route path="/scheduling" element={<Scheduling />} />
-                            <Route path="/staff" element={<StaffManagementPage />} />
-                            <Route path="/staff/add" element={<AddStaffPage />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </main>
-                      </div>
+                      <SidebarProvider>
+                        <div className="flex h-screen w-full">
+                          <Sidebar />
+                          <SidebarInset>
+                            <main className="flex-1 overflow-auto p-6">
+                              <Routes>
+                                <Route path="/" element={<Index />} />
+                                <Route path="/documentation" element={<Documentation />} />
+                                <Route path="/scheduling" element={<Scheduling />} />
+                                <Route path="/staff" element={<StaffManagementPage />} />
+                                <Route path="/staff/add" element={<AddStaffPage />} />
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </main>
+                          </SidebarInset>
+                        </div>
+                      </SidebarProvider>
                     </ProtectedRoute>
                   }
                 />
