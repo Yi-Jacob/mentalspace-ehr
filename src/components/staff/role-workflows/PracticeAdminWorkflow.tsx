@@ -1,44 +1,66 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Settings, Shield, FileText, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
+import AddStaffAction from '../AddStaffAction';
+import ManageRolesAction from '../ManageRolesAction';
+import SystemSettingsAction from '../SystemSettingsAction';
+import AuditReportsAction from '../AuditReportsAction';
+import SystemSettings from '../SystemSettings';
 
 const PracticeAdminWorkflow: React.FC = () => {
   const { canManageUsers, canAssignRoles, canViewAuditLogs } = usePermissions();
+  const [currentView, setCurrentView] = useState<'dashboard' | 'roles' | 'settings' | 'audit'>('dashboard');
 
-  const quickActions = [
-    {
-      title: 'Add New Staff',
-      description: 'Create new user accounts and assign roles',
-      icon: Users,
-      action: 'add_staff',
-      enabled: canManageUsers()
-    },
-    {
-      title: 'Manage Roles',
-      description: 'Assign and modify user roles',
-      icon: Shield,
-      action: 'manage_roles',
-      enabled: canAssignRoles()
-    },
-    {
-      title: 'System Settings',
-      description: 'Configure practice-wide settings',
-      icon: Settings,
-      action: 'system_settings',
-      enabled: true
-    },
-    {
-      title: 'Audit Reports',
-      description: 'View system audit logs and reports',
-      icon: FileText,
-      action: 'audit_reports',
-      enabled: canViewAuditLogs()
-    }
-  ];
+  if (currentView === 'settings') {
+    return (
+      <div className="space-y-4">
+        <button 
+          onClick={() => setCurrentView('dashboard')}
+          className="text-blue-600 hover:text-blue-800 text-sm"
+        >
+          ← Back to Dashboard
+        </button>
+        <SystemSettings />
+      </div>
+    );
+  }
+
+  if (currentView === 'roles') {
+    return (
+      <div className="space-y-4">
+        <button 
+          onClick={() => setCurrentView('dashboard')}
+          className="text-blue-600 hover:text-blue-800 text-sm"
+        >
+          ← Back to Dashboard
+        </button>
+        <div className="text-center py-8">
+          <p className="text-gray-600">Role management interface will be available here.</p>
+          <p className="text-gray-500 text-sm">Use the "Roles" tab in the main navigation for now.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === 'audit') {
+    return (
+      <div className="space-y-4">
+        <button 
+          onClick={() => setCurrentView('dashboard')}
+          className="text-blue-600 hover:text-blue-800 text-sm"
+        >
+          ← Back to Dashboard
+        </button>
+        <div className="text-center py-8">
+          <p className="text-gray-600">Audit reports interface will be available here.</p>
+          <p className="text-gray-500 text-sm">Use the "Audit Logs" or "Audit Trail" tabs in the main navigation for now.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -53,26 +75,10 @@ const PracticeAdminWorkflow: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {quickActions.map((action) => (
-          <Card key={action.action} className={!action.enabled ? 'opacity-50' : 'hover:shadow-md transition-shadow cursor-pointer'}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <action.icon className="h-4 w-4" />
-                <span>{action.title}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-gray-600 mb-3">{action.description}</p>
-              <Button 
-                size="sm" 
-                disabled={!action.enabled}
-                className="w-full"
-              >
-                {action.enabled ? 'Access' : 'No Permission'}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+        <AddStaffAction />
+        <ManageRolesAction onNavigate={() => setCurrentView('roles')} />
+        <SystemSettingsAction onNavigate={() => setCurrentView('settings')} />
+        <AuditReportsAction onNavigate={() => setCurrentView('audit')} />
       </div>
 
       <Card>

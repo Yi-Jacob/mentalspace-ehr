@@ -1,126 +1,64 @@
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/useAuth';
-import Auth from '@/pages/Auth';
-import Index from '@/pages/Index';
-import Documentation from '@/pages/Documentation';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import Sidebar from '@/components/Sidebar';
-import IntakeAssessmentForm from '@/components/documentation/intake/IntakeAssessmentForm';
-import ProgressNoteForm from '@/components/documentation/progress-note/ProgressNoteForm';
-import TreatmentPlanForm from '@/components/documentation/treatment-plan/TreatmentPlanForm';
-import CancellationNoteForm from '@/components/documentation/cancellation-note/CancellationNoteForm';
-import ContactNoteForm from '@/components/documentation/contact-note/ContactNoteForm';
-import ConsultationNoteForm from '@/components/documentation/consultation-note/ConsultationNoteForm';
-import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
-import ClientDetailView from '@/components/ClientDetailView';
-import StaffManagementPage from '@/components/staff/StaffManagementPage';
-import AddStaffPage from '@/pages/AddStaffPage';
-import NotFound from '@/pages/NotFound';
-import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
+import Index from '@/pages/Index';
+import Auth from '@/pages/Auth';
+import Documentation from '@/pages/Documentation';
 import Scheduling from '@/pages/Scheduling';
+import AddStaffPage from '@/pages/AddStaffPage';
+import StaffManagementPage from '@/components/staff/StaffManagementPage';
+import NotFound from '@/pages/NotFound';
+import './App.css';
 
-const queryClient = new QueryClient();
-
-const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex h-screen bg-gray-50">
-    <Sidebar />
-    <main className="flex-1 ml-64 overflow-auto">
-      {children}
-    </main>
-  </div>
-);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <EnhancedErrorBoundary>
-          <Router>
+        <Router>
+          <EnhancedErrorBoundary>
             <div className="min-h-screen bg-gray-50">
               <Routes>
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation" element={
-                  <ProtectedRoute>
-                    <LayoutWithSidebar>
-                      <Documentation />
-                    </LayoutWithSidebar>
-                  </ProtectedRoute>
-                } />
-                <Route path="/scheduling" element={
-                  <ProtectedRoute>
-                    <LayoutWithSidebar>
-                      <Scheduling />
-                    </LayoutWithSidebar>
-                  </ProtectedRoute>
-                } />
-                <Route path="/staff" element={
-                  <ProtectedRoute>
-                    <LayoutWithSidebar>
-                      <StaffManagementPage />
-                    </LayoutWithSidebar>
-                  </ProtectedRoute>
-                } />
-                <Route path="/staff/add" element={
-                  <ProtectedRoute>
-                    <AddStaffPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/intake/:noteId" element={
-                  <ProtectedRoute>
-                    <IntakeAssessmentForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/progress-note/:noteId" element={
-                  <ProtectedRoute>
-                    <ProgressNoteForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/treatment-plan/:noteId" element={
-                  <ProtectedRoute>
-                    <TreatmentPlanForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/cancellation-note/:noteId" element={
-                  <ProtectedRoute>
-                    <CancellationNoteForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/contact-note/:noteId" element={
-                  <ProtectedRoute>
-                    <ContactNoteForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/consultation-note/:noteId" element={
-                  <ProtectedRoute>
-                    <ConsultationNoteForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/documentation/miscellaneous-note/:noteId" element={
-                  <ProtectedRoute>
-                    <MiscellaneousNoteForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/client/:clientId" element={
-                  <ProtectedRoute>
-                    <LayoutWithSidebar>
-                      <ClientDetailView />
-                    </LayoutWithSidebar>
-                  </ProtectedRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <div className="flex h-screen">
+                        <Sidebar />
+                        <main className="flex-1 overflow-auto">
+                          <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/documentation" element={<Documentation />} />
+                            <Route path="/scheduling" element={<Scheduling />} />
+                            <Route path="/staff" element={<StaffManagementPage />} />
+                            <Route path="/staff/add" element={<AddStaffPage />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        </main>
+                      </div>
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </div>
-          </Router>
-          <Toaster />
-        </EnhancedErrorBoundary>
+            <Toaster />
+          </EnhancedErrorBoundary>
+        </Router>
       </AuthProvider>
     </QueryClientProvider>
   );
