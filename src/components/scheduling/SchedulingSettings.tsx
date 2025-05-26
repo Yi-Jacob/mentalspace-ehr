@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Bell, Calendar, Clock, Users, Mail } from 'lucide-react';
+import { Settings, Bell, Calendar, Clock, Users, Mail, Sparkles, Download, Upload, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const SchedulingSettings = () => {
@@ -58,34 +58,48 @@ const SchedulingSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gradient-to-br from-white to-green-50/30 min-h-screen p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Scheduling Settings</h2>
-        <Button onClick={handleSaveSettings}>
+        <div className="flex items-center space-x-4">
+          <div className="p-3 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white shadow-lg">
+            <Settings className="h-8 w-8" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+              Scheduling Settings
+            </h2>
+            <p className="text-gray-600 mt-1">Configure your scheduling preferences and integrations</p>
+          </div>
+        </div>
+        <Button 
+          onClick={handleSaveSettings}
+          className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+        >
+          <Save className="h-4 w-4 mr-2" />
           Save Settings
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* General Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Settings className="h-5 w-5" />
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50/30 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <Clock className="h-5 w-5" />
               <span>General Settings</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6 p-6">
             <div className="space-y-2">
-              <Label htmlFor="defaultDuration">Default Appointment Duration (minutes)</Label>
+              <Label htmlFor="defaultDuration" className="text-sm font-semibold text-gray-700">Default Appointment Duration (minutes)</Label>
               <Select
                 value={settings.defaultAppointmentDuration}
                 onValueChange={(value) => handleSettingChange('defaultAppointmentDuration', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white/70 backdrop-blur-sm border-gray-200 focus:border-green-400 transition-all duration-200 hover:bg-white/90">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
                   <SelectItem value="30">30 minutes</SelectItem>
                   <SelectItem value="45">45 minutes</SelectItem>
                   <SelectItem value="60">60 minutes</SelectItem>
@@ -96,15 +110,15 @@ const SchedulingSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bufferTime">Buffer Time Between Appointments (minutes)</Label>
+              <Label htmlFor="bufferTime" className="text-sm font-semibold text-gray-700">Buffer Time Between Appointments (minutes)</Label>
               <Select
                 value={settings.bufferTimeBetweenAppointments}
                 onValueChange={(value) => handleSettingChange('bufferTimeBetweenAppointments', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white/70 backdrop-blur-sm border-gray-200 focus:border-green-400 transition-all duration-200 hover:bg-white/90">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
                   <SelectItem value="0">No buffer</SelectItem>
                   <SelectItem value="5">5 minutes</SelectItem>
                   <SelectItem value="10">10 minutes</SelectItem>
@@ -115,25 +129,26 @@ const SchedulingSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="advanceBooking">Maximum Advance Booking (days)</Label>
+              <Label htmlFor="advanceBooking" className="text-sm font-semibold text-gray-700">Maximum Advance Booking (days)</Label>
               <Input
                 id="advanceBooking"
                 type="number"
                 value={settings.maxAdvanceBookingDays}
                 onChange={(e) => handleSettingChange('maxAdvanceBookingDays', e.target.value)}
+                className="bg-white/70 backdrop-blur-sm border-gray-200 focus:border-green-400 transition-all duration-200"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="timeSlots">Time Slot Intervals (minutes)</Label>
+              <Label htmlFor="timeSlots" className="text-sm font-semibold text-gray-700">Time Slot Intervals (minutes)</Label>
               <Select
                 value={settings.timeSlotInterval}
                 onValueChange={(value) => handleSettingChange('timeSlotInterval', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white/70 backdrop-blur-sm border-gray-200 focus:border-green-400 transition-all duration-200 hover:bg-white/90">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
                   <SelectItem value="15">15 minutes</SelectItem>
                   <SelectItem value="30">30 minutes</SelectItem>
                   <SelectItem value="60">60 minutes</SelectItem>
@@ -144,17 +159,17 @@ const SchedulingSettings = () => {
         </Card>
 
         {/* Reminder Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-2 text-xl">
               <Bell className="h-5 w-5" />
               <span>Reminder Settings</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-6 p-6">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
               <div className="space-y-0.5">
-                <Label>Email Reminders</Label>
+                <Label className="text-sm font-semibold text-gray-700">Email Reminders</Label>
                 <p className="text-sm text-gray-500">Send email reminders to clients</p>
               </div>
               <Switch
@@ -163,9 +178,9 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
               <div className="space-y-0.5">
-                <Label>SMS Reminders</Label>
+                <Label className="text-sm font-semibold text-gray-700">SMS Reminders</Label>
                 <p className="text-sm text-gray-500">Send text message reminders</p>
               </div>
               <Switch
@@ -174,18 +189,18 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <Separator />
+            <Separator className="bg-gradient-to-r from-blue-200 to-purple-200" />
 
             <div className="space-y-2">
-              <Label htmlFor="defaultReminder">Default Reminder Time (minutes before)</Label>
+              <Label htmlFor="defaultReminder" className="text-sm font-semibold text-gray-700">Default Reminder Time (minutes before)</Label>
               <Select
                 value={settings.defaultReminderTime}
                 onValueChange={(value) => handleSettingChange('defaultReminderTime', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white/70 backdrop-blur-sm border-gray-200 focus:border-blue-400 transition-all duration-200 hover:bg-white/90">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
                   <SelectItem value="60">1 hour</SelectItem>
                   <SelectItem value="120">2 hours</SelectItem>
                   <SelectItem value="1440">24 hours</SelectItem>
@@ -195,15 +210,15 @@ const SchedulingSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="secondReminder">Second Reminder Time (minutes before)</Label>
+              <Label htmlFor="secondReminder" className="text-sm font-semibold text-gray-700">Second Reminder Time (minutes before)</Label>
               <Select
                 value={settings.secondReminderTime}
                 onValueChange={(value) => handleSettingChange('secondReminderTime', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white/70 backdrop-blur-sm border-gray-200 focus:border-blue-400 transition-all duration-200 hover:bg-white/90">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
                   <SelectItem value="30">30 minutes</SelectItem>
                   <SelectItem value="60">1 hour</SelectItem>
                   <SelectItem value="120">2 hours</SelectItem>
@@ -214,17 +229,17 @@ const SchedulingSettings = () => {
         </Card>
 
         {/* Calendar Integration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-2 text-xl">
               <Calendar className="h-5 w-5" />
               <span>Calendar Integration</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-6 p-6">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
               <div className="space-y-0.5">
-                <Label>Google Calendar Sync</Label>
+                <Label className="text-sm font-semibold text-gray-700">Google Calendar Sync</Label>
                 <p className="text-sm text-gray-500">Sync with Google Calendar</p>
               </div>
               <Switch
@@ -233,9 +248,9 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-red-50 rounded-xl border border-pink-200">
               <div className="space-y-0.5">
-                <Label>Outlook Calendar Sync</Label>
+                <Label className="text-sm font-semibold text-gray-700">Outlook Calendar Sync</Label>
                 <p className="text-sm text-gray-500">Sync with Microsoft Outlook</p>
               </div>
               <Switch
@@ -244,9 +259,9 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200">
               <div className="space-y-0.5">
-                <Label>External Calendar Sync</Label>
+                <Label className="text-sm font-semibold text-gray-700">External Calendar Sync</Label>
                 <p className="text-sm text-gray-500">Allow external calendar integration</p>
               </div>
               <Switch
@@ -258,17 +273,17 @@ const SchedulingSettings = () => {
         </Card>
 
         {/* Availability & Booking Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5" />
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-orange-50/30 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <Users className="h-5 w-5" />
               <span>Availability & Booking</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-6 p-6">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-200">
               <div className="space-y-0.5">
-                <Label>Show Unavailable Slots</Label>
+                <Label className="text-sm font-semibold text-gray-700">Show Unavailable Slots</Label>
                 <p className="text-sm text-gray-500">Display unavailable time slots</p>
               </div>
               <Switch
@@ -277,9 +292,9 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border border-red-200">
               <div className="space-y-0.5">
-                <Label>Allow Booking Outside Hours</Label>
+                <Label className="text-sm font-semibold text-gray-700">Allow Booking Outside Hours</Label>
                 <p className="text-sm text-gray-500">Allow appointments outside normal hours</p>
               </div>
               <Switch
@@ -288,9 +303,9 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-200">
               <div className="space-y-0.5">
-                <Label>Auto-Confirm Appointments</Label>
+                <Label className="text-sm font-semibold text-gray-700">Auto-Confirm Appointments</Label>
                 <p className="text-sm text-gray-500">Automatically confirm new appointments</p>
               </div>
               <Switch
@@ -299,11 +314,11 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <Separator />
+            <Separator className="bg-gradient-to-r from-orange-200 to-pink-200" />
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
               <div className="space-y-0.5">
-                <Label>Enable Waitlist</Label>
+                <Label className="text-sm font-semibold text-gray-700">Enable Waitlist</Label>
                 <p className="text-sm text-gray-500">Allow clients to join appointment waitlist</p>
               </div>
               <Switch
@@ -312,9 +327,9 @@ const SchedulingSettings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
               <div className="space-y-0.5">
-                <Label>Auto-Notify Waitlist</Label>
+                <Label className="text-sm font-semibold text-gray-700">Auto-Notify Waitlist</Label>
                 <p className="text-sm text-gray-500">Automatically notify when slots become available</p>
               </div>
               <Switch
@@ -327,28 +342,52 @@ const SchedulingSettings = () => {
       </div>
 
       {/* Import/Export Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Import/Export</CardTitle>
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-indigo-50/30 backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
+          <CardTitle className="flex items-center space-x-2 text-xl">
+            <Sparkles className="h-5 w-5" />
+            <span>Import/Export</span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h3 className="font-medium">Export Schedule Data</h3>
-              <p className="text-sm text-gray-600">Download your schedule and appointment data</p>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl border border-blue-200">
+              <div className="flex items-center space-x-3">
+                <Download className="h-6 w-6 text-blue-600" />
+                <h3 className="font-semibold text-lg text-blue-800">Export Schedule Data</h3>
+              </div>
+              <p className="text-sm text-blue-700">Download your schedule and appointment data</p>
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="hover:bg-blue-100 hover:border-blue-400 transition-all duration-200"
+                >
+                  <Download className="h-4 w-4 mr-2" />
                   Export CSV
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="hover:bg-indigo-100 hover:border-indigo-400 transition-all duration-200"
+                >
+                  <Download className="h-4 w-4 mr-2" />
                   Export PDF
                 </Button>
               </div>
             </div>
-            <div className="space-y-2">
-              <h3 className="font-medium">Import Schedule Data</h3>
-              <p className="text-sm text-gray-600">Import existing schedule data</p>
-              <Button variant="outline" size="sm">
+            <div className="space-y-4 p-6 bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl border border-purple-200">
+              <div className="flex items-center space-x-3">
+                <Upload className="h-6 w-6 text-purple-600" />
+                <h3 className="font-semibold text-lg text-purple-800">Import Schedule Data</h3>
+              </div>
+              <p className="text-sm text-purple-700">Import existing schedule data</p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="hover:bg-purple-100 hover:border-purple-400 transition-all duration-200"
+              >
+                <Upload className="h-4 w-4 mr-2" />
                 Import CSV
               </Button>
             </div>
