@@ -18,11 +18,6 @@ const moduleConfigs = {
     description: 'Create and manage clinical notes, treatment plans, and assessments',
     features: ['Intake Assessments', 'Progress Notes', 'Treatment Plans', 'Cancellation Notes', 'Contact Notes', 'Consultation Notes', 'Signing System', 'Approval Workflow', 'Compliance Tracking']
   },
-  scheduling: {
-    title: 'Appointment Scheduling',
-    description: 'Schedule and manage appointments with integrated calendar',
-    features: ['Calendar View', 'Appointment Booking', 'Recurring Appointments', 'Waitlist Management', 'Reminder Notifications', 'Resource Scheduling']
-  },
   message: {
     title: 'Secure Messaging',
     description: 'HIPAA-compliant messaging system for staff and patient communication',
