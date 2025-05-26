@@ -1,4 +1,6 @@
+
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -19,47 +21,55 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
-  activeItem: string;
-  onItemClick: (item: string) => void;
+  activeItem?: string;
+  onItemClick?: (item: string) => void;
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'clients', label: 'Clients', icon: Users },
-  { id: 'documentation', label: 'Documentation', icon: FileText },
-  { id: 'scheduling', label: 'Scheduling', icon: Calendar },
-  { id: 'message', label: 'Message', icon: MessageSquare },
-  { id: 'billing', label: 'Billing', icon: CreditCard },
-  { id: 'reports', label: 'Reports', icon: BarChart3 },
-  { id: 'crm', label: 'CRM', icon: UserPlus },
-  { id: 'staff', label: 'Staff', icon: Stethoscope },
-  { id: 'compliance', label: 'Compliance', icon: Shield },
-  { id: 'settings', label: 'Practice Settings', icon: Settings },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
+  { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
+  { id: 'documentation', label: 'Documentation', icon: FileText, path: '/documentation' },
+  { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling' },
+  { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
+  { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
+  { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
+  { id: 'crm', label: 'CRM', icon: UserPlus, path: '/crm' },
+  { id: 'staff', label: 'Staff', icon: Stethoscope, path: '/staff' },
+  { id: 'compliance', label: 'Compliance', icon: Shield, path: '/compliance' },
+  { id: 'settings', label: 'Practice Settings', icon: Settings, path: '/settings' },
 ];
 
-const navigationItems = [
-  {
-    name: 'Dashboard',
-    path: '/',
-    icon: Home,
-  },
-  {
-    name: 'Documentation',
-    path: '/documentation',
-    icon: FileText,
-  },
-  {
-    name: 'Scheduling',
-    path: '/scheduling',
-    icon: Calendar,
-  },
-];
-
-const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine active item from props or current route
+  const getActiveItem = () => {
+    if (propActiveItem) return propActiveItem;
+    
+    const currentPath = location.pathname;
+    if (currentPath === '/') return 'dashboard';
+    if (currentPath.startsWith('/documentation')) return 'documentation';
+    if (currentPath.startsWith('/scheduling')) return 'scheduling';
+    if (currentPath.startsWith('/clients')) return 'clients';
+    
+    const matchedItem = menuItems.find(item => currentPath.startsWith(item.path) && item.path !== '/');
+    return matchedItem?.id || 'dashboard';
+  };
+
+  const activeItem = getActiveItem();
+
+  const handleItemClick = (item: { id: string; path: string }) => {
+    if (onItemClick) {
+      onItemClick(item.id);
+    } else {
+      navigate(item.path);
+    }
+  };
 
   return (
-    <div className="bg-gradient-to-b from-blue-900 to-blue-800 w-64 min-h-screen p-4 shadow-xl flex flex-col">
+    <div className="bg-gradient-to-b from-blue-900 to-blue-800 w-64 min-h-screen p-4 shadow-xl flex flex-col fixed left-0 top-0 z-50">
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-2">
           <img 
@@ -77,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
           return (
             <button
               key={item.id}
-              onClick={() => onItemClick(item.id)}
+              onClick={() => handleItemClick(item)}
               className={cn(
                 "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
                 activeItem === item.id

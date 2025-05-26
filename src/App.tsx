@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,20 +8,28 @@ import Index from '@/pages/Index';
 import Documentation from '@/pages/Documentation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Sidebar from '@/components/Sidebar';
-import IntakeAssessmentForm from '@/components/documentation/intake-assessment/IntakeAssessmentForm';
+import IntakeAssessmentForm from '@/components/documentation/intake/IntakeAssessmentForm';
 import ProgressNoteForm from '@/components/documentation/progress-note/ProgressNoteForm';
 import TreatmentPlanForm from '@/components/documentation/treatment-plan/TreatmentPlanForm';
 import CancellationNoteForm from '@/components/documentation/cancellation-note/CancellationNoteForm';
 import ContactNoteForm from '@/components/documentation/contact-note/ContactNoteForm';
 import ConsultationNoteForm from '@/components/documentation/consultation-note/ConsultationNoteForm';
 import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
-import ClientDetailView from '@/components/clients/ClientDetailView';
+import ClientDetailView from '@/components/ClientDetailView';
 import NotFound from '@/pages/NotFound';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
-
 import Scheduling from '@/pages/Scheduling';
 
 const queryClient = new QueryClient();
+
+const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex h-screen bg-gray-50">
+    <Sidebar />
+    <main className="flex-1 ml-64 overflow-auto">
+      {children}
+    </main>
+  </div>
+);
 
 function App() {
   return (
@@ -32,112 +41,63 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <Index />
-                    </main>
-                  </div>
+                  <Index />
                 </ProtectedRoute>
               } />
               <Route path="/documentation" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <Documentation />
-                    </main>
-                  </div>
+                  <LayoutWithSidebar>
+                    <Documentation />
+                  </LayoutWithSidebar>
                 </ProtectedRoute>
               } />
               <Route path="/scheduling" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <Scheduling />
-                    </main>
-                  </div>
+                  <LayoutWithSidebar>
+                    <Scheduling />
+                  </LayoutWithSidebar>
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/intake/:clientId" element={
+              <Route path="/documentation/intake/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <IntakeAssessmentForm />
-                    </main>
-                  </div>
+                  <IntakeAssessmentForm />
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/progress-note/:clientId" element={
+              <Route path="/documentation/progress-note/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <ProgressNoteForm />
-                    </main>
-                  </div>
+                  <ProgressNoteForm />
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/treatment-plan/:clientId" element={
+              <Route path="/documentation/treatment-plan/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <TreatmentPlanForm />
-                    </main>
-                  </div>
+                  <TreatmentPlanForm />
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/cancellation-note/:clientId" element={
+              <Route path="/documentation/cancellation-note/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <CancellationNoteForm />
-                    </main>
-                  </div>
+                  <CancellationNoteForm />
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/contact-note/:clientId" element={
+              <Route path="/documentation/contact-note/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <ContactNoteForm />
-                    </main>
-                  </div>
+                  <CancellationNoteForm />
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/consultation-note/:clientId" element={
+              <Route path="/documentation/consultation-note/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <ConsultationNoteForm />
-                    </main>
-                  </div>
+                  <ConsultationNoteForm />
                 </ProtectedRoute>
               } />
-              <Route path="/documentation/miscellaneous-note/:clientId" element={
+              <Route path="/documentation/miscellaneous-note/:noteId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <MiscellaneousNoteForm />
-                    </main>
-                  </div>
+                  <MiscellaneousNoteForm />
                 </ProtectedRoute>
               } />
               <Route path="/client/:clientId" element={
                 <ProtectedRoute>
-                  <div className="flex">
-                    <Sidebar />
-                    <main className="flex-1 ml-64">
-                      <ClientDetailView />
-                    </main>
-                  </div>
+                  <LayoutWithSidebar>
+                    <ClientDetailView />
+                  </LayoutWithSidebar>
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />

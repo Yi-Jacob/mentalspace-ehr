@@ -106,7 +106,7 @@ const Index = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar activeItem={activeModule} onItemClick={setActiveModule} />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 ml-64 overflow-auto">
         {renderContent()}
       </div>
     </div>

@@ -12,10 +12,13 @@ import { format } from 'date-fns';
 import CreateAppointmentModal from './CreateAppointmentModal';
 import AppointmentWaitlist from './AppointmentWaitlist';
 
+type AppointmentStatus = 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
+type AppointmentType = 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+
 const AppointmentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<AppointmentType | 'all'>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const { data: appointments, isLoading } = useQuery({
@@ -35,8 +38,8 @@ const AppointmentManagement = () => {
           location,
           room_number,
           notes,
-          client:clients(first_name, last_name),
-          provider:users(first_name, last_name)
+          client:client_id(first_name, last_name),
+          provider:provider_id(first_name, last_name)
         `)
         .order('start_time', { ascending: false });
 
@@ -121,7 +124,7 @@ const AppointmentManagement = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value: AppointmentStatus | 'all') => setStatusFilter(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -136,7 +139,7 @@ const AppointmentManagement = () => {
                 <SelectItem value="no_show">No Show</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter} onValueChange={(value: AppointmentType | 'all') => setTypeFilter(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>

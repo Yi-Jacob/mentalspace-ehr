@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,7 +60,7 @@ const CalendarView = () => {
           break;
         default:
           startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-          endDate = addDays(endDate = endOfWeek(currentDate, { weekStartsOn: 1 }), 30);
+          endDate = addDays(endOfWeek(currentDate, { weekStartsOn: 1 }), 30);
       }
 
       const { data, error } = await supabase
@@ -77,15 +76,32 @@ const CalendarView = () => {
           status,
           location,
           room_number,
-          client:clients(first_name, last_name),
-          provider:users(first_name, last_name)
+          client:client_id(first_name, last_name),
+          provider:provider_id(first_name, last_name)
         `)
         .gte('start_time', startDate.toISOString())
         .lte('start_time', endDate.toISOString())
         .order('start_time');
 
       if (error) throw error;
-      return data as Appointment[];
+      
+      // Transform the data to match our Appointment interface
+      const transformedData: Appointment[] = (data || []).map(item => ({
+        id: item.id,
+        title: item.title || '',
+        client_id: item.client_id,
+        provider_id: item.provider_id,
+        appointment_type: item.appointment_type,
+        start_time: item.start_time,
+        end_time: item.end_time,
+        status: item.status,
+        location: item.location,
+        room_number: item.room_number,
+        client: item.client,
+        provider: item.provider
+      }));
+
+      return transformedData;
     },
   });
 
