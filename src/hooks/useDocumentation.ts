@@ -110,12 +110,21 @@ export const useDocumentation = () => {
       }, `Create ${noteType}`);
     },
     onSuccess: (data) => {
-      console.log('Note created successfully, navigating to edit view');
+      console.log('Note created successfully, navigating to edit view for note type:', data.note_type);
+      
+      // Close the modal first
+      setShowCreateModal(false);
+      setSelectedNoteType(null);
+      
+      // Navigate based on note type
       if (data.note_type === 'progress_note') {
+        console.log('Navigating to progress note edit:', `/documentation/progress-note/${data.id}/edit`);
         navigate(`/documentation/progress-note/${data.id}/edit`);
       } else if (data.note_type === 'treatment_plan') {
+        console.log('Navigating to treatment plan edit:', `/documentation/treatment-plan/${data.id}/edit`);
         navigate(`/documentation/treatment-plan/${data.id}/edit`);
       } else {
+        console.log('Navigating to general note edit:', `/documentation/note/${data.id}/edit`);
         navigate(`/documentation/note/${data.id}/edit`);
       }
     },
