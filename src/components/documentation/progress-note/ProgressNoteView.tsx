@@ -144,65 +144,162 @@ const ProgressNoteView = () => {
                 <p className="text-gray-900">{formData?.sessionDate || 'Not specified'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Session Type</label>
-                <p className="text-gray-900">{formData?.sessionType || 'Not specified'}</p>
+                <label className="text-sm font-medium text-gray-500">Start Time</label>
+                <p className="text-gray-900">{formData?.startTime || 'Not specified'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Duration</label>
-                <p className="text-gray-900">{formData?.sessionDuration || 'Not specified'}</p>
+                <label className="text-sm font-medium text-gray-500">End Time</label>
+                <p className="text-gray-900">{formData?.endTime || 'Not specified'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Duration (minutes)</label>
+                <p className="text-gray-900">{formData?.duration || 'Not specified'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Service Code</label>
+                <p className="text-gray-900">{formData?.serviceCode || 'Not specified'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Location</label>
+                <p className="text-gray-900">{formData?.location || 'Not specified'}</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Treatment Progress */}
+          {/* Diagnosis Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Treatment Progress</CardTitle>
+              <CardTitle>Diagnosis Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Overall Progress</label>
-                <p className="text-gray-900">{formData?.overallProgress || 'Not assessed'}</p>
+                <label className="text-sm font-medium text-gray-500">Primary Diagnosis</label>
+                <p className="text-gray-900">{formData?.primaryDiagnosis || 'Not specified'}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Goal Progress</label>
-                <p className="text-gray-900">{formData?.goalProgress || 'Not assessed'}</p>
-              </div>
+              {formData?.secondaryDiagnoses && formData.secondaryDiagnoses.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Secondary Diagnoses</label>
+                  <ul className="text-gray-900 list-disc list-inside">
+                    {formData.secondaryDiagnoses.map((diagnosis, index) => (
+                      <li key={index}>{diagnosis}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Session Content */}
-          {formData?.sessionContent && (
+          {/* Mental Status */}
+          {(formData?.mood || formData?.affect || formData?.generalAppearance) && (
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Session Content</CardTitle>
+                <CardTitle>Current Mental Status</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {formData?.generalAppearance && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">General Appearance</label>
+                    <p className="text-gray-900">{formData.generalAppearance}</p>
+                  </div>
+                )}
+                {formData?.mood && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Mood</label>
+                    <p className="text-gray-900">{formData.mood}</p>
+                  </div>
+                )}
+                {formData?.affect && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Affect</label>
+                    <p className="text-gray-900">{formData.affect}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Symptom Description */}
+          {formData?.symptomDescription && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Subjective (Symptom Description)</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap">{formData.sessionContent}</p>
+                <p className="text-gray-900 whitespace-pre-wrap">{formData.symptomDescription}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Objective Content */}
+          {formData?.objectiveContent && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Objective</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-900 whitespace-pre-wrap">{formData.objectiveContent}</p>
               </CardContent>
             </Card>
           )}
 
           {/* Interventions */}
-          {formData?.interventions && (
+          {(formData?.selectedInterventions?.length > 0 || formData?.otherInterventions) && (
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Interventions Used</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap">{formData.interventions}</p>
+              <CardContent className="space-y-4">
+                {formData?.selectedInterventions && formData.selectedInterventions.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Selected Interventions</label>
+                    <ul className="text-gray-900 list-disc list-inside">
+                      {formData.selectedInterventions.map((intervention, index) => (
+                        <li key={index}>{intervention}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {formData?.otherInterventions && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Other Interventions</label>
+                    <p className="text-gray-900 whitespace-pre-wrap">{formData.otherInterventions}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {/* Plan for Next Session */}
-          {formData?.planForNextSession && (
+          {/* Treatment Plan Progress */}
+          {formData?.objectives && formData.objectives.length > 0 && (
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Plan for Next Session</CardTitle>
+                <CardTitle>Treatment Plan Progress</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {formData.objectives.map((objective, index) => (
+                  <div key={index} className="border-l-4 border-blue-200 pl-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Objective {index + 1}</label>
+                      <p className="text-gray-900">{objective.objectiveText}</p>
+                    </div>
+                    <div className="mt-2">
+                      <label className="text-sm font-medium text-gray-500">Progress</label>
+                      <p className="text-gray-900">{objective.progress}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Planning */}
+          {formData?.planContent && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Assessment & Plan</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap">{formData.planForNextSession}</p>
+                <p className="text-gray-900 whitespace-pre-wrap">{formData.planContent}</p>
               </CardContent>
             </Card>
           )}
