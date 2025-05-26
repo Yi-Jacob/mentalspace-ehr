@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import FrequencySelect from '../../shared/FrequencySelect';
 
 interface FrequencySectionProps {
   formData: TreatmentPlanFormData;
@@ -22,15 +23,12 @@ const FrequencySection: React.FC<FrequencySectionProps> = ({
         <CardTitle>Frequency of Treatment</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div>
-          <Label htmlFor="prescribed-frequency">Prescribed Frequency of Treatment *</Label>
-          <Input
-            id="prescribed-frequency"
-            value={formData.prescribedFrequency}
-            onChange={(e) => updateFormData({ prescribedFrequency: e.target.value })}
-            placeholder="e.g., Twice a Week"
-          />
-        </div>
+        <FrequencySelect
+          label="Prescribed Frequency of Treatment"
+          value={formData.prescribedFrequency}
+          onChange={(value) => updateFormData({ prescribedFrequency: value })}
+          required
+        />
 
         <div className="flex items-center space-x-2">
           <Checkbox

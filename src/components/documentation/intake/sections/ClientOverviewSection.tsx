@@ -1,13 +1,12 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { IntakeFormData } from '../types/IntakeFormData';
 import ValidatedInput from '@/components/form/ValidatedInput';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
 import { validationSchemas, sanitizeInput } from '@/utils/validation';
+import ClientInfoDisplay from '../../shared/ClientInfoDisplay';
+import SearchableSelect from '../../shared/SearchableSelect';
+import { useCptCodes } from '@/hooks/useCptCodes';
 
 interface ClientOverviewSectionProps {
   formData: IntakeFormData;
@@ -21,23 +20,9 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   clientData,
 }) => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const { data: cptCodes = [] } = useCptCodes();
 
   console.log('ClientOverviewSection - clientData:', clientData);
-
-  // Fetch CPT codes from database
-  const { data: cptCodes = [] } = useQuery({
-    queryKey: ['cpt-codes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('cpt_codes')
-        .select('code, description, category')
-        .eq('is_active', true)
-        .order('code');
-      
-      if (error) throw error;
-      return data;
-    },
-  });
 
   // Get primary phone number
   const primaryPhone = clientData?.phone_numbers?.find(
@@ -77,35 +62,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
           </p>
         </div>
 
-        {/* Client Information Display */}
-        {clientData && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-800 mb-3">Client Information</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <span className="text-sm font-medium text-gray-600">Full Name</span>
-                <p className="text-gray-900">{`${clientData.first_name} ${clientData.last_name}`}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-600">Date of Birth</span>
-                <p className="text-gray-900">{clientData.date_of_birth || 'Not provided'}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-600">Address</span>
-                <p className="text-gray-900">
-                  {clientData.address_1 ? 
-                    `${clientData.address_1}${clientData.address_2 ? `, ${clientData.address_2}` : ''}, ${clientData.city || ''} ${clientData.state || ''} ${clientData.zip_code || ''}`.trim() 
-                    : 'Not provided'
-                  }
-                </p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-600">Gender Identity</span>
-                <p className="text-gray-900">{clientData.gender_identity || 'Not provided'}</p>
-              </div>
-            </div>
-          </div>
-        )}
+        <ClientInfoDisplay clientData={clientData} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ValidatedInput
@@ -155,22 +112,14 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
           />
 
           <div className="md:col-span-2">
-            <span className="text-sm font-medium">CPT Code</span>
-            <Select
+            <SearchableSelect
+              label="CPT Code"
               value={formData.cptCode}
-              onValueChange={(value) => updateFormData({ cptCode: value })}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select CPT Code" />
-              </SelectTrigger>
-              <SelectContent>
-                {cptCodes.map((cpt) => (
-                  <SelectItem key={cpt.code} value={cpt.code}>
-                    {cpt.code} - {cpt.description}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(value) => updateFormData({ cptCode: value })}
+              options={cptCodes}
+              placeholder="Search CPT codes..."
+              required
+            />
           </div>
         </div>
       </div>

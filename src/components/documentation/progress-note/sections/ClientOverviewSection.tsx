@@ -2,8 +2,11 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import ClientInfoDisplay from '../../shared/ClientInfoDisplay';
+import SearchableSelect from '../../shared/SearchableSelect';
+import FrequencySelect from '../../shared/FrequencySelect';
+import { useCptCodes } from '@/hooks/useCptCodes';
 
 interface ClientOverviewSectionProps {
   formData: ProgressNoteFormData;
@@ -16,6 +19,8 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
+  const { data: cptCodes = [] } = useCptCodes();
+
   const calculateDuration = (start: string, end: string) => {
     if (!start || !end) return 0;
     const startTime = new Date(`2000-01-01T${start}`);
@@ -36,8 +41,32 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
     updateFormData(updates);
   };
 
+  const locationOptions = [
+    { value: 'office', label: 'Office', description: 'In-person office visit' },
+    { value: 'telehealth', label: 'HIPAA Compliant Telehealth Platform', description: 'Virtual session' },
+    { value: 'home', label: 'Home Visit', description: 'Provider visit to client home' },
+    { value: 'hospital', label: 'Hospital', description: 'Hospital-based session' },
+    { value: 'other', label: 'Other', description: 'Other location' },
+  ];
+
+  const participantOptions = [
+    { value: 'client-only', label: 'Client only', description: 'Individual session' },
+    { value: 'client-family', label: 'Client and family', description: 'Family therapy with client present' },
+    { value: 'family-only', label: 'Family only', description: 'Family therapy without client' },
+    { value: 'group', label: 'Group session', description: 'Group therapy session' },
+  ];
+
   return (
     <div className="space-y-6">
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h4 className="font-medium text-blue-800 mb-2">Session Overview</h4>
+        <p className="text-blue-700 text-sm">
+          Session details and basic information for this progress note.
+        </p>
+      </div>
+
+      <ClientInfoDisplay clientData={clientData} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <Label htmlFor="sessionDate">Session Date *</Label>
@@ -47,23 +76,18 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             value={formData.sessionDate}
             onChange={(e) => updateFormData({ sessionDate: e.target.value })}
             required
+            className="mt-1"
           />
         </div>
 
-        <div>
-          <Label htmlFor="serviceCode">Service Code *</Label>
-          <Select value={formData.serviceCode} onValueChange={(value) => updateFormData({ serviceCode: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select service code" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="90834">90834 - Psychotherapy, 45 minutes</SelectItem>
-              <SelectItem value="90837">90837 - Psychotherapy, 60 minutes</SelectItem>
-              <SelectItem value="90847">90847 - Family therapy with patient present</SelectItem>
-              <SelectItem value="90853">90853 - Group psychotherapy</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableSelect
+          label="Service Code"
+          value={formData.serviceCode}
+          onChange={(value) => updateFormData({ serviceCode: value })}
+          options={cptCodes}
+          placeholder="Search service codes..."
+          required
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -75,6 +99,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             value={formData.startTime}
             onChange={(e) => handleTimeChange('startTime', e.target.value)}
             required
+            className="mt-1"
           />
         </div>
 
@@ -86,6 +111,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             value={formData.endTime}
             onChange={(e) => handleTimeChange('endTime', e.target.value)}
             required
+            className="mt-1"
           />
         </div>
 
@@ -96,57 +122,28 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             type="number"
             value={formData.duration}
             readOnly
-            className="bg-gray-50"
+            className="bg-gray-50 mt-1"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="location">Location</Label>
-          <Select value={formData.location} onValueChange={(value) => updateFormData({ location: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="office">Office</SelectItem>
-              <SelectItem value="telehealth">HIPAA Compliant Telehealth Platform</SelectItem>
-              <SelectItem value="home">Home Visit</SelectItem>
-              <SelectItem value="hospital">Hospital</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableSelect
+          label="Location"
+          value={formData.location}
+          onChange={(value) => updateFormData({ location: value })}
+          options={locationOptions}
+          placeholder="Select session location..."
+        />
 
-        <div>
-          <Label htmlFor="participants">Participants</Label>
-          <Select value={formData.participants} onValueChange={(value) => updateFormData({ participants: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select participants" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="client-only">Client only</SelectItem>
-              <SelectItem value="client-family">Client and family</SelectItem>
-              <SelectItem value="family-only">Family only</SelectItem>
-              <SelectItem value="group">Group session</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableSelect
+          label="Participants"
+          value={formData.participants}
+          onChange={(value) => updateFormData({ participants: value })}
+          options={participantOptions}
+          placeholder="Select session participants..."
+        />
       </div>
-
-      {clientData && (
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-900 mb-2">Client Information</h3>
-          <p className="text-blue-800">
-            <strong>Name:</strong> {clientData.first_name} {clientData.last_name}
-          </p>
-          {clientData.date_of_birth && (
-            <p className="text-blue-800">
-              <strong>DOB:</strong> {clientData.date_of_birth}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
