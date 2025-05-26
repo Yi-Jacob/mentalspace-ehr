@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
+import { SidebarProvider, useSidebarContext } from '@/hooks/useSidebarContext';
 import Sidebar from '@/components/Sidebar';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
@@ -15,6 +16,7 @@ import AddStaffPage from '@/pages/AddStaffPage';
 import StaffManagementPage from '@/components/staff/StaffManagementPage';
 import NotFound from '@/pages/NotFound';
 import './App.css';
+import { cn } from '@/lib/utils';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,19 +40,9 @@ function App() {
                   path="/*"
                   element={
                     <ProtectedRoute>
-                      <div className="flex h-screen bg-gray-50">
-                        <Sidebar />
-                        <main className="flex-1 ml-64 overflow-auto p-6">
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/documentation" element={<Documentation />} />
-                            <Route path="/scheduling" element={<Scheduling />} />
-                            <Route path="/staff" element={<StaffManagementPage />} />
-                            <Route path="/staff/add" element={<AddStaffPage />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </main>
-                      </div>
+                      <SidebarProvider>
+                        <MainLayout />
+                      </SidebarProvider>
                     </ProtectedRoute>
                   }
                 />
@@ -63,5 +55,28 @@ function App() {
     </QueryClientProvider>
   );
 }
+
+const MainLayout: React.FC = () => {
+  const { isCollapsed } = useSidebarContext();
+  
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <main className={cn(
+        "flex-1 transition-all duration-300 overflow-auto p-6",
+        isCollapsed ? "ml-16" : "ml-64"
+      )}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/documentation" element={<Documentation />} />
+          <Route path="/scheduling" element={<Scheduling />} />
+          <Route path="/staff" element={<StaffManagementPage />} />
+          <Route path="/staff/add" element={<AddStaffPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
 
 export default App;

@@ -14,10 +14,13 @@ import {
   Settings,
   Stethoscope,
   LogOut,
-  Home
+  Home,
+  Menu,
+  ChevronLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useSidebarContext } from '@/hooks/useSidebarContext';
 import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
@@ -43,6 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isCollapsed, toggleSidebar } = useSidebarContext();
 
   // Determine active item from props or current route
   const getActiveItem = () => {
@@ -69,19 +73,40 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   };
 
   return (
-    <div className="bg-gradient-to-b from-blue-900 to-blue-800 w-64 min-h-screen p-4 shadow-xl flex flex-col fixed left-0 top-0 z-50">
-      <div className="mb-8">
-        <div className="flex items-center space-x-3 mb-2">
-          <img 
-            src="/lovable-uploads/767e6203-d61c-4e71-b71b-e30eef1420da.png" 
-            alt="MentalSpace Logo" 
-            className="h-12 w-auto"
-          />
+    <div 
+      className={cn(
+        "bg-gradient-to-b from-blue-900 to-blue-800 min-h-screen shadow-xl flex flex-col fixed left-0 top-0 z-50 transition-all duration-300 group",
+        isCollapsed ? "w-16" : "w-64"
+      )}
+      data-collapsed={isCollapsed}
+    >
+      {/* Header with toggle button */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          {!isCollapsed && (
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/767e6203-d61c-4e71-b71b-e30eef1420da.png" 
+                alt="MentalSpace Logo" 
+                className="h-12 w-auto"
+              />
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="text-blue-100 hover:bg-blue-700 hover:text-white"
+          >
+            {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
+          </Button>
         </div>
-        <p className="text-blue-200 text-sm">Electronic Health Records</p>
+        {!isCollapsed && (
+          <p className="text-blue-200 text-sm">Electronic Health Records</p>
+        )}
       </div>
       
-      <nav className="space-y-2 flex-1">
+      <nav className="space-y-2 flex-1 px-4">
         {menuItems.map((item) => {
           const IconComponent = item.icon;
           return (
@@ -92,24 +117,30 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
                 "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
                 activeItem === item.id
                   ? "bg-white text-blue-900 shadow-lg transform scale-105"
-                  : "text-blue-100 hover:bg-blue-700 hover:text-white hover:transform hover:scale-102"
+                  : "text-blue-100 hover:bg-blue-700 hover:text-white hover:transform hover:scale-102",
+                isCollapsed && "justify-center space-x-0"
               )}
+              title={isCollapsed ? item.label : undefined}
             >
               <IconComponent size={20} />
-              <span className="font-medium">{item.label}</span>
+              {!isCollapsed && <span className="font-medium">{item.label}</span>}
             </button>
           );
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-blue-700">
+      <div className="mt-auto pt-4 border-t border-blue-700 px-4 pb-4">
         <Button
           onClick={signOut}
           variant="ghost"
-          className="w-full flex items-center space-x-3 px-4 py-3 text-blue-100 hover:bg-blue-700 hover:text-white"
+          className={cn(
+            "w-full flex items-center space-x-3 px-4 py-3 text-blue-100 hover:bg-blue-700 hover:text-white",
+            isCollapsed && "justify-center space-x-0"
+          )}
+          title={isCollapsed ? "Sign Out" : undefined}
         >
           <LogOut size={20} />
-          <span className="font-medium">Sign Out</span>
+          {!isCollapsed && <span className="font-medium">Sign Out</span>}
         </Button>
       </div>
     </div>
