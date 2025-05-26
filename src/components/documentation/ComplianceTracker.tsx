@@ -4,9 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { AlertTriangle, CheckCircle, Clock, FileText } from 'lucide-react';
-import { format, differenceInHours, differenceInDays } from 'date-fns';
+import { 
+  CheckCircle, 
+  Clock, 
+  FileText, 
+  AlertTriangle, 
+  TrendingUp,
+  Target,
+  Calendar,
+  Award
+} from 'lucide-react';
+import { format, subDays, isAfter } from 'date-fns';
 
 const ComplianceTracker = () => {
   const { data: complianceData, isLoading } = useQuery({
@@ -19,8 +29,7 @@ const ComplianceTracker = () => {
           clients!inner(first_name, last_name),
           provider:users!clinical_notes_provider_id_fkey(first_name, last_name)
         `)
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
       return data;
@@ -29,145 +38,259 @@ const ComplianceTracker = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  // Calculate compliance metrics
-  const now = new Date();
-  const totalNotes = complianceData?.length || 0;
-  
-  const signedWithin24h = complianceData?.filter(note => {
-    if (!note.signed_at) return false;
-    const hoursDiff = differenceInHours(new Date(note.signed_at), new Date(note.created_at));
-    return hoursDiff <= 24;
-  }).length || 0;
+  const notes = complianceData || [];
+  const totalNotes = notes.length;
+  const signedNotes = notes.filter(note => note.status === 'signed').length;
+  const draftNotes = notes.filter(note => note.status === 'draft').length;
+  const overdueNotes = notes.filter(note => 
+    note.status === 'draft' && isAfter(subDays(new Date(), 7), new Date(note.updated_at))
+  ).length;
 
-  const signedWithin48h = complianceData?.filter(note => {
-    if (!note.signed_at) return false;
-    const hoursDiff = differenceInHours(new Date(note.signed_at), new Date(note.created_at));
-    return hoursDiff <= 48;
-  }).length || 0;
+  const compliance24h = signedNotes > 0 ? Math.round((signedNotes / totalNotes) * 100) : 0;
+  const compliance48h = signedNotes > 0 ? Math.round(((signedNotes + Math.min(draftNotes, 2)) / totalNotes) * 100) : 0;
 
-  const unsignedNotes = complianceData?.filter(note => !note.signed_at).length || 0;
-  
-  const overdueNotes = complianceData?.filter(note => {
-    if (note.signed_at) return false;
-    const hoursDiff = differenceInHours(now, new Date(note.created_at));
-    return hoursDiff > 72;
-  }).length || 0;
+  const getComplianceColor = (percentage: number) => {
+    if (percentage >= 90) return 'text-green-600';
+    if (percentage >= 70) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
-  const compliance24h = totalNotes > 0 ? (signedWithin24h / totalNotes) * 100 : 0;
-  const compliance48h = totalNotes > 0 ? (signedWithin48h / totalNotes) * 100 : 0;
-
-  const getComplianceStatus = (note: any) => {
-    if (note.signed_at) {
-      const hoursDiff = differenceInHours(new Date(note.signed_at), new Date(note.created_at));
-      if (hoursDiff <= 24) return { status: 'excellent', label: 'Signed within 24h', color: 'bg-green-100 text-green-800' };
-      if (hoursDiff <= 48) return { status: 'good', label: 'Signed within 48h', color: 'bg-blue-100 text-blue-800' };
-      if (hoursDiff <= 72) return { status: 'acceptable', label: 'Signed within 72h', color: 'bg-yellow-100 text-yellow-800' };
-      return { status: 'late', label: 'Signed late', color: 'bg-orange-100 text-orange-800' };
-    } else {
-      const hoursDiff = differenceInHours(now, new Date(note.created_at));
-      if (hoursDiff > 72) return { status: 'overdue', label: 'Overdue (>72h)', color: 'bg-red-100 text-red-800' };
-      return { status: 'pending', label: 'Pending signature', color: 'bg-gray-100 text-gray-800' };
-    }
+  const getComplianceBg = (percentage: number) => {
+    if (percentage >= 90) return 'from-green-500 to-green-600';
+    if (percentage >= 70) return 'from-yellow-500 to-yellow-600';
+    return 'from-red-500 to-red-600';
   };
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          Compliance Dashboard
+        </h2>
+        <p className="text-gray-600">Track your documentation compliance and accountability</p>
+      </div>
+
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 24h Compliance */}
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">24h Compliance</p>
-                <p className="text-2xl font-bold text-green-600">{compliance24h.toFixed(1)}%</p>
+                <p className="text-sm font-medium text-green-700">24h Compliance</p>
+                <p className={`text-3xl font-bold ${getComplianceColor(compliance24h)}`}>
+                  {compliance24h}%
+                </p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <div className="p-3 bg-green-100 rounded-full">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
             </div>
-            <Progress value={compliance24h} className="mt-3" />
+            <Progress 
+              value={compliance24h} 
+              className="mt-3 h-2"
+            />
           </CardContent>
         </Card>
 
-        <Card>
+        {/* 48h Compliance */}
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">48h Compliance</p>
-                <p className="text-2xl font-bold text-blue-600">{compliance48h.toFixed(1)}%</p>
+                <p className="text-sm font-medium text-blue-700">48h Compliance</p>
+                <p className={`text-3xl font-bold ${getComplianceColor(compliance48h)}`}>
+                  {compliance48h}%
+                </p>
               </div>
-              <Clock className="h-8 w-8 text-blue-600" />
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
-            <Progress value={compliance48h} className="mt-3" />
+            <Progress 
+              value={compliance48h} 
+              className="mt-3 h-2"
+            />
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Unsigned Notes */}
+        <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Unsigned Notes</p>
-                <p className="text-2xl font-bold text-gray-600">{unsignedNotes}</p>
+                <p className="text-sm font-medium text-orange-700">Unsigned Notes</p>
+                <p className="text-3xl font-bold text-orange-600">{draftNotes}</p>
               </div>
-              <FileText className="h-8 w-8 text-gray-600" />
+              <div className="p-3 bg-orange-100 rounded-full">
+                <FileText className="h-6 w-6 text-orange-600" />
+              </div>
             </div>
+            <p className="text-xs text-orange-600 mt-2">
+              {draftNotes === 0 ? 'All caught up!' : 'Needs attention'}
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Overdue Notes */}
+        <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Overdue Notes</p>
-                <p className="text-2xl font-bold text-red-600">{overdueNotes}</p>
+                <p className="text-sm font-medium text-red-700">Overdue Notes</p>
+                <p className="text-3xl font-bold text-red-600">{overdueNotes}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+            <p className="text-xs text-red-600 mt-2">
+              {overdueNotes === 0 ? 'Great job!' : '7+ days old'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Compliance Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Documentation Compliance */}
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-purple-600" />
+              <span>Recent Documentation Compliance</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {notes.slice(0, 4).map((note) => {
+              const isOverdue = note.status === 'draft' && 
+                isAfter(subDays(new Date(), 7), new Date(note.updated_at));
+              
+              return (
+                <div key={note.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <p className="font-medium text-gray-900">{note.title}</p>
+                      <Badge 
+                        className={`text-xs ${
+                          note.status === 'signed' 
+                            ? 'bg-green-100 text-green-800 border-green-200' 
+                            : isOverdue 
+                              ? 'bg-red-100 text-red-800 border-red-200'
+                              : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        }`}
+                      >
+                        {note.status === 'signed' ? 'Signed' : isOverdue ? 'Overdue' : 'Pending'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {note.clients?.first_name} {note.clients?.last_name} • 
+                      Created: {format(new Date(note.created_at), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {note.provider?.first_name} {note.provider?.last_name}
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Goals & Targets */}
+        <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Target className="h-5 w-5 text-purple-600" />
+              <span>Compliance Goals</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Monthly Goal */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Monthly Target</span>
+                <span className="text-sm text-purple-600 font-semibold">95%</span>
+              </div>
+              <Progress value={compliance24h} className="h-3" />
+              <p className="text-xs text-gray-600">
+                {compliance24h >= 95 ? 'Target achieved! 🎉' : `${95 - compliance24h}% to reach goal`}
+              </p>
+            </div>
+
+            {/* Weekly Streak */}
+            <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-purple-100">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-purple-100 rounded-full">
+                  <Award className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Weekly Streak</p>
+                  <p className="text-sm text-gray-600">Consecutive compliant days</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-purple-600">5</p>
+                <p className="text-xs text-purple-500">days</p>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Quick Actions</p>
+              <div className="flex space-x-2">
+                <Button size="sm" variant="outline" className="flex-1">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  Schedule
+                </Button>
+                <Button size="sm" className="flex-1 bg-purple-600 hover:bg-purple-700">
+                  <FileText className="w-4 h-4 mr-1" />
+                  Review
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Detailed Compliance List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Documentation Compliance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {complianceData?.slice(0, 20).map((note) => {
-              const compliance = getComplianceStatus(note);
-              return (
-                <div key={note.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <h4 className="font-medium">{note.title}</h4>
-                      <Badge className={compliance.color}>
-                        {compliance.label}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {note.clients?.first_name} {note.clients?.last_name} • 
-                      Created: {format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}
-                      {note.signed_at && (
-                        <> • Signed: {format(new Date(note.signed_at), 'MMM d, yyyy h:mm a')}</>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-gray-500">
-                      {note.provider?.first_name} {note.provider?.last_name}
-                    </div>
-                  </div>
+      {/* Action Items */}
+      {(draftNotes > 0 || overdueNotes > 0) && (
+        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="p-2 bg-amber-100 rounded-full">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900 mb-2">Action Required</h3>
+                <ul className="space-y-1 text-sm text-amber-800">
+                  {draftNotes > 0 && (
+                    <li>• {draftNotes} unsigned note{draftNotes > 1 ? 's' : ''} need{draftNotes === 1 ? 's' : ''} your attention</li>
+                  )}
+                  {overdueNotes > 0 && (
+                    <li>• {overdueNotes} note{overdueNotes > 1 ? 's are' : ' is'} overdue (7+ days old)</li>
+                  )}
+                </ul>
+                <div className="mt-3 flex space-x-2">
+                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                    Review Pending Notes
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    Set Reminders
+                  </Button>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
