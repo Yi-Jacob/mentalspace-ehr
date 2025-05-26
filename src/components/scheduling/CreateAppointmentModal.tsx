@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -87,7 +86,6 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
     createAppointmentMutation.mutate({
       client_id: formData.client_id,
       appointment_type: formData.appointment_type,
-      title: formData.title || null,
       location: formData.location || null,
       room_number: formData.room_number || null,
       notes: formData.notes || null,
