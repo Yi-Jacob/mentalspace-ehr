@@ -9,21 +9,33 @@ interface AppointmentFormData {
   date: Date;
   start_time: string;
   end_time: string;
+  duration_minutes: number;
   location: string;
   room_number: string;
+  clinician_id: string;
+  service_code: string;
+  frequency: 'one_time' | 'weekly' | 'biweekly' | 'monthly';
+  use_telehealth: boolean;
+  appointment_alert: string;
   notes: string;
 }
 
 export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: string | null) => {
   const [formData, setFormData] = useState<AppointmentFormData>({
     client_id: '',
-    appointment_type: 'follow_up',
+    appointment_type: 'therapy_session',
     title: '',
     date: new Date(),
     start_time: '09:00',
     end_time: '10:00',
+    duration_minutes: 45,
     location: '',
     room_number: '',
+    clinician_id: '',
+    service_code: '',
+    frequency: 'one_time',
+    use_telehealth: false,
+    appointment_alert: '',
     notes: ''
   });
 
@@ -35,7 +47,7 @@ export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: st
     if (selectedTime) {
       const startTime = format(new Date(`2000-01-01T${selectedTime}`), 'HH:mm');
       const endDate = new Date(`2000-01-01T${selectedTime}`);
-      endDate.setHours(endDate.getHours() + 1); // Default to 1 hour duration
+      endDate.setMinutes(endDate.getMinutes() + formData.duration_minutes);
       const endTime = format(endDate, 'HH:mm');
       
       setFormData(prev => ({ 
@@ -44,22 +56,36 @@ export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: st
         end_time: endTime
       }));
     }
-  }, [selectedDate, selectedTime]);
+  }, [selectedDate, selectedTime, formData.duration_minutes]);
 
-  const updateFormData = (field: keyof AppointmentFormData, value: string | Date) => {
+  // Update end time when duration changes
+  useEffect(() => {
+    const startDate = new Date(`2000-01-01T${formData.start_time}`);
+    startDate.setMinutes(startDate.getMinutes() + formData.duration_minutes);
+    const endTime = format(startDate, 'HH:mm');
+    setFormData(prev => ({ ...prev, end_time: endTime }));
+  }, [formData.duration_minutes, formData.start_time]);
+
+  const updateFormData = (field: keyof AppointmentFormData, value: string | Date | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const resetForm = () => {
     setFormData({
       client_id: '',
-      appointment_type: 'follow_up',
+      appointment_type: 'therapy_session',
       title: '',
       date: new Date(),
       start_time: '09:00',
-      end_time: '10:00',
+      end_time: '09:45',
+      duration_minutes: 45,
       location: '',
       room_number: '',
+      clinician_id: '',
+      service_code: '',
+      frequency: 'one_time',
+      use_telehealth: false,
+      appointment_alert: '',
       notes: ''
     });
   };

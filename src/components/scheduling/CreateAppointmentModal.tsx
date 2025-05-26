@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,12 @@ import ClientSelectionSection from './appointment-form/ClientSelectionSection';
 import AppointmentTypeSection from './appointment-form/AppointmentTypeSection';
 import DateTimeSection from './appointment-form/DateTimeSection';
 import LocationSection from './appointment-form/LocationSection';
+import ClinicianSection from './appointment-form/ClinicianSection';
+import ServiceCodeSection from './appointment-form/ServiceCodeSection';
+import DurationSection from './appointment-form/DurationSection';
+import FrequencySection from './appointment-form/FrequencySection';
+import TelehealthSection from './appointment-form/TelehealthSection';
+import AppointmentAlertSection from './appointment-form/AppointmentAlertSection';
 import { useAppointmentForm } from './appointment-form/hooks/useAppointmentForm';
 import { useAppointmentMutation } from './appointment-form/hooks/useAppointmentMutation';
 
@@ -37,6 +42,20 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
+        .select('id, first_name, last_name')
+        .eq('is_active', true)
+        .order('last_name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: clinicians } = useQuery({
+    queryKey: ['users-for-appointments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('users')
         .select('id, first_name, last_name')
         .eq('is_active', true)
         .order('last_name');
@@ -80,7 +99,7 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Appointment</DialogTitle>
           {selectedDate && (
@@ -92,15 +111,62 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          <AppointmentTypeSection
+            value={formData.appointment_type}
+            onChange={(value) => updateFormData('appointment_type', value)}
+          />
+
           <ClientSelectionSection
             value={formData.client_id}
             onChange={(value) => updateFormData('client_id', value)}
             clients={clients}
           />
 
-          <AppointmentTypeSection
-            value={formData.appointment_type}
-            onChange={(value) => updateFormData('appointment_type', value)}
+          <ClinicianSection
+            value={formData.clinician_id}
+            onChange={(value) => updateFormData('clinician_id', value)}
+            clinicians={clinicians}
+          />
+
+          <LocationSection
+            location={formData.location}
+            roomNumber={formData.room_number}
+            onLocationChange={(location) => updateFormData('location', location)}
+            onRoomNumberChange={(roomNumber) => updateFormData('room_number', roomNumber)}
+          />
+
+          <TelehealthSection
+            value={formData.use_telehealth}
+            onChange={(value) => updateFormData('use_telehealth', value)}
+          />
+
+          <ServiceCodeSection
+            value={formData.service_code}
+            onChange={(value) => updateFormData('service_code', value)}
+          />
+
+          <DateTimeSection
+            date={formData.date}
+            startTime={formData.start_time}
+            endTime={formData.end_time}
+            onDateChange={(date) => updateFormData('date', date)}
+            onStartTimeChange={(time) => updateFormData('start_time', time)}
+            onEndTimeChange={(time) => updateFormData('end_time', time)}
+          />
+
+          <DurationSection
+            value={formData.duration_minutes}
+            onChange={(value) => updateFormData('duration_minutes', value)}
+          />
+
+          <FrequencySection
+            value={formData.frequency}
+            onChange={(value) => updateFormData('frequency', value)}
+          />
+
+          <AppointmentAlertSection
+            value={formData.appointment_alert}
+            onChange={(value) => updateFormData('appointment_alert', value)}
           />
 
           <div className="space-y-2">
@@ -113,39 +179,12 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             />
           </div>
 
-          <DateTimeSection
-            date={formData.date}
-            startTime={formData.start_time}
-            endTime={formData.end_time}
-            onDateChange={(date) => updateFormData('date', date)}
-            onStartTimeChange={(time) => updateFormData('start_time', time)}
-            onEndTimeChange={(time) => updateFormData('end_time', time)}
-          />
-
-          <LocationSection
-            location={formData.location}
-            roomNumber={formData.room_number}
-            onLocationChange={(location) => updateFormData('location', location)}
-            onRoomNumberChange={(roomNumber) => updateFormData('room_number', roomNumber)}
-          />
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => updateFormData('notes', e.target.value)}
-              placeholder="Additional notes..."
-              rows={3}
-            />
-          </div>
-
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={createAppointmentMutation.isPending}>
-              {createAppointmentMutation.isPending ? 'Creating...' : 'Create Appointment'}
+              {createAppointmentMutation.isPending ? 'Creating...' : 'Save New Appointment'}
             </Button>
           </div>
         </form>
