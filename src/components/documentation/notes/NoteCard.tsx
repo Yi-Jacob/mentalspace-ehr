@@ -50,6 +50,22 @@ const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
     ).join(' ');
   };
 
+  const handleViewNote = () => {
+    if (note.note_type === 'progress_note') {
+      navigate(`/documentation/progress-note/${note.id}`);
+    } else {
+      navigate(`/documentation/note/${note.id}`);
+    }
+  };
+
+  const handleEditNote = () => {
+    if (note.note_type === 'progress_note') {
+      navigate(`/documentation/progress-note/${note.id}/edit`);
+    } else {
+      navigate(`/documentation/note/${note.id}/edit`);
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -92,14 +108,14 @@ const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => navigate(`/documentation/note/${note.id}`)}
+              onClick={handleViewNote}
             >
               View
             </Button>
             {note.status === 'draft' && (
               <Button 
                 size="sm"
-                onClick={() => navigate(`/documentation/note/${note.id}/edit`)}
+                onClick={handleEditNote}
               >
                 Edit
               </Button>

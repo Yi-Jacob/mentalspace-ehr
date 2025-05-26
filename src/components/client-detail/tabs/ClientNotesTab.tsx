@@ -49,6 +49,22 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
     ).join(' ');
   };
 
+  const handleViewNote = (note: any) => {
+    if (note.note_type === 'progress_note') {
+      navigate(`/documentation/progress-note/${note.id}`);
+    } else {
+      navigate(`/documentation/note/${note.id}`);
+    }
+  };
+
+  const handleEditNote = (note: any) => {
+    if (note.note_type === 'progress_note') {
+      navigate(`/documentation/progress-note/${note.id}/edit`);
+    } else {
+      navigate(`/documentation/note/${note.id}/edit`);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -113,14 +129,14 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => navigate(`/documentation/note/${note.id}`)}
+                    onClick={() => handleViewNote(note)}
                   >
                     View
                   </Button>
                   {note.status === 'draft' && (
                     <Button 
                       size="sm"
-                      onClick={() => navigate(`/documentation/note/${note.id}/edit`)}
+                      onClick={() => handleEditNote(note)}
                     >
                       Edit
                     </Button>
