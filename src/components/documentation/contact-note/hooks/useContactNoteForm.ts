@@ -49,7 +49,10 @@ export const useContactNoteForm = (noteData?: any) => {
       'contactDuration', 'contactSummary'
     ];
     
-    return required.every(field => formData[field as keyof ContactNoteFormData]);
+    return required.every(field => {
+      const value = formData[field as keyof ContactNoteFormData];
+      return value !== undefined && value !== '' && value !== 0;
+    });
   };
 
   return {
