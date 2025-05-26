@@ -12,10 +12,10 @@ const TimePickerGrid: React.FC<TimePickerGridProps> = ({
   selectedTime,
   onTimeSelect
 }) => {
-  // Generate time slots from 6:00 AM to 9:45 PM in 15-minute intervals
+  // Generate time slots from 12:00 AM to 11:45 PM in 15-minute intervals
   const generateTimeSlots = () => {
     const slots = [];
-    for (let hour = 6; hour < 22; hour++) {
+    for (let hour = 0; hour < 24; hour++) {
       for (let minute = 0; minute < 60; minute += 15) {
         const time = new Date();
         time.setHours(hour, minute, 0, 0);
