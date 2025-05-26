@@ -30,7 +30,9 @@ const StaffList: React.FC = () => {
       'Clinical Administrator': 'bg-purple-100 text-purple-800',
       'Clinician': 'bg-blue-100 text-blue-800',
       'Supervisor': 'bg-green-100 text-green-800',
-      'Intern / Assistant / Associate': 'bg-yellow-100 text-yellow-800',
+      'Intern': 'bg-yellow-100 text-yellow-800',
+      'Assistant': 'bg-yellow-100 text-yellow-800',
+      'Associate': 'bg-yellow-100 text-yellow-800',
       'Practice Scheduler': 'bg-indigo-100 text-indigo-800',
       'Biller for Assigned Patients Only': 'bg-orange-100 text-orange-800',
       'Practice Biller': 'bg-pink-100 text-pink-800',
@@ -118,7 +120,7 @@ const StaffList: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedStaff(staff as StaffMember)}
+                    onClick={() => setSelectedStaff(staff)}
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit

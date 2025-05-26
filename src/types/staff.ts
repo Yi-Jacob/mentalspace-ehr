@@ -2,7 +2,9 @@
 export type UserRole = 
   | 'Practice Administrator'
   | 'Clinician'
-  | 'Intern / Assistant / Associate'
+  | 'Intern'
+  | 'Assistant' 
+  | 'Associate'
   | 'Supervisor'
   | 'Clinical Administrator'
   | 'Practice Scheduler'

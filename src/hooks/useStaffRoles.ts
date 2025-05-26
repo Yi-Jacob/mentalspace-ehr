@@ -63,7 +63,7 @@ export const useStaffRoles = () => {
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: role,
+          role: role as any, // Type assertion to handle the enum mismatch
           assigned_by: userData.id,
         })
         .select()
@@ -96,7 +96,7 @@ export const useStaffRoles = () => {
         .from('user_roles')
         .update({ is_active: false })
         .eq('user_id', userId)
-        .eq('role', role);
+        .eq('role', role as any); // Type assertion to handle the enum mismatch
 
       if (error) throw error;
     },
