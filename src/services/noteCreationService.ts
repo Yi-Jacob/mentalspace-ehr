@@ -79,10 +79,17 @@ export const noteCreationService = {
       
       if (error) {
         console.error('ERROR in Step 4 - Creating clinical note:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
 
       console.log('Step 5: Clinical note created successfully:', data);
+      console.log('SUCCESS: Productivity goals trigger should have fired automatically');
 
       // Check if tracking record already exists
       console.log('Step 6: Checking for existing tracking record...');
@@ -113,6 +120,21 @@ export const noteCreationService = {
         }
       } else {
         console.log('Step 6: Note completion tracking already exists, skipping creation');
+      }
+
+      // Verify productivity goals were updated
+      console.log('Step 8: Verifying productivity goals update...');
+      const { data: productivityGoals, error: goalError } = await supabase
+        .from('productivity_goals')
+        .select('*')
+        .eq('user_id', userData.id)
+        .eq('goal_type', 'daily_notes')
+        .eq('date', new Date().toISOString().split('T')[0]);
+      
+      if (goalError) {
+        console.error('Could not verify productivity goals:', goalError);
+      } else {
+        console.log('Productivity goals after note creation:', productivityGoals);
       }
       
       console.log('=== NOTE CREATION PROCESS COMPLETED SUCCESSFULLY ===');
