@@ -9,6 +9,228 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointment_reminders: {
+        Row: {
+          appointment_id: string
+          created_at: string | null
+          id: string
+          is_sent: boolean | null
+          reminder_type: string
+          send_before_minutes: number
+          sent_at: string | null
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string | null
+          id?: string
+          is_sent?: boolean | null
+          reminder_type: string
+          send_before_minutes: number
+          sent_at?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string | null
+          id?: string
+          is_sent?: boolean | null
+          reminder_type?: string
+          send_before_minutes?: number
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_reminders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_waitlist: {
+        Row: {
+          appointment_type: Database["public"]["Enums"]["appointment_type"]
+          client_id: string
+          created_at: string | null
+          fulfilled_appointment_id: string | null
+          id: string
+          is_fulfilled: boolean | null
+          notes: string | null
+          notified_at: string | null
+          preferred_date: string | null
+          preferred_time_end: string | null
+          preferred_time_start: string | null
+          priority: number | null
+          provider_id: string | null
+        }
+        Insert: {
+          appointment_type: Database["public"]["Enums"]["appointment_type"]
+          client_id: string
+          created_at?: string | null
+          fulfilled_appointment_id?: string | null
+          id?: string
+          is_fulfilled?: boolean | null
+          notes?: string | null
+          notified_at?: string | null
+          preferred_date?: string | null
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          priority?: number | null
+          provider_id?: string | null
+        }
+        Update: {
+          appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          client_id?: string
+          created_at?: string | null
+          fulfilled_appointment_id?: string | null
+          id?: string
+          is_fulfilled?: boolean | null
+          notes?: string | null
+          notified_at?: string | null
+          preferred_date?: string | null
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          priority?: number | null
+          provider_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_waitlist_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_waitlist_fulfilled_appointment_id_fkey"
+            columns: ["fulfilled_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_waitlist_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          appointment_type: Database["public"]["Enums"]["appointment_type"]
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          checked_in_at: string | null
+          client_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_time: string
+          id: string
+          is_recurring: boolean | null
+          location: string | null
+          no_show_reason: string | null
+          notes: string | null
+          provider_id: string | null
+          recurring_series_id: string | null
+          room_number: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_type: Database["public"]["Enums"]["appointment_type"]
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          checked_in_at?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          is_recurring?: boolean | null
+          location?: string | null
+          no_show_reason?: string | null
+          notes?: string | null
+          provider_id?: string | null
+          recurring_series_id?: string | null
+          room_number?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          checked_in_at?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_recurring?: boolean | null
+          location?: string | null
+          no_show_reason?: string | null
+          notes?: string | null
+          provider_id?: string | null
+          recurring_series_id?: string | null
+          room_number?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recurring_series"
+            columns: ["recurring_series_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_diagnoses: {
         Row: {
           client_id: string | null
@@ -921,6 +1143,62 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_schedules: {
+        Row: {
+          break_end_time: string | null
+          break_start_time: string | null
+          created_at: string | null
+          day_of_week: Database["public"]["Enums"]["day_of_week"]
+          effective_from: string
+          effective_until: string | null
+          end_time: string
+          id: string
+          is_available: boolean | null
+          provider_id: string
+          start_time: string
+          status: Database["public"]["Enums"]["schedule_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          break_end_time?: string | null
+          break_start_time?: string | null
+          created_at?: string | null
+          day_of_week: Database["public"]["Enums"]["day_of_week"]
+          effective_from: string
+          effective_until?: string | null
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          provider_id: string
+          start_time: string
+          status?: Database["public"]["Enums"]["schedule_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          break_end_time?: string | null
+          break_start_time?: string | null
+          created_at?: string | null
+          day_of_week?: Database["public"]["Enums"]["day_of_week"]
+          effective_from?: string
+          effective_until?: string | null
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          provider_id?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["schedule_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_schedules_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quick_actions: {
         Row: {
           action_type: string
@@ -959,6 +1237,99 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recurring_series: {
+        Row: {
+          created_at: string | null
+          days_of_week: Database["public"]["Enums"]["day_of_week"][] | null
+          end_date: string | null
+          id: string
+          interval_value: number
+          max_occurrences: number | null
+          pattern: Database["public"]["Enums"]["recurrence_pattern"]
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days_of_week?: Database["public"]["Enums"]["day_of_week"][] | null
+          end_date?: string | null
+          id?: string
+          interval_value?: number
+          max_occurrences?: number | null
+          pattern: Database["public"]["Enums"]["recurrence_pattern"]
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days_of_week?: Database["public"]["Enums"]["day_of_week"][] | null
+          end_date?: string | null
+          id?: string
+          interval_value?: number
+          max_occurrences?: number | null
+          pattern?: Database["public"]["Enums"]["recurrence_pattern"]
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      schedule_exceptions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          end_time: string | null
+          exception_date: string
+          id: string
+          is_unavailable: boolean | null
+          provider_id: string
+          reason: string | null
+          start_time: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          end_time?: string | null
+          exception_date: string
+          id?: string
+          is_unavailable?: boolean | null
+          provider_id: string
+          reason?: string | null
+          start_time?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          end_time?: string | null
+          exception_date?: string
+          id?: string
+          is_unavailable?: boolean | null
+          provider_id?: string
+          reason?: string | null
+          start_time?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_exceptions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_exceptions_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatment_goals: {
         Row: {
@@ -1067,6 +1438,32 @@ export type Database = {
     }
     Enums: {
       administrative_sex: "Male" | "Female" | "Unknown"
+      appointment_status:
+        | "scheduled"
+        | "confirmed"
+        | "checked_in"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "no_show"
+        | "rescheduled"
+      appointment_type:
+        | "initial_consultation"
+        | "follow_up"
+        | "therapy_session"
+        | "group_therapy"
+        | "assessment"
+        | "medication_management"
+        | "crisis_intervention"
+        | "other"
+      day_of_week:
+        | "monday"
+        | "tuesday"
+        | "wednesday"
+        | "thursday"
+        | "friday"
+        | "saturday"
+        | "sunday"
       employment_status:
         | "Full-time employed"
         | "Part-time employed"
@@ -1143,6 +1540,7 @@ export type Database = {
         | "Sexual / Gender Identity Concerns"
         | "Other"
       progress_note_format: "SOAP" | "DAP"
+      recurrence_pattern: "daily" | "weekly" | "biweekly" | "monthly" | "yearly"
       reminder_preference:
         | "Default Practice Setting"
         | "No reminders"
@@ -1150,6 +1548,7 @@ export type Database = {
         | "Text (SMS) only"
         | "Text (SMS) and Email"
         | "Text or Call, and Email"
+      schedule_status: "active" | "pending_approval" | "approved" | "rejected"
       sexual_orientation:
         | "Asexual"
         | "Bisexual"
@@ -1398,6 +1797,35 @@ export const Constants = {
   public: {
     Enums: {
       administrative_sex: ["Male", "Female", "Unknown"],
+      appointment_status: [
+        "scheduled",
+        "confirmed",
+        "checked_in",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "no_show",
+        "rescheduled",
+      ],
+      appointment_type: [
+        "initial_consultation",
+        "follow_up",
+        "therapy_session",
+        "group_therapy",
+        "assessment",
+        "medication_management",
+        "crisis_intervention",
+        "other",
+      ],
+      day_of_week: [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ],
       employment_status: [
         "Full-time employed",
         "Part-time employed",
@@ -1482,6 +1910,7 @@ export const Constants = {
         "Other",
       ],
       progress_note_format: ["SOAP", "DAP"],
+      recurrence_pattern: ["daily", "weekly", "biweekly", "monthly", "yearly"],
       reminder_preference: [
         "Default Practice Setting",
         "No reminders",
@@ -1490,6 +1919,7 @@ export const Constants = {
         "Text (SMS) and Email",
         "Text or Call, and Email",
       ],
+      schedule_status: ["active", "pending_approval", "approved", "rejected"],
       sexual_orientation: [
         "Asexual",
         "Bisexual",

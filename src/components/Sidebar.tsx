@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   LayoutDashboard, 
@@ -12,7 +11,8 @@ import {
   Shield, 
   Settings,
   Stethoscope,
-  LogOut
+  LogOut,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +35,24 @@ const menuItems = [
   { id: 'staff', label: 'Staff', icon: Stethoscope },
   { id: 'compliance', label: 'Compliance', icon: Shield },
   { id: 'settings', label: 'Practice Settings', icon: Settings },
+];
+
+const navigationItems = [
+  {
+    name: 'Dashboard',
+    path: '/',
+    icon: Home,
+  },
+  {
+    name: 'Documentation',
+    path: '/documentation',
+    icon: FileText,
+  },
+  {
+    name: 'Scheduling',
+    path: '/scheduling',
+    icon: Calendar,
+  },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
