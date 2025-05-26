@@ -12,6 +12,18 @@ interface PlanningSectionProps {
   updateFormData: (updates: Partial<ProgressNoteFormData>) => void;
 }
 
+const PRESCRIBED_FREQUENCY_OPTIONS = [
+  'As Needed',
+  'Twice a Week',
+  'Weekly',
+  'Every 2 Weeks',
+  'Every 4 Weeks',
+  'Every Month',
+  'Every 2 Months',
+  'Every 3 Months',
+  'Every 4 Months'
+];
+
 const PlanningSection: React.FC<PlanningSectionProps> = ({
   formData,
   updateFormData,
@@ -43,7 +55,7 @@ const PlanningSection: React.FC<PlanningSectionProps> = ({
             <SelectTrigger>
               <SelectValue placeholder="Select recommendation" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="Continue current therapeutic focus">
                 Continue current therapeutic focus
               </SelectItem>
@@ -58,13 +70,22 @@ const PlanningSection: React.FC<PlanningSectionProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="prescribedFrequency">Prescribed Frequency</Label>
-          <Input
-            id="prescribedFrequency"
-            value={formData.prescribedFrequency || ''}
-            onChange={(e) => updateFormData({ prescribedFrequency: e.target.value })}
-            placeholder="e.g., Weekly, Bi-weekly, Monthly"
-          />
+          <Label htmlFor="prescribedFrequency">Prescribed Frequency of Treatment</Label>
+          <Select
+            value={formData.prescribedFrequency}
+            onValueChange={(value) => updateFormData({ prescribedFrequency: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select frequency" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {PRESCRIBED_FREQUENCY_OPTIONS.map((frequency) => (
+                <SelectItem key={frequency} value={frequency}>
+                  {frequency}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardContent>
     </Card>
