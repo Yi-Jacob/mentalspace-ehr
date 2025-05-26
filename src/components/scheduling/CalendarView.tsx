@@ -158,40 +158,55 @@ const CalendarView = () => {
 
   return (
     <div className="space-y-6 h-full flex flex-col">
-      <Card className="flex-1 flex flex-col">
-        <CardHeader className="flex-shrink-0">
+      <Card className="flex-1 flex flex-col border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30">
+        <CardHeader className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5" />
-              <span>Calendar</span>
+            <CardTitle className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <span className="text-xl font-semibold">Calendar</span>
             </CardTitle>
             <div className="flex items-center space-x-4">
               <Select value={viewType} onValueChange={(value: CalendarViewType) => setViewType(value)}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 bg-white/20 border-white/30 text-white backdrop-blur-sm hover:bg-white/30 transition-all duration-200">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="day">Day</SelectItem>
-                  <SelectItem value="week">Week</SelectItem>
-                  <SelectItem value="month">Month</SelectItem>
-                  <SelectItem value="list">List</SelectItem>
+                <SelectContent className="bg-white border-0 shadow-2xl">
+                  <SelectItem value="day" className="hover:bg-blue-50 transition-colors">Day</SelectItem>
+                  <SelectItem value="week" className="hover:bg-blue-50 transition-colors">Week</SelectItem>
+                  <SelectItem value="month" className="hover:bg-blue-50 transition-colors">Month</SelectItem>
+                  <SelectItem value="list" className="hover:bg-blue-50 transition-colors">List</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => setShowCreateModal(true)}>
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 New Appointment
               </Button>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={() => navigateDate('prev')}>
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigateDate('prev')}
+                className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <h2 className="text-lg font-medium min-w-[200px]">
+              <h2 className="text-xl font-semibold min-w-[200px] text-center">
                 {getCalendarTitle(currentDate, viewType)}
               </h2>
-              <Button variant="outline" size="sm" onClick={() => navigateDate('next')}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigateDate('next')}
+                className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -199,6 +214,7 @@ const CalendarView = () => {
               variant="outline" 
               size="sm" 
               onClick={() => setCurrentDate(new Date())}
+              className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
             >
               Today
             </Button>
@@ -207,7 +223,10 @@ const CalendarView = () => {
         <CardContent className="flex-1 flex flex-col p-0">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="text-gray-500">Loading calendar...</div>
+              <div className="flex flex-col items-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                <div className="text-gray-600 font-medium">Loading calendar...</div>
+              </div>
             </div>
           ) : (
             <div className="flex-1 flex flex-col">
