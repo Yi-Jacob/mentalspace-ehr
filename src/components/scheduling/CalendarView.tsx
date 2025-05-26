@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import MonthView from './calendar-views/MonthView';
 import ListView from './calendar-views/ListView';
 import { useCalendarNavigation } from './hooks/useCalendarNavigation';
 import { useAppointmentModal } from './hooks/useAppointmentModal';
+import { useRealtimeAppointments } from './hooks/useRealtimeAppointments';
 import { getCalendarTitle } from './utils/calendarUtils';
 
 type CalendarViewType = 'day' | 'week' | 'month' | 'list';
@@ -56,6 +56,9 @@ const CalendarView = () => {
     handleTimeSlotClick,
     closeModal
   } = useAppointmentModal();
+
+  // Enable real-time updates
+  useRealtimeAppointments();
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: ['appointments', currentDate, viewType],

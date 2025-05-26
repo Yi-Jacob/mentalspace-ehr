@@ -2,25 +2,15 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { format } from 'date-fns';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import ClientSelectionSection from './appointment-form/ClientSelectionSection';
-import AppointmentTypeSection from './appointment-form/AppointmentTypeSection';
-import DateTimeSection from './appointment-form/DateTimeSection';
-import LocationSection from './appointment-form/LocationSection';
-import ClinicianSection from './appointment-form/ClinicianSection';
-import ServiceCodeSection from './appointment-form/ServiceCodeSection';
-import DurationSection from './appointment-form/DurationSection';
-import FrequencySection from './appointment-form/FrequencySection';
-import TelehealthSection from './appointment-form/TelehealthSection';
-import AppointmentAlertSection from './appointment-form/AppointmentAlertSection';
+import { Plus, Calendar, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAppointmentForm } from './appointment-form/hooks/useAppointmentForm';
-import { useAppointmentMutation } from './appointment-form/hooks/useAppointmentMutation';
-import { Calendar, Clock, Sparkles } from 'lucide-react';
+import { useConflictDetection } from './hooks/useConflictDetection';
+import ClientSelectionSection from './appointment-form/ClientSelectionSection';
+import DateTimeSection from './appointment-form/DateTimeSection';
+import AppointmentTypeSection from './appointment-form/AppointmentTypeSection';
+import LocationSection from './appointment-form/LocationSection';
+import { format } from 'date-fns';
 
 interface CreateAppointmentModalProps {
   open: boolean;
@@ -35,188 +25,112 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   selectedDate,
   selectedTime
 }) => {
-  const { toast } = useToast();
-  const { formData, updateFormData, resetForm } = useAppointmentForm(selectedDate, selectedTime);
-
-  const { data: clients } = useQuery({
-    queryKey: ['clients-for-appointments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id, first_name, last_name')
-        .eq('is_active', true)
-        .order('last_name');
-      
-      if (error) throw error;
-      return data;
+  const { formData, setFormData, handleSubmit, isSubmitting, resetForm } = useAppointmentForm({
+    onSuccess: () => {
+      onOpenChange(false);
+      resetForm();
     },
+    selectedDate,
+    selectedTime
   });
 
-  const { data: clinicians } = useQuery({
-    queryKey: ['users-for-appointments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, first_name, last_name')
-        .eq('is_active', true)
-        .order('last_name');
-      
-      if (error) throw error;
-      return data;
-    },
+  const startDateTime = formData.date && formData.start_time 
+    ? new Date(`${formData.date}T${formData.start_time}`).toISOString()
+    : '';
+  const endDateTime = formData.date && formData.end_time 
+    ? new Date(`${formData.date}T${formData.end_time}`).toISOString()
+    : '';
+
+  const { data: conflictData } = useConflictDetection({
+    providerId: formData.provider_id || '',
+    clientId: formData.client_id,
+    startTime: startDateTime,
+    endTime: endDateTime
   });
 
-  const handleSuccess = () => {
+  const handleClose = () => {
     onOpenChange(false);
     resetForm();
   };
 
-  const createAppointmentMutation = useAppointmentMutation(handleSuccess);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.client_id) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please select a client',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    createAppointmentMutation.mutate({
-      client_id: formData.client_id,
-      appointment_type: formData.appointment_type,
-      location: formData.location || null,
-      room_number: formData.room_number || null,
-      notes: formData.notes || null,
-      date: formData.date,
-      start_time: formData.start_time,
-      end_time: formData.end_time
-    });
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto border-0 shadow-2xl bg-gradient-to-br from-white to-blue-50/30">
-        <DialogHeader className="pb-6 border-b border-gradient-to-r from-blue-200 to-purple-200">
-          <DialogTitle className="flex items-center space-x-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white">
-              <Sparkles className="h-6 w-6" />
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30">
+        <DialogHeader className="pb-6">
+          <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
+            <div className="p-2 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg text-white">
+              <Plus className="h-6 w-6" />
             </div>
-            <span>Create New Appointment</span>
+            <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+              Create New Appointment
+            </span>
           </DialogTitle>
-          {selectedDate && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600 mt-2 bg-blue-50 p-3 rounded-lg">
-              <Calendar className="h-4 w-4 text-blue-500" />
-              <span className="font-medium">
-                Scheduled for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-                {selectedTime && (
-                  <>
-                    <Clock className="h-4 w-4 inline ml-2 mr-1 text-blue-500" />
-                    {format(new Date(`2000-01-01T${selectedTime}`), 'h:mm a')}
-                  </>
-                )}
-              </span>
-            </div>
-          )}
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
-          <div className="space-y-6">
-            <AppointmentTypeSection
-              value={formData.appointment_type}
-              onChange={(value) => updateFormData('appointment_type', value)}
-            />
 
-            <ClientSelectionSection
-              value={formData.client_id}
-              onChange={(value) => updateFormData('client_id', value)}
-              clients={clients}
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Conflict Warning */}
+          {conflictData?.hasConflicts && (
+            <Alert className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                <strong>Scheduling Conflict Detected:</strong>
+                <ul className="mt-2 space-y-1">
+                  {conflictData.conflicts.map((conflict, index) => (
+                    <li key={index} className="text-sm">
+                      • {conflict.message} ({format(new Date(conflict.start_time), 'HH:mm')} - {format(new Date(conflict.end_time), 'HH:mm')})
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
 
-            <ClinicianSection
-              value={formData.clinician_id}
-              onChange={(value) => updateFormData('clinician_id', value)}
-              clinicians={clinicians}
-            />
+          <ClientSelectionSection 
+            value={formData.client_id}
+            onChange={(value) => setFormData({ ...formData, client_id: value })}
+          />
 
-            <LocationSection
-              location={formData.location}
-              roomNumber={formData.room_number}
-              onLocationChange={(location) => updateFormData('location', location)}
-              onRoomNumberChange={(roomNumber) => updateFormData('room_number', roomNumber)}
-            />
+          <AppointmentTypeSection
+            appointmentType={formData.appointment_type}
+            title={formData.title}
+            notes={formData.notes}
+            onAppointmentTypeChange={(value) => setFormData({ ...formData, appointment_type: value })}
+            onTitleChange={(value) => setFormData({ ...formData, title: value })}
+            onNotesChange={(value) => setFormData({ ...formData, notes: value })}
+          />
 
-            <TelehealthSection
-              value={formData.use_telehealth}
-              onChange={(value) => updateFormData('use_telehealth', value)}
-            />
+          <DateTimeSection
+            date={formData.date}
+            startTime={formData.start_time}
+            endTime={formData.end_time}
+            onDateChange={(value) => setFormData({ ...formData, date: value })}
+            onStartTimeChange={(value) => setFormData({ ...formData, start_time: value })}
+            onEndTimeChange={(value) => setFormData({ ...formData, end_time: value })}
+          />
 
-            <ServiceCodeSection
-              value={formData.service_code}
-              onChange={(value) => updateFormData('service_code', value)}
-            />
+          <LocationSection
+            location={formData.location}
+            roomNumber={formData.room_number}
+            onLocationChange={(value) => setFormData({ ...formData, location: value })}
+            onRoomNumberChange={(value) => setFormData({ ...formData, room_number: value })}
+          />
 
-            <DateTimeSection
-              date={formData.date}
-              startTime={formData.start_time}
-              endTime={formData.end_time}
-              onDateChange={(date) => updateFormData('date', date)}
-              onStartTimeChange={(time) => updateFormData('start_time', time)}
-              onEndTimeChange={(time) => updateFormData('end_time', time)}
-            />
-
-            <DurationSection
-              value={formData.duration_minutes}
-              onChange={(value) => updateFormData('duration_minutes', value)}
-            />
-
-            <FrequencySection
-              value={formData.frequency}
-              onChange={(value) => updateFormData('frequency', value)}
-            />
-
-            <AppointmentAlertSection
-              value={formData.appointment_alert}
-              onChange={(value) => updateFormData('appointment_alert', value)}
-            />
-
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-semibold text-gray-700">Title (Optional)</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => updateFormData('title', e.target.value)}
-                placeholder="Appointment title"
-                className="border-gray-200 focus:border-blue-400 focus:ring-blue-400 transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="hover:bg-gray-50 transition-all duration-200"
+          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="hover:bg-gray-50 transition-colors"
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={createAppointmentMutation.isPending}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:transform-none disabled:hover:scale-100"
+            <Button
+              type="submit"
+              disabled={isSubmitting || !formData.client_id || conflictData?.hasConflicts}
+              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              {createAppointmentMutation.isPending ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Creating...</span>
-                </div>
-              ) : (
-                'Save New Appointment'
-              )}
+              <Calendar className="h-4 w-4 mr-2" />
+              {isSubmitting ? 'Creating...' : 'Create Appointment'}
             </Button>
           </div>
         </form>

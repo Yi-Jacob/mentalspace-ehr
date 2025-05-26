@@ -1,16 +1,20 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Calendar, Clock, User, MapPin, Plus, Edit, Eye, Sparkles } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, User, MapPin, Plus, Edit, Eye, Sparkles, Trash2, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import CreateAppointmentModal from './CreateAppointmentModal';
 import AppointmentWaitlist from './AppointmentWaitlist';
+import EditAppointmentModal from './EditAppointmentModal';
+import DeleteAppointmentDialog from './DeleteAppointmentDialog';
+import { useAppointmentMutations } from './hooks/useAppointmentMutations';
+import { useRealtimeAppointments } from './hooks/useRealtimeAppointments';
 
 type AppointmentStatus = 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
 type AppointmentType = 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
@@ -20,6 +24,14 @@ const AppointmentManagement = () => {
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<AppointmentType | 'all'>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+
+  // Enable real-time updates
+  useRealtimeAppointments();
+
+  const { updateAppointmentStatus } = useAppointmentMutations();
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: ['appointments-management', searchTerm, statusFilter, typeFilter],
@@ -97,6 +109,20 @@ const AppointmentManagement = () => {
       default:
         return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
     }
+  };
+
+  const handleEditAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setShowDeleteDialog(true);
+  };
+
+  const handleStatusChange = (appointmentId: string, newStatus: string) => {
+    updateAppointmentStatus.mutate({ id: appointmentId, status: newStatus });
   };
 
   return (
@@ -264,21 +290,50 @@ const AppointmentManagement = () => {
                               </p>
                             )}
                           </div>
-                          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="hover:bg-purple-50 transition-all duration-200"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                          <div className="flex space-x-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-blue-50"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48 bg-white border-0 shadow-xl">
+                                <DropdownMenuItem 
+                                  onClick={() => handleEditAppointment(appointment)}
+                                  className="hover:bg-blue-50 transition-colors cursor-pointer"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit Appointment
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleStatusChange(appointment.id, 'confirmed')}
+                                  disabled={appointment.status === 'confirmed'}
+                                  className="hover:bg-green-50 transition-colors cursor-pointer"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Mark as Confirmed
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleStatusChange(appointment.id, 'completed')}
+                                  disabled={appointment.status === 'completed'}
+                                  className="hover:bg-purple-50 transition-colors cursor-pointer"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Mark as Completed
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteAppointment(appointment)}
+                                  className="hover:bg-red-50 text-red-600 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Appointment
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </div>
@@ -298,6 +353,18 @@ const AppointmentManagement = () => {
       <CreateAppointmentModal 
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
+      />
+
+      <EditAppointmentModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        appointment={selectedAppointment}
+      />
+
+      <DeleteAppointmentDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        appointment={selectedAppointment}
       />
     </div>
   );

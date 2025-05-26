@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointment_conflicts: {
+        Row: {
+          appointment_id: string | null
+          conflict_type: string
+          conflicting_appointment_id: string | null
+          created_at: string | null
+          detected_at: string | null
+          id: string
+          resolved_at: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          conflict_type: string
+          conflicting_appointment_id?: string | null
+          created_at?: string | null
+          detected_at?: string | null
+          id?: string
+          resolved_at?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          conflict_type?: string
+          conflicting_appointment_id?: string | null
+          created_at?: string | null
+          detected_at?: string | null
+          id?: string
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_conflicts_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_conflicts_conflicting_appointment_id_fkey"
+            columns: ["conflicting_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_reminders: {
         Row: {
           appointment_id: string
