@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { StaffMember, UserRole } from '@/types/staff';
+import { StaffMember, UserRole, UserStatus } from '@/types/staff';
 
 interface CreateStaffMemberData {
   first_name: string;
@@ -20,7 +20,7 @@ interface CreateStaffMemberData {
   hire_date?: string;
   billing_rate?: number;
   can_bill_insurance?: boolean;
-  status?: string;
+  status?: UserStatus;
   notes?: string;
 }
 
@@ -71,7 +71,7 @@ export const useStaffManagement = () => {
         p_hire_date: staffData.hire_date || null,
         p_billing_rate: staffData.billing_rate || null,
         p_can_bill_insurance: staffData.can_bill_insurance || false,
-        p_status: staffData.status || 'active',
+        p_status: (staffData.status as UserStatus) || 'active',
         p_notes: staffData.notes || null,
       });
 
