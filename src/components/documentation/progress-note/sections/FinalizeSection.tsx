@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 
 interface FinalizeSectionProps {
@@ -23,7 +23,59 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   isLoading = false,
   clientData,
 }) => {
+  // Check if all required sections are complete
+  const checkSectionCompletion = () => {
+    const requiredSections = [
+      {
+        name: 'Session Information',
+        isComplete: !!(formData.sessionDate && formData.startTime && formData.endTime && formData.serviceCode),
+        fields: ['Session Date', 'Start Time', 'End Time', 'Service Code']
+      },
+      {
+        name: 'Diagnosis',
+        isComplete: !!(formData.primaryDiagnosis),
+        fields: ['Primary Diagnosis']
+      },
+      {
+        name: 'Mental Status',
+        isComplete: !!(formData.mood && formData.affect),
+        fields: ['Mood', 'Affect']
+      },
+      {
+        name: 'Risk Assessment',
+        isComplete: formData.noRiskPresent || (formData.riskAreas && formData.riskAreas.length > 0),
+        fields: ['Risk Assessment (either no risk present or risk areas documented)']
+      },
+      {
+        name: 'Content',
+        isComplete: !!(formData.symptomDescription && formData.objectiveContent),
+        fields: ['Symptom Description', 'Objective Content']
+      },
+      {
+        name: 'Interventions',
+        isComplete: !!(formData.selectedInterventions && formData.selectedInterventions.length > 0),
+        fields: ['At least one intervention selected']
+      },
+      {
+        name: 'Planning',
+        isComplete: !!(formData.planContent && formData.recommendation),
+        fields: ['Plan Content', 'Recommendation']
+      }
+    ];
+
+    return requiredSections;
+  };
+
+  const sectionCompletionStatus = checkSectionCompletion();
+  const allSectionsComplete = sectionCompletionStatus.every(section => section.isComplete);
+  const incompleteSections = sectionCompletionStatus.filter(section => !section.isComplete);
+
   const handleFinalize = async () => {
+    if (!allSectionsComplete) {
+      alert('Please complete all required sections before finalizing.');
+      return;
+    }
+
     if (!formData.signature) {
       alert('Please provide your signature before finalizing.');
       return;
@@ -70,6 +122,40 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
           </div>
         </div>
 
+        {/* Section Completion Status */}
+        <div className={`border rounded-lg p-4 ${allSectionsComplete ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+          <div className="flex items-center space-x-2 mb-3">
+            {allSectionsComplete ? (
+              <>
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <h3 className="font-medium text-green-900">All Required Sections Complete</h3>
+              </>
+            ) : (
+              <>
+                <XCircle className="h-5 w-5 text-red-600" />
+                <h3 className="font-medium text-red-900">Incomplete Required Sections</h3>
+              </>
+            )}
+          </div>
+          
+          {!allSectionsComplete && (
+            <div className="space-y-2">
+              <p className="text-sm text-red-800 mb-2">Please complete the following sections before finalizing:</p>
+              <ul className="space-y-1">
+                {incompleteSections.map((section, index) => (
+                  <li key={index} className="text-sm text-red-800">
+                    <strong>{section.name}:</strong> {section.fields.join(', ')}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {allSectionsComplete && (
+            <p className="text-sm text-green-800">Ready for finalization and signature.</p>
+          )}
+        </div>
+
         {!formData.isFinalized && (
           <>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
@@ -97,21 +183,26 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
                       updateFormData({ signature: '' });
                     }
                   }}
+                  disabled={!allSectionsComplete}
                 />
-                <Label htmlFor="reviewComplete" className="text-sm">
+                <Label htmlFor="reviewComplete" className={`text-sm ${!allSectionsComplete ? 'text-gray-400' : ''}`}>
                   I have reviewed this progress note for completeness and accuracy
                 </Label>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signature">Electronic Signature</Label>
+                <Label htmlFor="signature" className={!allSectionsComplete ? 'text-gray-400' : ''}>
+                  Electronic Signature
+                </Label>
                 <Input
                   id="signature"
                   value={formData.signature || ''}
                   onChange={(e) => updateFormData({ signature: e.target.value })}
                   placeholder="Type your full name to sign"
+                  disabled={!allSectionsComplete}
+                  className={!allSectionsComplete ? 'bg-gray-100' : ''}
                 />
-                <p className="text-xs text-gray-600">
+                <p className={`text-xs ${!allSectionsComplete ? 'text-gray-400' : 'text-gray-600'}`}>
                   By typing your name, you are providing your electronic signature
                 </p>
               </div>
@@ -127,8 +218,8 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
               </Button>
               <Button
                 onClick={handleFinalize}
-                disabled={!formData.signature || isLoading}
-                className="bg-green-600 hover:bg-green-700"
+                disabled={!allSectionsComplete || !formData.signature || isLoading}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
               >
                 {isLoading ? 'Finalizing...' : 'Finalize & Sign'}
               </Button>
