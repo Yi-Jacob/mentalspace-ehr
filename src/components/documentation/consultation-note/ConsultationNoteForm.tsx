@@ -1,91 +1,36 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Users, Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
-import { ConsultationNoteFormData } from './types/ConsultationNoteFormData';
-import { useToast } from '@/hooks/use-toast';
+import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
+import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
+import ConsultationNoteHeader from './components/ConsultationNoteHeader';
+import ConsultationInfoSection from './components/ConsultationInfoSection';
+import { useConsultationNoteData } from './hooks/useConsultationNoteData';
+import { useConsultationNoteForm } from './hooks/useConsultationNoteForm';
+import { useConsultationNoteSave } from './hooks/useConsultationNoteSave';
 
 const ConsultationNoteForm = () => {
   const { noteId } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   
-  const [formData, setFormData] = useState<ConsultationNoteFormData>({
-    clientId: '',
-    noteDate: new Date().toISOString().split('T')[0],
-    consultationDate: new Date().toISOString().split('T')[0],
-    consultationTime: '',
-    consultationType: 'case_review',
-    consultationPurpose: '',
-    consultationDuration: 0,
-    participants: [],
-    presentingConcerns: '',
-    backgroundInformation: '',
-    currentTreatment: '',
-    discussionPoints: [],
-    consultantRecommendations: [],
-    agreedUponActions: [],
-    treatmentModifications: '',
-    additionalResources: [],
-    followUpRequired: false,
-    followUpPlan: '',
-    nextConsultationDate: '',
-    actionItemOwners: [],
-    confidentialityAgreement: false,
-    consentObtained: false,
-    signature: '',
-    isFinalized: false,
-  });
+  const { data: noteData } = useConsultationNoteData(noteId);
+  const { formData, updateFormData, validateForm } = useConsultationNoteForm(noteData);
+  const { isLoading, handleSave } = useConsultationNoteSave(noteId);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const clientName = noteData?.clients 
+    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
+    : 'Unknown Client';
 
-  // Fetch note data if editing
-  const { data: noteData } = useQuery({
-    queryKey: ['clinical-note', noteId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients (
-            id,
-            first_name,
-            last_name
-          )
-        `)
-        .eq('id', noteId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!noteId,
-  });
+  const canFinalize = validateForm() && !!formData.signature;
 
-  useEffect(() => {
-    if (noteData?.content) {
-      const contentData = noteData.content as Record<string, any>;
-      setFormData(prev => ({
-        ...prev,
-        ...contentData,
-        clientId: noteData.client_id
-      }));
-    }
-  }, [noteData]);
-
-  const updateFormData = (updates: Partial<ConsultationNoteFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-  };
+  const handleSaveDraft = () => handleSave(formData, true, validateForm);
+  const handleFinalize = () => handleSave(formData, false, validateForm);
 
   const addParticipant = () => {
     const newParticipant = {
@@ -136,157 +81,25 @@ const ConsultationNoteForm = () => {
     });
   };
 
-  const validateForm = () => {
-    const required = [
-      'clientId', 'consultationDate', 'consultationType', 'consultationPurpose',
-      'consultationDuration', 'presentingConcerns'
-    ];
-    
-    return required.every(field => formData[field as keyof ConsultationNoteFormData]) &&
-           formData.confidentialityAgreement && formData.consentObtained;
-  };
-
-  const handleSave = async (isDraft: boolean) => {
-    if (!isDraft && !validateForm()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields and confirm agreements.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!isDraft && !formData.signature) {
-      toast({
-        title: 'Signature Required',
-        description: 'Please provide your signature to finalize the note.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const updateData = {
-        content: formData as any,
-        status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
-        ...(isDraft ? {} : {
-          signed_at: new Date().toISOString(),
-          signed_by: formData.signature
-        })
-      };
-
-      const { error } = await supabase
-        .from('clinical_notes')
-        .update(updateData)
-        .eq('id', noteId);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: `Consultation note ${isDraft ? 'saved as draft' : 'finalized'} successfully.`,
-      });
-
-      if (!isDraft) {
-        navigate('/documentation');
-      }
-    } catch (error) {
-      console.error('Error saving note:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save note. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const clientName = noteData?.clients 
-    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
-    : 'Unknown Client';
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-indigo-600" />
-              <span>Consultation Note</span>
-            </CardTitle>
-            <p className="text-gray-600">Client: {clientName}</p>
-          </CardHeader>
-        </Card>
+        <ConsultationNoteHeader
+          clientName={clientName}
+          onSaveDraft={handleSaveDraft}
+          onFinalize={handleFinalize}
+          isLoading={isLoading}
+          canFinalize={canFinalize}
+        />
 
-        {/* Form Content */}
+        <ClientInfoDisplay clientData={noteData?.clients} />
+
         <Card>
           <CardContent className="p-6 space-y-8">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Consultation Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="consultationDate">Consultation Date *</Label>
-                  <Input
-                    id="consultationDate"
-                    type="date"
-                    value={formData.consultationDate}
-                    onChange={(e) => updateFormData({ consultationDate: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="consultationTime">Consultation Time</Label>
-                  <Input
-                    id="consultationTime"
-                    type="time"
-                    value={formData.consultationTime}
-                    onChange={(e) => updateFormData({ consultationTime: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="consultationDuration">Duration (minutes) *</Label>
-                  <Input
-                    id="consultationDuration"
-                    type="number"
-                    min="1"
-                    value={formData.consultationDuration}
-                    onChange={(e) => updateFormData({ consultationDuration: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="consultationType">Consultation Type *</Label>
-                  <Select value={formData.consultationType} onValueChange={(value: any) => updateFormData({ consultationType: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="case_review">Case Review</SelectItem>
-                      <SelectItem value="treatment_planning">Treatment Planning</SelectItem>
-                      <SelectItem value="supervision">Clinical Supervision</SelectItem>
-                      <SelectItem value="peer_consultation">Peer Consultation</SelectItem>
-                      <SelectItem value="multidisciplinary_team">Multidisciplinary Team</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="consultationPurpose">Consultation Purpose *</Label>
-                <Textarea
-                  id="consultationPurpose"
-                  value={formData.consultationPurpose}
-                  onChange={(e) => updateFormData({ consultationPurpose: e.target.value })}
-                  placeholder="Describe the purpose and goals of this consultation..."
-                  rows={3}
-                />
-              </div>
-            </div>
+            <ConsultationInfoSection 
+              formData={formData} 
+              updateFormData={updateFormData} 
+            />
 
             {/* Participants */}
             <div className="space-y-4">
@@ -495,23 +308,6 @@ const ConsultationNoteForm = () => {
                     onChange={(e) => updateFormData({ signature: e.target.value })}
                     placeholder="Type your full name to sign"
                   />
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button
-                    onClick={() => handleSave(true)}
-                    variant="outline"
-                    disabled={isLoading}
-                  >
-                    Save as Draft
-                  </Button>
-                  <Button
-                    onClick={() => handleSave(false)}
-                    disabled={!validateForm() || !formData.signature || isLoading}
-                    className="bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
-                  </Button>
                 </div>
               </div>
             )}

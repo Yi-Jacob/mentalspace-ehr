@@ -1,9 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,78 +9,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Stethoscope, Plus, Trash2, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
-import { MiscellaneousNoteFormData } from './types/MiscellaneousNoteFormData';
-import { useToast } from '@/hooks/use-toast';
+import { Plus, Trash2, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
+import MiscellaneousNoteHeader from './components/MiscellaneousNoteHeader';
+import { useMiscellaneousNoteData } from './hooks/useMiscellaneousNoteData';
+import { useMiscellaneousNoteForm } from './hooks/useMiscellaneousNoteForm';
+import { useMiscellaneousNoteSave } from './hooks/useMiscellaneousNoteSave';
 
 const MiscellaneousNoteForm = () => {
   const { noteId } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   
-  const [formData, setFormData] = useState<MiscellaneousNoteFormData>({
-    clientId: '',
-    noteDate: new Date().toISOString().split('T')[0],
-    eventDate: new Date().toISOString().split('T')[0],
-    noteCategory: 'administrative',
-    noteSubtype: '',
-    urgencyLevel: 'low',
-    noteTitle: '',
-    noteDescription: '',
-    detailedNotes: '',
-    relatedPersons: [],
-    documentsReferenced: [],
-    actionsTaken: [],
-    followUpRequired: false,
-    followUpDetails: '',
-    mandatoryReporting: false,
-    reportingDetails: '',
-    legalImplications: '',
-    resolution: '',
-    outcomeSummary: '',
-    signature: '',
-    isFinalized: false,
-  });
+  const { data: noteData } = useMiscellaneousNoteData(noteId);
+  const { formData, updateFormData, validateForm } = useMiscellaneousNoteForm(noteData);
+  const { isLoading, handleSave } = useMiscellaneousNoteSave(noteId);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const clientName = noteData?.clients 
+    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
+    : 'Unknown Client';
 
-  // Fetch note data if editing
-  const { data: noteData } = useQuery({
-    queryKey: ['clinical-note', noteId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients (
-            id,
-            first_name,
-            last_name
-          )
-        `)
-        .eq('id', noteId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!noteId,
-  });
+  const canFinalize = validateForm() && !!formData.signature;
 
-  useEffect(() => {
-    if (noteData?.content) {
-      const contentData = noteData.content as Record<string, any>;
-      setFormData(prev => ({
-        ...prev,
-        ...contentData,
-        clientId: noteData.client_id
-      }));
-    }
-  }, [noteData]);
-
-  const updateFormData = (updates: Partial<MiscellaneousNoteFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-  };
+  const handleSaveDraft = () => handleSave(formData, true, validateForm);
+  const handleFinalize = () => handleSave(formData, false, validateForm);
 
   const addRelatedPerson = () => {
     const newPerson = {
@@ -108,90 +56,19 @@ const MiscellaneousNoteForm = () => {
     });
   };
 
-  const validateForm = () => {
-    const required = [
-      'clientId', 'eventDate', 'noteCategory', 'noteTitle', 'noteDescription'
-    ];
-    
-    return required.every(field => formData[field as keyof MiscellaneousNoteFormData]);
-  };
-
-  const handleSave = async (isDraft: boolean) => {
-    if (!isDraft && !validateForm()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!isDraft && !formData.signature) {
-      toast({
-        title: 'Signature Required',
-        description: 'Please provide your signature to finalize the note.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const updateData = {
-        content: formData as any,
-        status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
-        ...(isDraft ? {} : {
-          signed_at: new Date().toISOString(),
-          signed_by: formData.signature
-        })
-      };
-
-      const { error } = await supabase
-        .from('clinical_notes')
-        .update(updateData)
-        .eq('id', noteId);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: `Miscellaneous note ${isDraft ? 'saved as draft' : 'finalized'} successfully.`,
-      });
-
-      if (!isDraft) {
-        navigate('/documentation');
-      }
-    } catch (error) {
-      console.error('Error saving note:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save note. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const clientName = noteData?.clients 
-    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
-    : 'Unknown Client';
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Stethoscope className="h-5 w-5 text-gray-600" />
-              <span>Miscellaneous Note</span>
-            </CardTitle>
-            <p className="text-gray-600">Client: {clientName}</p>
-          </CardHeader>
-        </Card>
+        <MiscellaneousNoteHeader
+          clientName={clientName}
+          onSaveDraft={handleSaveDraft}
+          onFinalize={handleFinalize}
+          isLoading={isLoading}
+          canFinalize={canFinalize}
+        />
 
-        {/* Form Content */}
+        <ClientInfoDisplay clientData={noteData?.clients} />
+
         <Card>
           <CardContent className="p-6 space-y-8">
             {/* Basic Information */}
@@ -467,23 +344,6 @@ const MiscellaneousNoteForm = () => {
                     onChange={(e) => updateFormData({ signature: e.target.value })}
                     placeholder="Type your full name to sign"
                   />
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button
-                    onClick={() => handleSave(true)}
-                    variant="outline"
-                    disabled={isLoading}
-                  >
-                    Save as Draft
-                  </Button>
-                  <Button
-                    onClick={() => handleSave(false)}
-                    disabled={!validateForm() || !formData.signature || isLoading}
-                    className="bg-gray-600 hover:bg-gray-700"
-                  >
-                    {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
-                  </Button>
                 </div>
               </div>
             )}
