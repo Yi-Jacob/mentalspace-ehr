@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import SearchableSelect from '../../shared/SearchableSelect';
+import { useDiagnosisCodes } from '@/hooks/useDiagnosisCodes';
 
 interface DiagnosisSectionProps {
   formData: TreatmentPlanFormData;
@@ -18,6 +18,8 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
+  const { data: diagnosisOptions = [], isLoading } = useDiagnosisCodes();
+
   const addSecondaryDiagnosis = () => {
     updateFormData({
       secondaryDiagnoses: [...formData.secondaryDiagnoses, '']
@@ -43,15 +45,15 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="primary-diagnosis">Primary Diagnosis *</Label>
-              <Input
-                id="primary-diagnosis"
-                value={formData.primaryDiagnosis}
-                onChange={(e) => updateFormData({ primaryDiagnosis: e.target.value })}
-                placeholder="Enter primary diagnosis (e.g., F06.31 - Depressive Disorder Due to Another Medical Condition)"
-              />
-            </div>
+            <SearchableSelect
+              label="Primary Diagnosis"
+              value={formData.primaryDiagnosis}
+              onChange={(value) => updateFormData({ primaryDiagnosis: value })}
+              options={diagnosisOptions}
+              placeholder={isLoading ? "Loading diagnoses..." : "Search for a diagnosis..."}
+              required
+              disabled={isLoading}
+            />
           </div>
         </CardContent>
       </Card>
@@ -70,16 +72,21 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
           <div className="space-y-4">
             {formData.secondaryDiagnoses.map((diagnosis, index) => (
               <div key={index} className="flex items-center space-x-2">
-                <Input
-                  value={diagnosis}
-                  onChange={(e) => updateSecondaryDiagnosis(index, e.target.value)}
-                  placeholder="Enter secondary diagnosis"
-                  className="flex-1"
-                />
+                <div className="flex-1">
+                  <SearchableSelect
+                    label={`Secondary Diagnosis ${index + 1}`}
+                    value={diagnosis}
+                    onChange={(value) => updateSecondaryDiagnosis(index, value)}
+                    options={diagnosisOptions}
+                    placeholder={isLoading ? "Loading diagnoses..." : "Search for a diagnosis..."}
+                    disabled={isLoading}
+                  />
+                </div>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => removeSecondaryDiagnosis(index)}
+                  className="mt-6"
                 >
                   <X className="w-4 h-4" />
                 </Button>
