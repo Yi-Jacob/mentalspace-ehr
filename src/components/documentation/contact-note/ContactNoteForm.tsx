@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
 import ContactNoteHeader from './components/ContactNoteHeader';
+import ContactNoteNavigationButtons from './components/ContactNoteNavigationButtons';
 import ContactInfoSection from './components/ContactInfoSection';
 import ContactSummarySection from './components/ContactSummarySection';
 import RiskAssessmentSection from './components/RiskAssessmentSection';
@@ -73,6 +74,11 @@ const ContactNoteForm = () => {
             <FinalizationSection 
               formData={formData} 
               updateFormData={updateFormData} 
+            />
+
+            <ContactNoteNavigationButtons
+              onSaveDraft={handleSaveDraft}
+              isLoading={isLoading}
             />
           </CardContent>
         </Card>

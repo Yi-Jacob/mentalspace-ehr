@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationButtonsProps {
   currentSection: number;
@@ -20,12 +21,21 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onSaveDraft,
   isLoading = false,
 }) => {
+  const navigate = useNavigate();
   const isFirstSection = currentSection === 0;
   const isLastSection = currentSection === totalSections - 1;
 
   return (
     <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-6">
-      <div>
+      <div className="flex space-x-2">
+        <Button
+          variant="outline"
+          onClick={() => navigate('/documentation')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Documentation
+        </Button>
+        
         {!isFirstSection && (
           <Button
             variant="outline"
