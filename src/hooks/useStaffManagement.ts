@@ -2,7 +2,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { StaffMember, StaffProfile } from '@/types/staff';
 
 export const useStaffManagement = () => {
   const { toast } = useToast();
@@ -16,19 +15,25 @@ export const useStaffManagement = () => {
         .from('users')
         .select(`
           *,
-          staff_profile:staff_profiles(*),
+          staff_profile:staff_profiles!inner(*),
           roles:user_roles(*)
         `)
         .eq('is_active', true);
 
       if (error) throw error;
-      return data as StaffMember[];
+      
+      // Transform the data to match our expected structure
+      return data?.map(user => ({
+        ...user,
+        staff_profile: Array.isArray(user.staff_profile) ? user.staff_profile[0] : user.staff_profile,
+        roles: user.roles || []
+      })) || [];
     },
   });
 
   // Create staff profile
   const createStaffProfileMutation = useMutation({
-    mutationFn: async (profileData: Partial<StaffProfile>) => {
+    mutationFn: async (profileData: { user_id: string; [key: string]: any }) => {
       const { data, error } = await supabase
         .from('staff_profiles')
         .insert(profileData)
@@ -56,7 +61,7 @@ export const useStaffManagement = () => {
 
   // Update staff profile
   const updateStaffProfileMutation = useMutation({
-    mutationFn: async ({ id, ...profileData }: Partial<StaffProfile> & { id: string }) => {
+    mutationFn: async ({ id, ...profileData }: { id: string; [key: string]: any }) => {
       const { data, error } = await supabase
         .from('staff_profiles')
         .update(profileData)

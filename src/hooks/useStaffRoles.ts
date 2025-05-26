@@ -3,7 +3,6 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { UserRole, UserRoleAssignment } from '@/types/staff';
 
 export const useStaffRoles = () => {
   const { toast } = useToast();
@@ -16,37 +15,55 @@ export const useStaffRoles = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return [];
 
+      // First get the user from our users table
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.user.id)
+        .single();
+
+      if (!userData) return [];
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
-        .eq('user_id', user.user.id)
+        .eq('user_id', userData.id)
         .eq('is_active', true);
 
       if (error) throw error;
-      return data as UserRoleAssignment[];
+      return data || [];
     },
   });
 
-  const hasRole = useCallback((role: UserRole): boolean => {
+  const hasRole = useCallback((role: string): boolean => {
     return userRoles?.some(r => r.role === role && r.is_active) || false;
   }, [userRoles]);
 
-  const hasAnyRole = useCallback((roles: UserRole[]): boolean => {
+  const hasAnyRole = useCallback((roles: string[]): boolean => {
     return userRoles?.some(r => roles.includes(r.role) && r.is_active) || false;
   }, [userRoles]);
 
   // Assign role to user
   const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const { data: currentUser } = await supabase.auth.getUser();
       if (!currentUser.user) throw new Error('Not authenticated');
+
+      // Get current user's ID from users table
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', currentUser.user.id)
+        .single();
+
+      if (!userData) throw new Error('User not found');
 
       const { data, error } = await supabase
         .from('user_roles')
         .insert({
           user_id: userId,
-          role,
-          assigned_by: currentUser.user.id,
+          role: role as any,
+          assigned_by: userData.id,
         })
         .select()
         .single();
@@ -73,12 +90,12 @@ export const useStaffRoles = () => {
 
   // Remove role from user
   const removeRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const { error } = await supabase
         .from('user_roles')
         .update({ is_active: false })
         .eq('user_id', userId)
-        .eq('role', role);
+        .eq('role', role as any);
 
       if (error) throw error;
     },

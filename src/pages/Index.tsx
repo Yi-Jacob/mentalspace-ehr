@@ -66,6 +66,8 @@ const Index = () => {
       setActiveModule('documentation');
     } else if (location.pathname === '/clients') {
       setActiveModule('clients');
+    } else if (location.pathname === '/staff') {
+      setActiveModule('staff');
     } else if (location.pathname === '/') {
       setActiveModule('dashboard');
     }
@@ -78,6 +80,8 @@ const Index = () => {
       navigate('/documentation');
     } else if (moduleId === 'clients') {
       navigate('/clients');
+    } else if (moduleId === 'staff') {
+      navigate('/staff');
     } else if (moduleId === 'dashboard') {
       navigate('/');
     } else {
@@ -96,6 +100,15 @@ const Index = () => {
 
     if (activeModule === 'documentation') {
       return <Documentation />;
+    }
+
+    if (activeModule === 'staff') {
+      const StaffManagementPage = React.lazy(() => import('@/components/staff/StaffManagementPage'));
+      return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <StaffManagementPage />
+        </React.Suspense>
+      );
     }
 
     const config = moduleConfigs[activeModule as keyof typeof moduleConfigs];
