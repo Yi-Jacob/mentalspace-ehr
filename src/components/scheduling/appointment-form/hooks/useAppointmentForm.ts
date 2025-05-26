@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 
 interface AppointmentFormData {
   client_id: string;
-  appointment_type: string;
+  appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
   title: string;
   date: Date;
   start_time: string;
