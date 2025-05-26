@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -116,7 +117,7 @@ const ContactNoteForm = () => {
     try {
       const updateData = {
         content: formData as any,
-        status: isDraft ? 'draft' : 'signed',
+        status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
         ...(isDraft ? {} : {
           signed_at: new Date().toISOString(),
           signed_by: formData.signature
