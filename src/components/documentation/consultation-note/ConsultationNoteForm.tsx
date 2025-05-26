@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
 import ConsultationNoteHeader from './components/ConsultationNoteHeader';
 import ConsultationInfoSection from './components/ConsultationInfoSection';
+import NavigationButtons from '../progress-note/components/NavigationButtons';
 import { useConsultationNoteData } from './hooks/useConsultationNoteData';
 import { useConsultationNoteForm } from './hooks/useConsultationNoteForm';
 import { useConsultationNoteSave } from './hooks/useConsultationNoteSave';
@@ -325,6 +325,16 @@ const ConsultationNoteForm = () => {
                 </div>
               </div>
             )}
+
+            {/* Navigation Buttons */}
+            <NavigationButtons
+              currentSection={0}
+              totalSections={1}
+              onPrevious={() => {}}
+              onNext={() => {}}
+              onSaveDraft={handleSaveDraft}
+              isLoading={isLoading}
+            />
           </CardContent>
         </Card>
       </div>

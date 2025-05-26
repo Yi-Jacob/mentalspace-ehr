@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Trash2, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
 import MiscellaneousNoteHeader from './components/MiscellaneousNoteHeader';
+import NavigationButtons from '../progress-note/components/NavigationButtons';
 import { useMiscellaneousNoteData } from './hooks/useMiscellaneousNoteData';
 import { useMiscellaneousNoteForm } from './hooks/useMiscellaneousNoteForm';
 import { useMiscellaneousNoteSave } from './hooks/useMiscellaneousNoteSave';
@@ -361,6 +361,16 @@ const MiscellaneousNoteForm = () => {
                 </div>
               </div>
             )}
+
+            {/* Navigation Buttons */}
+            <NavigationButtons
+              currentSection={0}
+              totalSections={1}
+              onPrevious={() => {}}
+              onNext={() => {}}
+              onSaveDraft={handleSaveDraft}
+              isLoading={isLoading}
+            />
           </CardContent>
         </Card>
       </div>
