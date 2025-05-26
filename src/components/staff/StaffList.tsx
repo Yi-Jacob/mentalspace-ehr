@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Edit, UserMinus, Phone, Mail } from 'lucide-react';
 import { useStaffManagement } from '@/hooks/useStaffManagement';
 import { useStaffRoles } from '@/hooks/useStaffRoles';
-import { StaffMember } from '@/types/staff';
+import { StaffMember, UserRole } from '@/types/staff';
 import EditStaffModal from './EditStaffModal';
 
 const StaffList: React.FC = () => {
@@ -118,7 +118,7 @@ const StaffList: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedStaff(staff)}
+                    onClick={() => setSelectedStaff(staff as StaffMember)}
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit

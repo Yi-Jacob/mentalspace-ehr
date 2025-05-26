@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { UserRole } from '@/types/staff';
 
 export const useStaffRoles = () => {
   const { toast } = useToast();
@@ -35,17 +36,17 @@ export const useStaffRoles = () => {
     },
   });
 
-  const hasRole = useCallback((role: string): boolean => {
+  const hasRole = useCallback((role: UserRole): boolean => {
     return userRoles?.some(r => r.role === role && r.is_active) || false;
   }, [userRoles]);
 
-  const hasAnyRole = useCallback((roles: string[]): boolean => {
-    return userRoles?.some(r => roles.includes(r.role) && r.is_active) || false;
+  const hasAnyRole = useCallback((roles: UserRole[]): boolean => {
+    return userRoles?.some(r => roles.includes(r.role as UserRole) && r.is_active) || false;
   }, [userRoles]);
 
   // Assign role to user
   const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
       const { data: currentUser } = await supabase.auth.getUser();
       if (!currentUser.user) throw new Error('Not authenticated');
 
@@ -62,7 +63,7 @@ export const useStaffRoles = () => {
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: role as any,
+          role: role,
           assigned_by: userData.id,
         })
         .select()
@@ -90,12 +91,12 @@ export const useStaffRoles = () => {
 
   // Remove role from user
   const removeRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
       const { error } = await supabase
         .from('user_roles')
         .update({ is_active: false })
         .eq('user_id', userId)
-        .eq('role', role as any);
+        .eq('role', role);
 
       if (error) throw error;
     },

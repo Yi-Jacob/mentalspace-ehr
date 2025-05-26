@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { StaffMember } from '@/types/staff';
 
 export const useStaffManagement = () => {
   const { toast } = useToast();
@@ -23,11 +24,11 @@ export const useStaffManagement = () => {
       if (error) throw error;
       
       // Transform the data to match our expected structure
-      return data?.map(user => ({
+      return (data?.map(user => ({
         ...user,
         staff_profile: Array.isArray(user.staff_profile) ? user.staff_profile[0] : user.staff_profile,
         roles: user.roles || []
-      })) || [];
+      })) || []) as StaffMember[];
     },
   });
 

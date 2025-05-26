@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useStaffManagement } from '@/hooks/useStaffManagement';
+import { useToast } from '@/hooks/use-toast';
 import { UserStatus } from '@/types/staff';
 
 interface CreateStaffModalProps {
@@ -15,6 +15,7 @@ interface CreateStaffModalProps {
 }
 
 const CreateStaffModal: React.FC<CreateStaffModalProps> = ({ isOpen, onClose }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -34,27 +35,14 @@ const CreateStaffModal: React.FC<CreateStaffModalProps> = ({ isOpen, onClose }) 
     notes: '',
   });
 
-  const { createStaffProfile, isCreating } = useStaffManagement();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would typically create the user first, then the staff profile
-    // For now, we'll just create the staff profile part
-    createStaffProfile({
-      employee_id: formData.employee_id || undefined,
-      job_title: formData.job_title || undefined,
-      department: formData.department || undefined,
-      phone_number: formData.phone_number || undefined,
-      npi_number: formData.npi_number || undefined,
-      license_number: formData.license_number || undefined,
-      license_state: formData.license_state || undefined,
-      license_expiry_date: formData.license_expiry_date || undefined,
-      hire_date: formData.hire_date || undefined,
-      billing_rate: formData.billing_rate ? parseFloat(formData.billing_rate) : undefined,
-      can_bill_insurance: formData.can_bill_insurance,
-      status: formData.status,
-      notes: formData.notes || undefined,
+    // For now, show a message that this feature is not fully implemented
+    toast({
+      title: 'Feature Coming Soon',
+      description: 'Staff creation functionality will be available once user management is fully implemented.',
+      variant: 'default',
     });
 
     onClose();
@@ -232,8 +220,8 @@ const CreateStaffModal: React.FC<CreateStaffModalProps> = ({ isOpen, onClose }) 
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create Staff Member'}
+            <Button type="submit">
+              Create Staff Member
             </Button>
           </div>
         </form>
