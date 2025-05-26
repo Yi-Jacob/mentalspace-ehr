@@ -25,20 +25,25 @@ export interface TreatmentPlanFormData {
     objectives: Array<{
       id: string;
       text: string;
+      objectiveText: string;
       targetDate: string;
+      estimatedCompletion: string;
+      completionDate: string;
       method: string;
       frequency: string;
+      strategies: string[];
     }>;
     targetDate: string;
     priority: 'High' | 'Medium' | 'Low';
   }>;
   
   // Discharge Planning
-  dischargeCriteria: string[];
+  dischargeCriteria: string;
   estimatedDuration: string;
   aftercareRecommendations: string;
   
   // Additional Information
+  additionalInformation: string;
   medicalConsiderations: string;
   psychosocialFactors: string;
   culturalConsiderations: string;
@@ -47,6 +52,8 @@ export interface TreatmentPlanFormData {
   sessionFrequency: string;
   sessionDuration: string;
   modality: string;
+  prescribedFrequency: string;
+  medicalNecessityDeclaration: boolean;
   
   // Finalization
   isFinalized: boolean;

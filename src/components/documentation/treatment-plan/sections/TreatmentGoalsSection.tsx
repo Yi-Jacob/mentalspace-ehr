@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,8 +50,11 @@ const TreatmentGoalsSection: React.FC<TreatmentGoalsSectionProps> = ({
 
   const addGoal = () => {
     const newGoals = [...formData.treatmentGoals, {
+      id: crypto.randomUUID(),
       goalText: '',
-      objectives: []
+      objectives: [],
+      targetDate: '',
+      priority: 'Medium' as const
     }];
     updateFormData({ treatmentGoals: newGoals });
     setOpenGoals([...openGoals, newGoals.length - 1]);
@@ -73,9 +75,14 @@ const TreatmentGoalsSection: React.FC<TreatmentGoalsSectionProps> = ({
   const addObjective = (goalIndex: number) => {
     const newGoals = [...formData.treatmentGoals];
     newGoals[goalIndex].objectives.push({
+      id: crypto.randomUUID(),
+      text: '',
       objectiveText: '',
       estimatedCompletion: '3 months',
       completionDate: '',
+      targetDate: '',
+      method: '',
+      frequency: '',
       strategies: []
     });
     updateFormData({ treatmentGoals: newGoals });
