@@ -28,11 +28,11 @@ export const useAppointmentMutations = () => {
           title: data.title,
           start_time: data.start_time,
           end_time: data.end_time,
-          status: data.status,
+          status: data.status as 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled',
           location: data.location,
           room_number: data.room_number,
           notes: data.notes,
-          appointment_type: data.appointment_type,
+          appointment_type: data.appointment_type as 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other',
           updated_at: new Date().toISOString()
         })
         .eq('id', data.id)
@@ -100,7 +100,7 @@ export const useAppointmentMutations = () => {
       const { data, error } = await supabase
         .from('appointments')
         .update({ 
-          status,
+          status: status as 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled',
           updated_at: new Date().toISOString(),
           ...(status === 'completed' && { completed_at: new Date().toISOString() }),
           ...(status === 'checked_in' && { checked_in_at: new Date().toISOString() })

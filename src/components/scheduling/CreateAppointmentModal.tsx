@@ -94,7 +94,7 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             appointmentType={formData.appointment_type}
             title={formData.title}
             notes={formData.notes}
-            onAppointmentTypeChange={(value) => setFormData({ ...formData, appointment_type: value })}
+            onAppointmentTypeChange={(value) => setFormData({ ...formData, appointment_type: value as any })}
             onTitleChange={(value) => setFormData({ ...formData, title: value })}
             onNotesChange={(value) => setFormData({ ...formData, notes: value })}
           />

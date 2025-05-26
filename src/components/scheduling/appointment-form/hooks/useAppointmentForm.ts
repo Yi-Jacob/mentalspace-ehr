@@ -1,12 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { useAppointmentMutation } from './useAppointmentMutation';
 
 interface AppointmentFormData {
   client_id: string;
+  provider_id: string;
   appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
   title: string;
-  date: Date;
+  date: string;
   start_time: string;
   end_time: string;
   duration_minutes: number;
@@ -20,13 +22,20 @@ interface AppointmentFormData {
   notes: string;
 }
 
-export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: string | null) => {
+interface UseAppointmentFormOptions {
+  onSuccess: () => void;
+  selectedDate?: Date | null;
+  selectedTime?: string | null;
+}
+
+export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: UseAppointmentFormOptions) => {
   const [formData, setFormData] = useState<AppointmentFormData>({
     client_id: '',
+    provider_id: '',
     appointment_type: 'therapy_session',
     title: '',
-    date: new Date(),
-    start_time: '09:00',
+    date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
+    start_time: selectedTime || '09:00',
     end_time: '10:00',
     duration_minutes: 45,
     location: '',
@@ -39,10 +48,12 @@ export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: st
     notes: ''
   });
 
+  const mutation = useAppointmentMutation(onSuccess);
+
   // Update form data when selectedDate or selectedTime changes
   useEffect(() => {
     if (selectedDate) {
-      setFormData(prev => ({ ...prev, date: selectedDate }));
+      setFormData(prev => ({ ...prev, date: format(selectedDate, 'yyyy-MM-dd') }));
     }
     if (selectedTime) {
       const startTime = format(new Date(`2000-01-01T${selectedTime}`), 'HH:mm');
@@ -66,16 +77,31 @@ export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: st
     setFormData(prev => ({ ...prev, end_time: endTime }));
   }, [formData.duration_minutes, formData.start_time]);
 
-  const updateFormData = (field: keyof AppointmentFormData, value: string | Date | number | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const appointmentData = {
+      client_id: formData.client_id,
+      appointment_type: formData.appointment_type,
+      title: formData.title || null,
+      location: formData.location || null,
+      room_number: formData.room_number || null,
+      notes: formData.notes || null,
+      date: new Date(formData.date),
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+    };
+
+    await mutation.mutateAsync(appointmentData);
   };
 
   const resetForm = () => {
     setFormData({
       client_id: '',
+      provider_id: '',
       appointment_type: 'therapy_session',
       title: '',
-      date: new Date(),
+      date: format(new Date(), 'yyyy-MM-dd'),
       start_time: '09:00',
       end_time: '09:45',
       duration_minutes: 45,
@@ -92,7 +118,9 @@ export const useAppointmentForm = (selectedDate?: Date | null, selectedTime?: st
 
   return {
     formData,
-    updateFormData,
+    setFormData,
+    handleSubmit,
+    isSubmitting: mutation.isPending,
     resetForm
   };
 };
