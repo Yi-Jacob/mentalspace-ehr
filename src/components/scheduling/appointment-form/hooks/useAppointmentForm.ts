@@ -77,6 +77,10 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
     setFormData(prev => ({ ...prev, end_time: endTime }));
   }, [formData.duration_minutes, formData.start_time]);
 
+  const updateFormData = (field: keyof AppointmentFormData, value: string | number | boolean | Date) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -118,6 +122,7 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
 
   return {
     formData,
+    updateFormData,
     setFormData,
     handleSubmit,
     isSubmitting: mutation.isPending,
