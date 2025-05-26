@@ -21,6 +21,23 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
 
   return useMutation({
     mutationFn: async (appointmentData: AppointmentData) => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Get the user's profile to get the provider_id
+      const { data: userProfile, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (userError || !userProfile) {
+        throw new Error('User profile not found');
+      }
+
       const startDateTime = new Date(appointmentData.date);
       const [startHour, startMinute] = appointmentData.start_time.split(':');
       startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
@@ -33,6 +50,7 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         .from('appointments')
         .insert({
           client_id: appointmentData.client_id,
+          provider_id: userProfile.id, // Add the provider_id
           appointment_type: appointmentData.appointment_type as 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other',
           title: appointmentData.title || null,
           location: appointmentData.location || null,
@@ -57,12 +75,12 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
       onSuccess();
     },
     onError: (error) => {
+      console.error('Error creating appointment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create appointment',
+        description: 'Failed to create appointment. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error creating appointment:', error);
     },
   });
 };
