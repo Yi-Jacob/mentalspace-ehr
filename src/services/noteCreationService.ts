@@ -82,20 +82,15 @@ export const noteCreationService = {
 
     console.log('Clinical note created successfully:', data);
 
-    // Check if tracking record already exists - USING maybeSingle() to avoid errors
+    // Check if tracking record already exists - using a simple select first
     console.log('Checking for existing tracking record...');
     
-    const { data: existingTracking, error: checkError } = await supabase
+    const { data: existingTracking } = await supabase
       .from('note_completion_tracking')
       .select('id')
       .eq('note_id', data.id)
       .eq('user_id', userData.id)
       .maybeSingle();
-
-    if (checkError) {
-      console.error('Error checking for existing tracking:', checkError);
-      // Continue anyway, don't fail the entire process
-    }
 
     // Only create tracking record if it doesn't exist
     if (!existingTracking) {
