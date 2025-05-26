@@ -32,12 +32,10 @@ const StaffManagementPage: React.FC = () => {
             Manage staff profiles, roles, and permissions
           </p>
         </div>
-        {canManageStaff && (
-          <Button onClick={handleAddStaff}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Staff Member
-          </Button>
-        )}
+        <Button onClick={handleAddStaff} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Staff Member
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
