@@ -25,7 +25,7 @@ const ContactNoteForm = () => {
     ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
     : 'Unknown Client';
 
-  const canFinalize = validateForm() && formData.signature;
+  const canFinalize = validateForm() && !!formData.signature;
 
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
   const handleFinalize = () => handleSave(formData, false, validateForm);
