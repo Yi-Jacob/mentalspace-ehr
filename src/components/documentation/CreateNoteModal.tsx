@@ -49,8 +49,8 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
       return;
     }
 
-    // Handle intake assessment and progress notes with special routing
-    if ((noteType === 'intake' || noteType === 'progress_note') && createNoteMutation) {
+    // Handle structured notes (intake, progress_note, treatment_plan) with special routing
+    if ((noteType === 'intake' || noteType === 'progress_note' || noteType === 'treatment_plan') && createNoteMutation) {
       createNoteMutation.mutate({ clientId: selectedClientId, noteType });
       onClose();
       return;
@@ -94,12 +94,14 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
       setTitle('New Intake Assessment');
     } else if (noteType === 'progress_note') {
       setTitle('New Progress Note');
+    } else if (noteType === 'treatment_plan') {
+      setTitle('New Treatment Plan');
     } else {
       setTitle('');
     }
   }, [noteType]);
 
-  const isStructuredNote = noteType === 'intake' || noteType === 'progress_note';
+  const isStructuredNote = noteType === 'intake' || noteType === 'progress_note' || noteType === 'treatment_plan';
   const isLoading = createNoteMutation?.isPending;
 
   return (
