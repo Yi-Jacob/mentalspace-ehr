@@ -14,6 +14,10 @@ import IntakeAssessmentView from "./components/documentation/intake/IntakeAssess
 import ProgressNoteForm from "./components/documentation/progress-note/ProgressNoteForm";
 import ProgressNoteView from "./components/documentation/progress-note/ProgressNoteView";
 import TreatmentPlanForm from "./components/documentation/treatment-plan/TreatmentPlanForm";
+import CancellationNoteForm from "./components/documentation/cancellation-note/CancellationNoteForm";
+import ContactNoteForm from "./components/documentation/contact-note/ContactNoteForm";
+import ConsultationNoteForm from "./components/documentation/consultation-note/ConsultationNoteForm";
+import MiscellaneousNoteForm from "./components/documentation/miscellaneous-note/MiscellaneousNoteForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Sidebar from "./components/Sidebar";
@@ -80,6 +84,54 @@ const App = () => (
                     <Sidebar activeItem="documentation" onItemClick={() => {}} />
                     <div className="flex-1">
                       <TreatmentPlanForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/cancellation-note/:noteId/edit" element={
+              <ProtectedRoute>
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <CancellationNoteForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/contact-note/:noteId/edit" element={
+              <ProtectedRoute>
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <ContactNoteForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/consultation-note/:noteId/edit" element={
+              <ProtectedRoute>
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <ConsultationNoteForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/miscellaneous-note/:noteId/edit" element={
+              <ProtectedRoute>
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <MiscellaneousNoteForm />
                     </div>
                   </div>
                 </SidebarProvider>
