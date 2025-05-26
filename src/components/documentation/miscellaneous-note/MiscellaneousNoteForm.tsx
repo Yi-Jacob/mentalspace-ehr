@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
 import MiscellaneousNoteHeader from './components/MiscellaneousNoteHeader';
-import NavigationButtons from '../progress-note/components/NavigationButtons';
+import MiscellaneousNoteNavigationButtons from './components/MiscellaneousNoteNavigationButtons';
 import BasicInfoSection from './components/BasicInfoSection';
 import ContentSection from './components/ContentSection';
 import RelatedPersonsSection from './components/RelatedPersonsSection';
@@ -76,11 +76,7 @@ const MiscellaneousNoteForm = () => {
               updateFormData={updateFormData}
             />
 
-            <NavigationButtons
-              currentSection={0}
-              totalSections={1}
-              onPrevious={() => {}}
-              onNext={() => {}}
+            <MiscellaneousNoteNavigationButtons
               onSaveDraft={handleSaveDraft}
               isLoading={isLoading}
             />
