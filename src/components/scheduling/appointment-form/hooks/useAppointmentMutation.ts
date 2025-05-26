@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AppointmentData {
   client_id: string;
-  appointment_type: string;
+  appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
   title?: string | null;
   location?: string | null;
   room_number?: string | null;
@@ -33,14 +33,14 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         .from('appointments')
         .insert({
           client_id: appointmentData.client_id,
-          appointment_type: appointmentData.appointment_type,
+          appointment_type: appointmentData.appointment_type as 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other',
           title: appointmentData.title || null,
           location: appointmentData.location || null,
           room_number: appointmentData.room_number || null,
           notes: appointmentData.notes || null,
           start_time: startDateTime.toISOString(),
           end_time: endDateTime.toISOString(),
-          status: 'scheduled'
+          status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
         })
         .select()
         .single();
