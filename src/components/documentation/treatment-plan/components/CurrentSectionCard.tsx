@@ -5,6 +5,16 @@ import { SECTIONS } from '../constants/sections';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 import NavigationButtons from './NavigationButtons';
 
+// Import all section components
+import ClientOverviewSection from '../sections/ClientOverviewSection';
+import DiagnosisSection from '../sections/DiagnosisSection';
+import PresentingProblemSection from '../sections/PresentingProblemSection';
+import TreatmentGoalsSection from '../sections/TreatmentGoalsSection';
+import DischargePlanningSection from '../sections/DischargePlanningSection';
+import AdditionalInfoSection from '../sections/AdditionalInfoSection';
+import FrequencySection from '../sections/FrequencySection';
+import FinalizeSection from '../sections/FinalizeSection';
+
 interface CurrentSectionCardProps {
   currentSection: number;
   formData: TreatmentPlanFormData;
@@ -29,36 +39,109 @@ const CurrentSectionCard: React.FC<CurrentSectionCardProps> = ({
   onSaveDraft,
 }) => {
   const section = SECTIONS[currentSection];
-  const SectionComponent = section.component;
+  
+  // Check if all required sections are complete for finalization
+  const canFinalize = () => {
+    return !!(
+      formData.clientId &&
+      formData.treatmentPlanDate &&
+      formData.primaryDiagnosis &&
+      formData.presentingProblem &&
+      formData.treatmentGoals?.length > 0 &&
+      formData.dischargeCriteria &&
+      formData.prescribedFrequency &&
+      formData.medicalNecessityDeclaration
+    );
+  };
 
-  return (
-    <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-      <CardContent className="p-8">
-        <div className="space-y-8">
-          <div className="text-center border-b border-gray-200 pb-6">
-            <h2 className="text-2xl font-bold text-gray-900">{section.title}</h2>
-            <p className="text-gray-600 mt-2">
-              Step {currentSection + 1} of {SECTIONS.length}
-            </p>
-          </div>
-
-          <SectionComponent
+  const renderSectionContent = () => {
+    switch (section.id) {
+      case 'client-overview':
+        return (
+          <ClientOverviewSection
             formData={formData}
             updateFormData={updateFormData}
             clientData={clientData}
           />
-
-          <NavigationButtons
-            currentSection={currentSection}
-            totalSections={SECTIONS.length}
-            onPrevious={onPrevious}
-            onNext={onNext}
-            onSave={onSave}
-            onSaveDraft={onSaveDraft}
-            isLoading={isLoading}
-            canFinalize={formData.signature && !formData.isFinalized}
+        );
+      case 'diagnosis':
+        return (
+          <DiagnosisSection
+            formData={formData}
+            updateFormData={updateFormData}
+            clientData={clientData}
           />
-        </div>
+        );
+      case 'presenting-problem':
+        return (
+          <PresentingProblemSection
+            formData={formData}
+            updateFormData={updateFormData}
+            clientData={clientData}
+          />
+        );
+      case 'treatment-goals':
+        return (
+          <TreatmentGoalsSection
+            formData={formData}
+            updateFormData={updateFormData}
+            clientData={clientData}
+          />
+        );
+      case 'discharge-planning':
+        return (
+          <DischargePlanningSection
+            formData={formData}
+            updateFormData={updateFormData}
+            clientData={clientData}
+          />
+        );
+      case 'additional-info':
+        return (
+          <AdditionalInfoSection
+            formData={formData}
+            updateFormData={updateFormData}
+            clientData={clientData}
+          />
+        );
+      case 'frequency':
+        return (
+          <FrequencySection
+            formData={formData}
+            updateFormData={updateFormData}
+            clientData={clientData}
+          />
+        );
+      case 'finalize':
+        return (
+          <FinalizeSection
+            formData={formData}
+            updateFormData={updateFormData}
+            onSave={onSave}
+            isLoading={isLoading}
+            clientData={clientData}
+          />
+        );
+      default:
+        return <div>Section not found</div>;
+    }
+  };
+
+  return (
+    <Card className="bg-white">
+      <CardContent className="p-6">
+        {renderSectionContent()}
+        
+        <NavigationButtons
+          currentSection={currentSection}
+          totalSections={SECTIONS.length}
+          onPrevious={onPrevious}
+          onNext={onNext}
+          onSave={onSave}
+          onSaveDraft={onSaveDraft}
+          isLoading={isLoading}
+          canFinalize={canFinalize()}
+        />
       </CardContent>
     </Card>
   );
