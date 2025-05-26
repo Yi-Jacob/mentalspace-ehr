@@ -28,7 +28,8 @@ export const useDocumentation = () => {
   const createNoteMutation = useMutation({
     mutationFn: async ({ clientId, noteType }: { clientId: string; noteType: string }) => {
       return await executeWithRetry(async () => {
-        console.log('Starting note creation for user:', user?.id, 'client:', clientId, 'type:', noteType);
+        console.log('=== STARTING NOTE CREATION PROCESS ===');
+        console.log('User ID:', user?.id, 'Client ID:', clientId, 'Note Type:', noteType);
         
         // First, try to get the user's ID from the users table
         let { data: userData, error: userError } = await supabase
@@ -62,7 +63,7 @@ export const useDocumentation = () => {
           throw new Error('Could not find user profile');
         }
 
-        console.log('User data found/created:', userData);
+        console.log('User data confirmed:', userData);
 
         const title = noteType === 'intake' ? 'New Intake Assessment' : 
                      noteType === 'progress_note' ? 'New Progress Note' : 
@@ -72,13 +73,11 @@ export const useDocumentation = () => {
         // Ensure noteType matches the database enum values
         const validNoteType = noteType as 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
 
-        console.log('Creating clinical note with data:', {
+        console.log('Creating clinical note with:', {
           title,
           note_type: validNoteType,
           provider_id: userData.id,
           client_id: clientId,
-          content: {},
-          status: 'draft',
         });
 
         const { data, error } = await supabase
@@ -101,15 +100,20 @@ export const useDocumentation = () => {
 
         console.log('Clinical note created successfully:', data);
 
-        // Check if tracking record already exists
-        console.log('Checking if note completion tracking already exists for note:', data.id, 'user:', userData.id);
+        // Check if tracking record already exists - USING maybeSingle() to avoid errors
+        console.log('Checking for existing tracking record...');
         
-        const { data: existingTracking } = await supabase
+        const { data: existingTracking, error: checkError } = await supabase
           .from('note_completion_tracking')
           .select('id')
           .eq('note_id', data.id)
           .eq('user_id', userData.id)
-          .single();
+          .maybeSingle(); // This won't throw an error if no record exists
+
+        if (checkError) {
+          console.error('Error checking for existing tracking:', checkError);
+          // Continue anyway, don't fail the entire process
+        }
 
         // Only create tracking record if it doesn't exist
         if (!existingTracking) {
@@ -132,60 +136,51 @@ export const useDocumentation = () => {
           console.log('Note completion tracking already exists, skipping creation');
         }
         
-        console.log('Note creation process completed successfully');
+        console.log('=== NOTE CREATION PROCESS COMPLETED SUCCESSFULLY ===');
         return data;
       }, `Create ${noteType}`);
     },
     onSuccess: (data) => {
-      console.log('=== MUTATION SUCCESS ===');
-      console.log('Note created successfully, preparing navigation for note type:', data.note_type);
-      console.log('Note data:', data);
+      console.log('=== MUTATION SUCCESS - STARTING NAVIGATION ===');
+      console.log('Created note:', data);
+      console.log('Note type for navigation:', data.note_type);
       
       // Close the modal first
       setShowCreateModal(false);
       setSelectedNoteType(null);
       
       // Navigate based on note type with detailed logging
+      let targetRoute = '';
       if (data.note_type === 'progress_note') {
-        const route = `/documentation/progress-note/${data.id}/edit`;
-        console.log('Navigating to progress note edit route:', route);
-        navigate(route);
+        targetRoute = `/documentation/progress-note/${data.id}/edit`;
       } else if (data.note_type === 'treatment_plan') {
-        const route = `/documentation/treatment-plan/${data.id}/edit`;
-        console.log('Navigating to treatment plan edit route:', route);
-        navigate(route);
+        targetRoute = `/documentation/treatment-plan/${data.id}/edit`;
       } else {
-        const route = `/documentation/note/${data.id}/edit`;
-        console.log('Navigating to general note edit route:', route);
-        navigate(route);
+        targetRoute = `/documentation/note/${data.id}/edit`;
       }
       
+      console.log('Navigating to:', targetRoute);
+      navigate(targetRoute);
       console.log('=== NAVIGATION COMPLETED ===');
     },
     onError: (error) => {
       console.error('=== MUTATION ERROR ===');
       console.error('Full error object:', error);
       console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
       handleAPIError(error, '/clinical-notes', 'POST');
     },
   });
 
   const handleCreateNote = (noteType: string) => {
-    try {
-      console.log('=== STARTING NOTE CREATION ===');
-      console.log('Note type requested:', noteType);
-      // Always show the modal to select a client, regardless of note type
-      setSelectedNoteType(noteType);
-      setShowCreateModal(true);
-      console.log('Modal should be open now for note type:', noteType);
-    } catch (error) {
-      console.error('Error in handleCreateNote:', error);
-    }
+    console.log('=== HANDLE CREATE NOTE CALLED ===');
+    console.log('Note type:', noteType);
+    setSelectedNoteType(noteType);
+    setShowCreateModal(true);
+    console.log('Modal state set to open');
   };
 
   const handleCloseModal = () => {
-    console.log('Closing modal');
+    console.log('=== CLOSING MODAL ===');
     setShowCreateModal(false);
     setSelectedNoteType(null);
   };
