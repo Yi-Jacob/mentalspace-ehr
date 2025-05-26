@@ -17,6 +17,7 @@ import ContactNoteForm from '@/components/documentation/contact-note/ContactNote
 import ConsultationNoteForm from '@/components/documentation/consultation-note/ConsultationNoteForm';
 import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
 import ClientDetailView from '@/components/ClientDetailView';
+import StaffManagementPage from '@/components/staff/StaffManagementPage';
 import NotFound from '@/pages/NotFound';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
 import Scheduling from '@/pages/Scheduling';
@@ -57,6 +58,13 @@ function App() {
                   <ProtectedRoute>
                     <LayoutWithSidebar>
                       <Scheduling />
+                    </LayoutWithSidebar>
+                  </ProtectedRoute>
+                } />
+                <Route path="/staff" element={
+                  <ProtectedRoute>
+                    <LayoutWithSidebar>
+                      <StaffManagementPage />
                     </LayoutWithSidebar>
                   </ProtectedRoute>
                 } />
