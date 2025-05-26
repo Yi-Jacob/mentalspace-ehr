@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,18 +17,20 @@ interface CreateAppointmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDate?: Date | null;
+  selectedTime?: string | null;
 }
 
 const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   open,
   onOpenChange,
-  selectedDate
+  selectedDate,
+  selectedTime
 }) => {
   const [formData, setFormData] = useState({
     client_id: '',
     appointment_type: 'follow_up',
     title: '',
-    date: selectedDate || new Date(),
+    date: new Date(),
     start_time: '09:00',
     end_time: '10:00',
     location: '',
@@ -39,6 +40,25 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Update form data when selectedDate or selectedTime changes
+  useEffect(() => {
+    if (selectedDate) {
+      setFormData(prev => ({ ...prev, date: selectedDate }));
+    }
+    if (selectedTime) {
+      const startTime = format(new Date(`2000-01-01T${selectedTime}`), 'HH:mm');
+      const endDate = new Date(`2000-01-01T${selectedTime}`);
+      endDate.setHours(endDate.getHours() + 1); // Default to 1 hour duration
+      const endTime = format(endDate, 'HH:mm');
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        start_time: startTime,
+        end_time: endTime
+      }));
+    }
+  }, [selectedDate, selectedTime]);
 
   const { data: clients } = useQuery({
     queryKey: ['clients-for-appointments'],
@@ -138,6 +158,12 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Appointment</DialogTitle>
+          {selectedDate && (
+            <p className="text-sm text-gray-600">
+              Scheduled for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              {selectedTime && ` at ${format(new Date(`2000-01-01T${selectedTime}`), 'h:mm a')}`}
+            </p>
+          )}
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
