@@ -2,11 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, X } from 'lucide-react';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 
@@ -14,6 +14,51 @@ interface RiskAssessmentSectionProps {
   formData: ProgressNoteFormData;
   updateFormData: (updates: Partial<ProgressNoteFormData>) => void;
 }
+
+const AREA_OF_RISK_OPTIONS = [
+  'Inability to care for self',
+  'Inability to care for others',
+  'Aggression toward others',
+  'Aggression toward property',
+  'Self-harm',
+  'Suicide',
+  'Violence',
+  'Substance abuse',
+  'Elopement/Wandering',
+  'Sexual acting out',
+  'Fire setting',
+  'Other'
+];
+
+const RISK_FACTOR_SUGGESTIONS = [
+  'Current ideation',
+  'Access to means',
+  'History of attempts/behaviors',
+  'Alcohol/Substance use',
+  'Impulsivity',
+  'Hopelessness',
+  'Recent loss',
+  'Family history',
+  'Social isolation',
+  'Chronic pain',
+  'Mental illness',
+  'Previous hospitalization'
+];
+
+const PROTECTIVE_FACTOR_SUGGESTIONS = [
+  'Positive social support',
+  'Cultural/religious beliefs',
+  'Social responsibility',
+  'Children in the home',
+  'Life satisfaction',
+  'Positive coping skills',
+  'Sufficient problem-solving skills',
+  'Strong therapeutic rapport',
+  'Employment',
+  'Financial stability',
+  'Future goals',
+  'Pets/Animals'
+];
 
 const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
   formData,
@@ -47,6 +92,18 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
     updateFormData({ riskAreas: updatedRiskAreas });
   };
 
+  const addQuickFactor = (index: number, type: 'riskFactors' | 'protectiveFactors', factor: string) => {
+    const riskArea = formData.riskAreas?.[index];
+    if (!riskArea) return;
+    
+    const currentFactors = riskArea[type] || '';
+    const newFactors = currentFactors 
+      ? `${currentFactors}, ${factor}`
+      : factor;
+    
+    updateRiskArea(index, { [type]: newFactors });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -70,7 +127,7 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
         </div>
 
         {!formData.noRiskPresent && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {formData.riskAreas?.map((riskArea, index) => (
               <div key={index} className="border rounded-lg p-4 space-y-4">
                 <div className="flex items-center justify-between">
@@ -80,128 +137,178 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => removeRiskArea(index)}
+                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Area of Risk</Label>
-                    <Input
-                      value={riskArea.areaOfRisk}
-                      onChange={(e) => updateRiskArea(index, { areaOfRisk: e.target.value })}
-                      placeholder="e.g., Suicide, Self-harm, Violence"
-                    />
-                  </div>
+                {/* Area of Risk Dropdown */}
+                <div>
+                  <Label>Area of Risk:</Label>
+                  <Select
+                    value={riskArea.areaOfRisk}
+                    onValueChange={(value) => updateRiskArea(index, { areaOfRisk: value })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select area of risk..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {AREA_OF_RISK_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
+                {/* Level of Risk, Intent, Plan, Means - Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <Label>Level of Risk</Label>
-                    <Select
+                    <Label className="text-sm font-medium">Level of Risk:</Label>
+                    <RadioGroup
                       value={riskArea.levelOfRisk}
                       onValueChange={(value) => updateRiskArea(index, { levelOfRisk: value })}
+                      className="mt-2"
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Low">Low</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Imminent">Imminent</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      {['Low', 'Medium', 'High', 'Imminent'].map((level) => (
+                        <div key={level} className="flex items-center space-x-2">
+                          <RadioGroupItem value={level} id={`level-${index}-${level}`} />
+                          <Label htmlFor={`level-${index}-${level}`} className="text-sm">
+                            {level}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
                   </div>
 
                   <div>
-                    <Label>Intent to Act</Label>
-                    <Select
+                    <Label className="text-sm font-medium">Intent to Act:</Label>
+                    <RadioGroup
                       value={riskArea.intentToAct}
                       onValueChange={(value) => updateRiskArea(index, { intentToAct: value })}
+                      className="mt-2"
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Yes">Yes</SelectItem>
-                        <SelectItem value="No">No</SelectItem>
-                        <SelectItem value="Not Applicable">Not Applicable</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      {['Yes', 'No', 'Not Applicable'].map((intent) => (
+                        <div key={intent} className="flex items-center space-x-2">
+                          <RadioGroupItem value={intent} id={`intent-${index}-${intent}`} />
+                          <Label htmlFor={`intent-${index}-${intent}`} className="text-sm">
+                            {intent}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
                   </div>
 
                   <div>
-                    <Label>Plan to Act</Label>
-                    <Select
+                    <Label className="text-sm font-medium">Plan to Act:</Label>
+                    <RadioGroup
                       value={riskArea.planToAct}
                       onValueChange={(value) => updateRiskArea(index, { planToAct: value })}
+                      className="mt-2"
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Yes">Yes</SelectItem>
-                        <SelectItem value="No">No</SelectItem>
-                        <SelectItem value="Not Applicable">Not Applicable</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      {['Yes', 'No', 'Not Applicable'].map((plan) => (
+                        <div key={plan} className="flex items-center space-x-2">
+                          <RadioGroupItem value={plan} id={`plan-${index}-${plan}`} />
+                          <Label htmlFor={`plan-${index}-${plan}`} className="text-sm">
+                            {plan}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
                   </div>
 
                   <div>
-                    <Label>Means to Act</Label>
-                    <Select
+                    <Label className="text-sm font-medium">Means to Act:</Label>
+                    <RadioGroup
                       value={riskArea.meansToAct}
                       onValueChange={(value) => updateRiskArea(index, { meansToAct: value })}
+                      className="mt-2"
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Yes">Yes</SelectItem>
-                        <SelectItem value="No">No</SelectItem>
-                        <SelectItem value="Not Applicable">Not Applicable</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      {['Yes', 'No', 'Not Applicable'].map((means) => (
+                        <div key={means} className="flex items-center space-x-2">
+                          <RadioGroupItem value={means} id={`means-${index}-${means}`} />
+                          <Label htmlFor={`means-${index}-${means}`} className="text-sm">
+                            {means}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Risk Factors</Label>
-                    <Textarea
-                      value={riskArea.riskFactors}
-                      onChange={(e) => updateRiskArea(index, { riskFactors: e.target.value })}
-                      placeholder="Describe risk factors..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Protective Factors</Label>
-                    <Textarea
-                      value={riskArea.protectiveFactors}
-                      onChange={(e) => updateRiskArea(index, { protectiveFactors: e.target.value })}
-                      placeholder="Describe protective factors..."
-                      rows={3}
-                    />
-                  </div>
-                </div>
-
+                {/* Risk Factors */}
                 <div>
-                  <Label>Additional Details</Label>
+                  <Label>Risk Factors:</Label>
+                  <Textarea
+                    value={riskArea.riskFactors}
+                    onChange={(e) => updateRiskArea(index, { riskFactors: e.target.value })}
+                    placeholder="Enter risk factors..."
+                    rows={3}
+                    className="mt-1"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {RISK_FACTOR_SUGGESTIONS.map((factor) => (
+                      <Button
+                        key={factor}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addQuickFactor(index, 'riskFactors', factor)}
+                        className="text-xs h-7"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {factor}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Protective Factors */}
+                <div>
+                  <Label>Protective Factors:</Label>
+                  <Textarea
+                    value={riskArea.protectiveFactors}
+                    onChange={(e) => updateRiskArea(index, { protectiveFactors: e.target.value })}
+                    placeholder="Enter protective factors..."
+                    rows={3}
+                    className="mt-1"
+                  />
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {PROTECTIVE_FACTOR_SUGGESTIONS.map((factor) => (
+                      <Button
+                        key={factor}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addQuickFactor(index, 'protectiveFactors', factor)}
+                        className="text-xs h-7"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {factor}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional Details */}
+                <div>
+                  <Label>Additional Details:</Label>
                   <Textarea
                     value={riskArea.additionalDetails}
                     onChange={(e) => updateRiskArea(index, { additionalDetails: e.target.value })}
                     placeholder="Additional details about this risk area..."
                     rows={2}
+                    className="mt-1"
                   />
                 </div>
               </div>
             ))}
 
-            <Button type="button" onClick={addRiskArea} variant="outline">
+            <Button type="button" onClick={addRiskArea} variant="outline" className="text-blue-600">
               <Plus className="h-4 w-4 mr-2" />
-              Add Risk Area
+              Add Area of Risk
             </Button>
           </div>
         )}
