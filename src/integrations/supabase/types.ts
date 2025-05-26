@@ -276,6 +276,50 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_diagnoses: {
         Row: {
           client_id: string | null
@@ -1155,6 +1199,74 @@ export type Database = {
           },
         ]
       }
+      patient_access_permissions: {
+        Row: {
+          access_type: string | null
+          client_id: string
+          granted_at: string | null
+          granted_by: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type?: string | null
+          client_id: string
+          granted_at?: string | null
+          granted_by: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string | null
+          client_id?: string
+          granted_at?: string | null
+          granted_by?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_access_permissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_access_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_access_permissions_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_access_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       productivity_goals: {
         Row: {
           created_at: string | null
@@ -1376,6 +1488,141 @@ export type Database = {
           },
         ]
       }
+      staff_profiles: {
+        Row: {
+          billing_rate: number | null
+          can_bill_insurance: boolean | null
+          created_at: string | null
+          department: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          employee_id: string | null
+          hire_date: string | null
+          id: string
+          job_title: string | null
+          license_expiry_date: string | null
+          license_number: string | null
+          license_state: string | null
+          notes: string | null
+          npi_number: string | null
+          phone_number: string | null
+          status: Database["public"]["Enums"]["user_status"] | null
+          supervisor_id: string | null
+          termination_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_rate?: number | null
+          can_bill_insurance?: boolean | null
+          created_at?: string | null
+          department?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_id?: string | null
+          hire_date?: string | null
+          id?: string
+          job_title?: string | null
+          license_expiry_date?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          notes?: string | null
+          npi_number?: string | null
+          phone_number?: string | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          supervisor_id?: string | null
+          termination_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_rate?: number | null
+          can_bill_insurance?: boolean | null
+          created_at?: string | null
+          department?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_id?: string | null
+          hire_date?: string | null
+          id?: string
+          job_title?: string | null
+          license_expiry_date?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          notes?: string | null
+          npi_number?: string | null
+          phone_number?: string | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          supervisor_id?: string | null
+          termination_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supervision_relationships: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          start_date: string
+          supervisee_id: string
+          supervision_type: string | null
+          supervisor_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_date: string
+          supervisee_id: string
+          supervision_type?: string | null
+          supervisor_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_date?: string
+          supervisee_id?: string
+          supervision_type?: string | null
+          supervisor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supervision_relationships_supervisee_id_fkey"
+            columns: ["supervisee_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supervision_relationships_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treatment_goals: {
         Row: {
           achieved_date: string | null
@@ -1430,6 +1677,48 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          is_active: boolean | null
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           auth_user_id: string | null
@@ -1476,9 +1765,27 @@ export type Database = {
           avg_completion_time: number
         }[]
       }
+      can_access_patient: {
+        Args: { _user_id: string; _client_id: string }
+        Returns: boolean
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      has_any_role: {
+        Args: {
+          _user_id: string
+          _roles: Database["public"]["Enums"]["user_role"][]
+        }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
       }
     }
     Enums: {
@@ -1726,6 +2033,7 @@ export type Database = {
         | "Practice Scheduler"
         | "Biller for Assigned Patients Only"
         | "Practice Biller"
+      user_status: "active" | "inactive" | "suspended" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2106,6 +2414,7 @@ export const Constants = {
         "Biller for Assigned Patients Only",
         "Practice Biller",
       ],
+      user_status: ["active", "inactive", "suspended", "pending"],
     },
   },
 } as const
