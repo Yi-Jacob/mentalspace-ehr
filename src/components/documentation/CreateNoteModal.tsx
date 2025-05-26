@@ -6,27 +6,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 
 interface CreateNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   noteType: string | null;
-  createIntakeAssessmentMutation?: any;
+  createNoteMutation?: any;
 }
 
-const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMutation }: CreateNoteModalProps) => {
+const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: CreateNoteModalProps) => {
   const [title, setTitle] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [description, setDescription] = useState('');
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   const { data: clients } = useQuery({
     queryKey: ['clients-for-notes'],
@@ -42,50 +37,6 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMuta
     enabled: isOpen,
   });
 
-  const createNoteMutation = useMutation({
-    mutationFn: async (noteData: any) => {
-      // First, get the user's ID from the users table
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user?.id)
-        .single();
-
-      if (userError) {
-        console.error('Error fetching user:', userError);
-        throw new Error('Could not find user profile');
-      }
-
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .insert([{
-          ...noteData,
-          provider_id: userData.id
-        }])
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Note created successfully',
-        description: 'Your clinical note has been created and saved as a draft.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['clinical-notes'] });
-      onClose();
-      navigate(`/documentation/note/${data.id}/edit`);
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error creating note',
-        description: 'There was an error creating your note. Please try again.',
-        variant: 'destructive',
-      });
-      console.error('Error creating note:', error);
-    },
-  });
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -98,9 +49,9 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMuta
       return;
     }
 
-    // Handle intake assessment differently
-    if (noteType === 'intake' && createIntakeAssessmentMutation) {
-      createIntakeAssessmentMutation.mutate(selectedClientId);
+    // Handle intake assessment and progress notes with special routing
+    if ((noteType === 'intake' || noteType === 'progress_note') && createNoteMutation) {
+      createNoteMutation.mutate({ clientId: selectedClientId, noteType });
       onClose();
       return;
     }
@@ -115,15 +66,8 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMuta
       return;
     }
 
-    const noteData = {
-      title,
-      client_id: selectedClientId,
-      note_type: noteType,
-      content: { description },
-      status: 'draft',
-    };
-
-    createNoteMutation.mutate(noteData);
+    createNoteMutation?.mutate({ clientId: selectedClientId, noteType });
+    onClose();
   };
 
   const formatNoteType = (type: string) => {
@@ -144,19 +88,19 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMuta
     }
   }, [isOpen]);
 
-  // Set default title for intake assessments
+  // Set default title for structured notes
   React.useEffect(() => {
     if (noteType === 'intake') {
       setTitle('New Intake Assessment');
+    } else if (noteType === 'progress_note') {
+      setTitle('New Progress Note');
     } else {
       setTitle('');
     }
   }, [noteType]);
 
-  const isIntakeAssessment = noteType === 'intake';
-  const isLoading = isIntakeAssessment 
-    ? createIntakeAssessmentMutation?.isPending 
-    : createNoteMutation.isPending;
+  const isStructuredNote = noteType === 'intake' || noteType === 'progress_note';
+  const isLoading = createNoteMutation?.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -184,7 +128,7 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createIntakeAssessmentMuta
             </Select>
           </div>
 
-          {!isIntakeAssessment && (
+          {!isStructuredNote && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>

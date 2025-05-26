@@ -25,10 +25,10 @@ export const useDocumentation = () => {
     }
   });
 
-  const createIntakeAssessmentMutation = useMutation({
-    mutationFn: async (clientId: string) => {
+  const createNoteMutation = useMutation({
+    mutationFn: async ({ clientId, noteType }: { clientId: string; noteType: string }) => {
       return await executeWithRetry(async () => {
-        console.log('Creating intake assessment for user:', user?.id, 'and client:', clientId);
+        console.log('Creating note for user:', user?.id, 'client:', clientId, 'type:', noteType);
         
         // First, try to get the user's ID from the users table
         let { data: userData, error: userError } = await supabase
@@ -64,11 +64,15 @@ export const useDocumentation = () => {
 
         console.log('User data found/created:', userData);
 
+        const title = noteType === 'intake' ? 'New Intake Assessment' : 
+                     noteType === 'progress_note' ? 'New Progress Note' : 
+                     `New ${noteType.replace('_', ' ')}`;
+
         const { data, error } = await supabase
           .from('clinical_notes')
           .insert([{
-            title: 'New Intake Assessment',
-            note_type: 'intake',
+            title,
+            note_type: noteType,
             provider_id: userData.id,
             client_id: clientId,
             content: {},
@@ -84,10 +88,10 @@ export const useDocumentation = () => {
         
         console.log('Created clinical note:', data);
         return data;
-      }, 'Create Intake Assessment');
+      }, `Create ${noteType}`);
     },
     onSuccess: (data) => {
-      console.log('Intake assessment created successfully, navigating to:', `/documentation/note/${data.id}/edit`);
+      console.log('Note created successfully, navigating to edit view');
       navigate(`/documentation/note/${data.id}/edit`);
     },
     onError: (error) => {
@@ -116,7 +120,7 @@ export const useDocumentation = () => {
     setActiveTab,
     showCreateModal,
     selectedNoteType,
-    createIntakeAssessmentMutation,
+    createNoteMutation,
     handleCreateNote,
     handleCloseModal,
   };

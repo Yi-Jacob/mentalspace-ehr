@@ -1,54 +1,54 @@
 
-import { FileText, Clock } from 'lucide-react';
+import { FileText, Clipboard, Calendar, Phone, Users, Stethoscope, ClipboardList } from 'lucide-react';
 
 export const noteTypes = [
   {
     type: 'intake',
     title: 'Intake Assessment',
-    description: 'Comprehensive initial evaluation and assessment',
-    icon: FileText,
-    color: 'bg-blue-500'
+    description: 'Comprehensive initial assessment for new clients',
+    icon: ClipboardList,
+    color: 'bg-blue-600',
   },
   {
     type: 'progress_note',
     title: 'Progress Note',
-    description: 'Session documentation in SOAP or DAP format',
+    description: 'Document therapy session progress and interventions',
     icon: FileText,
-    color: 'bg-green-500'
+    color: 'bg-green-600',
   },
   {
     type: 'treatment_plan',
     title: 'Treatment Plan',
-    description: 'Goals, objectives, and intervention strategies',
-    icon: FileText,
-    color: 'bg-purple-500'
+    description: 'Create and update comprehensive treatment plans',
+    icon: Clipboard,
+    color: 'bg-purple-600',
   },
   {
     type: 'cancellation_note',
     title: 'Cancellation Note',
-    description: 'Missed appointments and cancellation documentation',
-    icon: Clock,
-    color: 'bg-orange-500'
+    description: 'Document session cancellations and reasons',
+    icon: Calendar,
+    color: 'bg-orange-600',
   },
   {
     type: 'contact_note',
     title: 'Contact Note',
-    description: 'Phone calls, emails, and other communications',
-    icon: FileText,
-    color: 'bg-cyan-500'
+    description: 'Record brief client contacts and communications',
+    icon: Phone,
+    color: 'bg-teal-600',
   },
   {
     type: 'consultation_note',
     title: 'Consultation Note',
-    description: 'Professional consultations and case discussions',
-    icon: FileText,
-    color: 'bg-indigo-500'
+    description: 'Document consultations with other providers',
+    icon: Users,
+    color: 'bg-indigo-600',
   },
   {
     type: 'miscellaneous_note',
     title: 'Miscellaneous Note',
-    description: 'Other clinical documentation needs',
-    icon: FileText,
-    color: 'bg-gray-500'
-  }
+    description: 'General documentation for other clinical activities',
+    icon: Stethoscope,
+    color: 'bg-gray-600',
+  },
 ];

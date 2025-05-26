@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import ClientDetailView from "./components/ClientDetailView";
 import IntakeAssessmentForm from "./components/documentation/intake/IntakeAssessmentForm";
 import IntakeAssessmentView from "./components/documentation/intake/IntakeAssessmentView";
+import ProgressNoteForm from "./components/documentation/progress-note/ProgressNoteForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Sidebar from "./components/Sidebar";
@@ -53,6 +54,18 @@ const App = () => (
                     <Sidebar activeItem="documentation" onItemClick={() => {}} />
                     <div className="flex-1">
                       <IntakeAssessmentForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/progress-note/:noteId/edit" element={
+              <ProtectedRoute>
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <ProgressNoteForm />
                     </div>
                   </div>
                 </SidebarProvider>
