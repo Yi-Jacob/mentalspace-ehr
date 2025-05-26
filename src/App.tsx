@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -18,6 +17,7 @@ import ConsultationNoteForm from '@/components/documentation/consultation-note/C
 import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
 import ClientDetailView from '@/components/ClientDetailView';
 import StaffManagementPage from '@/components/staff/StaffManagementPage';
+import AddStaffPage from '@/pages/AddStaffPage';
 import NotFound from '@/pages/NotFound';
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary';
 import Scheduling from '@/pages/Scheduling';
@@ -66,6 +66,11 @@ function App() {
                     <LayoutWithSidebar>
                       <StaffManagementPage />
                     </LayoutWithSidebar>
+                  </ProtectedRoute>
+                } />
+                <Route path="/staff/add" element={
+                  <ProtectedRoute>
+                    <AddStaffPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/documentation/intake/:noteId" element={

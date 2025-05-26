@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, Shield, UserCheck, Settings } from 'lucide-react';
@@ -9,14 +9,18 @@ import RoleManagement from './RoleManagement';
 import PatientAccessManagement from './PatientAccessManagement';
 import SupervisionManagement from './SupervisionManagement';
 import AuditLogs from './AuditLogs';
-import CreateStaffModal from './CreateStaffModal';
 
 const StaffManagementPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('staff');
+  const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { hasRole } = useStaffRoles();
 
   const canManageStaff = hasRole('Practice Administrator');
+
+  const handleAddStaff = () => {
+    navigate('/staff/add');
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -28,7 +32,7 @@ const StaffManagementPage: React.FC = () => {
           </p>
         </div>
         {canManageStaff && (
-          <Button onClick={() => setShowCreateModal(true)}>
+          <Button onClick={handleAddStaff}>
             <Plus className="h-4 w-4 mr-2" />
             Add Staff Member
           </Button>
