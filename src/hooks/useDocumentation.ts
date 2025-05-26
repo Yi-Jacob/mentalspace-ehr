@@ -88,6 +88,15 @@ export const useDocumentation = () => {
           console.error('Error creating clinical note:', error);
           throw error;
         }
+
+        // Create note completion tracking record
+        await supabase
+          .from('note_completion_tracking')
+          .insert({
+            note_id: data.id,
+            user_id: userData.id,
+            completion_percentage: 0,
+          });
         
         console.log('Created clinical note:', data);
         return data;

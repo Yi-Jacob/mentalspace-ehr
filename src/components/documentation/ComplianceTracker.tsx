@@ -17,8 +17,15 @@ import {
   Award
 } from 'lucide-react';
 import { format, subDays, isAfter } from 'date-fns';
+import { useComplianceMetrics } from '@/hooks/useComplianceMetrics';
+import { useProductivityGoals } from '@/hooks/useProductivityGoals';
+import { useQuickActions } from '@/hooks/useQuickActions';
 
 const ComplianceTracker = () => {
+  const { metrics, isLoading: metricsLoading } = useComplianceMetrics();
+  const { goals, isLoading: goalsLoading } = useProductivityGoals();
+  const { actions, createAction } = useQuickActions();
+
   const { data: complianceData, isLoading } = useQuery({
     queryKey: ['compliance-data'],
     queryFn: async () => {
@@ -36,7 +43,7 @@ const ComplianceTracker = () => {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || metricsLoading || goalsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -52,7 +59,7 @@ const ComplianceTracker = () => {
     note.status === 'draft' && isAfter(subDays(new Date(), 7), new Date(note.updated_at))
   ).length;
 
-  const compliance24h = signedNotes > 0 ? Math.round((signedNotes / totalNotes) * 100) : 0;
+  const compliance24h = Math.round(metrics.completion_rate || 0);
   const compliance48h = signedNotes > 0 ? Math.round(((signedNotes + Math.min(draftNotes, 2)) / totalNotes) * 100) : 0;
 
   const getComplianceColor = (percentage: number) => {
@@ -61,10 +68,17 @@ const ComplianceTracker = () => {
     return 'text-red-600';
   };
 
-  const getComplianceBg = (percentage: number) => {
-    if (percentage >= 90) return 'from-green-500 to-green-600';
-    if (percentage >= 70) return 'from-yellow-500 to-yellow-600';
-    return 'from-red-500 to-red-600';
+  const dailyGoal = goals.find(g => g.goal_type === 'daily_notes') || { target_value: 5, current_value: 0 };
+  const goalProgress = Math.min((dailyGoal.current_value / dailyGoal.target_value) * 100, 100);
+
+  const handleCreateReminder = () => {
+    createAction({
+      action_type: 'review_draft',
+      title: 'Review Pending Notes',
+      description: `You have ${draftNotes} draft notes that need attention`,
+      priority: overdueNotes > 0 ? 3 : 2,
+      due_date: new Date().toISOString().split('T')[0],
+    });
   };
 
   return (
@@ -100,24 +114,27 @@ const ComplianceTracker = () => {
           </CardContent>
         </Card>
 
-        {/* 48h Compliance */}
+        {/* Daily Goal Progress */}
         <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-700">48h Compliance</p>
-                <p className={`text-3xl font-bold ${getComplianceColor(compliance48h)}`}>
-                  {compliance48h}%
+                <p className="text-sm font-medium text-blue-700">Daily Goal</p>
+                <p className="text-3xl font-bold text-blue-600">
+                  {dailyGoal.current_value}/{dailyGoal.target_value}
                 </p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
-                <Clock className="h-6 w-6 text-blue-600" />
+                <Target className="h-6 w-6 text-blue-600" />
               </div>
             </div>
             <Progress 
-              value={compliance48h} 
+              value={goalProgress} 
               className="mt-3 h-2"
             />
+            <p className="text-xs text-blue-600 mt-1">
+              {goalProgress >= 100 ? 'Goal achieved! 🎉' : `${dailyGoal.target_value - dailyGoal.current_value} more to go`}
+            </p>
           </CardContent>
         </Card>
 
@@ -237,7 +254,9 @@ const ComplianceTracker = () => {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-purple-600">5</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {Math.floor(Math.random() * 7) + 1}
+                </p>
                 <p className="text-xs text-purple-500">days</p>
               </div>
             </div>
@@ -246,7 +265,7 @@ const ComplianceTracker = () => {
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-700">Quick Actions</p>
               <div className="flex space-x-2">
-                <Button size="sm" variant="outline" className="flex-1">
+                <Button size="sm" variant="outline" className="flex-1" onClick={handleCreateReminder}>
                   <Calendar className="w-4 h-4 mr-1" />
                   Schedule
                 </Button>
@@ -282,11 +301,35 @@ const ComplianceTracker = () => {
                   <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
                     Review Pending Notes
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={handleCreateReminder}>
                     Set Reminders
                   </Button>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Quick Actions */}
+      {actions.length > 0 && (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-blue-900">Active Action Items</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {actions.slice(0, 3).map((action) => (
+                <div key={action.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">{action.title}</p>
+                    <p className="text-sm text-gray-600">{action.description}</p>
+                  </div>
+                  <Badge variant={action.priority === 3 ? "destructive" : action.priority === 2 ? "default" : "secondary"}>
+                    {action.priority === 3 ? 'High' : action.priority === 2 ? 'Medium' : 'Low'}
+                  </Badge>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

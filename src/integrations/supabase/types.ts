@@ -635,6 +635,36 @@ export type Database = {
           },
         ]
       }
+      compliance_metrics: {
+        Row: {
+          created_at: string | null
+          id: string
+          metric_type: string
+          metric_value: number
+          period_end: string
+          period_start: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metric_type: string
+          metric_value: number
+          period_end: string
+          period_start: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metric_type?: string
+          metric_value?: number
+          period_end?: string
+          period_start?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cpt_codes: {
         Row: {
           category: string | null
@@ -693,6 +723,50 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "treatment_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_completion_tracking: {
+        Row: {
+          completed_at: string | null
+          completion_percentage: number | null
+          created_at: string | null
+          id: string
+          note_id: string
+          started_at: string | null
+          time_spent_minutes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          note_id: string
+          started_at?: string | null
+          time_spent_minutes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          id?: string
+          note_id?: string
+          started_at?: string | null
+          time_spent_minutes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_completion_tracking_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_notes"
             referencedColumns: ["id"]
           },
         ]
@@ -787,6 +861,78 @@ export type Database = {
           },
         ]
       }
+      productivity_goals: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          date: string
+          goal_type: string
+          id: string
+          target_value: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          date?: string
+          goal_type: string
+          id?: string
+          target_value: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          date?: string
+          goal_type?: string
+          id?: string
+          target_value?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quick_actions: {
+        Row: {
+          action_type: string
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       treatment_goals: {
         Row: {
           achieved_date: string | null
@@ -879,6 +1025,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_compliance_metrics: {
+        Args: { user_uuid: string }
+        Returns: {
+          completion_rate: number
+          overdue_rate: number
+          avg_completion_time: number
+        }[]
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
