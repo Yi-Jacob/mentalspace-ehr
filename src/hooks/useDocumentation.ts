@@ -90,19 +90,23 @@ export const useDocumentation = () => {
           throw error;
         }
 
-        // Create note completion tracking record with proper conflict handling
-        const { error: trackingError } = await supabase
-          .from('note_completion_tracking')
-          .insert({
-            note_id: data.id,
-            user_id: userData.id,
-            completion_percentage: 0,
-          })
-          .select();
-        
-        if (trackingError) {
-          console.error('Error creating note completion tracking:', trackingError);
-          // Don't throw error for tracking failure, just log it
+        // Create note completion tracking record without ON CONFLICT
+        try {
+          const { error: trackingError } = await supabase
+            .from('note_completion_tracking')
+            .insert({
+              note_id: data.id,
+              user_id: userData.id,
+              completion_percentage: 0,
+            });
+          
+          if (trackingError) {
+            console.error('Error creating note completion tracking:', trackingError);
+            // Don't throw error for tracking failure, just log it
+          }
+        } catch (trackingErr) {
+          console.error('Failed to create tracking record:', trackingErr);
+          // Continue without tracking
         }
         
         console.log('Created clinical note:', data);
