@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Shield, UserCheck, Settings } from 'lucide-react';
+import { Plus, Users, Shield, UserCheck, Settings, Workflow, Eye } from 'lucide-react';
 import { useStaffRoles } from '@/hooks/useStaffRoles';
 import StaffList from './StaffList';
 import RoleManagement from './RoleManagement';
@@ -10,9 +11,12 @@ import PatientAccessManagement from './PatientAccessManagement';
 import SupervisionManagement from './SupervisionManagement';
 import AuditLogs from './AuditLogs';
 import CreateStaffModal from './CreateStaffModal';
+import RoleWorkflowRouter from './role-workflows/RoleWorkflowRouter';
+import SupervisionWorkflow from './workflows/SupervisionWorkflow';
+import AuditTrail from './audit/AuditTrail';
 
 const StaffManagementPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('staff');
+  const [activeTab, setActiveTab] = useState('workflow');
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { hasRole } = useStaffRoles();
@@ -32,14 +36,20 @@ const StaffManagementPage: React.FC = () => {
             Manage staff profiles, roles, and permissions
           </p>
         </div>
-        <Button onClick={handleAddStaff} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Staff Member
-        </Button>
+        {canManageStaff && (
+          <Button onClick={handleAddStaff} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Staff Member
+          </Button>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="workflow" className="flex items-center space-x-2">
+            <Workflow className="h-4 w-4" />
+            <span>Workflow</span>
+          </TabsTrigger>
           <TabsTrigger value="staff" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
             <span>Staff</span>
@@ -60,7 +70,15 @@ const StaffManagementPage: React.FC = () => {
             <Settings className="h-4 w-4" />
             <span>Audit Logs</span>
           </TabsTrigger>
+          <TabsTrigger value="trail" className="flex items-center space-x-2">
+            <Eye className="h-4 w-4" />
+            <span>Audit Trail</span>
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="workflow" className="space-y-4">
+          <RoleWorkflowRouter />
+        </TabsContent>
 
         <TabsContent value="staff" className="space-y-4">
           <StaffList />
@@ -75,11 +93,15 @@ const StaffManagementPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="supervision" className="space-y-4">
-          <SupervisionManagement />
+          <SupervisionWorkflow />
         </TabsContent>
 
         <TabsContent value="audit" className="space-y-4">
           <AuditLogs />
+        </TabsContent>
+
+        <TabsContent value="trail" className="space-y-4">
+          <AuditTrail />
         </TabsContent>
       </Tabs>
 
