@@ -13,6 +13,7 @@ import IntakeAssessmentForm from "./components/documentation/intake/IntakeAssess
 import IntakeAssessmentView from "./components/documentation/intake/IntakeAssessmentView";
 import ProgressNoteForm from "./components/documentation/progress-note/ProgressNoteForm";
 import ProgressNoteView from "./components/documentation/progress-note/ProgressNoteView";
+import TreatmentPlanForm from "./components/documentation/treatment-plan/TreatmentPlanForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Sidebar from "./components/Sidebar";
@@ -67,6 +68,18 @@ const App = () => (
                     <Sidebar activeItem="documentation" onItemClick={() => {}} />
                     <div className="flex-1">
                       <ProgressNoteForm />
+                    </div>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
+            } />
+            <Route path="/documentation/treatment-plan/:noteId/edit" element={
+              <ProtectedRoute>
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <Sidebar activeItem="documentation" onItemClick={() => {}} />
+                    <div className="flex-1">
+                      <TreatmentPlanForm />
                     </div>
                   </div>
                 </SidebarProvider>

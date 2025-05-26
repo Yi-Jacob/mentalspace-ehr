@@ -66,6 +66,7 @@ export const useDocumentation = () => {
 
         const title = noteType === 'intake' ? 'New Intake Assessment' : 
                      noteType === 'progress_note' ? 'New Progress Note' : 
+                     noteType === 'treatment_plan' ? 'New Treatment Plan' :
                      `New ${noteType.replace('_', ' ')}`;
 
         // Ensure noteType matches the database enum values
@@ -106,6 +107,8 @@ export const useDocumentation = () => {
       console.log('Note created successfully, navigating to edit view');
       if (data.note_type === 'progress_note') {
         navigate(`/documentation/progress-note/${data.id}/edit`);
+      } else if (data.note_type === 'treatment_plan') {
+        navigate(`/documentation/treatment-plan/${data.id}/edit`);
       } else {
         navigate(`/documentation/note/${data.id}/edit`);
       }
