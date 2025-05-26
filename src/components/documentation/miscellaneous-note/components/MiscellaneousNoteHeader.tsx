@@ -23,44 +23,45 @@ const MiscellaneousNoteHeader: React.FC<MiscellaneousNoteHeaderProps> = ({
   const navigate = useNavigate();
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/documentation')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Documentation
-            </Button>
-            <div>
-              <CardTitle className="flex items-center space-x-2">
-                <Stethoscope className="h-5 w-5 text-gray-600" />
-                <span>Miscellaneous Note</span>
-              </CardTitle>
-              <p className="text-gray-600">Client: {clientName}</p>
-            </div>
-          </div>
-          <div className="flex space-x-3">
-            <Button
-              onClick={onSaveDraft}
-              variant="outline"
-              disabled={isLoading}
-            >
-              Save as Draft
-            </Button>
-            <Button
-              onClick={onFinalize}
-              disabled={!canFinalize || isLoading}
-              className="bg-gray-600 hover:bg-gray-700"
-            >
-              {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
-            </Button>
-          </div>
+    <>
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          onClick={() => navigate('/documentation')}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Documentation</span>
+        </Button>
+        
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={onSaveDraft}
+            disabled={isLoading}
+          >
+            Save as Draft
+          </Button>
+          <Button
+            onClick={onFinalize}
+            disabled={!canFinalize || isLoading}
+            className="bg-gray-600 hover:bg-gray-700"
+          >
+            {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
+          </Button>
         </div>
-      </CardHeader>
-    </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Stethoscope className="h-5 w-5 text-gray-600" />
+            <span>Miscellaneous Note</span>
+          </CardTitle>
+          <p className="text-gray-600">Client: {clientName}</p>
+        </CardHeader>
+      </Card>
+    </>
   );
 };
 
