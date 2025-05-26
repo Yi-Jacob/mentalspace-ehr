@@ -11,6 +11,7 @@ import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 interface FinalizeSectionProps {
   formData: TreatmentPlanFormData;
   updateFormData: (updates: Partial<TreatmentPlanFormData>) => void;
+  clientData?: any;
 }
 
 const FinalizeSection: React.FC<FinalizeSectionProps> = ({

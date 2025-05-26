@@ -9,6 +9,7 @@ import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 interface FrequencySectionProps {
   formData: TreatmentPlanFormData;
   updateFormData: (updates: Partial<TreatmentPlanFormData>) => void;
+  clientData?: any;
 }
 
 const FrequencySection: React.FC<FrequencySectionProps> = ({

@@ -8,6 +8,7 @@ import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 interface DischargePlanningSectionProps {
   formData: TreatmentPlanFormData;
   updateFormData: (updates: Partial<TreatmentPlanFormData>) => void;
+  clientData?: any;
 }
 
 const DischargePlanningSection: React.FC<DischargePlanningSectionProps> = ({

@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 interface TreatmentGoalsSectionProps {
   formData: TreatmentPlanFormData;
   updateFormData: (updates: Partial<TreatmentPlanFormData>) => void;
+  clientData?: any;
 }
 
 // Predefined intervention strategies
