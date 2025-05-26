@@ -15,7 +15,7 @@ export const usePermissions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Get current user's permissions - simplified version for now
+  // Get current user's permissions using the new database function
   const { data: userPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['current-user-permissions'],
     queryFn: async () => {
@@ -31,66 +31,16 @@ export const usePermissions = () => {
 
       if (!userData) return [];
 
-      // Get user roles directly for now
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userData.id)
-        .eq('is_active', true);
+      // Use the new get_user_permissions function
+      const { data, error } = await supabase
+        .rpc('get_user_permissions', { _user_id: userData.id });
 
-      if (!roles) return [];
+      if (error) {
+        console.error('Error fetching user permissions:', error);
+        return [];
+      }
 
-      // Return basic permissions based on roles
-      const permissions: Permission[] = [];
-      
-      roles.forEach((roleData) => {
-        const role = roleData.role as UserRole;
-        
-        // Add basic permissions based on role
-        switch (role) {
-          case 'Practice Administrator':
-            permissions.push(
-              { category: 'user_management', action: 'read', scope: 'all' },
-              { category: 'user_management', action: 'create', scope: 'all' },
-              { category: 'user_management', action: 'update', scope: 'all' },
-              { category: 'user_management', action: 'assign_roles', scope: 'all' },
-              { category: 'audit_logs', action: 'read', scope: 'all' }
-            );
-            break;
-          case 'Clinician':
-            permissions.push(
-              { category: 'clinical_notes', action: 'create', scope: 'assigned_only' },
-              { category: 'clinical_notes', action: 'read', scope: 'assigned_only' },
-              { category: 'clinical_notes', action: 'update', scope: 'assigned_only' },
-              { category: 'schedule', action: 'read', scope: 'own_only' },
-              { category: 'schedule', action: 'update', scope: 'own_only' }
-            );
-            break;
-          case 'Clinical Administrator':
-            permissions.push(
-              { category: 'clinical_notes', action: 'delete', scope: 'all' },
-              { category: 'patient_records', action: 'read', scope: 'all' },
-              { category: 'patient_records', action: 'update', scope: 'all' }
-            );
-            break;
-          case 'Practice Scheduler':
-            permissions.push(
-              { category: 'schedule', action: 'read', scope: 'all' },
-              { category: 'schedule', action: 'create', scope: 'all' },
-              { category: 'schedule', action: 'update', scope: 'all' }
-            );
-            break;
-          case 'Practice Biller':
-            permissions.push(
-              { category: 'billing', action: 'collect_copay', scope: 'all' },
-              { category: 'billing', action: 'process_payment', scope: 'all' },
-              { category: 'billing', action: 'generate_claims', scope: 'all' }
-            );
-            break;
-        }
-      });
-
-      return permissions;
+      return data || [];
     },
   });
 
@@ -109,7 +59,7 @@ export const usePermissions = () => {
     );
   }, [userPermissions]);
 
-  // Check if user can access specific patient - simplified version
+  // Check if user can access specific patient using the enhanced function
   const canAccessPatient = useCallback(async (
     clientId: string, 
     accessType: string = 'read'
@@ -125,11 +75,12 @@ export const usePermissions = () => {
 
     if (!userData) return false;
 
-    // Use existing function for now
+    // Use the enhanced function that supports access types
     const { data, error } = await supabase
-      .rpc('can_access_patient', { 
+      .rpc('can_access_patient_enhanced', { 
         _user_id: userData.id, 
-        _client_id: clientId
+        _client_id: clientId,
+        _access_type: accessType
       });
 
     if (error) {

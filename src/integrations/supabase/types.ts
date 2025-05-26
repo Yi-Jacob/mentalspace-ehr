@@ -1431,6 +1431,33 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_action: string
+          permission_category: string
+          resource_scope: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_action: string
+          permission_category: string
+          resource_scope?: string | null
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_action?: string
+          permission_category?: string
+          resource_scope?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
       schedule_exceptions: {
         Row: {
           approved_at: string | null
@@ -1769,14 +1796,35 @@ export type Database = {
         Args: { _user_id: string; _client_id: string }
         Returns: boolean
       }
+      can_access_patient_enhanced: {
+        Args: { _user_id: string; _client_id: string; _access_type?: string }
+        Returns: boolean
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_user_permissions: {
+        Args: { _user_id: string }
+        Returns: {
+          category: string
+          action: string
+          scope: string
+        }[]
       }
       has_any_role: {
         Args: {
           _user_id: string
           _roles: Database["public"]["Enums"]["user_role"][]
+        }
+        Returns: boolean
+      }
+      has_permission: {
+        Args: {
+          _user_id: string
+          _category: string
+          _action: string
+          _scope?: string
         }
         Returns: boolean
       }
