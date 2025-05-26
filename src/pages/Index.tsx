@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import ModulePage from '@/components/ModulePage';
@@ -57,6 +57,7 @@ const moduleConfigs = {
 
 const Index = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeModule, setActiveModule] = useState('dashboard');
 
   // Update active module based on current route
@@ -69,6 +70,20 @@ const Index = () => {
       setActiveModule('dashboard');
     }
   }, [location.pathname]);
+
+  const handleModuleClick = (moduleId: string) => {
+    if (moduleId === 'scheduling') {
+      navigate('/scheduling');
+    } else if (moduleId === 'documentation') {
+      navigate('/documentation');
+    } else if (moduleId === 'clients') {
+      navigate('/clients');
+    } else if (moduleId === 'dashboard') {
+      navigate('/');
+    } else {
+      setActiveModule(moduleId);
+    }
+  };
 
   const renderContent = () => {
     if (activeModule === 'dashboard') {
@@ -100,7 +115,7 @@ const Index = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar activeItem={activeModule} onItemClick={setActiveModule} />
+      <Sidebar activeItem={activeModule} onItemClick={handleModuleClick} />
       <div className="flex-1 ml-64 overflow-auto">
         {renderContent()}
       </div>
