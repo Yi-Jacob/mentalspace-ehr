@@ -9,6 +9,7 @@ import RoleManagement from './RoleManagement';
 import PatientAccessManagement from './PatientAccessManagement';
 import SupervisionManagement from './SupervisionManagement';
 import AuditLogs from './AuditLogs';
+import CreateStaffModal from './CreateStaffModal';
 
 const StaffManagementPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('staff');
