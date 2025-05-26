@@ -68,16 +68,19 @@ export const useDocumentation = () => {
                      noteType === 'progress_note' ? 'New Progress Note' : 
                      `New ${noteType.replace('_', ' ')}`;
 
+        // Ensure noteType matches the database enum values
+        const validNoteType = noteType as 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
+
         const { data, error } = await supabase
           .from('clinical_notes')
-          .insert([{
+          .insert({
             title,
-            note_type: noteType,
+            note_type: validNoteType,
             provider_id: userData.id,
             client_id: clientId,
             content: {},
             status: 'draft',
-          }])
+          })
           .select()
           .single();
         
@@ -92,7 +95,11 @@ export const useDocumentation = () => {
     },
     onSuccess: (data) => {
       console.log('Note created successfully, navigating to edit view');
-      navigate(`/documentation/note/${data.id}/edit`);
+      if (data.note_type === 'progress_note') {
+        navigate(`/documentation/progress-note/${data.id}/edit`);
+      } else {
+        navigate(`/documentation/note/${data.id}/edit`);
+      }
     },
     onError: (error) => {
       console.error('Full error object:', error);

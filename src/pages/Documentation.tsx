@@ -11,7 +11,7 @@ const Documentation = () => {
     setActiveTab,
     showCreateModal,
     selectedNoteType,
-    createIntakeAssessmentMutation,
+    createNoteMutation,
     handleCreateNote,
     handleCloseModal,
   } = useDocumentation();
@@ -33,14 +33,14 @@ const Documentation = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onCreateNote={handleCreateNote}
-          isCreatingIntake={createIntakeAssessmentMutation.isPending}
+          isCreatingIntake={createNoteMutation.isPending}
         />
 
         <CreateNoteModal 
           isOpen={showCreateModal}
           onClose={handleCloseModal}
           noteType={selectedNoteType}
-          createIntakeAssessmentMutation={createIntakeAssessmentMutation}
+          createNoteMutation={createNoteMutation}
         />
       </div>
     </EnhancedErrorBoundary>
