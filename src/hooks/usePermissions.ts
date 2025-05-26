@@ -19,21 +19,25 @@ export const usePermissions = () => {
   const { data: userPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['current-user-permissions'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      // Use the new security definer function to get current user info safely
+      const { data: userInfo, error: userError } = await supabase
+        .rpc('get_current_user_info');
 
-      // First get the user from our users table
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.user.id)
-        .single();
+      if (userError) {
+        console.error('Error getting user info:', userError);
+        return [];
+      }
 
-      if (!userData) return [];
+      if (!userInfo || userInfo.length === 0) {
+        console.log('No user info found');
+        return [];
+      }
 
-      // Use the new get_user_permissions function
+      const currentUser = userInfo[0];
+
+      // Use the get_user_permissions function
       const { data, error } = await supabase
-        .rpc('get_user_permissions', { _user_id: userData.id });
+        .rpc('get_user_permissions', { _user_id: currentUser.user_id });
 
       if (error) {
         console.error('Error fetching user permissions:', error);
@@ -64,21 +68,20 @@ export const usePermissions = () => {
     clientId: string, 
     accessType: string = 'read'
   ): Promise<boolean> => {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return false;
+    // Use the new security definer function to get current user info safely
+    const { data: userInfo, error: userError } = await supabase
+      .rpc('get_current_user_info');
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_user_id', user.user.id)
-      .single();
+    if (userError || !userInfo || userInfo.length === 0) {
+      return false;
+    }
 
-    if (!userData) return false;
+    const currentUser = userInfo[0];
 
     // Use the enhanced function that supports access types
     const { data, error } = await supabase
       .rpc('can_access_patient_enhanced', { 
-        _user_id: userData.id, 
+        _user_id: currentUser.user_id, 
         _client_id: clientId,
         _access_type: accessType
       });

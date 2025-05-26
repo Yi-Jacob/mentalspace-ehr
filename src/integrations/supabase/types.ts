@@ -1822,9 +1822,22 @@ export type Database = {
         }
         Returns: string
       }
+      current_user_has_role: {
+        Args: { _role: Database["public"]["Enums"]["user_role"] }
+        Returns: boolean
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_current_user_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          email: string
+          first_name: string
+          last_name: string
+        }[]
       }
       get_user_permissions: {
         Args: { _user_id: string }

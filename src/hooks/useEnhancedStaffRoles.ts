@@ -11,28 +11,38 @@ export const useEnhancedStaffRoles = () => {
   const queryClient = useQueryClient();
   const { hasPermission, canManageUsers, canAssignRoles } = usePermissions();
 
-  // Fetch all user roles with enhanced permission context
+  // Fetch all user roles using the new security definer function
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['current-user-roles'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      // Use the new security definer function to get current user info safely
+      const { data: userInfo, error: userError } = await supabase
+        .rpc('get_current_user_info');
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.user.id)
-        .single();
+      if (userError) {
+        console.error('Error getting user info:', userError);
+        return [];
+      }
 
-      if (!userData) return [];
+      if (!userInfo || userInfo.length === 0) {
+        console.log('No user info found');
+        return [];
+      }
 
+      const currentUser = userInfo[0];
+
+      // Now get the user's roles
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('user_id', currentUser.user_id)
         .eq('is_active', true);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user roles:', error);
+        throw error;
+      }
+      
       return data || [];
     },
   });
@@ -129,23 +139,22 @@ export const useEnhancedStaffRoles = () => {
         }
       }
 
-      const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser.user) throw new Error('Not authenticated');
+      // Get current user info using the security definer function
+      const { data: userInfo, error: userError } = await supabase
+        .rpc('get_current_user_info');
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', currentUser.user.id)
-        .single();
+      if (userError || !userInfo || userInfo.length === 0) {
+        throw new Error('Could not get current user information');
+      }
 
-      if (!userData) throw new Error('User not found');
+      const currentUser = userInfo[0];
 
       const { data, error } = await supabase
         .from('user_roles')
         .insert({
           user_id: userId,
           role: role,
-          assigned_by: userData.id,
+          assigned_by: currentUser.user_id,
         })
         .select()
         .single();
@@ -157,6 +166,7 @@ export const useEnhancedStaffRoles = () => {
       queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       queryClient.invalidateQueries({ queryKey: ['user-roles'] });
       queryClient.invalidateQueries({ queryKey: ['current-user-permissions'] });
+      queryClient.invalidateQueries({ queryKey: ['current-user-roles'] });
       toast({
         title: 'Success',
         description: 'Role assigned successfully',
@@ -204,6 +214,7 @@ export const useEnhancedStaffRoles = () => {
       queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       queryClient.invalidateQueries({ queryKey: ['user-roles'] });
       queryClient.invalidateQueries({ queryKey: ['current-user-permissions'] });
+      queryClient.invalidateQueries({ queryKey: ['current-user-roles'] });
       toast({
         title: 'Success',
         description: 'Role removed successfully',
