@@ -38,8 +38,8 @@ const AppointmentManagement = () => {
           location,
           room_number,
           notes,
-          client:client_id(first_name, last_name),
-          provider:provider_id(first_name, last_name)
+          clients!client_id(first_name, last_name),
+          users!provider_id(first_name, last_name)
         `)
         .order('start_time', { ascending: false });
 
@@ -58,11 +58,11 @@ const AppointmentManagement = () => {
       
       if (searchTerm) {
         filteredData = filteredData.filter(appointment => {
-          const clientName = appointment.client 
-            ? `${appointment.client.first_name} ${appointment.client.last_name}`
+          const clientName = appointment.clients 
+            ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
             : '';
-          const providerName = appointment.provider
-            ? `${appointment.provider.first_name} ${appointment.provider.last_name}`
+          const providerName = appointment.users
+            ? `${appointment.users.first_name} ${appointment.users.last_name}`
             : '';
           
           return (
@@ -183,11 +183,11 @@ const AppointmentManagement = () => {
               ) : (
                 <div className="space-y-4">
                   {appointments?.map((appointment) => {
-                    const clientName = appointment.client 
-                      ? `${appointment.client.first_name} ${appointment.client.last_name}`
+                    const clientName = appointment.clients 
+                      ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
                       : 'Unknown Client';
-                    const providerName = appointment.provider
-                      ? `${appointment.provider.first_name} ${appointment.provider.last_name}`
+                    const providerName = appointment.users
+                      ? `${appointment.users.first_name} ${appointment.users.last_name}`
                       : 'Unknown Provider';
 
                     return (
@@ -260,6 +260,27 @@ const AppointmentManagement = () => {
       />
     </div>
   );
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'scheduled':
+      return 'bg-blue-100 text-blue-800';
+    case 'confirmed':
+      return 'bg-green-100 text-green-800';
+    case 'checked_in':
+      return 'bg-purple-100 text-purple-800';
+    case 'in_progress':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'completed':
+      return 'bg-gray-100 text-gray-800';
+    case 'cancelled':
+      return 'bg-red-100 text-red-800';
+    case 'no_show':
+      return 'bg-orange-100 text-orange-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
 };
 
 export default AppointmentManagement;

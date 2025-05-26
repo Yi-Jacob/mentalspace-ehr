@@ -23,11 +23,11 @@ interface Appointment {
   status: string;
   location?: string;
   room_number?: string;
-  client?: {
+  clients?: {
     first_name: string;
     last_name: string;
   };
-  provider?: {
+  users?: {
     first_name: string;
     last_name: string;
   };
@@ -76,8 +76,8 @@ const CalendarView = () => {
           status,
           location,
           room_number,
-          client:client_id(first_name, last_name),
-          provider:provider_id(first_name, last_name)
+          clients!client_id(first_name, last_name),
+          users!provider_id(first_name, last_name)
         `)
         .gte('start_time', startDate.toISOString())
         .lte('start_time', endDate.toISOString())
@@ -97,15 +97,15 @@ const CalendarView = () => {
         status: item.status,
         location: item.location,
         room_number: item.room_number,
-        client: item.client,
-        provider: item.provider
+        clients: item.clients,
+        users: item.users
       }));
 
       return transformedData;
     },
   });
 
-  const navigateDate = (direction: 'prev' | 'next') => {
+  function navigateDate(direction: 'prev' | 'next') {
     switch (viewType) {
       case 'day':
         setCurrentDate(prev => addDays(prev, direction === 'next' ? 1 : -1));
@@ -117,9 +117,9 @@ const CalendarView = () => {
         setCurrentDate(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
         break;
     }
-  };
+  }
 
-  const getCalendarTitle = () => {
+  function getCalendarTitle() {
     switch (viewType) {
       case 'day':
         return format(currentDate, 'EEEE, MMMM d, yyyy');
@@ -132,9 +132,9 @@ const CalendarView = () => {
       default:
         return 'Appointments';
     }
-  };
+  }
 
-  const renderDayView = () => {
+  function renderDayView() {
     const dayAppointments = appointments?.filter(apt => 
       isSameDay(new Date(apt.start_time), currentDate)
     ) || [];
@@ -159,9 +159,9 @@ const CalendarView = () => {
         </div>
       </div>
     );
-  };
+  }
 
-  const renderWeekView = () => {
+  function renderWeekView() {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({
       start: weekStart,
@@ -194,9 +194,9 @@ const CalendarView = () => {
         })}
       </div>
     );
-  };
+  }
 
-  const renderMonthView = () => {
+  function renderMonthView() {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
     const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -250,9 +250,9 @@ const CalendarView = () => {
         })}
       </div>
     );
-  };
+  }
 
-  const renderListView = () => {
+  function renderListView() {
     const sortedAppointments = appointments?.sort((a, b) => 
       new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     ) || [];
@@ -264,7 +264,7 @@ const CalendarView = () => {
         ))}
       </div>
     );
-  };
+  }
 
   return (
     <div className="space-y-6">
