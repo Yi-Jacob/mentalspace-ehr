@@ -75,7 +75,7 @@ export const RiskAreaCard: React.FC<RiskAreaCardProps> = ({
           <Label className="text-sm font-medium">Level of Risk:</Label>
           <RadioGroup
             value={riskArea.levelOfRisk}
-            onValueChange={(value) => onUpdate(index, { levelOfRisk: value })}
+            onValueChange={(value) => onUpdate(index, { levelOfRisk: value as 'Low' | 'Medium' | 'High' | 'Imminent' })}
             className="mt-2"
           >
             {['Low', 'Medium', 'High', 'Imminent'].map((level) => (
@@ -93,7 +93,7 @@ export const RiskAreaCard: React.FC<RiskAreaCardProps> = ({
           <Label className="text-sm font-medium">Intent to Act:</Label>
           <RadioGroup
             value={riskArea.intentToAct}
-            onValueChange={(value) => onUpdate(index, { intentToAct: value })}
+            onValueChange={(value) => onUpdate(index, { intentToAct: value as 'Yes' | 'No' | 'Not Applicable' })}
             className="mt-2"
           >
             {['Yes', 'No', 'Not Applicable'].map((intent) => (
@@ -111,7 +111,7 @@ export const RiskAreaCard: React.FC<RiskAreaCardProps> = ({
           <Label className="text-sm font-medium">Plan to Act:</Label>
           <RadioGroup
             value={riskArea.planToAct}
-            onValueChange={(value) => onUpdate(index, { planToAct: value })}
+            onValueChange={(value) => onUpdate(index, { planToAct: value as 'Yes' | 'No' | 'Not Applicable' })}
             className="mt-2"
           >
             {['Yes', 'No', 'Not Applicable'].map((plan) => (
@@ -129,7 +129,7 @@ export const RiskAreaCard: React.FC<RiskAreaCardProps> = ({
           <Label className="text-sm font-medium">Means to Act:</Label>
           <RadioGroup
             value={riskArea.meansToAct}
-            onValueChange={(value) => onUpdate(index, { meansToAct: value })}
+            onValueChange={(value) => onUpdate(index, { meansToAct: value as 'Yes' | 'No' | 'Not Applicable' })}
             className="mt-2"
           >
             {['Yes', 'No', 'Not Applicable'].map((means) => (
