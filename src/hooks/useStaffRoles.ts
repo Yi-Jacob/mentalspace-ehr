@@ -13,6 +13,8 @@ export const useStaffRoles = () => {
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['current-user-roles'],
     queryFn: async () => {
+      console.log('Fetching user roles...');
+      
       // Use the new security definer function to get current user info safely
       const { data: userInfo, error: userError } = await supabase
         .rpc('get_current_user_info');
@@ -28,6 +30,7 @@ export const useStaffRoles = () => {
       }
 
       const currentUser = userInfo[0];
+      console.log('Current user found:', currentUser);
 
       // Now get the user's roles
       const { data, error } = await supabase
@@ -41,12 +44,15 @@ export const useStaffRoles = () => {
         throw error;
       }
       
+      console.log('User roles fetched:', data);
       return data || [];
     },
   });
 
   const hasRole = useCallback((role: UserRole): boolean => {
-    return userRoles?.some(r => r.role === role && r.is_active) || false;
+    const result = userRoles?.some(r => r.role === role && r.is_active) || false;
+    console.log(`Checking role ${role}:`, result);
+    return result;
   }, [userRoles]);
 
   const hasAnyRole = useCallback((roles: UserRole[]): boolean => {

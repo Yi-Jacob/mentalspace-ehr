@@ -15,21 +15,24 @@ export const useEnhancedStaffRoles = () => {
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['current-user-roles'],
     queryFn: async () => {
+      console.log('Enhanced: Fetching user roles...');
+      
       // Use the new security definer function to get current user info safely
       const { data: userInfo, error: userError } = await supabase
         .rpc('get_current_user_info');
 
       if (userError) {
-        console.error('Error getting user info:', userError);
+        console.error('Enhanced: Error getting user info:', userError);
         return [];
       }
 
       if (!userInfo || userInfo.length === 0) {
-        console.log('No user info found');
+        console.log('Enhanced: No user info found');
         return [];
       }
 
       const currentUser = userInfo[0];
+      console.log('Enhanced: Current user found:', currentUser);
 
       // Now get the user's roles
       const { data, error } = await supabase
@@ -39,17 +42,20 @@ export const useEnhancedStaffRoles = () => {
         .eq('is_active', true);
 
       if (error) {
-        console.error('Error fetching user roles:', error);
+        console.error('Enhanced: Error fetching user roles:', error);
         throw error;
       }
       
+      console.log('Enhanced: User roles fetched:', data);
       return data || [];
     },
   });
 
   // Enhanced role checking with business logic
   const hasRole = useCallback((role: UserRole): boolean => {
-    return userRoles?.some(r => r.role === role && r.is_active) || false;
+    const result = userRoles?.some(r => r.role === role && r.is_active) || false;
+    console.log(`Enhanced: Checking role ${role}:`, result);
+    return result;
   }, [userRoles]);
 
   const hasAnyRole = useCallback((roles: UserRole[]): boolean => {

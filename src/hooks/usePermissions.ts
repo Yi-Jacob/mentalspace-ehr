@@ -19,31 +19,35 @@ export const usePermissions = () => {
   const { data: userPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['current-user-permissions'],
     queryFn: async () => {
+      console.log('Permissions: Fetching user permissions...');
+      
       // Use the new security definer function to get current user info safely
       const { data: userInfo, error: userError } = await supabase
         .rpc('get_current_user_info');
 
       if (userError) {
-        console.error('Error getting user info:', userError);
+        console.error('Permissions: Error getting user info:', userError);
         return [];
       }
 
       if (!userInfo || userInfo.length === 0) {
-        console.log('No user info found');
+        console.log('Permissions: No user info found');
         return [];
       }
 
       const currentUser = userInfo[0];
+      console.log('Permissions: Current user found:', currentUser);
 
       // Use the get_user_permissions function
       const { data, error } = await supabase
         .rpc('get_user_permissions', { _user_id: currentUser.user_id });
 
       if (error) {
-        console.error('Error fetching user permissions:', error);
+        console.error('Permissions: Error fetching user permissions:', error);
         return [];
       }
 
+      console.log('Permissions: User permissions fetched:', data);
       return data || [];
     },
   });
