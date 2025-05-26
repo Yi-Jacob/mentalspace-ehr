@@ -101,24 +101,35 @@ export const useDocumentation = () => {
 
         console.log('Clinical note created successfully:', data);
 
-        // Create note completion tracking record with ON CONFLICT handling (now that constraint exists)
-        console.log('Creating note completion tracking for note:', data.id, 'user:', userData.id);
+        // Check if tracking record already exists
+        console.log('Checking if note completion tracking already exists for note:', data.id, 'user:', userData.id);
         
-        const { error: trackingError } = await supabase
+        const { data: existingTracking } = await supabase
           .from('note_completion_tracking')
-          .insert({
-            note_id: data.id,
-            user_id: userData.id,
-            completion_percentage: 0,
-          })
-          .select()
+          .select('id')
+          .eq('note_id', data.id)
+          .eq('user_id', userData.id)
           .single();
-        
-        if (trackingError) {
-          console.error('Error creating note completion tracking:', trackingError);
-          // Don't throw error for tracking failure, just log it
+
+        // Only create tracking record if it doesn't exist
+        if (!existingTracking) {
+          console.log('Creating new note completion tracking record');
+          const { error: trackingError } = await supabase
+            .from('note_completion_tracking')
+            .insert({
+              note_id: data.id,
+              user_id: userData.id,
+              completion_percentage: 0,
+            });
+          
+          if (trackingError) {
+            console.error('Error creating note completion tracking:', trackingError);
+            // Don't throw error for tracking failure, just log it
+          } else {
+            console.log('Note completion tracking created successfully');
+          }
         } else {
-          console.log('Note completion tracking created successfully');
+          console.log('Note completion tracking already exists, skipping creation');
         }
         
         console.log('Note creation process completed successfully');
