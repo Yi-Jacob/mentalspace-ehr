@@ -46,6 +46,14 @@ export const useNoteCreation = () => {
         targetRoute = `/documentation/progress-note/${data.id}/edit`;
       } else if (data.note_type === 'treatment_plan') {
         targetRoute = `/documentation/treatment-plan/${data.id}/edit`;
+      } else if (data.note_type === 'cancellation_note') {
+        targetRoute = `/documentation/cancellation-note/${data.id}/edit`;
+      } else if (data.note_type === 'contact_note') {
+        targetRoute = `/documentation/contact-note/${data.id}/edit`;
+      } else if (data.note_type === 'consultation_note') {
+        targetRoute = `/documentation/consultation-note/${data.id}/edit`;
+      } else if (data.note_type === 'miscellaneous_note') {
+        targetRoute = `/documentation/miscellaneous-note/${data.id}/edit`;
       } else {
         targetRoute = `/documentation/note/${data.id}/edit`;
       }

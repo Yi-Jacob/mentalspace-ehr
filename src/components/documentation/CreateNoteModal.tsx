@@ -54,14 +54,16 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
       return;
     }
 
-    // Handle structured notes (intake, progress_note, treatment_plan) with special routing
-    if ((noteType === 'intake' || noteType === 'progress_note' || noteType === 'treatment_plan') && createNoteMutation) {
+    // Handle all structured notes (including cancellation_note) with special routing
+    const structuredNotes = ['intake', 'progress_note', 'treatment_plan', 'cancellation_note', 'contact_note', 'consultation_note'];
+    
+    if (structuredNotes.includes(noteType) && createNoteMutation) {
       console.log('Creating structured note type:', noteType, 'for client:', selectedClientId);
       createNoteMutation.mutate({ clientId: selectedClientId, noteType });
       return;
     }
 
-    // Handle other note types
+    // Handle other note types that need title
     if (!title) {
       toast({
         title: 'Missing information',
@@ -101,12 +103,18 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
       setTitle('New Progress Note');
     } else if (noteType === 'treatment_plan') {
       setTitle('New Treatment Plan');
+    } else if (noteType === 'cancellation_note') {
+      setTitle('New Cancellation Note');
+    } else if (noteType === 'contact_note') {
+      setTitle('New Contact Note');
+    } else if (noteType === 'consultation_note') {
+      setTitle('New Consultation Note');
     } else {
       setTitle('');
     }
   }, [noteType]);
 
-  const isStructuredNote = noteType === 'intake' || noteType === 'progress_note' || noteType === 'treatment_plan';
+  const isStructuredNote = ['intake', 'progress_note', 'treatment_plan', 'cancellation_note', 'contact_note', 'consultation_note'].includes(noteType || '');
   const isLoading = createNoteMutation?.isPending;
 
   console.log('Modal render - isOpen:', isOpen, 'noteType:', noteType, 'isLoading:', isLoading);
