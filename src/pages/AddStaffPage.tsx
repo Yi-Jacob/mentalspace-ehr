@@ -9,12 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { UserRole, UserStatus } from '@/types/staff';
+import { useStaffManagement } from '@/hooks/useStaffManagement';
 
 const AddStaffPage: React.FC = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { createStaffMember, isCreatingStaff } = useStaffManagement();
   
   const [formData, setFormData] = useState({
     // User Information
@@ -73,11 +73,36 @@ const AddStaffPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // For now, show a message that this feature is not fully implemented
-    toast({
-      title: 'Feature Coming Soon',
-      description: 'Staff creation functionality will be available once user management is fully implemented.',
-      variant: 'default',
+    // Validate required fields
+    if (!formData.first_name || !formData.last_name || !formData.email) {
+      return;
+    }
+
+    // Prepare data for the createStaffMember function
+    const staffData = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email,
+      roles: formData.roles,
+      employee_id: formData.employee_id || undefined,
+      job_title: formData.job_title || undefined,
+      department: formData.department || undefined,
+      phone_number: formData.phone_number || formData.mobile_phone || undefined,
+      npi_number: formData.npi_number || undefined,
+      license_number: formData.license_number || undefined,
+      license_state: formData.license_state || undefined,
+      license_expiry_date: formData.license_expiry_date || undefined,
+      hire_date: formData.hire_date || undefined,
+      billing_rate: formData.billing_rate ? parseFloat(formData.billing_rate) : undefined,
+      can_bill_insurance: formData.can_bill_insurance,
+      status: formData.status,
+      notes: formData.notes || undefined,
+    };
+
+    createStaffMember(staffData, {
+      onSuccess: () => {
+        navigate('/staff');
+      }
     });
   };
 
@@ -280,12 +305,13 @@ const AddStaffPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label>Name:</Label>
+                    <Label>Name: *</Label>
                     <div className="grid grid-cols-4 gap-2 mt-1">
                       <Input
                         placeholder="first"
                         value={formData.first_name}
                         onChange={(e) => handleInputChange('first_name', e.target.value)}
+                        required
                       />
                       <Input
                         placeholder="middle"
@@ -296,6 +322,7 @@ const AddStaffPage: React.FC = () => {
                         placeholder="last"
                         value={formData.last_name}
                         onChange={(e) => handleInputChange('last_name', e.target.value)}
+                        required
                       />
                       <Input
                         placeholder="suffix"
@@ -347,12 +374,13 @@ const AddStaffPage: React.FC = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="email">Email:</Label>
+                    <Label htmlFor="email">Email: *</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
+                      required
                     />
                   </div>
 
@@ -394,56 +422,21 @@ const AddStaffPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="address_1">Address 1:</Label>
+                    <Label htmlFor="employee_id">Employee ID:</Label>
                     <Input
-                      id="address_1"
-                      value={formData.address_1}
-                      onChange={(e) => handleInputChange('address_1', e.target.value)}
+                      id="employee_id"
+                      value={formData.employee_id}
+                      onChange={(e) => handleInputChange('employee_id', e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="address_2">Address 2:</Label>
+                    <Label htmlFor="department">Department:</Label>
                     <Input
-                      id="address_2"
-                      value={formData.address_2}
-                      onChange={(e) => handleInputChange('address_2', e.target.value)}
+                      id="department"
+                      value={formData.department}
+                      onChange={(e) => handleInputChange('department', e.target.value)}
                     />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <Label htmlFor="zip_code">Zip:</Label>
-                      <Input
-                        id="zip_code"
-                        placeholder="zip code"
-                        value={formData.zip_code}
-                        onChange={(e) => handleInputChange('zip_code', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="city">City/State:</Label>
-                      <Input
-                        id="city"
-                        placeholder="city"
-                        value={formData.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Select value={formData.state} onValueChange={(value) => handleInputChange('state', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="----" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="AL">Alabama</SelectItem>
-                          <SelectItem value="CA">California</SelectItem>
-                          <SelectItem value="FL">Florida</SelectItem>
-                          <SelectItem value="NY">New York</SelectItem>
-                          <SelectItem value="TX">Texas</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -466,7 +459,7 @@ const AddStaffPage: React.FC = () => {
                 <div>
                   <Label>State / Number:</Label>
                   <div className="flex gap-2 mt-1">
-                    <Select>
+                    <Select value={formData.license_state} onValueChange={(value) => handleInputChange('license_state', value)}>
                       <SelectTrigger className="w-20">
                         <SelectValue placeholder="--" />
                       </SelectTrigger>
@@ -507,8 +500,12 @@ const AddStaffPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-start space-x-4 pt-4">
-            <Button type="submit" className="bg-green-600 hover:bg-green-700">
-              Save New User
+            <Button 
+              type="submit" 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isCreatingStaff}
+            >
+              {isCreatingStaff ? 'Creating...' : 'Save New User'}
             </Button>
             <Button type="button" variant="outline" onClick={handleCancel}>
               Cancel

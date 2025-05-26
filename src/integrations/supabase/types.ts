@@ -1800,6 +1800,28 @@ export type Database = {
         Args: { _user_id: string; _client_id: string; _access_type?: string }
         Returns: boolean
       }
+      create_staff_member: {
+        Args: {
+          p_first_name: string
+          p_last_name: string
+          p_email: string
+          p_roles: Database["public"]["Enums"]["user_role"][]
+          p_employee_id?: string
+          p_job_title?: string
+          p_department?: string
+          p_phone_number?: string
+          p_npi_number?: string
+          p_license_number?: string
+          p_license_state?: string
+          p_license_expiry_date?: string
+          p_hire_date?: string
+          p_billing_rate?: number
+          p_can_bill_insurance?: boolean
+          p_status?: Database["public"]["Enums"]["user_status"]
+          p_notes?: string
+        }
+        Returns: string
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
