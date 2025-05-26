@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calendar, Clock, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, DollarSign, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { CancellationNoteFormData } from './types/CancellationNoteFormData';
 import { useToast } from '@/hooks/use-toast';
+import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
 
 const CancellationNoteForm = () => {
   const { noteId } = useParams();
@@ -57,7 +58,15 @@ const CancellationNoteForm = () => {
           clients (
             id,
             first_name,
-            last_name
+            last_name,
+            date_of_birth,
+            email,
+            address_1,
+            address_2,
+            city,
+            state,
+            zip_code,
+            gender_identity
           )
         `)
         .eq('id', noteId)
@@ -158,6 +167,35 @@ const CancellationNoteForm = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Navigation Header */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/documentation')}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Documentation</span>
+          </Button>
+          
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => handleSave(true)}
+              disabled={isLoading}
+            >
+              Save as Draft
+            </Button>
+            <Button
+              onClick={() => handleSave(false)}
+              disabled={!validateForm() || !formData.signature || isLoading}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
+            </Button>
+          </div>
+        </div>
+
         {/* Header */}
         <Card>
           <CardHeader>
@@ -168,6 +206,9 @@ const CancellationNoteForm = () => {
             <p className="text-gray-600">Client: {clientName}</p>
           </CardHeader>
         </Card>
+
+        {/* Client Information */}
+        <ClientInfoDisplay clientData={noteData?.clients} />
 
         {/* Form Content */}
         <Card>
@@ -425,23 +466,6 @@ const CancellationNoteForm = () => {
                     onChange={(e) => updateFormData({ signature: e.target.value })}
                     placeholder="Type your full name to sign"
                   />
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button
-                    onClick={() => handleSave(true)}
-                    variant="outline"
-                    disabled={isLoading}
-                  >
-                    Save as Draft
-                  </Button>
-                  <Button
-                    onClick={() => handleSave(false)}
-                    disabled={!validateForm() || !formData.signature || isLoading}
-                    className="bg-orange-600 hover:bg-orange-700"
-                  >
-                    {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
-                  </Button>
                 </div>
               </div>
             )}
