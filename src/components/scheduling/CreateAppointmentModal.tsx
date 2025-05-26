@@ -25,7 +25,7 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   selectedDate,
   selectedTime
 }) => {
-  const { formData, setFormData, handleSubmit, isSubmitting, resetForm } = useAppointmentForm({
+  const { formData, updateFormData, handleSubmit, isSubmitting, resetForm } = useAppointmentForm({
     onSuccess: () => {
       onOpenChange(false);
       resetForm();
@@ -87,32 +87,32 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
           <ClientSelectionSection 
             value={formData.client_id}
-            onChange={(value) => setFormData({ ...formData, client_id: value })}
+            onChange={(value) => updateFormData('client_id', value)}
           />
 
           <AppointmentTypeSection
-            appointmentType={formData.appointment_type}
+            appointment_type={formData.appointment_type}
             title={formData.title}
             notes={formData.notes}
-            onAppointmentTypeChange={(value) => setFormData({ ...formData, appointment_type: value as any })}
-            onTitleChange={(value) => setFormData({ ...formData, title: value })}
-            onNotesChange={(value) => setFormData({ ...formData, notes: value })}
+            onAppointmentTypeChange={(value) => updateFormData('appointment_type', value)}
+            onTitleChange={(value) => updateFormData('title', value)}
+            onNotesChange={(value) => updateFormData('notes', value)}
           />
 
           <DateTimeSection
-            date={formData.date}
+            date={new Date(formData.date)}
             startTime={formData.start_time}
             endTime={formData.end_time}
-            onDateChange={(value) => setFormData({ ...formData, date: value })}
-            onStartTimeChange={(value) => setFormData({ ...formData, start_time: value })}
-            onEndTimeChange={(value) => setFormData({ ...formData, end_time: value })}
+            onDateChange={(value) => updateFormData('date', format(value, 'yyyy-MM-dd'))}
+            onStartTimeChange={(value) => updateFormData('start_time', value)}
+            onEndTimeChange={(value) => updateFormData('end_time', value)}
           />
 
           <LocationSection
             location={formData.location}
             roomNumber={formData.room_number}
-            onLocationChange={(value) => setFormData({ ...formData, location: value })}
-            onRoomNumberChange={(value) => setFormData({ ...formData, room_number: value })}
+            onLocationChange={(value) => updateFormData('location', value)}
+            onRoomNumberChange={(value) => updateFormData('room_number', value)}
           />
 
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">

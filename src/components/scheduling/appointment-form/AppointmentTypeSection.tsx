@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 interface AppointmentTypeSectionProps {
-  appointmentType: string;
+  appointment_type: string;
   title: string;
   notes: string;
   onAppointmentTypeChange: (value: string) => void;
@@ -15,7 +15,7 @@ interface AppointmentTypeSectionProps {
 }
 
 const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
-  appointmentType,
+  appointment_type,
   title,
   notes,
   onAppointmentTypeChange,
@@ -26,7 +26,7 @@ const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="appointment_type">Appointment Type</Label>
-        <Select value={appointmentType} onValueChange={onAppointmentTypeChange}>
+        <Select value={appointment_type} onValueChange={onAppointmentTypeChange}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
