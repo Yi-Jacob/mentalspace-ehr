@@ -16,6 +16,9 @@ import AddStaffPage from '@/pages/AddStaffPage';
 import StaffManagementPage from '@/components/staff/StaffManagementPage';
 import ClientList from '@/components/ClientList';
 import ClientDetailView from '@/components/ClientDetailView';
+import ProgressNoteForm from '@/components/documentation/progress-note/ProgressNoteForm';
+import ContactNoteForm from '@/components/documentation/contact-note/ContactNoteForm';
+import ConsultationNoteForm from '@/components/documentation/consultation-note/ConsultationNoteForm';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { cn } from '@/lib/utils';
@@ -73,6 +76,9 @@ const MainLayout: React.FC = () => {
           <Route path="/clients" element={<ClientList />} />
           <Route path="/client/:clientId" element={<ClientDetailView />} />
           <Route path="/documentation" element={<Documentation />} />
+          <Route path="/documentation/progress-note/:noteId/edit" element={<ProgressNoteForm />} />
+          <Route path="/documentation/contact-note/:noteId/edit" element={<ContactNoteForm />} />
+          <Route path="/documentation/consultation-note/:noteId/edit" element={<ConsultationNoteForm />} />
           <Route path="/scheduling" element={<Scheduling />} />
           <Route path="/staff" element={<StaffManagementPage />} />
           <Route path="/staff/add" element={<AddStaffPage />} />
