@@ -7,7 +7,6 @@ interface AppointmentFormData {
   client_id: string;
   provider_id: string;
   appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
-  title: string;
   date: string;
   start_time: string;
   end_time: string;
@@ -41,7 +40,6 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
     client_id: '',
     provider_id: '',
     appointment_type: 'therapy_session',
-    title: '',
     date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
     start_time: selectedTime || '09:00',
     end_time: '10:00',
@@ -154,7 +152,6 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
       const appointmentData = {
         client_id: formData.client_id,
         appointment_type: formData.appointment_type,
-        title: formData.title || null,
         location: formData.location || null,
         room_number: formData.room_number || null,
         notes: formData.notes || null,
@@ -177,7 +174,6 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
       client_id: '',
       provider_id: '',
       appointment_type: 'therapy_session',
-      title: '',
       date: format(new Date(), 'yyyy-MM-dd'),
       start_time: '09:00',
       end_time: '09:45',

@@ -10,6 +10,12 @@ import ClientSelectionSection from './appointment-form/ClientSelectionSection';
 import DateTimeSection from './appointment-form/DateTimeSection';
 import AppointmentTypeSection from './appointment-form/AppointmentTypeSection';
 import LocationSection from './appointment-form/LocationSection';
+import ClinicianSection from './appointment-form/ClinicianSection';
+import ServiceCodeSection from './appointment-form/ServiceCodeSection';
+import DurationSection from './appointment-form/DurationSection';
+import FrequencySection from './appointment-form/FrequencySection';
+import TelehealthSection from './appointment-form/TelehealthSection';
+import AppointmentAlertSection from './appointment-form/AppointmentAlertSection';
 import { format } from 'date-fns';
 
 interface CreateAppointmentModalProps {
@@ -67,7 +73,7 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30"
+        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30"
         aria-describedby="create-appointment-description"
       >
         <DialogHeader className="pb-6">
@@ -142,10 +148,8 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
           <AppointmentTypeSection
             appointment_type={formData.appointment_type}
-            title={formData.title}
             notes={formData.notes}
             onAppointmentTypeChange={(value) => updateFormData('appointment_type', value)}
-            onTitleChange={(value) => updateFormData('title', value)}
             onNotesChange={(value) => updateFormData('notes', value)}
           />
 
@@ -163,11 +167,47 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             }}
           />
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ClinicianSection
+              value={formData.clinician_id}
+              onChange={(value) => updateFormData('clinician_id', value)}
+            />
+
+            <ServiceCodeSection
+              value={formData.service_code}
+              onChange={(value) => updateFormData('service_code', value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <DurationSection
+              value={formData.duration_minutes}
+              onChange={(value) => updateFormData('duration_minutes', value)}
+            />
+
+            <FrequencySection
+              value={formData.frequency}
+              onChange={(value) => updateFormData('frequency', value)}
+            />
+
+            <div className="flex items-end">
+              <TelehealthSection
+                value={formData.use_telehealth}
+                onChange={(value) => updateFormData('use_telehealth', value)}
+              />
+            </div>
+          </div>
+
           <LocationSection
             location={formData.location}
             roomNumber={formData.room_number}
             onLocationChange={(value) => updateFormData('location', value)}
             onRoomNumberChange={(value) => updateFormData('room_number', value)}
+          />
+
+          <AppointmentAlertSection
+            value={formData.appointment_alert}
+            onChange={(value) => updateFormData('appointment_alert', value)}
           />
 
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">

@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Clock, AlertCircle, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
+import TimePickerGrid from './TimePickerGrid';
 
 interface DateTimeSectionProps {
   date: Date;
@@ -28,12 +30,20 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
   onEndTimeChange,
   errors
 }) => {
+  const [showTimeGrid, setShowTimeGrid] = useState(false);
   const today = format(new Date(), 'yyyy-MM-dd');
   const dateValue = format(date, 'yyyy-MM-dd');
 
+  const handleTimeSelect = (time: string) => {
+    onStartTimeChange(time);
+    setShowTimeGrid(false);
+  };
+
+  const displayTime = startTime ? format(new Date(`2000-01-01T${startTime}`), 'h:mm a') : 'Select time';
+
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Date */}
         <div className="space-y-2">
           <Label htmlFor="date" className="flex items-center space-x-2 text-gray-700 font-medium">
@@ -64,50 +74,37 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
           )}
         </div>
 
-        {/* Start Time */}
+        {/* Time */}
         <div className="space-y-2">
-          <Label htmlFor="start_time" className="flex items-center space-x-2 text-gray-700 font-medium">
+          <Label className="flex items-center space-x-2 text-gray-700 font-medium">
             <Clock className="h-4 w-4 text-purple-500" />
-            <span>Start Time *</span>
+            <span>Time *</span>
           </Label>
-          <Input
-            id="start_time"
-            type="time"
-            value={startTime}
-            onChange={(e) => onStartTimeChange(e.target.value)}
-            className={`bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
-              errors?.start_time ? 'border-red-400 focus:border-red-400' : ''
-            }`}
-            aria-describedby={errors?.start_time ? 'start-time-error' : undefined}
-          />
+          <div className="relative">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowTimeGrid(!showTimeGrid)}
+              className={`w-full justify-between bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
+                errors?.start_time ? 'border-red-400 focus:border-red-400' : ''
+              }`}
+            >
+              {displayTime}
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+            {showTimeGrid && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                <TimePickerGrid
+                  selectedTime={startTime}
+                  onTimeSelect={handleTimeSelect}
+                />
+              </div>
+            )}
+          </div>
           {errors?.start_time && (
-            <div id="start-time-error" className="text-sm text-red-600 flex items-center space-x-1">
+            <div className="text-sm text-red-600 flex items-center space-x-1">
               <AlertCircle className="h-3 w-3" />
               <span>{errors.start_time}</span>
-            </div>
-          )}
-        </div>
-
-        {/* End Time */}
-        <div className="space-y-2">
-          <Label htmlFor="end_time" className="flex items-center space-x-2 text-gray-700 font-medium">
-            <Clock className="h-4 w-4 text-orange-500" />
-            <span>End Time *</span>
-          </Label>
-          <Input
-            id="end_time"
-            type="time"
-            value={endTime}
-            onChange={(e) => onEndTimeChange(e.target.value)}
-            className={`bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
-              errors?.end_time ? 'border-red-400 focus:border-red-400' : ''
-            }`}
-            aria-describedby={errors?.end_time ? 'end-time-error' : undefined}
-          />
-          {errors?.end_time && (
-            <div id="end-time-error" className="text-sm text-red-600 flex items-center space-x-1">
-              <AlertCircle className="h-3 w-3" />
-              <span>{errors.end_time}</span>
             </div>
           )}
         </div>

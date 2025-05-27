@@ -2,64 +2,65 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { FileText, MessageSquare } from 'lucide-react';
 
 interface AppointmentTypeSectionProps {
   appointment_type: string;
-  title: string;
   notes: string;
   onAppointmentTypeChange: (value: string) => void;
-  onTitleChange: (value: string) => void;
   onNotesChange: (value: string) => void;
 }
 
 const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
   appointment_type,
-  title,
   notes,
   onAppointmentTypeChange,
-  onTitleChange,
   onNotesChange
 }) => {
+  const appointmentTypes = [
+    { value: 'initial_consultation', label: 'Initial Consultation' },
+    { value: 'follow_up', label: 'Follow-up' },
+    { value: 'therapy_session', label: 'Therapy Session' },
+    { value: 'group_therapy', label: 'Group Therapy' },
+    { value: 'assessment', label: 'Assessment' },
+    { value: 'medication_management', label: 'Medication Management' },
+    { value: 'crisis_intervention', label: 'Crisis Intervention' },
+    { value: 'other', label: 'Other' },
+  ];
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="appointment_type">Appointment Type</Label>
+        <Label htmlFor="appointment_type" className="flex items-center space-x-2 text-gray-700 font-medium">
+          <FileText className="h-4 w-4 text-blue-500" />
+          <span>Appointment Type *</span>
+        </Label>
         <Select value={appointment_type} onValueChange={onAppointmentTypeChange}>
-          <SelectTrigger>
-            <SelectValue />
+          <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200">
+            <SelectValue placeholder="Select appointment type" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="initial_consultation">Initial Consultation</SelectItem>
-            <SelectItem value="follow_up">Follow-up</SelectItem>
-            <SelectItem value="therapy_session">Therapy Session</SelectItem>
-            <SelectItem value="group_therapy">Group Therapy</SelectItem>
-            <SelectItem value="assessment">Assessment</SelectItem>
-            <SelectItem value="medication_management">Medication Management</SelectItem>
-            <SelectItem value="crisis_intervention">Crisis Intervention</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+          <SelectContent className="bg-white z-50">
+            {appointmentTypes.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Enter appointment title"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
+        <Label htmlFor="notes" className="flex items-center space-x-2 text-gray-700 font-medium">
+          <MessageSquare className="h-4 w-4 text-indigo-500" />
+          <span>Notes</span>
+        </Label>
         <Textarea
           id="notes"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Additional notes..."
+          placeholder="Additional notes or comments..."
+          className="bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 min-h-[80px]"
           rows={3}
         />
       </div>
