@@ -144,7 +144,7 @@ const NotesList = () => {
           retryCount={retryCount}
           maxRetries={3}
           errorTitle="Failed to load clinical notes"
-          errorDescription="We encountered an issue loading your clinical notes. This has been resolved - please try again."
+          errorDescription="There was an issue loading your clinical notes. Please try again."
           loadingComponent={<LoadingSpinner />}
         >
           <div className="space-y-4">

@@ -3,7 +3,7 @@ import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface LoadingWithErrorProps {
   isLoading: boolean;
@@ -35,31 +35,19 @@ const LoadingWithError: React.FC<LoadingWithErrorProps> = ({
   }
 
   if (error) {
-    const isNetworkError = error.message.includes('fetch') || error.message.includes('network');
     const canRetry = showRetry && onRetry && retryCount < maxRetries;
 
     return (
       <Alert variant="destructive" className="m-4">
         <div className="flex items-start space-x-2">
-          {isNetworkError ? (
-            <WifiOff className="h-4 w-4 mt-0.5" />
-          ) : (
-            <AlertTriangle className="h-4 w-4 mt-0.5" />
-          )}
+          <AlertTriangle className="h-4 w-4 mt-0.5" />
           <div className="flex-1 space-y-2">
             <AlertDescription>
               <div className="space-y-2">
                 <p className="font-medium">{errorTitle}</p>
                 <p className="text-sm">
-                  {errorDescription || error.message || 'Please try again or contact support if the problem persists.'}
+                  {errorDescription || error.message || 'An error occurred while loading the data.'}
                 </p>
-                
-                {isNetworkError && (
-                  <div className="flex items-center space-x-1 text-sm text-gray-600">
-                    <WifiOff className="h-3 w-3" />
-                    <span>Check your internet connection</span>
-                  </div>
-                )}
                 
                 {canRetry && (
                   <div className="flex items-center space-x-2 pt-2">
