@@ -62,7 +62,9 @@ const NotesList = () => {
       // Create proper Error object if retryError is not already an Error
       const errorObj = retryError instanceof Error 
         ? retryError 
-        : new Error(retryError?.message || 'Failed to load clinical notes');
+        : new Error(typeof retryError === 'object' && retryError && 'message' in retryError 
+            ? String(retryError.message) 
+            : 'Failed to load clinical notes');
       
       handleAPIError(errorObj, '/clinical-notes', 'GET');
     }
@@ -73,7 +75,11 @@ const NotesList = () => {
   };
 
   // Convert error to proper Error object if needed
-  const processedError = error ? (error instanceof Error ? error : new Error(error.message || 'Failed to load notes')) : null;
+  const processedError = error ? (error instanceof Error ? error : new Error(
+    typeof error === 'object' && error && 'message' in error 
+      ? String(error.message) 
+      : 'Failed to load notes'
+  )) : null;
 
   return (
     <EnhancedErrorBoundary 
