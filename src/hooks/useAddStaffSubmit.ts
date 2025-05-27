@@ -15,6 +15,12 @@ export const useAddStaffSubmit = () => {
       return;
     }
 
+    // Validate supervision requirements
+    if (formData.supervision_type !== 'Not Supervised' && !formData.supervisor_id) {
+      console.error('Supervisor is required when supervision type is selected');
+      return;
+    }
+
     // Prepare data for the createStaffMember function
     const staffData = {
       first_name: formData.first_name,
@@ -38,6 +44,14 @@ export const useAddStaffSubmit = () => {
 
     createStaffMember(staffData, {
       onSuccess: () => {
+        // TODO: Create supervision relationship if supervisor is selected
+        if (formData.supervision_type !== 'Not Supervised' && formData.supervisor_id) {
+          // This would need to be implemented to create the supervision relationship
+          console.log('Supervision relationship would be created:', {
+            supervisor_id: formData.supervisor_id,
+            supervision_type: formData.supervision_type
+          });
+        }
         navigate('/staff');
       }
     });

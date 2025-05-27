@@ -6,6 +6,7 @@ import AddStaffPageHeader from '@/components/staff/forms/AddStaffPageHeader';
 import UserCommentsSection from '@/components/staff/forms/UserCommentsSection';
 import RolesSection from '@/components/staff/forms/RolesSection';
 import UserInformationSection from '@/components/staff/forms/UserInformationSection';
+import SupervisionSection from '@/components/staff/forms/SupervisionSection';
 import LicensesSection from '@/components/staff/forms/LicensesSection';
 import AddStaffFormActions from '@/components/staff/forms/AddStaffFormActions';
 
@@ -30,6 +31,11 @@ const AddStaffPage: React.FC = () => {
           />
 
           <UserInformationSection 
+            formData={formData} 
+            onInputChange={handleInputChange} 
+          />
+
+          <SupervisionSection 
             formData={formData} 
             onInputChange={handleInputChange} 
           />
