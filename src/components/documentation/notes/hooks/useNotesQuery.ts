@@ -1,7 +1,8 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
+import { buildNotesQuery } from '../utils/queryBuilder';
+import { enhanceNotesWithClientAndProviderData } from '../utils/dataEnhancement';
+import { validateAndFilterNotes } from '../utils/dataValidation';
 
 interface ClinicalNote {
   id: string;
@@ -50,7 +51,6 @@ export const useNotesQuery = (
   ];
 
   const fields = selectFields || defaultFields;
-  const selectClause = fields.join(', ');
 
   return useOptimizedQuery(
     ['clinical-notes', statusFilter, typeFilter, page.toString(), pageSize.toString()],
@@ -59,25 +59,9 @@ export const useNotesQuery = (
       console.log('Query parameters:', { statusFilter, typeFilter, page, pageSize });
       
       try {
-        // Step 1: Fetch clinical notes with basic fields only
-        let query = supabase
-          .from('clinical_notes')
-          .select(selectClause, { count: 'exact' })
-          .order('updated_at', { ascending: false });
-
-        if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
-        }
-
-        if (typeFilter !== 'all') {
-          query = query.eq('note_type', typeFilter);
-        }
-
-        // Add pagination
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-        query = query.range(from, to);
-
+        // Step 1: Build and execute the query
+        const query = buildNotesQuery(statusFilter, typeFilter, { page, pageSize, selectFields: fields });
+        
         console.log('Executing clinical notes query...');
         const { data: notesData, error, count } = await query;
         
@@ -104,95 +88,11 @@ export const useNotesQuery = (
           };
         }
         
-        // Step 2: Enhanced notes with safer client and provider information fetching
-        console.log('Enhancing notes with client and provider data...');
-        const enhancedNotes = await Promise.all(
-          notesData.map(async (note: any) => {
-            let clientInfo = null;
-            let providerInfo = null;
-            
-            // Fetch client information with better error handling
-            if (note.client_id) {
-              try {
-                console.log(`Fetching client info for note ${note.id}, client_id: ${note.client_id}`);
-                const { data: clientData, error: clientError } = await supabase
-                  .from('clients')
-                  .select('first_name, last_name')
-                  .eq('id', note.client_id)
-                  .maybeSingle();
-                
-                if (clientError) {
-                  console.warn(`⚠️ Client fetch error for note ${note.id}:`, clientError);
-                } else if (clientData) {
-                  clientInfo = clientData;
-                  console.log(`✅ Client data fetched for note ${note.id}`);
-                } else {
-                  console.log(`ℹ️ No client found for note ${note.id}, client_id: ${note.client_id}`);
-                }
-              } catch (clientError) {
-                console.warn(`⚠️ Client fetch exception for note ${note.id}:`, clientError);
-              }
-            }
-            
-            // Fetch provider information with better error handling
-            if (note.provider_id) {
-              try {
-                console.log(`Fetching provider info for note ${note.id}, provider_id: ${note.provider_id}`);
-                const { data: providerData, error: providerError } = await supabase
-                  .from('users')
-                  .select('first_name, last_name')
-                  .eq('id', note.provider_id)
-                  .maybeSingle();
-                
-                if (providerError) {
-                  console.warn(`⚠️ Provider fetch error for note ${note.id}:`, providerError);
-                } else if (providerData) {
-                  providerInfo = providerData;
-                  console.log(`✅ Provider data fetched for note ${note.id}`);
-                } else {
-                  console.log(`ℹ️ No provider found for note ${note.id}, provider_id: ${note.provider_id}`);
-                }
-              } catch (providerError) {
-                console.warn(`⚠️ Provider fetch exception for note ${note.id}:`, providerError);
-              }
-            }
-            
-            return {
-              ...note,
-              clients: clientInfo,
-              provider: providerInfo
-            };
-          })
-        );
+        // Step 2: Enhance notes with client and provider data
+        const enhancedNotes = await enhanceNotesWithClientAndProviderData(notesData);
         
-        // Validate and filter data to ensure it matches ClinicalNote interface
-        const validNotes: ClinicalNote[] = enhancedNotes
-          .filter((item: any): item is NonNullable<typeof item> => 
-            item !== null && 
-            item !== undefined &&
-            typeof item === 'object' && 
-            'id' in item && 
-            'title' in item && 
-            'note_type' in item && 
-            'status' in item
-          )
-          .map((item: any): ClinicalNote => ({
-            id: item.id,
-            title: item.title,
-            note_type: item.note_type,
-            status: item.status,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            client_id: item.client_id,
-            clients: item.clients,
-            provider: item.provider
-          }));
-        
-        console.log('✅ Successfully enhanced notes with client/provider data:', {
-          originalCount: notesData.length,
-          validCount: validNotes.length,
-          totalCount: count
-        });
+        // Step 3: Validate and filter the data
+        const validNotes = validateAndFilterNotes(enhancedNotes);
         
         const result = {
           data: validNotes,
