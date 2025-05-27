@@ -19,6 +19,10 @@ import ClientDetailView from '@/components/ClientDetailView';
 import ProgressNoteForm from '@/components/documentation/progress-note/ProgressNoteForm';
 import ContactNoteForm from '@/components/documentation/contact-note/ContactNoteForm';
 import ConsultationNoteForm from '@/components/documentation/consultation-note/ConsultationNoteForm';
+import TreatmentPlanForm from '@/components/documentation/treatment-plan/TreatmentPlanForm';
+import IntakeAssessmentForm from '@/components/documentation/intake/IntakeAssessmentForm';
+import CancellationNoteForm from '@/components/documentation/cancellation-note/CancellationNoteForm';
+import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { cn } from '@/lib/utils';
@@ -79,6 +83,10 @@ const MainLayout: React.FC = () => {
           <Route path="/documentation/progress-note/:noteId/edit" element={<ProgressNoteForm />} />
           <Route path="/documentation/contact-note/:noteId/edit" element={<ContactNoteForm />} />
           <Route path="/documentation/consultation-note/:noteId/edit" element={<ConsultationNoteForm />} />
+          <Route path="/documentation/treatment-plan/:noteId/edit" element={<TreatmentPlanForm />} />
+          <Route path="/documentation/intake/:noteId/edit" element={<IntakeAssessmentForm />} />
+          <Route path="/documentation/cancellation-note/:noteId/edit" element={<CancellationNoteForm />} />
+          <Route path="/documentation/miscellaneous-note/:noteId/edit" element={<MiscellaneousNoteForm />} />
           <Route path="/scheduling" element={<Scheduling />} />
           <Route path="/staff" element={<StaffManagementPage />} />
           <Route path="/staff/add" element={<AddStaffPage />} />
