@@ -15,6 +15,7 @@ import Scheduling from '@/pages/Scheduling';
 import AddStaffPage from '@/pages/AddStaffPage';
 import StaffManagementPage from '@/components/staff/StaffManagementPage';
 import ClientList from '@/components/ClientList';
+import ClientDetailView from '@/components/ClientDetailView';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { cn } from '@/lib/utils';
@@ -70,6 +71,7 @@ const MainLayout: React.FC = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/clients" element={<ClientList />} />
+          <Route path="/client/:clientId" element={<ClientDetailView />} />
           <Route path="/documentation" element={<Documentation />} />
           <Route path="/scheduling" element={<Scheduling />} />
           <Route path="/staff" element={<StaffManagementPage />} />
