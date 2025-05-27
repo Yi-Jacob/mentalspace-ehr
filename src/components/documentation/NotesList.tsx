@@ -1,16 +1,14 @@
 
 import React, { useState } from 'react';
 import NotesFilters from './notes/NotesFilters';
-import NoteCard from './notes/NoteCard';
 import EmptyNotesState from './notes/EmptyNotesState';
 import LoadingSpinner from './notes/LoadingSpinner';
+import NotesDisplaySection from './notes/NotesDisplaySection';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';
-import { PaginationControls } from '@/components/ui/pagination-controls';
 import { useNotesQuery } from './notes/hooks/useNotesQuery';
 import { filterNotesBySearch } from './notes/utils/noteFilters';
-import { usePagination } from '@/hooks/usePagination';
-import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
+import { useNotesErrorHandling } from './notes/hooks/useNotesErrorHandling';
 
 type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
 type NoteType = 'all' | 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
@@ -22,21 +20,13 @@ const NotesList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
-  const { 
-    handleError, 
-    handleAPIError, 
-    executeWithRetry, 
-    retryCount, 
+  const {
+    retryCount,
     canRetry,
-    isRetrying 
-  } = useEnhancedErrorHandler({
-    component: 'NotesList',
-    retryConfig: { 
-      maxRetries: 3,
-      baseDelay: 1000,
-      timeoutMs: 15000 
-    }
-  });
+    isRetrying,
+    getErrorMessage,
+    handleRetry
+  } = useNotesErrorHandling();
 
   const { 
     data: notesData, 
@@ -48,20 +38,6 @@ const NotesList = () => {
     pageSize,
     selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id', 'provider_id']
   });
-
-  // Enhanced error handling with better type safety
-  const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-      return error.message;
-    }
-    if (typeof error === 'object' && error !== null && 'message' in error) {
-      return String((error as any).message);
-    }
-    if (typeof error === 'string') {
-      return error;
-    }
-    return 'An unknown error occurred while loading clinical notes';
-  };
 
   const errorMessage = error ? getErrorMessage(error) : null;
 
@@ -78,29 +54,6 @@ const NotesList = () => {
 
   // Apply search filter to current page data
   const filteredNotes = filterNotesBySearch(notesData?.data || [], searchTerm);
-
-  const handleRetry = async () => {
-    console.log('=== MANUAL RETRY INITIATED ===');
-    console.log('Retry attempt:', retryCount + 1);
-    
-    try {
-      await executeWithRetry(
-        () => {
-          console.log('Executing refetch...');
-          return refetch();
-        },
-        'Load Clinical Notes'
-      );
-      console.log('✅ Manual retry successful');
-    } catch (retryError) {
-      console.error('❌ Manual retry failed:', retryError);
-      const errorObj = retryError instanceof Error 
-        ? retryError 
-        : new Error(getErrorMessage(retryError));
-      
-      handleAPIError(errorObj, '/clinical-notes', 'GET');
-    }
-  };
 
   const handlePageChange = (page: number) => {
     console.log('=== PAGE CHANGE ===');
@@ -121,6 +74,8 @@ const NotesList = () => {
     console.groupEnd();
   }
 
+  const handleRetryClick = () => handleRetry(refetch);
+
   return (
     <EnhancedErrorBoundary 
       componentName="NotesList"
@@ -140,62 +95,21 @@ const NotesList = () => {
         <LoadingWithError
           isLoading={isLoading || isRetrying}
           error={processedError}
-          onRetry={canRetry ? handleRetry : undefined}
+          onRetry={canRetry ? handleRetryClick : undefined}
           retryCount={retryCount}
           maxRetries={3}
           errorTitle="Failed to load clinical notes"
           errorDescription="There was an issue loading your clinical notes. Please try again."
           loadingComponent={<LoadingSpinner />}
         >
-          <div className="space-y-4">
-            {/* Show pagination info */}
-            {notesData && notesData.totalCount > 0 && (
-              <div className="flex justify-between items-center text-sm text-gray-600">
-                <span>
-                  Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, notesData.totalCount)} of {notesData.totalCount} notes
-                </span>
-                <span>Page {currentPage} of {notesData.totalPages}</span>
-              </div>
-            )}
-
-            {filteredNotes?.map((note) => (
-              <EnhancedErrorBoundary 
-                key={note.id}
-                componentName="NoteCard"
-                fallback={
-                  <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-                    <p className="text-sm text-red-600">Failed to load note: {note.title}</p>
-                  </div>
-                }
-              >
-                <NoteCard note={note} />
-              </EnhancedErrorBoundary>
-            ))}
-            
-            {filteredNotes?.length === 0 && notesData?.data && notesData.data.length === 0 && (
-              <EmptyNotesState />
-            )}
-
-            {filteredNotes?.length === 0 && notesData?.data && notesData.data.length > 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500">No notes match your search criteria.</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Try adjusting your filters or search term.
-                </p>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {notesData && notesData.totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={notesData.totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            )}
-          </div>
+          <NotesDisplaySection
+            filteredNotes={filteredNotes}
+            allNotes={notesData?.data || []}
+            notesData={notesData}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+          />
         </LoadingWithError>
       </div>
     </EnhancedErrorBoundary>
