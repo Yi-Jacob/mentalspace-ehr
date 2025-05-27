@@ -49,9 +49,25 @@ const NotesList = () => {
     selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id', 'provider_id']
   });
 
+  // Fix: Properly handle the error type
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+      return String((error as any).message);
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return 'An unknown error occurred';
+  };
+
+  const errorMessage = error ? getErrorMessage(error) : null;
+
   console.log('NotesList render:', { 
     isLoading, 
-    error: error?.message, 
+    error: errorMessage, 
     notesCount: notesData?.data?.length,
     totalCount: notesData?.totalCount 
   });
@@ -71,9 +87,7 @@ const NotesList = () => {
       // Create proper Error object if retryError is not already an Error
       const errorObj = retryError instanceof Error 
         ? retryError 
-        : new Error(typeof retryError === 'object' && retryError && 'message' in retryError 
-            ? String(retryError.message) 
-            : 'Failed to load clinical notes');
+        : new Error(getErrorMessage(retryError));
       
       handleAPIError(errorObj, '/clinical-notes', 'GET');
     }
@@ -85,11 +99,7 @@ const NotesList = () => {
   };
 
   // Convert error to proper Error object if needed
-  const processedError = error ? (error instanceof Error ? error : new Error(
-    typeof error === 'object' && error && 'message' in error 
-      ? String(error.message) 
-      : 'Failed to load notes'
-  )) : null;
+  const processedError = error ? (error instanceof Error ? error : new Error(getErrorMessage(error))) : null;
 
   return (
     <EnhancedErrorBoundary 
