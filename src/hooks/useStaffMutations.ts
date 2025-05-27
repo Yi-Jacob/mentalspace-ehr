@@ -30,6 +30,8 @@ export const useStaffMutations = () => {
         p_can_bill_insurance: staffData.can_bill_insurance || false,
         p_status: (staffData.status as UserStatus) || 'active',
         p_notes: staffData.notes || null,
+        p_supervision_type: staffData.supervision_type || 'Not Supervised',
+        p_supervisor_id: staffData.supervisor_id || null,
       });
 
       if (error) throw error;

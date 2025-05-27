@@ -1610,7 +1610,9 @@ export type Database = {
           is_active: boolean | null
           start_date: string
           supervisee_id: string
-          supervision_type: string | null
+          supervision_type:
+            | Database["public"]["Enums"]["supervision_requirement_type"]
+            | null
           supervisor_id: string
         }
         Insert: {
@@ -1620,7 +1622,9 @@ export type Database = {
           is_active?: boolean | null
           start_date: string
           supervisee_id: string
-          supervision_type?: string | null
+          supervision_type?:
+            | Database["public"]["Enums"]["supervision_requirement_type"]
+            | null
           supervisor_id: string
         }
         Update: {
@@ -1630,7 +1634,9 @@ export type Database = {
           is_active?: boolean | null
           start_date?: string
           supervisee_id?: string
-          supervision_type?: string | null
+          supervision_type?:
+            | Database["public"]["Enums"]["supervision_requirement_type"]
+            | null
           supervisor_id?: string
         }
         Relationships: [
@@ -1801,25 +1807,47 @@ export type Database = {
         Returns: boolean
       }
       create_staff_member: {
-        Args: {
-          p_first_name: string
-          p_last_name: string
-          p_email: string
-          p_roles: Database["public"]["Enums"]["user_role"][]
-          p_employee_id?: string
-          p_job_title?: string
-          p_department?: string
-          p_phone_number?: string
-          p_npi_number?: string
-          p_license_number?: string
-          p_license_state?: string
-          p_license_expiry_date?: string
-          p_hire_date?: string
-          p_billing_rate?: number
-          p_can_bill_insurance?: boolean
-          p_status?: Database["public"]["Enums"]["user_status"]
-          p_notes?: string
-        }
+        Args:
+          | {
+              p_first_name: string
+              p_last_name: string
+              p_email: string
+              p_roles: Database["public"]["Enums"]["user_role"][]
+              p_employee_id?: string
+              p_job_title?: string
+              p_department?: string
+              p_phone_number?: string
+              p_npi_number?: string
+              p_license_number?: string
+              p_license_state?: string
+              p_license_expiry_date?: string
+              p_hire_date?: string
+              p_billing_rate?: number
+              p_can_bill_insurance?: boolean
+              p_status?: Database["public"]["Enums"]["user_status"]
+              p_notes?: string
+            }
+          | {
+              p_first_name: string
+              p_last_name: string
+              p_email: string
+              p_roles: Database["public"]["Enums"]["user_role"][]
+              p_employee_id?: string
+              p_job_title?: string
+              p_department?: string
+              p_phone_number?: string
+              p_npi_number?: string
+              p_license_number?: string
+              p_license_state?: string
+              p_license_expiry_date?: string
+              p_hire_date?: string
+              p_billing_rate?: number
+              p_can_bill_insurance?: boolean
+              p_status?: Database["public"]["Enums"]["user_status"]
+              p_notes?: string
+              p_supervision_type?: Database["public"]["Enums"]["supervision_requirement_type"]
+              p_supervisor_id?: string
+            }
         Returns: string
       }
       current_user_has_role: {
@@ -2006,6 +2034,11 @@ export type Database = {
         | "Opioids (heroin, prescription pain medications, etc.)"
         | "Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)"
         | "Other Substances"
+      supervision_requirement_type:
+        | "Not Supervised"
+        | "Access patient notes and co-sign notes for selected payers"
+        | "Must review and approve all notes"
+        | "Must review and co-sign all notes"
       symptom_onset:
         | "Recent (Less than 1 month)"
         | "Acute (1-3 months)"
@@ -2380,6 +2413,12 @@ export const Constants = {
         "Opioids (heroin, prescription pain medications, etc.)",
         "Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)",
         "Other Substances",
+      ],
+      supervision_requirement_type: [
+        "Not Supervised",
+        "Access patient notes and co-sign notes for selected payers",
+        "Must review and approve all notes",
+        "Must review and co-sign all notes",
       ],
       symptom_onset: [
         "Recent (Less than 1 month)",

@@ -40,18 +40,13 @@ export const useAddStaffSubmit = () => {
       can_bill_insurance: formData.can_bill_insurance,
       status: formData.status,
       notes: formData.notes || undefined,
+      supervision_type: formData.supervision_type || 'Not Supervised',
+      supervisor_id: formData.supervisor_id || undefined,
     };
 
     createStaffMember(staffData, {
       onSuccess: () => {
-        // TODO: Create supervision relationship if supervisor is selected
-        if (formData.supervision_type !== 'Not Supervised' && formData.supervisor_id) {
-          // This would need to be implemented to create the supervision relationship
-          console.log('Supervision relationship would be created:', {
-            supervisor_id: formData.supervisor_id,
-            supervision_type: formData.supervision_type
-          });
-        }
+        console.log('Staff member created successfully with supervision relationship');
         navigate('/staff');
       }
     });

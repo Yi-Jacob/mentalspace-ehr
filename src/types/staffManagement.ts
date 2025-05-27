@@ -19,4 +19,6 @@ export interface CreateStaffMemberData {
   can_bill_insurance?: boolean;
   status?: UserStatus;
   notes?: string;
+  supervision_type?: string;
+  supervisor_id?: string;
 }
