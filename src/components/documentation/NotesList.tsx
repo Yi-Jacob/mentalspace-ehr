@@ -59,7 +59,12 @@ const NotesList = () => {
         'Load Clinical Notes'
       );
     } catch (retryError) {
-      handleAPIError(retryError, '/clinical-notes', 'GET');
+      // Create proper Error object if retryError is not already an Error
+      const errorObj = retryError instanceof Error 
+        ? retryError 
+        : new Error(retryError?.message || 'Failed to load clinical notes');
+      
+      handleAPIError(errorObj, '/clinical-notes', 'GET');
     }
   };
 
