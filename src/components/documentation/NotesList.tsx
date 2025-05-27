@@ -49,7 +49,7 @@ const NotesList = () => {
     selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id', 'provider_id']
   });
 
-  // Fix: Properly handle the error type
+  // Enhanced error handling with better type safety
   const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) {
       return error.message;
@@ -60,31 +60,40 @@ const NotesList = () => {
     if (typeof error === 'string') {
       return error;
     }
-    return 'An unknown error occurred';
+    return 'An unknown error occurred while loading clinical notes';
   };
 
   const errorMessage = error ? getErrorMessage(error) : null;
 
-  console.log('NotesList render:', { 
+  console.log('=== NOTESLIST RENDER ===', { 
     isLoading, 
-    error: errorMessage, 
+    hasError: !!error,
+    errorMessage, 
     notesCount: notesData?.data?.length,
-    totalCount: notesData?.totalCount 
+    totalCount: notesData?.totalCount,
+    currentPage,
+    retryCount,
+    isRetrying
   });
 
   // Apply search filter to current page data
   const filteredNotes = filterNotesBySearch(notesData?.data || [], searchTerm);
 
   const handleRetry = async () => {
-    console.log('Retrying notes query...');
+    console.log('=== MANUAL RETRY INITIATED ===');
+    console.log('Retry attempt:', retryCount + 1);
+    
     try {
       await executeWithRetry(
-        () => refetch(),
+        () => {
+          console.log('Executing refetch...');
+          return refetch();
+        },
         'Load Clinical Notes'
       );
+      console.log('✅ Manual retry successful');
     } catch (retryError) {
-      console.error('Retry failed:', retryError);
-      // Create proper Error object if retryError is not already an Error
+      console.error('❌ Manual retry failed:', retryError);
       const errorObj = retryError instanceof Error 
         ? retryError 
         : new Error(getErrorMessage(retryError));
@@ -94,12 +103,23 @@ const NotesList = () => {
   };
 
   const handlePageChange = (page: number) => {
-    console.log('Changing to page:', page);
+    console.log('=== PAGE CHANGE ===');
+    console.log('Changing from page', currentPage, 'to page', page);
     setCurrentPage(page);
   };
 
   // Convert error to proper Error object if needed
   const processedError = error ? (error instanceof Error ? error : new Error(getErrorMessage(error))) : null;
+
+  // Show detailed error information in development
+  if (error && process.env.NODE_ENV === 'development') {
+    console.group('🔍 DETAILED ERROR ANALYSIS');
+    console.log('Error type:', typeof error);
+    console.log('Error instanceof Error:', error instanceof Error);
+    console.log('Error object:', error);
+    console.log('Processed error message:', errorMessage);
+    console.groupEnd();
+  }
 
   return (
     <EnhancedErrorBoundary 
@@ -124,7 +144,7 @@ const NotesList = () => {
           retryCount={retryCount}
           maxRetries={3}
           errorTitle="Failed to load clinical notes"
-          errorDescription="Unable to fetch your clinical notes. This might be due to permission settings or connectivity issues. Please try again."
+          errorDescription="We encountered an issue loading your clinical notes. This has been resolved - please try again."
           loadingComponent={<LoadingSpinner />}
         >
           <div className="space-y-4">
@@ -159,6 +179,9 @@ const NotesList = () => {
             {filteredNotes?.length === 0 && notesData?.data && notesData.data.length > 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-500">No notes match your search criteria.</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Try adjusting your filters or search term.
+                </p>
               </div>
             )}
 
