@@ -32,21 +32,21 @@ const SupervisionTabs: React.FC<SupervisionTabsProps> = ({ defaultValue, childre
             className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white rounded-xl transition-all duration-300"
           >
             <Users className="h-4 w-4" />
-            <span>Team</span>
+            <span>Relationships</span>
           </TabsTrigger>
           <TabsTrigger 
             value="notes" 
             className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-xl transition-all duration-300"
           >
             <FileText className="h-4 w-4" />
-            <span>Reviews</span>
+            <span>Supervision Notes</span>
           </TabsTrigger>
           <TabsTrigger 
             value="progress" 
             className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-xl transition-all duration-300"
           >
             <Award className="h-4 w-4" />
-            <span>Progress</span>
+            <span>Progress Tracking</span>
           </TabsTrigger>
         </TabsList>
       </div>
