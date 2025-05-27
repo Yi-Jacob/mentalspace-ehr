@@ -72,6 +72,9 @@ const NotesList = () => {
     setCurrentPage(page);
   };
 
+  // Convert error to proper Error object if needed
+  const processedError = error ? (error instanceof Error ? error : new Error(error.message || 'Failed to load notes')) : null;
+
   return (
     <EnhancedErrorBoundary 
       componentName="NotesList"
@@ -90,7 +93,7 @@ const NotesList = () => {
 
         <LoadingWithError
           isLoading={isLoading || isRetrying}
-          error={error}
+          error={processedError}
           onRetry={canRetry ? handleRetry : undefined}
           retryCount={retryCount}
           maxRetries={3}
