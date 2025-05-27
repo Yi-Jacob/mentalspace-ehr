@@ -63,37 +63,49 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30"
+        className="max-w-5xl max-h-[95vh] overflow-hidden bg-white border-0 shadow-2xl rounded-2xl p-0"
         aria-describedby="create-appointment-description"
       >
-        <CreateAppointmentModalHeader onClose={handleClose} />
+        {/* Modern gradient background overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-blue-50/60 pointer-events-none" />
+        
+        {/* Content container */}
+        <div className="relative flex flex-col h-full">
+          <CreateAppointmentModalHeader onClose={handleClose} />
 
-        <div id="create-appointment-description" className="sr-only">
-          Create a new appointment by filling out the form below. All required fields must be completed.
+          <div id="create-appointment-description" className="sr-only">
+            Create a new appointment by filling out the form below. All required fields must be completed.
+          </div>
+
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto px-8 pb-6">
+            <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+              <ConflictAndErrorAlerts
+                generalError={errors.general}
+                hasConflicts={hasConflicts}
+                conflictData={conflictData}
+                isCheckingConflicts={isCheckingConflicts}
+                clientId={formData.client_id}
+              />
+
+              <CreateAppointmentFormContent
+                formData={formData}
+                updateFormData={updateFormData}
+                errors={errors}
+              />
+            </form>
+          </div>
+
+          {/* Fixed footer */}
+          <div className="border-t border-gray-200/60 bg-white/95 backdrop-blur-sm px-8">
+            <CreateAppointmentModalFooter
+              onClose={handleClose}
+              onSubmit={handleSubmit}
+              canSubmit={canSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-          <ConflictAndErrorAlerts
-            generalError={errors.general}
-            hasConflicts={hasConflicts}
-            conflictData={conflictData}
-            isCheckingConflicts={isCheckingConflicts}
-            clientId={formData.client_id}
-          />
-
-          <CreateAppointmentFormContent
-            formData={formData}
-            updateFormData={updateFormData}
-            errors={errors}
-          />
-
-          <CreateAppointmentModalFooter
-            onClose={handleClose}
-            onSubmit={handleSubmit}
-            canSubmit={canSubmit}
-            isSubmitting={isSubmitting}
-          />
-        </form>
       </DialogContent>
     </Dialog>
   );
