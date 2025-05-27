@@ -1,45 +1,14 @@
 
-import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
-interface OptimizedQueryOptions<T> extends Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'> {
-  cacheTime?: number;
-  staleTime?: number;
-  refetchOnWindowFocus?: boolean;
-}
-
-export const useOptimizedQuery = <T>(
-  queryKey: string[],
+export const useOptimizedQuery = <T = unknown, E = unknown>(
+  queryKey: (string | number)[],
   queryFn: () => Promise<T>,
-  options: OptimizedQueryOptions<T> = {}
+  options?: Omit<UseQueryOptions<T, E>, 'queryKey' | 'queryFn'>
 ) => {
-  const {
-    cacheTime = 5 * 60 * 1000, // 5 minutes
-    staleTime = 2 * 60 * 1000, // 2 minutes
-    refetchOnWindowFocus = false,
-    ...restOptions
-  } = options;
-
   return useQuery({
     queryKey,
     queryFn,
-    gcTime: cacheTime,
-    staleTime,
-    refetchOnWindowFocus,
-    ...restOptions,
+    ...options,
   });
-};
-
-export const useInvalidateQueries = () => {
-  const queryClient = useQueryClient();
-
-  const invalidateQueries = useCallback((queryKey: string[]) => {
-    queryClient.invalidateQueries({ queryKey });
-  }, [queryClient]);
-
-  const removeQueries = useCallback((queryKey: string[]) => {
-    queryClient.removeQueries({ queryKey });
-  }, [queryClient]);
-
-  return { invalidateQueries, removeQueries };
 };

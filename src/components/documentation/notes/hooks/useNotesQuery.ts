@@ -37,7 +37,7 @@ export const useNotesQuery = (
 ) => {
   const { page = 1, pageSize = 10, selectFields } = options;
 
-  // Optimized field selection - only fetch what we need
+  // Optimized field selection - only fetch what we need, avoiding problematic joins
   const defaultFields = [
     'id',
     'title', 
@@ -45,14 +45,16 @@ export const useNotesQuery = (
     'status',
     'created_at',
     'updated_at',
-    'client_id'
+    'client_id',
+    'provider_id'
   ];
 
   const fields = selectFields || defaultFields;
+  
+  // Remove the problematic provider join that causes infinite recursion
   const selectClause = [
     ...fields,
-    'clients!inner(first_name, last_name)',
-    'provider:users!clinical_notes_provider_id_fkey(first_name, last_name)'
+    'clients!inner(first_name, last_name)'
   ].join(', ');
 
   return useOptimizedQuery(
@@ -90,9 +92,37 @@ export const useNotesQuery = (
         };
       }
       
+      // Get provider information separately to avoid RLS issues
+      const notesWithProviders = await Promise.all(
+        data.map(async (note: any) => {
+          let providerInfo = null;
+          
+          if (note.provider_id) {
+            try {
+              const { data: providerData } = await supabase
+                .from('users')
+                .select('first_name, last_name')
+                .eq('id', note.provider_id)
+                .single();
+              
+              if (providerData) {
+                providerInfo = providerData;
+              }
+            } catch (providerError) {
+              console.warn('Could not fetch provider info:', providerError);
+              // Continue without provider info rather than failing
+            }
+          }
+          
+          return {
+            ...note,
+            provider: providerInfo
+          };
+        })
+      );
+      
       // Validate and filter data to ensure it matches ClinicalNote interface
-      // Fix: Use proper type assertion and null checking
-      const validNotes: ClinicalNote[] = data
+      const validNotes: ClinicalNote[] = notesWithProviders
         .filter((item: any): item is NonNullable<typeof item> => 
           item !== null && 
           item !== undefined &&
