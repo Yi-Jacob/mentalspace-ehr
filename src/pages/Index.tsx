@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import ModulePage from '@/components/ModulePage';
 import ClientList from '@/components/ClientList';
@@ -127,11 +126,8 @@ const Index = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar activeItem={activeModule} onItemClick={handleModuleClick} />
-      <div className="flex-1 ml-64 overflow-auto">
-        {renderContent()}
-      </div>
+    <div className="w-full">
+      {renderContent()}
     </div>
   );
 };
