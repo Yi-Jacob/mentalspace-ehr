@@ -63,22 +63,24 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-5xl max-h-[95vh] overflow-hidden bg-white border-0 shadow-2xl rounded-2xl p-0"
+        className="max-w-5xl h-[90vh] bg-white border-0 shadow-2xl rounded-2xl p-0 flex flex-col"
         aria-describedby="create-appointment-description"
       >
         {/* Modern gradient background overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-blue-50/60 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-blue-50/60 pointer-events-none rounded-2xl" />
         
-        {/* Content container */}
-        <div className="relative flex flex-col h-full">
+        {/* Fixed Header */}
+        <div className="relative flex-shrink-0">
           <CreateAppointmentModalHeader onClose={handleClose} />
+        </div>
 
-          <div id="create-appointment-description" className="sr-only">
-            Create a new appointment by filling out the form below. All required fields must be completed.
-          </div>
+        <div id="create-appointment-description" className="sr-only">
+          Create a new appointment by filling out the form below. All required fields must be completed.
+        </div>
 
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto px-8 pb-6">
+        {/* Scrollable content area */}
+        <div className="relative flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto px-8 pb-6">
             <form onSubmit={handleSubmit} className="space-y-8" noValidate>
               <ConflictAndErrorAlerts
                 generalError={errors.general}
@@ -95,16 +97,16 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
               />
             </form>
           </div>
+        </div>
 
-          {/* Fixed footer */}
-          <div className="border-t border-gray-200/60 bg-white/95 backdrop-blur-sm px-8">
-            <CreateAppointmentModalFooter
-              onClose={handleClose}
-              onSubmit={handleSubmit}
-              canSubmit={canSubmit}
-              isSubmitting={isSubmitting}
-            />
-          </div>
+        {/* Fixed footer */}
+        <div className="relative flex-shrink-0 border-t border-gray-200/60 bg-white/95 backdrop-blur-sm px-8">
+          <CreateAppointmentModalFooter
+            onClose={handleClose}
+            onSubmit={handleSubmit}
+            canSubmit={canSubmit}
+            isSubmitting={isSubmitting}
+          />
         </div>
       </DialogContent>
     </Dialog>
