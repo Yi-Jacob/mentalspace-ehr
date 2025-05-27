@@ -46,19 +46,28 @@ const NotesList = () => {
   } = useNotesQuery(statusFilter, typeFilter, {
     page: currentPage,
     pageSize,
-    selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id']
+    selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id', 'provider_id']
+  });
+
+  console.log('NotesList render:', { 
+    isLoading, 
+    error: error?.message, 
+    notesCount: notesData?.data?.length,
+    totalCount: notesData?.totalCount 
   });
 
   // Apply search filter to current page data
   const filteredNotes = filterNotesBySearch(notesData?.data || [], searchTerm);
 
   const handleRetry = async () => {
+    console.log('Retrying notes query...');
     try {
       await executeWithRetry(
         () => refetch(),
         'Load Clinical Notes'
       );
     } catch (retryError) {
+      console.error('Retry failed:', retryError);
       // Create proper Error object if retryError is not already an Error
       const errorObj = retryError instanceof Error 
         ? retryError 
@@ -71,6 +80,7 @@ const NotesList = () => {
   };
 
   const handlePageChange = (page: number) => {
+    console.log('Changing to page:', page);
     setCurrentPage(page);
   };
 
@@ -104,7 +114,7 @@ const NotesList = () => {
           retryCount={retryCount}
           maxRetries={3}
           errorTitle="Failed to load clinical notes"
-          errorDescription="Unable to fetch your clinical notes. Please check your connection and try again."
+          errorDescription="Unable to fetch your clinical notes. This might be due to permission settings or connectivity issues. Please try again."
           loadingComponent={<LoadingSpinner />}
         >
           <div className="space-y-4">
@@ -132,7 +142,15 @@ const NotesList = () => {
               </EnhancedErrorBoundary>
             ))}
             
-            {filteredNotes?.length === 0 && <EmptyNotesState />}
+            {filteredNotes?.length === 0 && notesData?.data && notesData.data.length === 0 && (
+              <EmptyNotesState />
+            )}
+
+            {filteredNotes?.length === 0 && notesData?.data && notesData.data.length > 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No notes match your search criteria.</p>
+              </div>
+            )}
 
             {/* Pagination */}
             {notesData && notesData.totalPages > 1 && (

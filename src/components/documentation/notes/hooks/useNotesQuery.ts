@@ -37,7 +37,7 @@ export const useNotesQuery = (
 ) => {
   const { page = 1, pageSize = 10, selectFields } = options;
 
-  // Optimized field selection - only fetch what we need, avoiding problematic joins
+  // Simplified field selection - only fetch basic note data first
   const defaultFields = [
     'id',
     'title', 
@@ -50,16 +50,14 @@ export const useNotesQuery = (
   ];
 
   const fields = selectFields || defaultFields;
-  
-  // Remove the problematic provider join that causes infinite recursion
-  const selectClause = [
-    ...fields,
-    'clients!inner(first_name, last_name)'
-  ].join(', ');
+  const selectClause = fields.join(', ');
 
   return useOptimizedQuery(
     ['clinical-notes', statusFilter, typeFilter, page.toString(), pageSize.toString()],
     async () => {
+      console.log('Fetching clinical notes with simplified query...');
+      
+      // Step 1: Fetch clinical notes with basic fields only
       let query = supabase
         .from('clinical_notes')
         .select(selectClause, { count: 'exact' })
@@ -78,11 +76,17 @@ export const useNotesQuery = (
       const to = from + pageSize - 1;
       query = query.range(from, to);
 
-      const { data, error, count } = await query;
-      if (error) throw error;
+      const { data: notesData, error, count } = await query;
+      
+      if (error) {
+        console.error('Error fetching clinical notes:', error);
+        throw error;
+      }
+      
+      console.log('Successfully fetched clinical notes:', notesData?.length || 0);
       
       // Ensure we have valid data before processing
-      if (!data || !Array.isArray(data)) {
+      if (!notesData || !Array.isArray(notesData)) {
         return {
           data: [],
           totalCount: count || 0,
@@ -92,11 +96,31 @@ export const useNotesQuery = (
         };
       }
       
-      // Get provider information separately to avoid RLS issues
-      const notesWithProviders = await Promise.all(
-        data.map(async (note: any) => {
+      // Step 2: Enhance notes with client and provider information
+      const enhancedNotes = await Promise.all(
+        notesData.map(async (note: any) => {
+          let clientInfo = null;
           let providerInfo = null;
           
+          // Fetch client information separately
+          if (note.client_id) {
+            try {
+              const { data: clientData } = await supabase
+                .from('clients')
+                .select('first_name, last_name')
+                .eq('id', note.client_id)
+                .single();
+              
+              if (clientData) {
+                clientInfo = clientData;
+              }
+            } catch (clientError) {
+              console.warn('Could not fetch client info for note:', note.id, clientError);
+              // Continue without client info rather than failing
+            }
+          }
+          
+          // Fetch provider information separately
           if (note.provider_id) {
             try {
               const { data: providerData } = await supabase
@@ -109,20 +133,21 @@ export const useNotesQuery = (
                 providerInfo = providerData;
               }
             } catch (providerError) {
-              console.warn('Could not fetch provider info:', providerError);
+              console.warn('Could not fetch provider info for note:', note.id, providerError);
               // Continue without provider info rather than failing
             }
           }
           
           return {
             ...note,
+            clients: clientInfo,
             provider: providerInfo
           };
         })
       );
       
       // Validate and filter data to ensure it matches ClinicalNote interface
-      const validNotes: ClinicalNote[] = notesWithProviders
+      const validNotes: ClinicalNote[] = enhancedNotes
         .filter((item: any): item is NonNullable<typeof item> => 
           item !== null && 
           item !== undefined &&
@@ -143,6 +168,8 @@ export const useNotesQuery = (
           clients: item.clients,
           provider: item.provider
         }));
+      
+      console.log('Successfully enhanced notes with client/provider data:', validNotes.length);
       
       return {
         data: validNotes,
