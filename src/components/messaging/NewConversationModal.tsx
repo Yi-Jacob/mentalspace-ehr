@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -35,25 +36,38 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({
     }
   }, [open, preselectedClientId]);
 
-  const { data: clients, isLoading: clientsLoading } = useQuery({
+  const { data: clients, isLoading: clientsLoading, error: clientsError } = useQuery({
     queryKey: ['therapist-clients-for-conversation'],
     queryFn: async () => {
-      console.log('Fetching clients for conversation...');
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      console.log('Fetching clients for new conversation...');
+      
+      // Get current user
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        console.error('User not authenticated:', userError);
+        throw new Error('User not authenticated');
+      }
 
-      const { data: userRecord } = await supabase
+      console.log('Current user:', userData.user.id);
+
+      // Get user record from our users table
+      const { data: userRecord, error: userRecordError } = await supabase
         .from('users')
         .select('id')
         .eq('auth_user_id', userData.user.id)
         .single();
       
-      if (!userRecord) throw new Error('User record not found');
+      if (userRecordError || !userRecord) {
+        console.error('User record not found:', userRecordError);
+        throw new Error('User record not found');
+      }
 
+      console.log('User record:', userRecord);
+
+      // Fetch all active clients (for now, we'll get all clients to debug)
       const { data, error } = await supabase
         .from('clients')
         .select('id, first_name, last_name, email')
-        .eq('assigned_clinician_id', userRecord.id)
         .eq('is_active', true)
         .order('first_name');
       
@@ -63,9 +77,22 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({
       }
       
       console.log('Fetched clients:', data);
-      return data;
+      return data || [];
     },
+    enabled: open, // Only fetch when modal is open
   });
+
+  useEffect(() => {
+    if (clientsError) {
+      console.error('Clients query error:', clientsError);
+    }
+    if (clientsLoading) {
+      console.log('Loading clients...');
+    }
+    if (clients) {
+      console.log('Clients loaded:', clients.length, 'clients');
+    }
+  }, [clients, clientsLoading, clientsError]);
 
   const createConversationMutation = useMutation({
     mutationFn: async () => {
@@ -164,42 +191,50 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
+        {clientsLoading && (
+          <div className="text-center py-4">
+            <p className="text-gray-500">Loading clients...</p>
+          </div>
+        )}
+
+        {clientsError && (
+          <div className="text-center py-4">
+            <p className="text-red-500">Error loading clients: {clientsError.message}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Client Selection */}
           <div className="space-y-2">
             <Label htmlFor="client" className="text-sm font-medium">
               Client *
             </Label>
-            {clientsLoading ? (
-              <div className="text-sm text-gray-500">Loading clients...</div>
-            ) : (
-              <Select 
-                value={selectedClientId} 
-                onValueChange={setSelectedClientId}
-                disabled={!!preselectedClientId}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a client" />
-                </SelectTrigger>
-                <SelectContent className="z-[60] bg-white border border-gray-200 shadow-lg max-h-60">
-                  {clients && clients.length > 0 ? (
-                    clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id} className="cursor-pointer hover:bg-gray-100">
-                        <div className="flex items-center space-x-2">
-                          <Users className="h-4 w-4" />
-                          <span>{client.first_name} {client.last_name}</span>
-                          {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
-                        </div>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="no-clients" disabled>
-                      No clients available
+            <Select 
+              value={selectedClientId} 
+              onValueChange={setSelectedClientId}
+              disabled={!!preselectedClientId}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a client" />
+              </SelectTrigger>
+              <SelectContent className="z-[60] bg-white border border-gray-200 shadow-lg max-h-60">
+                {clients && clients.length > 0 ? (
+                  clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id} className="cursor-pointer hover:bg-gray-100">
+                      <div className="flex items-center space-x-2">
+                        <Users className="h-4 w-4" />
+                        <span>{client.first_name} {client.last_name}</span>
+                        {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
+                      </div>
                     </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            )}
+                  ))
+                ) : (
+                  <SelectItem value="no-clients" disabled>
+                    {clientsLoading ? 'Loading clients...' : 'No clients available'}
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Title */}
@@ -264,7 +299,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({
             </Button>
             <Button
               type="submit"
-              disabled={createConversationMutation.isPending}
+              disabled={createConversationMutation.isPending || !selectedClientId}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
             >
               <Plus className="h-4 w-4 mr-2" />

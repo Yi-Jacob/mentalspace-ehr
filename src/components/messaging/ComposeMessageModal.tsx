@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Send } from 'lucide-react';
@@ -33,31 +34,63 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
     }
   }, [open, preselectedClientId]);
 
-  const { data: clients } = useQuery({
+  const { data: clients, isLoading: clientsLoading, error: clientsError } = useQuery({
     queryKey: ['therapist-clients-for-compose'],
     queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      console.log('Fetching clients for compose message...');
+      
+      // Get current user
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        console.error('User not authenticated:', userError);
+        throw new Error('User not authenticated');
+      }
 
-      const { data: userRecord } = await supabase
+      console.log('Current user:', userData.user.id);
+
+      // Get user record from our users table
+      const { data: userRecord, error: userRecordError } = await supabase
         .from('users')
         .select('id')
         .eq('auth_user_id', userData.user.id)
         .single();
       
-      if (!userRecord) throw new Error('User record not found');
+      if (userRecordError || !userRecord) {
+        console.error('User record not found:', userRecordError);
+        throw new Error('User record not found');
+      }
 
+      console.log('User record:', userRecord);
+
+      // Fetch all active clients (for now, we'll get all clients to debug)
       const { data, error } = await supabase
         .from('clients')
         .select('id, first_name, last_name, email')
-        .eq('assigned_clinician_id', userRecord.id)
         .eq('is_active', true)
         .order('first_name');
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching clients:', error);
+        throw error;
+      }
+      
+      console.log('Fetched clients:', data);
+      return data || [];
     },
+    enabled: open, // Only fetch when modal is open
   });
+
+  useEffect(() => {
+    if (clientsError) {
+      console.error('Clients query error:', clientsError);
+    }
+    if (clientsLoading) {
+      console.log('Loading clients...');
+    }
+    if (clients) {
+      console.log('Clients loaded:', clients.length, 'clients');
+    }
+  }, [clients, clientsLoading, clientsError]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async () => {
@@ -166,6 +199,18 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
             <span>Quick Message to Client</span>
           </DialogTitle>
         </DialogHeader>
+
+        {clientsLoading && (
+          <div className="text-center py-4">
+            <p className="text-gray-500">Loading clients...</p>
+          </div>
+        )}
+
+        {clientsError && (
+          <div className="text-center py-4">
+            <p className="text-red-500">Error loading clients: {clientsError.message}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <ComposeMessageForm
