@@ -24,9 +24,10 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: clients } = useQuery({
+  const { data: clients, isLoading: clientsLoading } = useQuery({
     queryKey: ['therapist-clients-for-conversation'],
     queryFn: async () => {
+      console.log('Fetching clients for conversation...');
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
@@ -45,7 +46,12 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
         .eq('is_active', true)
         .order('first_name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching clients:', error);
+        throw error;
+      }
+      
+      console.log('Fetched clients:', data);
       return data;
     },
   });
@@ -65,11 +71,11 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
       // Check if conversation already exists
       const { data: existingConversation } = await supabase
-        .from('conversations' as any)
+        .from('conversations')
         .select('id')
         .eq('client_id', selectedClientId)
         .eq('therapist_id', userRecord.id)
-        .single();
+        .maybeSingle();
 
       if (existingConversation) {
         throw new Error('A conversation with this client already exists');
@@ -77,7 +83,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
       // Create the conversation
       const { data: conversation, error: conversationError } = await supabase
-        .from('conversations' as any)
+        .from('conversations')
         .insert({
           title: title || 'New Conversation',
           client_id: selectedClientId,
@@ -137,7 +143,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <Users className="h-5 w-5 text-blue-600" />
@@ -151,22 +157,32 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
             <Label htmlFor="client" className="text-sm font-medium">
               Client *
             </Label>
-            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a client" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients?.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4" />
-                      <span>{client.first_name} {client.last_name}</span>
-                      {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {clientsLoading ? (
+              <div className="text-sm text-gray-500">Loading clients...</div>
+            ) : (
+              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a client" />
+                </SelectTrigger>
+                <SelectContent className="z-[60] bg-white border border-gray-200 shadow-lg max-h-60">
+                  {clients && clients.length > 0 ? (
+                    clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id} className="cursor-pointer hover:bg-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4" />
+                          <span>{client.first_name} {client.last_name}</span>
+                          {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-clients" disabled>
+                      No clients available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Title */}
@@ -191,7 +207,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[60] bg-white border border-gray-200 shadow-lg">
                 <SelectItem value="general">General</SelectItem>
                 <SelectItem value="clinical">Clinical</SelectItem>
                 <SelectItem value="administrative">Administrative</SelectItem>
@@ -209,7 +225,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
               <SelectTrigger>
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[60] bg-white border border-gray-200 shadow-lg">
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="normal">Normal</SelectItem>
                 <SelectItem value="high">High</SelectItem>
