@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, FileText, DollarSign, Calendar, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { ClaimWithDetails } from '@/types/billing';
 
 const ClaimsManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');

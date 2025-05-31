@@ -7,7 +7,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Sidebar from '@/components/Sidebar';
 import Index from '@/pages/Index';
-import ClientList from '@/pages/Clients';
+import ClientList from '@/components/ClientList';
 import Scheduling from '@/pages/Scheduling';
 import Documentation from '@/pages/Documentation';
 import Message from '@/pages/Message';
