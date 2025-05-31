@@ -15,6 +15,7 @@ import StaffPage from '@/pages/StaffPage';
 import AddStaffPage from '@/pages/AddStaffPage';
 import NotFound from '@/pages/NotFound';
 import Billing from '@/pages/Billing';
+import Auth from '@/pages/Auth';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -29,28 +30,34 @@ function App() {
       <AuthProvider>
         <Toaster />
         <Router>
-          <div className="flex h-screen bg-gray-50">
-            <ProtectedRoute>
-              <>
-                <Sidebar isCollapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
-                <main className={`flex-1 overflow-hidden transition-all duration-300 ${
-                  sidebarCollapsed ? 'ml-16' : 'ml-64'
-                }`}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/clients" element={<ClientList />} />
-                    <Route path="/scheduling" element={<Scheduling />} />
-                    <Route path="/documentation" element={<Documentation />} />
-                    <Route path="/messages" element={<Message />} />
-                    <Route path="/billing" element={<Billing />} />
-                    <Route path="/staff" element={<StaffPage />} />
-                    <Route path="/add-staff" element={<AddStaffPage />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-              </>
-            </ProtectedRoute>
-          </div>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Protected routes */}
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-gray-50">
+                  <Sidebar isCollapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
+                  <main className={`flex-1 overflow-hidden transition-all duration-300 ${
+                    sidebarCollapsed ? 'ml-16' : 'ml-64'
+                  }`}>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/clients" element={<ClientList />} />
+                      <Route path="/scheduling" element={<Scheduling />} />
+                      <Route path="/documentation" element={<Documentation />} />
+                      <Route path="/messages" element={<Message />} />
+                      <Route path="/billing" element={<Billing />} />
+                      <Route path="/staff" element={<StaffPage />} />
+                      <Route path="/add-staff" element={<AddStaffPage />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                </div>
+              </ProtectedRoute>
+            } />
+          </Routes>
         </Router>
       </AuthProvider>
     </QueryClientProvider>
