@@ -35,13 +35,27 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
 
   const createExceptionMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      // Get current user to use as provider_id
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
+      const { data: userRecord } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', userData.user.id)
+        .single();
+      
+      if (!userRecord) throw new Error('User record not found');
+
       const { data: result, error } = await supabase
         .from('schedule_exceptions')
         .insert([{
-          ...data,
+          provider_id: userRecord.id,
           exception_date: data.exception_date.toISOString().split('T')[0],
           start_time: data.is_unavailable ? null : data.start_time || null,
           end_time: data.is_unavailable ? null : data.end_time || null,
+          is_unavailable: data.is_unavailable,
+          reason: data.reason || null,
         }])
         .select()
         .single();
@@ -215,18 +229,6 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
               onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
               rows={3}
             />
-          </div>
-
-          {/* Requires Approval */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="requires_approval"
-              checked={formData.requires_approval}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, requires_approval: checked }))}
-            />
-            <Label htmlFor="requires_approval" className="text-sm font-medium">
-              Requires supervisor approval
-            </Label>
           </div>
 
           {/* Action Buttons */}

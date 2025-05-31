@@ -38,12 +38,31 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
 
   const createScheduleMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      // Get current user to use as provider_id
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
+      const { data: userRecord } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', userData.user.id)
+        .single();
+      
+      if (!userRecord) throw new Error('User record not found');
+
       const { data: result, error } = await supabase
         .from('provider_schedules')
         .insert([{
-          ...data,
+          provider_id: userRecord.id,
+          day_of_week: data.day_of_week,
+          start_time: data.start_time,
+          end_time: data.end_time,
+          break_start_time: data.break_start_time || null,
+          break_end_time: data.break_end_time || null,
+          is_available: data.is_available,
           effective_from: data.effective_from.toISOString().split('T')[0],
-          effective_until: data.effective_until?.toISOString().split('T')[0] || null
+          effective_until: data.effective_until?.toISOString().split('T')[0] || null,
+          status: data.status,
         }])
         .select()
         .single();
