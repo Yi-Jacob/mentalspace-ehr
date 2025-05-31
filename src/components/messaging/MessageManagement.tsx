@@ -28,9 +28,14 @@ const MessageManagement = () => {
       if (!userRecord) throw new Error('User record not found');
 
       const { data, error } = await supabase
-        .from('conversations' as any)
+        .from('conversations')
         .select(`
-          *,
+          id,
+          title,
+          category,
+          priority,
+          status,
+          last_message_at,
           client:clients!conversations_client_id_fkey(
             id,
             first_name,
@@ -58,9 +63,13 @@ const MessageManagement = () => {
       if (!selectedConversationId) return [];
 
       const { data, error } = await supabase
-        .from('messages' as any)
+        .from('messages')
         .select(`
-          *,
+          id,
+          content,
+          created_at,
+          sender_id,
+          priority,
           sender:users!messages_sender_id_fkey(
             id,
             first_name,
@@ -75,6 +84,8 @@ const MessageManagement = () => {
     },
     enabled: !!selectedConversationId,
   });
+
+  const selectedConversation = conversations?.find(c => c.id === selectedConversationId);
 
   return (
     <>
@@ -99,7 +110,7 @@ const MessageManagement = () => {
               messages={messages || []}
               isLoading={messagesLoading}
               conversationId={selectedConversationId}
-              selectedConversation={conversations?.find(c => c.id === selectedConversationId)}
+              selectedConversation={selectedConversation}
             />
           </div>
         </div>

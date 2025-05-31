@@ -1,14 +1,12 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, X, Users } from 'lucide-react';
+import { Send, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import ComposeMessageForm from './compose/ComposeMessageForm';
+import ComposeMessageActions from './compose/ComposeMessageActions';
 
 interface ComposeMessageModalProps {
   open: boolean;
@@ -16,17 +14,16 @@ interface ComposeMessageModalProps {
 }
 
 const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenChange }) => {
-  const [clientId, setClientId] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [priority, setPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
-  const [category, setCategory] = useState<'clinical' | 'administrative' | 'urgent' | 'general'>('general');
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [messageCategory, setMessageCategory] = useState<'clinical' | 'administrative' | 'urgent' | 'general'>('general');
+  const [messagePriority, setMessagePriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [messageContent, setMessageContent] = useState('');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: clients } = useQuery({
-    queryKey: ['therapist-clients'],
+    queryKey: ['therapist-clients-for-compose'],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
@@ -53,6 +50,10 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
 
   const sendMessageMutation = useMutation({
     mutationFn: async () => {
+      if (!selectedClientId || !messageContent.trim()) {
+        throw new Error('Client and message content are required');
+      }
+
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('User not authenticated');
 
@@ -64,56 +65,53 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
       
       if (!userRecord) throw new Error('User record not found');
 
-      // Check if conversation already exists
-      let { data: existingConversation } = await supabase
-        .from('conversations' as any)
+      // Find or create conversation
+      let { data: conversation } = await supabase
+        .from('conversations')
         .select('id')
-        .eq('client_id', clientId)
+        .eq('client_id', selectedClientId)
         .eq('therapist_id', userRecord.id)
         .single();
 
-      let conversationId = existingConversation?.id;
-
-      // Create conversation if it doesn't exist
-      if (!conversationId) {
+      if (!conversation) {
         const { data: newConversation, error: conversationError } = await supabase
-          .from('conversations' as any)
+          .from('conversations')
           .insert({
-            title: subject || 'New Message',
-            client_id: clientId,
+            client_id: selectedClientId,
             therapist_id: userRecord.id,
-            category,
-            priority,
+            category: messageCategory,
+            priority: messagePriority,
             created_by: userRecord.id,
+            title: 'Quick Message'
           })
-          .select()
+          .select('id')
           .single();
 
         if (conversationError) throw conversationError;
-        conversationId = newConversation.id;
+        conversation = newConversation;
       }
 
-      // Send the message
-      const { data: messageData, error: messageError } = await supabase
-        .from('messages' as any)
+      // Send message
+      const { data, error } = await supabase
+        .from('messages')
         .insert({
-          conversation_id: conversationId,
+          conversation_id: conversation.id,
           sender_id: userRecord.id,
-          content: message,
-          priority,
+          content: messageContent.trim(),
+          priority: messagePriority,
         })
         .select()
         .single();
 
-      if (messageError) throw messageError;
+      if (error) throw error;
 
       // Update conversation's last_message_at
       await supabase
-        .from('conversations' as any)
+        .from('conversations')
         .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conversationId);
+        .eq('id', conversation.id);
 
-      return messageData;
+      return data;
     },
     onSuccess: () => {
       toast({
@@ -135,147 +133,46 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
   });
 
   const resetForm = () => {
-    setClientId('');
-    setSubject('');
-    setMessage('');
-    setPriority('normal');
-    setCategory('general');
+    setSelectedClientId('');
+    setMessageCategory('general');
+    setMessagePriority('normal');
+    setMessageContent('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientId || !message.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Please select a client and enter a message.",
-        variant: "destructive",
-      });
-      return;
-    }
     sendMessageMutation.mutate();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <Send className="h-5 w-5 text-green-600" />
-            <span>Compose Message to Client</span>
+            <span>Quick Message to Client</span>
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Client Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="client" className="text-sm font-medium">
-              Client *
-            </Label>
-            <Select value={clientId} onValueChange={setClientId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a client" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients?.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4" />
-                      <span>{client.first_name} {client.last_name}</span>
-                      {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ComposeMessageForm
+            clients={clients || []}
+            selectedClientId={selectedClientId}
+            onClientChange={setSelectedClientId}
+            messageCategory={messageCategory}
+            onCategoryChange={setMessageCategory}
+            messagePriority={messagePriority}
+            onPriorityChange={setMessagePriority}
+            messageContent={messageContent}
+            onContentChange={setMessageContent}
+            isLoading={sendMessageMutation.isPending}
+          />
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm font-medium">
-              Category
-            </Label>
-            <Select value={category} onValueChange={(value: any) => setCategory(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">General</SelectItem>
-                <SelectItem value="clinical">Clinical</SelectItem>
-                <SelectItem value="administrative">Administrative</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Priority */}
-          <div className="space-y-2">
-            <Label htmlFor="priority" className="text-sm font-medium">
-              Priority
-            </Label>
-            <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Subject */}
-          <div className="space-y-2">
-            <Label htmlFor="subject" className="text-sm font-medium">
-              Subject
-            </Label>
-            <input
-              id="subject"
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Enter message subject (optional)"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Message */}
-          <div className="space-y-2">
-            <Label htmlFor="message" className="text-sm font-medium">
-              Message *
-            </Label>
-            <Textarea
-              id="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message here..."
-              rows={6}
-              className="resize-none"
-              required
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={sendMessageMutation.isPending}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={sendMessageMutation.isPending}
-              className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
-            </Button>
-          </div>
+          <ComposeMessageActions
+            onCancel={() => onOpenChange(false)}
+            isLoading={sendMessageMutation.isPending}
+            disabled={!selectedClientId || !messageContent.trim()}
+          />
         </form>
       </DialogContent>
     </Dialog>
