@@ -37,22 +37,22 @@ function App() {
             {/* Protected routes */}
             <Route path="/*" element={
               <ProtectedRoute>
-                <div className="flex h-screen bg-gray-50">
+                <div className="flex min-h-screen bg-gray-50">
                   <Sidebar isCollapsed={sidebarCollapsed} onToggle={handleSidebarToggle} />
-                  <main className={`flex-1 overflow-hidden transition-all duration-300 ${
-                    sidebarCollapsed ? 'ml-16' : 'ml-64'
-                  }`}>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/clients" element={<ClientList />} />
-                      <Route path="/scheduling" element={<Scheduling />} />
-                      <Route path="/documentation" element={<Documentation />} />
-                      <Route path="/messages" element={<Message />} />
-                      <Route path="/billing" element={<Billing />} />
-                      <Route path="/staff" element={<StaffPage />} />
-                      <Route path="/add-staff" element={<AddStaffPage />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                  <main className="flex-1 overflow-auto">
+                    <div className="container mx-auto p-6">
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/clients" element={<ClientList />} />
+                        <Route path="/scheduling" element={<Scheduling />} />
+                        <Route path="/documentation" element={<Documentation />} />
+                        <Route path="/messages" element={<Message />} />
+                        <Route path="/billing" element={<Billing />} />
+                        <Route path="/staff" element={<StaffPage />} />
+                        <Route path="/add-staff" element={<AddStaffPage />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </div>
                   </main>
                 </div>
               </ProtectedRoute>
