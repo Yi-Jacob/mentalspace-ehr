@@ -24,6 +24,7 @@ import IntakeAssessmentForm from '@/components/documentation/intake/IntakeAssess
 import CancellationNoteForm from '@/components/documentation/cancellation-note/CancellationNoteForm';
 import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
 import Message from '@/pages/Message';
+import Billing from '@/pages/Billing';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { cn } from '@/lib/utils';
@@ -90,6 +91,7 @@ const MainLayout: React.FC = () => {
           <Route path="/documentation/miscellaneous-note/:noteId/edit" element={<MiscellaneousNoteForm />} />
           <Route path="/scheduling" element={<Scheduling />} />
           <Route path="/message" element={<Message />} />
+          <Route path="/billing" element={<Billing />} />
           <Route path="/staff" element={<StaffManagementPage />} />
           <Route path="/staff/add" element={<AddStaffPage />} />
           <Route path="*" element={<NotFound />} />
