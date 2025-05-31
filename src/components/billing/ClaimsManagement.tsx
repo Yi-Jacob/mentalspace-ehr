@@ -12,7 +12,7 @@ import { ClaimWithDetails } from '@/types/billing';
 
 const ClaimsManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['claims', searchTerm, statusFilter],
@@ -38,7 +38,7 @@ const ClaimsManagement: React.FC = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as ClaimWithDetails[];
+      return data as any[];
     },
   });
 
@@ -151,7 +151,7 @@ const ClaimsManagement: React.FC = () => {
                             {claim.line_items.length} line item{claim.line_items.length !== 1 ? 's' : ''}
                             {claim.line_items.length > 0 && (
                               <span className="ml-2">
-                                ({claim.line_items.map(item => item.cpt_code).join(', ')})
+                                ({claim.line_items.map((item: any) => item.cpt_code).join(', ')})
                               </span>
                             )}
                           </div>

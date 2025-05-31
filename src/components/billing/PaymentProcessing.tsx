@@ -8,11 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, CreditCard, DollarSign, Calendar, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { PaymentWithDetails } from '@/types/billing';
 
 const PaymentProcessing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments', searchTerm, statusFilter],
@@ -38,7 +37,7 @@ const PaymentProcessing: React.FC = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as PaymentWithDetails[];
+      return data as any[];
     },
   });
 
@@ -109,7 +108,7 @@ const PaymentProcessing: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {payments.map((payment) => (
+              {payments.map((payment: any) => (
                 <div
                   key={payment.id}
                   className="border rounded-lg p-4 hover:shadow-md transition-shadow"
