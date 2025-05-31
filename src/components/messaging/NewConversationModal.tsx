@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, X, Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,17 +17,32 @@ interface NewConversationModalProps {
 
 const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpenChange }) => {
   const [title, setTitle] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [category, setCategory] = useState<'clinical' | 'administrative' | 'urgent' | 'general'>('general');
+  const [priority, setPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users } = useQuery({
-    queryKey: ['users-for-conversation'],
+  const { data: clients } = useQuery({
+    queryKey: ['therapist-clients-for-conversation'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
+      const { data: userRecord } = await supabase
         .from('users')
+        .select('id')
+        .eq('auth_user_id', userData.user.id)
+        .single();
+      
+      if (!userRecord) throw new Error('User record not found');
+
+      const { data, error } = await supabase
+        .from('clients')
         .select('id, first_name, last_name, email')
+        .eq('assigned_clinician_id', userRecord.id)
+        .eq('is_active', true)
         .order('first_name');
       
       if (error) throw error;
@@ -48,30 +63,33 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
       
       if (!userRecord) throw new Error('User record not found');
 
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('conversations' as any)
+        .select('id')
+        .eq('client_id', selectedClientId)
+        .eq('therapist_id', userRecord.id)
+        .single();
+
+      if (existingConversation) {
+        throw new Error('A conversation with this client already exists');
+      }
+
       // Create the conversation
       const { data: conversation, error: conversationError } = await supabase
         .from('conversations' as any)
         .insert({
           title: title || 'New Conversation',
+          client_id: selectedClientId,
+          therapist_id: userRecord.id,
+          category,
+          priority,
           created_by: userRecord.id,
         })
         .select()
         .single();
 
       if (conversationError) throw conversationError;
-
-      // Add participants (including the creator)
-      const participantsToAdd = [userRecord.id, ...selectedUsers];
-      const { error: participantError } = await supabase
-        .from('conversation_participants' as any)
-        .insert(
-          participantsToAdd.map(userId => ({
-            conversation_id: conversation.id,
-            user_id: userId,
-          }))
-        );
-
-      if (participantError) throw participantError;
       return conversation;
     },
     onSuccess: () => {
@@ -83,10 +101,14 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
       onOpenChange(false);
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const errorMessage = error.message === 'A conversation with this client already exists' 
+        ? error.message 
+        : "Failed to create conversation. Please try again.";
+      
       toast({
         title: "Error",
-        description: "Failed to create conversation. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       console.error('Create conversation error:', error);
@@ -95,15 +117,17 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
   const resetForm = () => {
     setTitle('');
-    setSelectedUsers([]);
+    setSelectedClientId('');
+    setCategory('general');
+    setPriority('normal');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedUsers.length === 0) {
+    if (!selectedClientId) {
       toast({
         title: "Validation Error",
-        description: "Please select at least one participant.",
+        description: "Please select a client.",
         variant: "destructive",
       });
       return;
@@ -111,25 +135,40 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
     createConversationMutation.mutate();
   };
 
-  const handleUserToggle = (userId: string) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <Users className="h-5 w-5 text-blue-600" />
-            <span>New Conversation</span>
+            <span>New Client Conversation</span>
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Client Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="client" className="text-sm font-medium">
+              Client *
+            </Label>
+            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a client" />
+              </SelectTrigger>
+              <SelectContent>
+                {clients?.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-4 w-4" />
+                      <span>{client.first_name} {client.last_name}</span>
+                      {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title" className="text-sm font-medium">
@@ -143,30 +182,40 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
             />
           </div>
 
-          {/* Participants */}
+          {/* Category */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">
-              Participants * ({selectedUsers.length} selected)
+            <Label htmlFor="category" className="text-sm font-medium">
+              Category
             </Label>
-            <div className="border rounded-lg p-4 max-h-60 overflow-y-auto space-y-3">
-              {users?.map((user) => (
-                <div key={user.id} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={`user-${user.id}`}
-                    checked={selectedUsers.includes(user.id)}
-                    onCheckedChange={() => handleUserToggle(user.id)}
-                  />
-                  <Label 
-                    htmlFor={`user-${user.id}`} 
-                    className="flex-1 cursor-pointer flex items-center space-x-2"
-                  >
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <span>{user.first_name} {user.last_name}</span>
-                    <span className="text-sm text-gray-500">({user.email})</span>
-                  </Label>
-                </div>
-              ))}
-            </div>
+            <Select value={category} onValueChange={(value: any) => setCategory(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="clinical">Clinical</SelectItem>
+                <SelectItem value="administrative">Administrative</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Priority */}
+          <div className="space-y-2">
+            <Label htmlFor="priority" className="text-sm font-medium">
+              Priority
+            </Label>
+            <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Action Buttons */}

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare, Users, Send } from 'lucide-react';
+import { Plus, MessageSquare, Send } from 'lucide-react';
 
 interface MessageHeaderProps {
   onCompose: () => void;
@@ -20,9 +20,9 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
         </div>
         <div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Messages
+            Client Messages
           </h2>
-          <p className="text-gray-600 mt-1">Communicate with your team and clients</p>
+          <p className="text-gray-600 mt-1">Secure communication with your clients</p>
         </div>
       </div>
       <div className="flex space-x-3">

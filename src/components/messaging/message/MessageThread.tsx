@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, Send, Clock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MessageSquare, Send, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +15,7 @@ interface MessageData {
   content: string;
   created_at: string;
   sender_id: string;
+  priority: string;
   sender: {
     id: string;
     first_name: string;
@@ -24,12 +26,12 @@ interface MessageData {
 interface ConversationData {
   id: string;
   title: string;
-  conversation_participants: Array<{
-    users: {
-      first_name: string;
-      last_name: string;
-    };
-  }>;
+  category: string;
+  priority: string;
+  client: {
+    first_name: string;
+    last_name: string;
+  };
 }
 
 interface MessageThreadProps {
@@ -46,6 +48,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   selectedConversation,
 }) => {
   const [newMessage, setNewMessage] = useState('');
+  const [messagePriority, setMessagePriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -70,11 +73,19 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           conversation_id: conversationId,
           sender_id: userRecord.id,
           content: content.trim(),
+          priority: messagePriority,
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // Update conversation's last_message_at
+      await supabase
+        .from('conversations' as any)
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', conversationId);
+
       return data;
     },
     onSuccess: () => {
@@ -85,6 +96,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       setNewMessage('');
+      setMessagePriority('normal');
     },
     onError: (error) => {
       toast({
@@ -108,6 +120,13 @@ const MessageThread: React.FC<MessageThreadProps> = ({
     }
   };
 
+  const getPriorityIcon = (priority: string) => {
+    if (priority === 'urgent' || priority === 'high') {
+      return <AlertCircle className="h-3 w-3 text-red-500" />;
+    }
+    return null;
+  };
+
   if (!conversationId) {
     return (
       <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm h-full">
@@ -115,7 +134,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           <div className="text-center text-gray-500">
             <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-semibold mb-2">Select a conversation</h3>
-            <p className="text-sm">Choose a conversation from the list to start messaging</p>
+            <p className="text-sm">Choose a client conversation from the list to start messaging</p>
           </div>
         </CardContent>
       </Card>
@@ -130,11 +149,14 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           <span>{selectedConversation?.title || 'Conversation'}</span>
         </CardTitle>
         {selectedConversation && (
-          <p className="text-purple-100 text-sm">
-            Participants: {selectedConversation.conversation_participants
-              .map(p => `${p.users.first_name} ${p.users.last_name}`)
-              .join(', ')}
-          </p>
+          <div className="flex items-center justify-between text-purple-100 text-sm">
+            <span>Client: {selectedConversation.client.first_name} {selectedConversation.client.last_name}</span>
+            <div className="flex items-center space-x-2">
+              <span className="capitalize">{selectedConversation.category}</span>
+              <span>•</span>
+              <span className="capitalize">{selectedConversation.priority}</span>
+            </div>
+          </div>
         )}
       </CardHeader>
 
@@ -159,9 +181,12 @@ const MessageThread: React.FC<MessageThreadProps> = ({
               <div key={message.id} className="space-y-2">
                 <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-gray-800">
-                      {message.sender.first_name} {message.sender.last_name}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-gray-800">
+                        {message.sender.first_name} {message.sender.last_name}
+                      </span>
+                      {getPriorityIcon(message.priority)}
+                    </div>
                     <div className="flex items-center space-x-1 text-xs text-gray-500">
                       <Clock className="h-3 w-3" />
                       <span>{format(new Date(message.created_at), 'MMM d, h:mm a')}</span>
@@ -176,22 +201,37 @@ const MessageThread: React.FC<MessageThreadProps> = ({
 
         {/* Message Input Area */}
         <div className="border-t border-gray-200 p-4 bg-gradient-to-r from-gray-50 to-purple-50/50">
-          <div className="flex space-x-3">
-            <Textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 resize-none min-h-[60px] border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-              disabled={sendMessageMutation.isPending}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim() || sendMessageMutation.isPending}
-              className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 self-end"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+          <div className="flex flex-col space-y-3">
+            <div className="flex space-x-2">
+              <Select value={messagePriority} onValueChange={(value: any) => setMessagePriority(value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex space-x-3">
+              <Textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message to the client..."
+                className="flex-1 resize-none min-h-[60px] border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                disabled={sendMessageMutation.isPending}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 self-end"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

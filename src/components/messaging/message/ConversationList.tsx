@@ -2,24 +2,26 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Clock } from 'lucide-react';
+import { MessageSquare, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ConversationData {
   id: string;
   title: string;
-  updated_at: string;
-  conversation_participants: Array<{
-    users: {
-      first_name: string;
-      last_name: string;
-    };
-  }>;
+  category: string;
+  priority: string;
+  status: string;
+  last_message_at: string;
+  client: {
+    id: string;
+    first_name: string;
+    last_name: string;
+  };
   messages: Array<{
     id: string;
     content: string;
     created_at: string;
-    users: {
+    sender: {
       first_name: string;
       last_name: string;
     };
@@ -39,13 +41,32 @@ const ConversationList: React.FC<ConversationListProps> = ({
   selectedConversationId,
   onSelectConversation,
 }) => {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'normal': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'low': return 'bg-gray-100 text-gray-800 border-gray-200';
+      default: return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'urgent': return 'bg-red-50 text-red-700';
+      case 'clinical': return 'bg-green-50 text-green-700';
+      case 'administrative': return 'bg-purple-50 text-purple-700';
+      default: return 'bg-gray-50 text-gray-700';
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm h-full">
         <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
           <CardTitle className="flex items-center space-x-2 text-xl">
             <MessageSquare className="h-5 w-5" />
-            <span>Conversations</span>
+            <span>Client Conversations</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -66,14 +87,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
         <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
           <CardTitle className="flex items-center space-x-2 text-xl">
             <MessageSquare className="h-5 w-5" />
-            <span>Conversations</span>
+            <span>Client Conversations</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="text-center py-12 text-gray-500">
             <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-semibold mb-2">No conversations yet</h3>
-            <p className="text-sm">Start a new conversation to begin messaging</p>
+            <p className="text-sm">Start a new conversation with a client to begin messaging</p>
           </div>
         </CardContent>
       </Card>
@@ -85,16 +106,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
       <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
         <CardTitle className="flex items-center space-x-2 text-xl">
           <MessageSquare className="h-5 w-5" />
-          <span>Conversations</span>
+          <span>Client Conversations</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 overflow-y-auto h-full">
         <div className="space-y-2 p-4">
           {conversations.map((conversation) => {
             const lastMessage = conversation.messages?.[conversation.messages.length - 1];
-            const participantNames = conversation.conversation_participants
-              .map(p => `${p.users.first_name} ${p.users.last_name}`)
-              .join(', ');
+            const clientName = `${conversation.client.first_name} ${conversation.client.last_name}`;
 
             return (
               <div
@@ -108,21 +127,35 @@ const ConversationList: React.FC<ConversationListProps> = ({
               >
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="font-semibold text-gray-800 truncate flex-1">
-                    {conversation.title || 'Untitled Conversation'}
+                    {conversation.title || `Conversation with ${clientName}`}
                   </h4>
-                  <Badge variant="outline" className="ml-2 text-xs">
-                    {conversation.messages?.length || 0}
+                  <div className="flex items-center space-x-1 ml-2">
+                    {conversation.priority === 'urgent' && (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <Badge variant="outline" className="text-xs">
+                      {conversation.messages?.length || 0}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 mb-2">
+                  <Badge className={`text-xs ${getCategoryColor(conversation.category)}`}>
+                    {conversation.category}
+                  </Badge>
+                  <Badge className={`text-xs ${getPriorityColor(conversation.priority)}`}>
+                    {conversation.priority}
                   </Badge>
                 </div>
                 
-                <p className="text-sm text-gray-600 mb-1">
-                  Participants: {participantNames}
+                <p className="text-sm text-gray-600 mb-1 font-medium">
+                  Client: {clientName}
                 </p>
                 
                 {lastMessage && (
                   <div className="text-xs text-gray-500 space-y-1">
                     <p className="truncate">
-                      {lastMessage.users.first_name}: {lastMessage.content}
+                      {lastMessage.sender.first_name}: {lastMessage.content}
                     </p>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-3 w-3" />

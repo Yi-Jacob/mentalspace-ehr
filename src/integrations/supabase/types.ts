@@ -976,68 +976,64 @@ export type Database = {
         }
         Relationships: []
       }
-      conversation_participants: {
-        Row: {
-          conversation_id: string
-          id: string
-          joined_at: string | null
-          user_id: string
-        }
-        Insert: {
-          conversation_id: string
-          id?: string
-          joined_at?: string | null
-          user_id: string
-        }
-        Update: {
-          conversation_id?: string
-          id?: string
-          joined_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversation_participants_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversation_participants_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       conversations: {
         Row: {
+          category: string | null
+          client_id: string
           created_at: string | null
           created_by: string
           id: string
+          last_message_at: string | null
+          priority: string | null
+          status: string | null
+          therapist_id: string
           title: string | null
           updated_at: string | null
         }
         Insert: {
+          category?: string | null
+          client_id: string
           created_at?: string | null
           created_by: string
           id?: string
+          last_message_at?: string | null
+          priority?: string | null
+          status?: string | null
+          therapist_id: string
           title?: string | null
           updated_at?: string | null
         }
         Update: {
+          category?: string | null
+          client_id?: string
           created_at?: string | null
           created_by?: string
           id?: string
+          last_message_at?: string | null
+          priority?: string | null
+          status?: string | null
+          therapist_id?: string
           title?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "conversations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "conversations_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_therapist_id_fkey"
+            columns: ["therapist_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -1133,12 +1129,58 @@ export type Database = {
           },
         ]
       }
+      message_recipients: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_id: string
+          read_at: string | null
+          recipient_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_id: string
+          read_at?: string | null
+          recipient_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_id?: string
+          read_at?: string | null
+          recipient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_recipients_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_recipients_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
           conversation_id: string
           created_at: string | null
           id: string
+          is_read: boolean | null
+          message_type: string | null
+          priority: string | null
+          read_at: string | null
           sender_id: string
           updated_at: string | null
         }
@@ -1147,6 +1189,10 @@ export type Database = {
           conversation_id: string
           created_at?: string | null
           id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          priority?: string | null
+          read_at?: string | null
           sender_id: string
           updated_at?: string | null
         }
@@ -1155,6 +1201,10 @@ export type Database = {
           conversation_id?: string
           created_at?: string | null
           id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          priority?: string | null
+          read_at?: string | null
           sender_id?: string
           updated_at?: string | null
         }

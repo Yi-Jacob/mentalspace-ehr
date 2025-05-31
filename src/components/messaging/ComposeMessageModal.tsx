@@ -16,19 +16,34 @@ interface ComposeMessageModalProps {
 }
 
 const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenChange }) => {
-  const [recipientId, setRecipientId] = useState('');
+  const [clientId, setClientId] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [priority, setPriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [category, setCategory] = useState<'clinical' | 'administrative' | 'urgent' | 'general'>('general');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users } = useQuery({
-    queryKey: ['users-for-messaging'],
+  const { data: clients } = useQuery({
+    queryKey: ['therapist-clients'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
+      const { data: userRecord } = await supabase
         .from('users')
+        .select('id')
+        .eq('auth_user_id', userData.user.id)
+        .single();
+      
+      if (!userRecord) throw new Error('User record not found');
+
+      const { data, error } = await supabase
+        .from('clients')
         .select('id, first_name, last_name, email')
+        .eq('assigned_clinician_id', userRecord.id)
+        .eq('is_active', true)
         .order('first_name');
       
       if (error) throw error;
@@ -49,40 +64,55 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
       
       if (!userRecord) throw new Error('User record not found');
 
-      // Create a new conversation
-      const { data: conversation, error: conversationError } = await supabase
+      // Check if conversation already exists
+      let { data: existingConversation } = await supabase
         .from('conversations' as any)
-        .insert({
-          title: subject || 'Quick Message',
-          created_by: userRecord.id,
-        })
-        .select()
+        .select('id')
+        .eq('client_id', clientId)
+        .eq('therapist_id', userRecord.id)
         .single();
 
-      if (conversationError) throw conversationError;
+      let conversationId = existingConversation?.id;
 
-      // Add participants
-      const { error: participantError } = await supabase
-        .from('conversation_participants' as any)
-        .insert([
-          { conversation_id: conversation.id, user_id: userRecord.id },
-          { conversation_id: conversation.id, user_id: recipientId },
-        ]);
+      // Create conversation if it doesn't exist
+      if (!conversationId) {
+        const { data: newConversation, error: conversationError } = await supabase
+          .from('conversations' as any)
+          .insert({
+            title: subject || 'New Message',
+            client_id: clientId,
+            therapist_id: userRecord.id,
+            category,
+            priority,
+            created_by: userRecord.id,
+          })
+          .select()
+          .single();
 
-      if (participantError) throw participantError;
+        if (conversationError) throw conversationError;
+        conversationId = newConversation.id;
+      }
 
       // Send the message
       const { data: messageData, error: messageError } = await supabase
         .from('messages' as any)
         .insert({
-          conversation_id: conversation.id,
+          conversation_id: conversationId,
           sender_id: userRecord.id,
           content: message,
+          priority,
         })
         .select()
         .single();
 
       if (messageError) throw messageError;
+
+      // Update conversation's last_message_at
+      await supabase
+        .from('conversations' as any)
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', conversationId);
+
       return messageData;
     },
     onSuccess: () => {
@@ -105,17 +135,19 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
   });
 
   const resetForm = () => {
-    setRecipientId('');
+    setClientId('');
     setSubject('');
     setMessage('');
+    setPriority('normal');
+    setCategory('general');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recipientId || !message.trim()) {
+    if (!clientId || !message.trim()) {
       toast({
         title: "Validation Error",
-        description: "Please select a recipient and enter a message.",
+        description: "Please select a client and enter a message.",
         variant: "destructive",
       });
       return;
@@ -129,30 +161,66 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <Send className="h-5 w-5 text-green-600" />
-            <span>Compose Message</span>
+            <span>Compose Message to Client</span>
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Recipient */}
+          {/* Client Selection */}
           <div className="space-y-2">
-            <Label htmlFor="recipient" className="text-sm font-medium">
-              Recipient *
+            <Label htmlFor="client" className="text-sm font-medium">
+              Client *
             </Label>
-            <Select value={recipientId} onValueChange={setRecipientId}>
+            <Select value={clientId} onValueChange={setClientId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a recipient" />
+                <SelectValue placeholder="Select a client" />
               </SelectTrigger>
               <SelectContent>
-                {users?.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
+                {clients?.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
                     <div className="flex items-center space-x-2">
                       <Users className="h-4 w-4" />
-                      <span>{user.first_name} {user.last_name}</span>
-                      <span className="text-sm text-gray-500">({user.email})</span>
+                      <span>{client.first_name} {client.last_name}</span>
+                      {client.email && <span className="text-sm text-gray-500">({client.email})</span>}
                     </div>
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-sm font-medium">
+              Category
+            </Label>
+            <Select value={category} onValueChange={(value: any) => setCategory(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="clinical">Clinical</SelectItem>
+                <SelectItem value="administrative">Administrative</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Priority */}
+          <div className="space-y-2">
+            <Label htmlFor="priority" className="text-sm font-medium">
+              Priority
+            </Label>
+            <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
           </div>

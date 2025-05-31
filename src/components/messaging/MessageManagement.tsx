@@ -31,20 +31,21 @@ const MessageManagement = () => {
         .from('conversations' as any)
         .select(`
           *,
-          conversation_participants!inner(
-            user_id,
-            users(first_name, last_name)
+          client:clients!conversations_client_id_fkey(
+            id,
+            first_name,
+            last_name
           ),
           messages(
             id,
             content,
             created_at,
             sender_id,
-            users!messages_sender_id_fkey(first_name, last_name)
+            sender:users!messages_sender_id_fkey(first_name, last_name)
           )
         `)
-        .eq('conversation_participants.user_id', userRecord.id)
-        .order('updated_at', { ascending: false });
+        .eq('therapist_id', userRecord.id)
+        .order('last_message_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
