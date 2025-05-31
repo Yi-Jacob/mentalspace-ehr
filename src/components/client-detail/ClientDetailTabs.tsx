@@ -1,95 +1,80 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
-import { ClientInfoTab } from './tabs/ClientInfoTab';
-import { ClientBillingTab } from './tabs/ClientBillingTab';
-import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
-import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
-import { ClientNotesTab } from './tabs/ClientNotesTab';
-import { PlaceholderTab } from './tabs/PlaceholderTab';
+import { 
+  User, 
+  Users, 
+  FileText, 
+  CreditCard, 
+  Settings,
+  MessageSquare
+} from 'lucide-react';
+import ClientInfoTab from './tabs/ClientInfoTab';
+import ClientCliniciansTab from './tabs/ClientCliniciansTab';
+import ClientNotesTab from './tabs/ClientNotesTab';
+import ClientBillingTab from './tabs/ClientBillingTab';
+import ClientBillingSettingsTab from './tabs/ClientBillingSettingsTab';
+import ClientMessagesTab from './tabs/ClientMessagesTab';
 
 interface ClientDetailTabsProps {
-  client: ClientFormData;
-  phoneNumbers: PhoneNumber[];
-  emergencyContacts: EmergencyContact[];
-  insuranceInfo: InsuranceInfo[];
-  primaryCareProvider: PrimaryCareProvider | null;
+  client: any;
 }
 
-export const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
-  client,
-  phoneNumbers,
-  emergencyContacts,
-  insuranceInfo,
-  primaryCareProvider
-}) => {
+const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({ client }) => {
   return (
-    <Tabs defaultValue="info" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-9">
-        <TabsTrigger value="info">Info</TabsTrigger>
-        <TabsTrigger value="notes">Notes</TabsTrigger>
-        <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger value="billing">Billing</TabsTrigger>
-        <TabsTrigger value="billing-settings">Billing Settings</TabsTrigger>
-        <TabsTrigger value="clinicians">Clinicians</TabsTrigger>
-        <TabsTrigger value="portal">Portal</TabsTrigger>
-        <TabsTrigger value="messages">Messages</TabsTrigger>
-        <TabsTrigger value="insights">Insights</TabsTrigger>
+    <Tabs defaultValue="info" className="w-full">
+      <TabsList className="grid w-full grid-cols-6">
+        <TabsTrigger value="info" className="flex items-center space-x-2">
+          <User className="h-4 w-4" />
+          <span>Info</span>
+        </TabsTrigger>
+        <TabsTrigger value="messages" className="flex items-center space-x-2">
+          <MessageSquare className="h-4 w-4" />
+          <span>Messages</span>
+        </TabsTrigger>
+        <TabsTrigger value="clinicians" className="flex items-center space-x-2">
+          <Users className="h-4 w-4" />
+          <span>Clinicians</span>
+        </TabsTrigger>
+        <TabsTrigger value="notes" className="flex items-center space-x-2">
+          <FileText className="h-4 w-4" />
+          <span>Notes</span>
+        </TabsTrigger>
+        <TabsTrigger value="billing" className="flex items-center space-x-2">
+          <CreditCard className="h-4 w-4" />
+          <span>Billing</span>
+        </TabsTrigger>
+        <TabsTrigger value="settings" className="flex items-center space-x-2">
+          <Settings className="h-4 w-4" />
+          <span>Settings</span>
+        </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="info">
-        <ClientInfoTab
-          client={client}
-          phoneNumbers={phoneNumbers}
-          emergencyContacts={emergencyContacts}
-          primaryCareProvider={primaryCareProvider}
-        />
+      <TabsContent value="info" className="mt-6">
+        <ClientInfoTab client={client} />
       </TabsContent>
 
-      <TabsContent value="notes">
-        <ClientNotesTab client={client} />
+      <TabsContent value="messages" className="mt-6">
+        <ClientMessagesTab clientId={client.id} />
       </TabsContent>
 
-      <TabsContent value="schedule">
-        <PlaceholderTab
-          title="Appointment Schedule"
-          message="No appointments found. This feature will be implemented in a future update."
-        />
+      <TabsContent value="clinicians" className="mt-6">
+        <ClientCliniciansTab clientId={client.id} />
       </TabsContent>
 
-      <TabsContent value="billing">
-        <ClientBillingTab insuranceInfo={insuranceInfo} />
+      <TabsContent value="notes" className="mt-6">
+        <ClientNotesTab clientId={client.id} />
       </TabsContent>
 
-      <TabsContent value="billing-settings">
-        <ClientBillingSettingsTab insuranceInfo={insuranceInfo} />
+      <TabsContent value="billing" className="mt-6">
+        <ClientBillingTab clientId={client.id} />
       </TabsContent>
 
-      <TabsContent value="clinicians">
-        <ClientCliniciansTab client={client} />
-      </TabsContent>
-
-      <TabsContent value="portal">
-        <PlaceholderTab
-          title="Client Portal"
-          message="Portal management features will be implemented in a future update."
-        />
-      </TabsContent>
-
-      <TabsContent value="messages">
-        <PlaceholderTab
-          title="Messages"
-          message="No messages found. This feature will be implemented in a future update."
-        />
-      </TabsContent>
-
-      <TabsContent value="insights">
-        <PlaceholderTab
-          title="Client Insights"
-          message="Insights and analytics will be implemented in a future update."
-        />
+      <TabsContent value="settings" className="mt-6">
+        <ClientBillingSettingsTab clientId={client.id} />
       </TabsContent>
     </Tabs>
   );
 };
+
+export default ClientDetailTabs;

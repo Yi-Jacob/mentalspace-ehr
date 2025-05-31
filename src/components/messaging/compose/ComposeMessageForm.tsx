@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import ClientSelectionField from './ClientSelectionField';
 import MessageCategoryField from './MessageCategoryField';
 import MessagePriorityField from './MessagePriorityField';
@@ -25,6 +23,7 @@ interface ComposeMessageFormProps {
   messageContent: string;
   onContentChange: (value: string) => void;
   isLoading: boolean;
+  disabled?: boolean;
 }
 
 const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
@@ -38,6 +37,7 @@ const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
   messageContent,
   onContentChange,
   isLoading,
+  disabled = false,
 }) => {
   return (
     <div className="space-y-6">
@@ -45,6 +45,7 @@ const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
         clients={clients}
         selectedClientId={selectedClientId}
         onClientChange={onClientChange}
+        disabled={disabled}
       />
 
       <div className="grid grid-cols-2 gap-4">

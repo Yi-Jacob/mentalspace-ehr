@@ -1,7 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Send, X } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,9 +10,14 @@ import ComposeMessageActions from './compose/ComposeMessageActions';
 interface ComposeMessageModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  preselectedClientId?: string;
 }
 
-const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenChange }) => {
+const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ 
+  open, 
+  onOpenChange,
+  preselectedClientId 
+}) => {
   const [selectedClientId, setSelectedClientId] = useState('');
   const [messageCategory, setMessageCategory] = useState<'clinical' | 'administrative' | 'urgent' | 'general'>('general');
   const [messagePriority, setMessagePriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
@@ -21,6 +25,13 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Set preselected client when modal opens
+  useEffect(() => {
+    if (open && preselectedClientId) {
+      setSelectedClientId(preselectedClientId);
+    }
+  }, [open, preselectedClientId]);
 
   const { data: clients } = useQuery({
     queryKey: ['therapist-clients-for-compose'],
@@ -133,7 +144,9 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
   });
 
   const resetForm = () => {
-    setSelectedClientId('');
+    if (!preselectedClientId) {
+      setSelectedClientId('');
+    }
     setMessageCategory('general');
     setMessagePriority('normal');
     setMessageContent('');
@@ -166,6 +179,7 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
             messageContent={messageContent}
             onContentChange={setMessageContent}
             isLoading={sendMessageMutation.isPending}
+            disabled={!!preselectedClientId}
           />
 
           <ComposeMessageActions

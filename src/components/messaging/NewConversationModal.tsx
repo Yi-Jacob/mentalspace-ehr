@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +12,14 @@ import { useToast } from '@/hooks/use-toast';
 interface NewConversationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  preselectedClientId?: string;
 }
 
-const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpenChange }) => {
+const NewConversationModal: React.FC<NewConversationModalProps> = ({ 
+  open, 
+  onOpenChange,
+  preselectedClientId 
+}) => {
   const [title, setTitle] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [category, setCategory] = useState<'clinical' | 'administrative' | 'urgent' | 'general'>('general');
@@ -23,6 +27,13 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Set preselected client when modal opens
+  useEffect(() => {
+    if (open && preselectedClientId) {
+      setSelectedClientId(preselectedClientId);
+    }
+  }, [open, preselectedClientId]);
 
   const { data: clients, isLoading: clientsLoading } = useQuery({
     queryKey: ['therapist-clients-for-conversation'],
@@ -123,7 +134,9 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
   const resetForm = () => {
     setTitle('');
-    setSelectedClientId('');
+    if (!preselectedClientId) {
+      setSelectedClientId('');
+    }
     setCategory('general');
     setPriority('normal');
   };
@@ -160,7 +173,11 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
             {clientsLoading ? (
               <div className="text-sm text-gray-500">Loading clients...</div>
             ) : (
-              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <Select 
+                value={selectedClientId} 
+                onValueChange={setSelectedClientId}
+                disabled={!!preselectedClientId}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a client" />
                 </SelectTrigger>

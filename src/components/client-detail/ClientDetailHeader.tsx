@@ -1,81 +1,117 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Phone, Mail, Calendar } from 'lucide-react';
-import { ClientFormData } from '@/types/client';
+import { 
+  User, 
+  Phone, 
+  Mail, 
+  Calendar,
+  MapPin,
+  MessageSquare,
+  Plus
+} from 'lucide-react';
+import ComposeMessageModal from '@/components/messaging/ComposeMessageModal';
+import NewConversationModal from '@/components/messaging/NewConversationModal';
 
 interface ClientDetailHeaderProps {
-  client: ClientFormData;
-  onEditClick: () => void;
+  client: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    date_of_birth?: string;
+    city?: string;
+    state?: string;
+    is_active: boolean;
+  };
 }
 
-export const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client, onEditClick }) => {
-  const navigate = useNavigate();
-
-  const formatAge = (dateOfBirth: string | null) => {
-    if (!dateOfBirth) return '';
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return `${age - 1} years`;
-    }
-    return `${age} years`;
-  };
+const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client }) => {
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [showNewConversationModal, setShowNewConversationModal] = useState(false);
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/clients')}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Clients
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {client.preferred_name && client.preferred_name !== client.first_name
-              ? `${client.preferred_name} (${client.first_name}) ${client.last_name}`
-              : `${client.first_name} ${client.last_name}`
-            }
-          </h1>
-          <div className="flex items-center space-x-4 mt-1">
-            {client.date_of_birth && (
-              <span className="text-gray-500">{formatAge(client.date_of_birth)}</span>
-            )}
-            <Badge variant="outline">Active</Badge>
+    <>
+      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-0 shadow-sm">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-4">
+            <div className="bg-blue-100 p-3 rounded-full">
+              <User className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-3 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {client.first_name} {client.last_name}
+                </h1>
+                <Badge variant={client.is_active ? "default" : "secondary"}>
+                  {client.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                {client.email && (
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-4 w-4" />
+                    <span>{client.email}</span>
+                  </div>
+                )}
+                
+                {client.date_of_birth && (
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>DOB: {new Date(client.date_of_birth).toLocaleDateString()}</span>
+                  </div>
+                )}
+                
+                {(client.city || client.state) && (
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>{client.city}, {client.state}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowComposeModal(true)}
+              className="flex items-center space-x-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Quick Message</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowNewConversationModal(true)}
+              className="flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>New Conversation</span>
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
+
+      <ComposeMessageModal 
+        open={showComposeModal} 
+        onOpenChange={setShowComposeModal}
+        preselectedClientId={client.id}
+      />
       
-      <div className="flex items-center space-x-2">
-        <Button size="sm" variant="outline">
-          <Phone className="w-4 h-4 mr-2" />
-          Call
-        </Button>
-        <Button size="sm" variant="outline">
-          <Mail className="w-4 h-4 mr-2" />
-          Email
-        </Button>
-        <Button size="sm" variant="outline">
-          <Calendar className="w-4 h-4 mr-2" />
-          Schedule
-        </Button>
-        <Button 
-          size="sm" 
-          onClick={onEditClick}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Edit
-        </Button>
-      </div>
-    </div>
+      <NewConversationModal 
+        open={showNewConversationModal} 
+        onOpenChange={setShowNewConversationModal}
+        preselectedClientId={client.id}
+      />
+    </>
   );
 };
+
+export default ClientDetailHeader;
