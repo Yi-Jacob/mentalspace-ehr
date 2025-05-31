@@ -83,7 +83,7 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
       </TabsContent>
 
       <TabsContent value="billing" className="mt-6">
-        <ClientBillingTab clientId={client.id} />
+        <ClientBillingTab client={client} />
       </TabsContent>
 
       <TabsContent value="settings" className="mt-6">

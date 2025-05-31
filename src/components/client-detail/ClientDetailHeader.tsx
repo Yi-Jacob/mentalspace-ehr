@@ -26,9 +26,10 @@ interface ClientDetailHeaderProps {
     state?: string;
     is_active: boolean;
   };
+  onEditClick: () => void;
 }
 
-const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client }) => {
+const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client, onEditClick }) => {
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
 

@@ -37,6 +37,8 @@ export const useClientForm = () => {
     hipaa_signed: false,
     pcp_release: 'Not set',
     patient_comments: '',
+    // Status
+    is_active: true,
   });
 
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([
@@ -87,6 +89,7 @@ export const useClientForm = () => {
       hipaa_signed: false,
       pcp_release: 'Not set',
       patient_comments: '',
+      is_active: true,
     });
     setPhoneNumbers([{ type: 'Mobile', number: '', message_preference: 'No messages' }]);
     setEmergencyContacts([{ name: '', relationship: '', phone_number: '', email: '', is_primary: true }]);
