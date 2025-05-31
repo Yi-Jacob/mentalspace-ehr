@@ -52,9 +52,9 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
 
       const { data: result, error } = await supabase
         .from('provider_schedules')
-        .insert([{
+        .insert({
           provider_id: userRecord.id,
-          day_of_week: data.day_of_week,
+          day_of_week: data.day_of_week as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday",
           start_time: data.start_time,
           end_time: data.end_time,
           break_start_time: data.break_start_time || null,
@@ -62,8 +62,8 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
           is_available: data.is_available,
           effective_from: data.effective_from.toISOString().split('T')[0],
           effective_until: data.effective_until?.toISOString().split('T')[0] || null,
-          status: data.status,
-        }])
+          status: data.status as "active" | "pending_approval" | "approved" | "rejected",
+        })
         .select()
         .single();
 
