@@ -1,148 +1,103 @@
-
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
+  Home, 
   Users, 
-  FileText, 
   Calendar, 
+  FileText, 
   MessageSquare, 
   CreditCard, 
-  BarChart3, 
-  UserPlus, 
-  Shield, 
-  Settings,
-  Stethoscope,
-  LogOut,
-  Home,
-  Menu,
-  ChevronLeft
+  Building,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
-import { useSidebarContext } from '@/hooks/useSidebarContext';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SidebarProps {
-  activeItem?: string;
-  onItemClick?: (item: string) => void;
+  isCollapsed: boolean;
+  onToggle: () => void;
 }
 
-const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
-  { id: 'documentation', label: 'Documentation', icon: FileText, path: '/documentation' },
-  { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling' },
-  { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
-  { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
-  { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
-  { id: 'crm', label: 'CRM', icon: UserPlus, path: '/crm' },
-  { id: 'staff', label: 'Staff', icon: Stethoscope, path: '/staff' },
-  { id: 'compliance', label: 'Compliance', icon: Shield, path: '/compliance' },
-  { id: 'settings', label: 'Practice Settings', icon: Settings, path: '/settings' },
-];
-
-const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
-  const { isCollapsed, toggleSidebar } = useSidebarContext();
 
-  // Determine active item from props or current route
-  const getActiveItem = () => {
-    if (propActiveItem) return propActiveItem;
-    
-    const currentPath = location.pathname;
-    if (currentPath === '/') return 'dashboard';
-    if (currentPath.startsWith('/documentation')) return 'documentation';
-    if (currentPath.startsWith('/scheduling')) return 'scheduling';
-    if (currentPath.startsWith('/clients')) return 'clients';
-    
-    const matchedItem = menuItems.find(item => currentPath.startsWith(item.path) && item.path !== '/');
-    return matchedItem?.id || 'dashboard';
-  };
-
-  const activeItem = getActiveItem();
-
-  const handleItemClick = (item: { id: string; path: string }) => {
-    if (onItemClick) {
-      onItemClick(item.id);
-    } else {
-      navigate(item.path);
-    }
-  };
+  const navigationItems = [
+    { 
+      path: '/', 
+      icon: Home, 
+      label: 'Dashboard',
+      description: 'Practice overview and quick actions'
+    },
+    { 
+      path: '/clients', 
+      icon: Users, 
+      label: 'Clients',
+      description: 'Manage client information and records'
+    },
+    { 
+      path: '/scheduling', 
+      icon: Calendar, 
+      label: 'Scheduling',
+      description: 'Appointment management and calendar'
+    },
+    { 
+      path: '/documentation', 
+      icon: FileText, 
+      label: 'Documentation',
+      description: 'Clinical notes and treatment plans'
+    },
+    { 
+      path: '/messages', 
+      icon: MessageSquare, 
+      label: 'Messages',
+      description: 'Client communication and messaging'
+    },
+    { 
+      path: '/billing', 
+      icon: CreditCard, 
+      label: 'Billing',
+      description: 'Insurance, claims, and payment processing'
+    },
+    { 
+      path: '/staff', 
+      icon: Building, 
+      label: 'Staff',
+      description: 'Staff management and supervision'
+    },
+  ];
 
   return (
-    <div 
+    <div
       className={cn(
-        "bg-gradient-to-b from-blue-900 to-blue-800 min-h-screen shadow-xl flex flex-col fixed left-0 top-0 z-50 transition-all duration-300 group",
+        "flex flex-col h-full bg-gray-100 border-r shadow-sm transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}
-      data-collapsed={isCollapsed}
     >
-      {/* Header with toggle button */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-3">
-              <img 
-                src="/lovable-uploads/767e6203-d61c-4e71-b71b-e30eef1420da.png" 
-                alt="MentalSpace Logo" 
-                className="h-12 w-auto"
-              />
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="text-blue-100 hover:bg-blue-700 hover:text-white"
-          >
-            {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
-          </Button>
-        </div>
-        {!isCollapsed && (
-          <p className="text-blue-200 text-sm">Electronic Health Records</p>
-        )}
-      </div>
-      
-      <nav className="space-y-2 flex-1 px-4">
-        {menuItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleItemClick(item)}
-              className={cn(
-                "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
-                activeItem === item.id
-                  ? "bg-white text-blue-900 shadow-lg transform scale-105"
-                  : "text-blue-100 hover:bg-blue-700 hover:text-white hover:transform hover:scale-102",
-                isCollapsed && "justify-center space-x-0"
-              )}
-              title={isCollapsed ? item.label : undefined}
-            >
-              <IconComponent size={20} />
-              {!isCollapsed && <span className="font-medium">{item.label}</span>}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="mt-auto pt-4 border-t border-blue-700 px-4 pb-4">
-        <Button
-          onClick={signOut}
-          variant="ghost"
-          className={cn(
-            "w-full flex items-center space-x-3 px-4 py-3 text-blue-100 hover:bg-blue-700 hover:text-white",
-            isCollapsed && "justify-center space-x-0"
-          )}
-          title={isCollapsed ? "Sign Out" : undefined}
-        >
-          <LogOut size={20} />
-          {!isCollapsed && <span className="font-medium">Sign Out</span>}
+      <div className="flex items-center justify-end p-3">
+        <Button variant="ghost" size="icon" onClick={onToggle}>
+          {isCollapsed ? <div className="text-xs">Expand</div> : <div className="text-xs">Collapse</div>}
         </Button>
       </div>
+      <nav className="flex-1 px-2 py-4">
+        {navigationItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              cn(
+                "group flex items-center space-x-3 py-2 px-3 rounded-md hover:bg-gray-200 transition-colors duration-200",
+                isActive
+                  ? "bg-gray-200 font-semibold"
+                  : "text-gray-600 group-hover:text-gray-900"
+              )
+            }
+          >
+            <item.icon className="h-4 w-4" />
+            <span className={cn("text-sm font-medium", isCollapsed && "hidden")}>
+              {item.label}
+            </span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 };
