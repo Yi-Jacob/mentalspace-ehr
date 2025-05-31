@@ -77,4 +77,6 @@ export interface ClientFormData {
   hipaa_signed: boolean;
   pcp_release: 'Not set' | 'Patient consented to release information' | 'Patient declined to release information' | 'Not applicable';
   patient_comments: string;
+  // Status
+  is_active: boolean;
 }

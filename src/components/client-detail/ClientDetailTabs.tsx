@@ -15,12 +15,23 @@ import { ClientNotesTab } from './tabs/ClientNotesTab';
 import { ClientBillingTab } from './tabs/ClientBillingTab';
 import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import ClientMessagesTab from './tabs/ClientMessagesTab';
+import { PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
 
 interface ClientDetailTabsProps {
   client: any;
+  phoneNumbers: PhoneNumber[];
+  emergencyContacts: EmergencyContact[];
+  insuranceInfo: InsuranceInfo[];
+  primaryCareProvider: PrimaryCareProvider | null;
 }
 
-const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({ client }) => {
+const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({ 
+  client, 
+  phoneNumbers, 
+  emergencyContacts, 
+  insuranceInfo, 
+  primaryCareProvider 
+}) => {
   return (
     <Tabs defaultValue="info" className="w-full">
       <TabsList className="grid w-full grid-cols-6">
@@ -51,7 +62,12 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({ client }) => {
       </TabsList>
 
       <TabsContent value="info" className="mt-6">
-        <ClientInfoTab client={client} />
+        <ClientInfoTab 
+          client={client} 
+          phoneNumbers={phoneNumbers}
+          emergencyContacts={emergencyContacts}
+          primaryCareProvider={primaryCareProvider}
+        />
       </TabsContent>
 
       <TabsContent value="messages" className="mt-6">
@@ -59,11 +75,11 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({ client }) => {
       </TabsContent>
 
       <TabsContent value="clinicians" className="mt-6">
-        <ClientCliniciansTab clientId={client.id} />
+        <ClientCliniciansTab client={client} />
       </TabsContent>
 
       <TabsContent value="notes" className="mt-6">
-        <ClientNotesTab clientId={client.id} />
+        <ClientNotesTab client={client} />
       </TabsContent>
 
       <TabsContent value="billing" className="mt-6">
@@ -71,7 +87,7 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({ client }) => {
       </TabsContent>
 
       <TabsContent value="settings" className="mt-6">
-        <ClientBillingSettingsTab clientId={client.id} />
+        <ClientBillingSettingsTab insuranceInfo={insuranceInfo} />
       </TabsContent>
     </Tabs>
   );

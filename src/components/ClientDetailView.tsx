@@ -155,7 +155,16 @@ const ClientDetailView = () => {
   return (
     <div className="p-6 space-y-6">
       <ClientDetailHeader 
-        client={client} 
+        client={{
+          id: client.id!,
+          first_name: client.first_name,
+          last_name: client.last_name,
+          email: client.email,
+          date_of_birth: client.date_of_birth,
+          city: client.city,
+          state: client.state,
+          is_active: client.is_active
+        }} 
         onEditClick={() => setShowEditModal(true)} 
       />
 
