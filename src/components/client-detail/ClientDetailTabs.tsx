@@ -9,11 +9,11 @@ import {
   Settings,
   MessageSquare
 } from 'lucide-react';
-import ClientInfoTab from './tabs/ClientInfoTab';
-import ClientCliniciansTab from './tabs/ClientCliniciansTab';
-import ClientNotesTab from './tabs/ClientNotesTab';
-import ClientBillingTab from './tabs/ClientBillingTab';
-import ClientBillingSettingsTab from './tabs/ClientBillingSettingsTab';
+import { ClientInfoTab } from './tabs/ClientInfoTab';
+import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
+import { ClientNotesTab } from './tabs/ClientNotesTab';
+import { ClientBillingTab } from './tabs/ClientBillingTab';
+import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import ClientMessagesTab from './tabs/ClientMessagesTab';
 
 interface ClientDetailTabsProps {

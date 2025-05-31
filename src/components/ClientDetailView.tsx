@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
 import AddClientModal from './AddClientModal';
-import { ClientDetailHeader } from './client-detail/ClientDetailHeader';
+import ClientDetailHeader from './client-detail/ClientDetailHeader';
 import { ClientQuickInfo } from './client-detail/ClientQuickInfo';
-import { ClientDetailTabs } from './client-detail/ClientDetailTabs';
+import ClientDetailTabs from './client-detail/ClientDetailTabs';
 
 const ClientDetailView = () => {
   const { clientId } = useParams<{ clientId: string }>();
