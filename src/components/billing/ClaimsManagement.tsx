@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ClaimsManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'submitted' | 'paid' | 'denied' | 'pending' | 'partial' | 'rejected'>('all');
 
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['claims', searchTerm, statusFilter],

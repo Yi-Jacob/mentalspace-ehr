@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const PaymentProcessing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'>('all');
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments', searchTerm, statusFilter],
