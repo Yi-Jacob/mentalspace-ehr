@@ -1,89 +1,26 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
 import MessageHeader from './message/MessageHeader';
 import ConversationList from './message/ConversationList';
 import MessageThread from './message/MessageThread';
 import ComposeMessageModal from './ComposeMessageModal';
 import NewConversationModal from './NewConversationModal';
+import { useConversationsQuery } from './message-management/ConversationsQuery';
+import { useMessagesQuery } from './message-management/MessagesQuery';
+import { useMessageManagementState } from './message-management/MessageManagementState';
 
 const MessageManagement = () => {
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const [showComposeModal, setShowComposeModal] = useState(false);
-  const [showNewConversationModal, setShowNewConversationModal] = useState(false);
+  const {
+    selectedConversationId,
+    setSelectedConversationId,
+    showComposeModal,
+    setShowComposeModal,
+    showNewConversationModal,
+    setShowNewConversationModal,
+  } = useMessageManagementState();
 
-  const { data: conversations, isLoading: conversationsLoading } = useQuery({
-    queryKey: ['conversations'],
-    queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
-
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
-
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`
-          id,
-          title,
-          category,
-          priority,
-          status,
-          last_message_at,
-          client:clients!conversations_client_id_fkey(
-            id,
-            first_name,
-            last_name
-          ),
-          messages(
-            id,
-            content,
-            created_at,
-            sender_id,
-            sender:users!messages_sender_id_fkey(first_name, last_name)
-          )
-        `)
-        .eq('therapist_id', userRecord.id)
-        .order('last_message_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  const { data: messages, isLoading: messagesLoading } = useQuery({
-    queryKey: ['messages', selectedConversationId],
-    queryFn: async () => {
-      if (!selectedConversationId) return [];
-
-      const { data, error } = await supabase
-        .from('messages')
-        .select(`
-          id,
-          content,
-          created_at,
-          sender_id,
-          priority,
-          sender:users!messages_sender_id_fkey(
-            id,
-            first_name,
-            last_name
-          )
-        `)
-        .eq('conversation_id', selectedConversationId)
-        .order('created_at', { ascending: true });
-      
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!selectedConversationId,
-  });
+  const { data: conversations, isLoading: conversationsLoading } = useConversationsQuery();
+  const { data: messages, isLoading: messagesLoading } = useMessagesQuery(selectedConversationId);
 
   const selectedConversation = conversations?.find(c => c.id === selectedConversationId);
 
