@@ -65,7 +65,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       if (!userRecord) throw new Error('User record not found');
 
       const { data, error } = await supabase
-        .from('messages')
+        .from('messages' as any)
         .insert({
           conversation_id: conversationId,
           sender_id: userRecord.id,

@@ -28,7 +28,7 @@ const MessageManagement = () => {
       if (!userRecord) throw new Error('User record not found');
 
       const { data, error } = await supabase
-        .from('conversations')
+        .from('conversations' as any)
         .select(`
           *,
           conversation_participants!inner(
@@ -47,7 +47,7 @@ const MessageManagement = () => {
         .order('updated_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -57,7 +57,7 @@ const MessageManagement = () => {
       if (!selectedConversationId) return [];
 
       const { data, error } = await supabase
-        .from('messages')
+        .from('messages' as any)
         .select(`
           *,
           sender:users!messages_sender_id_fkey(
@@ -70,7 +70,7 @@ const MessageManagement = () => {
         .order('created_at', { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!selectedConversationId,
   });

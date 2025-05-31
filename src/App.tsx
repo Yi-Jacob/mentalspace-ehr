@@ -23,6 +23,7 @@ import TreatmentPlanForm from '@/components/documentation/treatment-plan/Treatme
 import IntakeAssessmentForm from '@/components/documentation/intake/IntakeAssessmentForm';
 import CancellationNoteForm from '@/components/documentation/cancellation-note/CancellationNoteForm';
 import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note/MiscellaneousNoteForm';
+import Message from '@/pages/Message';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { cn } from '@/lib/utils';
@@ -88,6 +89,7 @@ const MainLayout: React.FC = () => {
           <Route path="/documentation/cancellation-note/:noteId/edit" element={<CancellationNoteForm />} />
           <Route path="/documentation/miscellaneous-note/:noteId/edit" element={<MiscellaneousNoteForm />} />
           <Route path="/scheduling" element={<Scheduling />} />
+          <Route path="/message" element={<Message />} />
           <Route path="/staff" element={<StaffManagementPage />} />
           <Route path="/staff/add" element={<AddStaffPage />} />
           <Route path="*" element={<NotFound />} />

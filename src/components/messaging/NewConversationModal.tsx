@@ -50,7 +50,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
 
       // Create the conversation
       const { data: conversation, error: conversationError } = await supabase
-        .from('conversations')
+        .from('conversations' as any)
         .insert({
           title: title || 'New Conversation',
           created_by: userRecord.id,
@@ -63,7 +63,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ open, onOpe
       // Add participants (including the creator)
       const participantsToAdd = [userRecord.id, ...selectedUsers];
       const { error: participantError } = await supabase
-        .from('conversation_participants')
+        .from('conversation_participants' as any)
         .insert(
           participantsToAdd.map(userId => ({
             conversation_id: conversation.id,

@@ -51,7 +51,7 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
 
       // Create a new conversation
       const { data: conversation, error: conversationError } = await supabase
-        .from('conversations')
+        .from('conversations' as any)
         .insert({
           title: subject || 'Quick Message',
           created_by: userRecord.id,
@@ -63,7 +63,7 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
 
       // Add participants
       const { error: participantError } = await supabase
-        .from('conversation_participants')
+        .from('conversation_participants' as any)
         .insert([
           { conversation_id: conversation.id, user_id: userRecord.id },
           { conversation_id: conversation.id, user_id: recipientId },
@@ -73,7 +73,7 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({ open, onOpenC
 
       // Send the message
       const { data: messageData, error: messageError } = await supabase
-        .from('messages')
+        .from('messages' as any)
         .insert({
           conversation_id: conversation.id,
           sender_id: userRecord.id,
