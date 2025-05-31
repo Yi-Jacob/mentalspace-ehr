@@ -12,6 +12,10 @@ const PaymentProcessing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'>('all');
 
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as 'all' | 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled');
+  };
+
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments', searchTerm, statusFilter],
     queryFn: async () => {
@@ -84,7 +88,7 @@ const PaymentProcessing: React.FC = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>

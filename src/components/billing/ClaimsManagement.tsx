@@ -12,6 +12,10 @@ const ClaimsManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'submitted' | 'paid' | 'denied' | 'pending' | 'partial' | 'rejected'>('all');
 
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value as 'all' | 'draft' | 'submitted' | 'paid' | 'denied' | 'pending' | 'partial' | 'rejected');
+  };
+
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['claims', searchTerm, statusFilter],
     queryFn: async () => {
@@ -75,7 +79,7 @@ const ClaimsManagement: React.FC = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
