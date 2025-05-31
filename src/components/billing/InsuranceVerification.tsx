@@ -44,9 +44,18 @@ const InsuranceVerification: React.FC = () => {
       }
 
       if (searchTerm) {
-        query = query.or(
-          `clients.first_name.ilike.%${searchTerm}%,clients.last_name.ilike.%${searchTerm}%`
-        );
+        // Use a simpler search approach that works with Supabase
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('id')
+          .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
+        
+        if (clientData && clientData.length > 0) {
+          const clientIds = clientData.map(c => c.id);
+          query = query.in('client_id', clientIds);
+        } else {
+          return []; // No matching clients found
+        }
       }
 
       const { data, error } = await query;

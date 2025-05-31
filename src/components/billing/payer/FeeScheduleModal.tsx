@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -260,7 +261,7 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
                             <h4 className="font-semibold">{fee.cpt_code}</h4>
                             <Badge variant="outline">
                               <DollarSign className="h-3 w-3 mr-1" />
-                              {parseFloat(fee.fee_amount).toFixed(2)}
+                              {parseFloat(fee.fee_amount.toString()).toFixed(2)}
                             </Badge>
                           </div>
                           
