@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const ClaimsSubmission: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'submitted' | 'paid' | 'denied' | 'rejected'>('all');
 
   const { data: claims, isLoading } = useQuery({
     queryKey: ['claims', searchTerm, statusFilter],
@@ -82,7 +81,7 @@ const ClaimsSubmission: React.FC = () => {
             />
           </div>
           
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value: 'all' | 'draft' | 'submitted' | 'paid' | 'denied' | 'rejected') => setStatusFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -90,7 +89,6 @@ const ClaimsSubmission: React.FC = () => {
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="submitted">Submitted</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="denied">Denied</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>

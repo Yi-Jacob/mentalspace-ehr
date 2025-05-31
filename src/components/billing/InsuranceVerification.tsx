@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import VerificationModal from './verification/VerificationModal';
 
 const InsuranceVerification: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'expired'>('all');
   const [selectedVerification, setSelectedVerification] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -118,7 +117,7 @@ const InsuranceVerification: React.FC = () => {
             />
           </div>
           
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value: 'all' | 'pending' | 'verified' | 'expired') => setStatusFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -126,7 +125,6 @@ const InsuranceVerification: React.FC = () => {
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="verified">Verified</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>

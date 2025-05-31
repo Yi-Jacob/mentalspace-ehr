@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const PaymentProcessing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'failed' | 'refunded'>('all');
 
   const { data: payments, isLoading } = useQuery({
     queryKey: ['payments', searchTerm, statusFilter],
@@ -96,7 +96,7 @@ const PaymentProcessing: React.FC = () => {
             />
           </div>
           
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value: 'all' | 'pending' | 'completed' | 'failed' | 'refunded') => setStatusFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
