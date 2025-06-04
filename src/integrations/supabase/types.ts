@@ -1117,6 +1117,62 @@ export type Database = {
           },
         ]
       }
+      compliance_deadlines: {
+        Row: {
+          created_at: string | null
+          deadline_date: string
+          deadline_type: string
+          id: string
+          is_met: boolean | null
+          notes_completed: number | null
+          notes_pending: number | null
+          provider_id: string
+          reminder_sent_24h: boolean | null
+          reminder_sent_48h: boolean | null
+          reminder_sent_72h: boolean | null
+          supervisor_notified: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deadline_date: string
+          deadline_type?: string
+          id?: string
+          is_met?: boolean | null
+          notes_completed?: number | null
+          notes_pending?: number | null
+          provider_id: string
+          reminder_sent_24h?: boolean | null
+          reminder_sent_48h?: boolean | null
+          reminder_sent_72h?: boolean | null
+          supervisor_notified?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deadline_date?: string
+          deadline_type?: string
+          id?: string
+          is_met?: boolean | null
+          notes_completed?: number | null
+          notes_pending?: number | null
+          provider_id?: string
+          reminder_sent_24h?: boolean | null
+          reminder_sent_48h?: boolean | null
+          reminder_sent_72h?: boolean | null
+          supervisor_notified?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_deadlines_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compliance_metrics: {
         Row: {
           created_at: string | null
@@ -1237,6 +1293,70 @@ export type Database = {
           is_active?: boolean
         }
         Relationships: []
+      }
+      deadline_exception_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          provider_id: string
+          reason: string
+          requested_extension_until: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          session_completion_id: string | null
+          status: Database["public"]["Enums"]["approval_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          provider_id: string
+          reason: string
+          requested_extension_until: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_completion_id?: string | null
+          status?: Database["public"]["Enums"]["approval_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          provider_id?: string
+          reason?: string
+          requested_extension_until?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_completion_id?: string | null
+          status?: Database["public"]["Enums"]["approval_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deadline_exception_requests_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deadline_exception_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deadline_exception_requests_session_completion_id_fkey"
+            columns: ["session_completion_id"]
+            isOneToOne: false
+            referencedRelation: "session_completions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       diagnosis_codes: {
         Row: {
@@ -1975,6 +2095,84 @@ export type Database = {
           },
         ]
       }
+      payment_calculations: {
+        Row: {
+          calculation_details: Json | null
+          compensation_type: Database["public"]["Enums"]["compensation_type"]
+          created_at: string | null
+          deductions: number | null
+          gross_amount: number
+          id: string
+          net_amount: number
+          overtime_hours: number | null
+          pay_period_end: string
+          pay_period_start: string
+          processed_at: string | null
+          processed_by: string | null
+          regular_hours: number | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          total_hours: number | null
+          total_sessions: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          calculation_details?: Json | null
+          compensation_type: Database["public"]["Enums"]["compensation_type"]
+          created_at?: string | null
+          deductions?: number | null
+          gross_amount: number
+          id?: string
+          net_amount: number
+          overtime_hours?: number | null
+          pay_period_end: string
+          pay_period_start: string
+          processed_at?: string | null
+          processed_by?: string | null
+          regular_hours?: number | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          total_hours?: number | null
+          total_sessions?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          calculation_details?: Json | null
+          compensation_type?: Database["public"]["Enums"]["compensation_type"]
+          created_at?: string | null
+          deductions?: number | null
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          overtime_hours?: number | null
+          pay_period_end?: string
+          pay_period_start?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          regular_hours?: number | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          total_hours?: number | null
+          total_sessions?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_calculations_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_calculations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           claim_id: string | null
@@ -2099,6 +2297,75 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      provider_compensation_config: {
+        Row: {
+          base_hourly_rate: number | null
+          base_session_rate: number | null
+          compensation_type: Database["public"]["Enums"]["compensation_type"]
+          created_at: string | null
+          created_by: string | null
+          effective_date: string
+          evening_differential: number | null
+          experience_tier: number | null
+          expiration_date: string | null
+          id: string
+          is_active: boolean | null
+          is_overtime_eligible: boolean | null
+          provider_id: string
+          updated_at: string | null
+          weekend_differential: number | null
+        }
+        Insert: {
+          base_hourly_rate?: number | null
+          base_session_rate?: number | null
+          compensation_type?: Database["public"]["Enums"]["compensation_type"]
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          evening_differential?: number | null
+          experience_tier?: number | null
+          expiration_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_overtime_eligible?: boolean | null
+          provider_id: string
+          updated_at?: string | null
+          weekend_differential?: number | null
+        }
+        Update: {
+          base_hourly_rate?: number | null
+          base_session_rate?: number | null
+          compensation_type?: Database["public"]["Enums"]["compensation_type"]
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          evening_differential?: number | null
+          experience_tier?: number | null
+          expiration_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_overtime_eligible?: boolean | null
+          provider_id?: string
+          updated_at?: string | null
+          weekend_differential?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_compensation_config_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_compensation_config_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_schedules: {
         Row: {
@@ -2315,6 +2582,149 @@ export type Database = {
           },
         ]
       }
+      session_completions: {
+        Row: {
+          appointment_id: string
+          calculated_amount: number | null
+          client_id: string
+          created_at: string | null
+          duration_minutes: number
+          id: string
+          is_locked: boolean | null
+          is_note_signed: boolean | null
+          is_paid: boolean | null
+          locked_at: string | null
+          note_id: string | null
+          note_signed_at: string | null
+          pay_period_week: string | null
+          provider_id: string
+          session_date: string
+          session_type: Database["public"]["Enums"]["session_type"]
+          supervisor_override_at: string | null
+          supervisor_override_by: string | null
+          supervisor_override_reason: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_id: string
+          calculated_amount?: number | null
+          client_id: string
+          created_at?: string | null
+          duration_minutes: number
+          id?: string
+          is_locked?: boolean | null
+          is_note_signed?: boolean | null
+          is_paid?: boolean | null
+          locked_at?: string | null
+          note_id?: string | null
+          note_signed_at?: string | null
+          pay_period_week?: string | null
+          provider_id: string
+          session_date: string
+          session_type: Database["public"]["Enums"]["session_type"]
+          supervisor_override_at?: string | null
+          supervisor_override_by?: string | null
+          supervisor_override_reason?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          calculated_amount?: number | null
+          client_id?: string
+          created_at?: string | null
+          duration_minutes?: number
+          id?: string
+          is_locked?: boolean | null
+          is_note_signed?: boolean | null
+          is_paid?: boolean | null
+          locked_at?: string | null
+          note_id?: string | null
+          note_signed_at?: string | null
+          pay_period_week?: string | null
+          provider_id?: string
+          session_date?: string
+          session_type?: Database["public"]["Enums"]["session_type"]
+          supervisor_override_at?: string | null
+          supervisor_override_by?: string | null
+          supervisor_override_reason?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_completions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_completions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_completions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_completions_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_completions_supervisor_override_by_fkey"
+            columns: ["supervisor_override_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_rate_multipliers: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean | null
+          multiplier: number
+          provider_id: string
+          session_type: Database["public"]["Enums"]["session_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          multiplier?: number
+          provider_id: string
+          session_type: Database["public"]["Enums"]["session_type"]
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          multiplier?: number
+          provider_id?: string
+          session_type?: Database["public"]["Enums"]["session_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_rate_multipliers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_profiles: {
         Row: {
           billing_rate: number | null
@@ -2513,6 +2923,78 @@ export type Database = {
           },
         ]
       }
+      time_entries: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          break_end_time: string | null
+          break_start_time: string | null
+          clock_in_time: string | null
+          clock_out_time: string | null
+          created_at: string | null
+          entry_date: string
+          id: string
+          is_approved: boolean | null
+          notes: string | null
+          overtime_hours: number | null
+          regular_hours: number | null
+          total_hours: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          break_end_time?: string | null
+          break_start_time?: string | null
+          clock_in_time?: string | null
+          clock_out_time?: string | null
+          created_at?: string | null
+          entry_date: string
+          id?: string
+          is_approved?: boolean | null
+          notes?: string | null
+          overtime_hours?: number | null
+          regular_hours?: number | null
+          total_hours?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          break_end_time?: string | null
+          break_start_time?: string | null
+          clock_in_time?: string | null
+          clock_out_time?: string | null
+          created_at?: string | null
+          entry_date?: string
+          id?: string
+          is_approved?: boolean | null
+          notes?: string | null
+          overtime_hours?: number | null
+          regular_hours?: number | null
+          total_hours?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treatment_goals: {
         Row: {
           achieved_date: string | null
@@ -2655,6 +3137,14 @@ export type Database = {
           avg_completion_time: number
         }[]
       }
+      calculate_session_payment: {
+        Args: {
+          _provider_id: string
+          _session_type: Database["public"]["Enums"]["session_type"]
+          _duration_minutes: number
+        }
+        Returns: number
+      }
       can_access_patient: {
         Args: { _user_id: string; _client_id: string }
         Returns: boolean
@@ -2776,6 +3266,7 @@ export type Database = {
         | "medication_management"
         | "crisis_intervention"
         | "other"
+      approval_status: "pending" | "approved" | "rejected"
       claim_status:
         | "draft"
         | "submitted"
@@ -2784,6 +3275,7 @@ export type Database = {
         | "pending"
         | "partial"
         | "rejected"
+      compensation_type: "session_based" | "hourly"
       contract_status: "active" | "inactive" | "pending" | "expired"
       day_of_week:
         | "monday"
@@ -2846,6 +3338,7 @@ export type Database = {
         | "contact_note"
         | "consultation_note"
         | "miscellaneous_note"
+      pay_period_type: "weekly" | "biweekly" | "monthly"
       payer_type: "in_network" | "out_of_network" | "government" | "self_pay"
       payment_method:
         | "insurance"
@@ -2892,6 +3385,12 @@ export type Database = {
         | "Text (SMS) and Email"
         | "Text or Call, and Email"
       schedule_status: "active" | "pending_approval" | "approved" | "rejected"
+      session_type:
+        | "intake"
+        | "individual"
+        | "group"
+        | "consultation"
+        | "assessment"
       sexual_orientation:
         | "Asexual"
         | "Bisexual"
@@ -3172,6 +3671,7 @@ export const Constants = {
         "crisis_intervention",
         "other",
       ],
+      approval_status: ["pending", "approved", "rejected"],
       claim_status: [
         "draft",
         "submitted",
@@ -3181,6 +3681,7 @@ export const Constants = {
         "partial",
         "rejected",
       ],
+      compensation_type: ["session_based", "hourly"],
       contract_status: ["active", "inactive", "pending", "expired"],
       day_of_week: [
         "monday",
@@ -3250,6 +3751,7 @@ export const Constants = {
         "consultation_note",
         "miscellaneous_note",
       ],
+      pay_period_type: ["weekly", "biweekly", "monthly"],
       payer_type: ["in_network", "out_of_network", "government", "self_pay"],
       payment_method: [
         "insurance",
@@ -3301,6 +3803,13 @@ export const Constants = {
         "Text or Call, and Email",
       ],
       schedule_status: ["active", "pending_approval", "approved", "rejected"],
+      session_type: [
+        "intake",
+        "individual",
+        "group",
+        "consultation",
+        "assessment",
+      ],
       sexual_orientation: [
         "Asexual",
         "Bisexual",
