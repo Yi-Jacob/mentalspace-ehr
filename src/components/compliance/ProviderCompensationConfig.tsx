@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const ProviderCompensationConfig: React.FC = () => {
-  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [selectedProvider, setSelectedProvider] = useState<string>('all');
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [editingConfig, setEditingConfig] = useState<any>(null);
   const { toast } = useToast();
@@ -48,7 +48,7 @@ const ProviderCompensationConfig: React.FC = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (selectedProvider) {
+      if (selectedProvider && selectedProvider !== 'all') {
         query = query.eq('provider_id', selectedProvider);
       }
 
@@ -66,7 +66,7 @@ const ProviderCompensationConfig: React.FC = () => {
         .select('*')
         .order('session_type');
 
-      if (selectedProvider) {
+      if (selectedProvider && selectedProvider !== 'all') {
         query = query.eq('provider_id', selectedProvider);
       }
 
@@ -135,7 +135,7 @@ const ProviderCompensationConfig: React.FC = () => {
               <SelectValue placeholder="Filter by provider..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Providers</SelectItem>
+              <SelectItem value="all">All Providers</SelectItem>
               {providers?.map((provider) => (
                 <SelectItem key={provider.id} value={provider.id}>
                   {provider.first_name} {provider.last_name}
@@ -357,7 +357,7 @@ const ProviderCompensationConfig: React.FC = () => {
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No compensation configurations found</h3>
           <p className="text-gray-600 mb-4">
-            {selectedProvider ? 'No configurations for selected provider.' : 'Get started by creating compensation configurations for your providers.'}
+            {selectedProvider !== 'all' ? 'No configurations for selected provider.' : 'Get started by creating compensation configurations for your providers.'}
           </p>
           <Button onClick={() => setShowConfigModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
