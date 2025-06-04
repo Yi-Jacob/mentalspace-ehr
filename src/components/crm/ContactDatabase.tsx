@@ -9,62 +9,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Phone, Mail, MapPin, Building, Users, Download } from 'lucide-react';
+import { useCrmContacts, useCreateCrmContact } from '@/hooks/useCrmData';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const ContactDatabase = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
-  const contacts = [
-    {
-      id: 1,
-      name: 'Dr. Sarah Johnson',
-      organization: 'Family Medicine Associates',
-      position: 'Primary Care Physician',
-      category: 'Healthcare Provider',
-      email: 's.johnson@fma.com',
-      phone: '(555) 123-4567',
-      address: '123 Main St, Anytown, ST 12345',
-      specialty: 'Family Medicine',
-      relationship: 'Active Referrer',
-      tags: ['Referral Source', 'Primary Care', 'Anxiety Specialist'],
-      notes: 'Excellent referral source for anxiety disorders. Prefers phone communication.',
-      lastContact: '2024-01-15',
-      addedDate: '2023-03-10'
-    },
-    {
-      id: 2,
-      name: 'Jennifer Martinez',
-      organization: 'Blue Cross Blue Shield',
-      position: 'Provider Relations Manager',
-      category: 'Insurance',
-      email: 'j.martinez@bcbs.com',
-      phone: '(555) 987-6543',
-      address: '456 Insurance Blvd, Anytown, ST 12345',
-      specialty: 'Provider Relations',
-      relationship: 'Business Contact',
-      tags: ['Insurance', 'Provider Relations', 'BCBS'],
-      notes: 'Primary contact for BCBS provider issues and pre-authorizations.',
-      lastContact: '2024-01-10',
-      addedDate: '2023-05-15'
-    },
-    {
-      id: 3,
-      name: 'Michael Chen',
-      organization: 'Wellness Community Center',
-      position: 'Program Director',
-      category: 'Community Partner',
-      email: 'm.chen@wellnesscenter.org',
-      phone: '(555) 456-7890',
-      address: '789 Community Dr, Anytown, ST 12345',
-      specialty: 'Community Mental Health',
-      relationship: 'Partner',
-      tags: ['Community Health', 'Support Groups', 'Wellness'],
-      notes: 'Collaborates on community mental health programs and support groups.',
-      lastContact: '2024-01-08',
-      addedDate: '2023-07-20'
-    }
-  ];
+  const { data: contacts, isLoading } = useCrmContacts();
+  const createContact = useCreateCrmContact();
+  const { toast } = useToast();
 
   const getRelationshipColor = (relationship: string) => {
     switch (relationship) {
@@ -76,10 +32,67 @@ const ContactDatabase = () => {
     }
   };
 
-  const handleAddContact = (formData: FormData) => {
-    console.log('Adding new contact:', Object.fromEntries(formData));
-    setShowAddModal(false);
+  const handleAddContact = async (formData: FormData) => {
+    try {
+      const tagsString = formData.get('tags') as string;
+      const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : [];
+
+      const data = {
+        name: formData.get('name') as string,
+        organization: formData.get('organization') as string,
+        position: formData.get('position') as string,
+        category: formData.get('category') as string,
+        email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        address: formData.get('address') as string,
+        specialty: formData.get('specialty') as string,
+        relationship_type: formData.get('relationship') as string,
+        tags: tags,
+        notes: formData.get('notes') as string,
+      };
+
+      await createContact.mutateAsync(data);
+      setShowAddModal(false);
+      toast({
+        title: "Success",
+        description: "Contact added successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add contact",
+        variant: "destructive"
+      });
+    }
   };
+
+  const filteredContacts = contacts?.filter(contact => {
+    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         contact.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         contact.position?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || contact.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  }) || [];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="pt-6">
+                <Skeleton className="h-32 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -204,7 +217,9 @@ const ContactDatabase = () => {
                 <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Add Contact</Button>
+                <Button type="submit" disabled={createContact.isPending}>
+                  {createContact.isPending ? 'Adding...' : 'Add Contact'}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -213,63 +228,77 @@ const ContactDatabase = () => {
 
       {/* Contacts List */}
       <div className="space-y-4">
-        {contacts.map((contact) => (
+        {filteredContacts.map((contact) => (
           <Card key={contact.id} className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-4 flex-1">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">{contact.name}</h4>
-                    <Badge className={getRelationshipColor(contact.relationship)}>
-                      {contact.relationship}
+                    <Badge className={getRelationshipColor(contact.relationship_type)}>
+                      {contact.relationship_type}
                     </Badge>
                     <Badge variant="outline">{contact.category}</Badge>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Building className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{contact.organization}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-gray-500" />
-                        <span>{contact.position}</span>
-                      </div>
+                      {contact.organization && (
+                        <div className="flex items-center space-x-2">
+                          <Building className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">{contact.organization}</span>
+                        </div>
+                      )}
+                      {contact.position && (
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-gray-500" />
+                          <span>{contact.position}</span>
+                        </div>
+                      )}
                       <div>
-                        <strong>Specialty:</strong> {contact.specialty}
+                        <strong>Specialty:</strong> {contact.specialty || 'Not specified'}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-gray-500" />
-                        <span>{contact.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4 text-gray-500" />
-                        <span>{contact.phone}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="text-xs">{contact.address}</span>
-                      </div>
+                      {contact.email && (
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-4 w-4 text-gray-500" />
+                          <span>{contact.email}</span>
+                        </div>
+                      )}
+                      {contact.phone && (
+                        <div className="flex items-center space-x-2">
+                          <Phone className="h-4 w-4 text-gray-500" />
+                          <span>{contact.phone}</span>
+                        </div>
+                      )}
+                      {contact.address && (
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-4 w-4 text-gray-500" />
+                          <span className="text-xs">{contact.address}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
+                      {contact.last_contact_date && (
+                        <div>
+                          <strong>Last Contact:</strong> {new Date(contact.last_contact_date).toLocaleDateString()}
+                        </div>
+                      )}
                       <div>
-                        <strong>Last Contact:</strong> {new Date(contact.lastContact).toLocaleDateString()}
+                        <strong>Added:</strong> {new Date(contact.added_date).toLocaleDateString()}
                       </div>
-                      <div>
-                        <strong>Added:</strong> {new Date(contact.addedDate).toLocaleDateString()}
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {contact.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
+                      {contact.tags && contact.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {contact.tags.map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

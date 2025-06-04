@@ -9,65 +9,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Phone, Mail, Calendar, User, Clock, CheckCircle } from 'lucide-react';
+import { useLeads, useCreateLead } from '@/hooks/useCrmData';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const LeadManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const leads = [
-    {
-      id: 1,
-      name: 'Jennifer Martinez',
-      email: 'j.martinez@email.com',
-      phone: '(555) 123-9876',
-      source: 'Dr. Sarah Johnson',
-      status: 'New',
-      priority: 'High',
-      concerns: 'Anxiety, Panic Attacks',
-      preferredContact: 'Phone',
-      insurance: 'Blue Cross Blue Shield',
-      dateReceived: '2024-01-15',
-      lastContact: null,
-      nextFollowUp: '2024-01-16',
-      notes: 'Urgent referral from primary care. Patient experiencing frequent panic attacks.',
-      assignedTo: 'Sarah Wilson'
-    },
-    {
-      id: 2,
-      name: 'Michael Chen',
-      email: 'm.chen@email.com',
-      phone: '(555) 987-6543',
-      source: 'Website Contact Form',
-      status: 'Contacted',
-      priority: 'Medium',
-      concerns: 'Depression, Sleep Issues',
-      preferredContact: 'Email',
-      insurance: 'Aetna',
-      dateReceived: '2024-01-12',
-      lastContact: '2024-01-13',
-      nextFollowUp: '2024-01-18',
-      notes: 'Initial phone screening completed. Interested in therapy. Needs insurance verification.',
-      assignedTo: 'Dr. Emily Rodriguez'
-    },
-    {
-      id: 3,
-      name: 'Ashley Thompson',
-      email: 'a.thompson@email.com',
-      phone: '(555) 456-7890',
-      source: 'Valley Medical Center',
-      status: 'Scheduled',
-      priority: 'High',
-      concerns: 'PTSD, Trauma',
-      preferredContact: 'Phone',
-      insurance: 'United Healthcare',
-      dateReceived: '2024-01-10',
-      lastContact: '2024-01-14',
-      nextFollowUp: '2024-01-20',
-      notes: 'Intake appointment scheduled for 1/20. Emergency contact provided.',
-      assignedTo: 'Dr. Michael Park'
-    }
-  ];
+  const { data: leads, isLoading } = useLeads();
+  const createLead = useCreateLead();
+  const { toast } = useToast();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,10 +42,62 @@ const LeadManagement = () => {
     }
   };
 
-  const handleAddLead = (formData: FormData) => {
-    console.log('Adding new lead:', Object.fromEntries(formData));
-    setShowAddModal(false);
+  const handleAddLead = async (formData: FormData) => {
+    try {
+      const data = {
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        source: formData.get('source') as string,
+        priority: formData.get('priority') as string,
+        preferred_contact: formData.get('preferredContact') as string,
+        concerns: formData.get('concerns') as string,
+        insurance: formData.get('insurance') as string,
+        notes: formData.get('notes') as string,
+      };
+
+      await createLead.mutateAsync(data);
+      setShowAddModal(false);
+      toast({
+        title: "Success",
+        description: "Lead added successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add lead",
+        variant: "destructive"
+      });
+    }
   };
+
+  const filteredLeads = leads?.filter(lead => {
+    const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         lead.source?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  }) || [];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="pt-6">
+                <Skeleton className="h-32 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -201,7 +206,9 @@ const LeadManagement = () => {
                 <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Add Lead</Button>
+                <Button type="submit" disabled={createLead.isPending}>
+                  {createLead.isPending ? 'Adding...' : 'Add Lead'}
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -210,7 +217,7 @@ const LeadManagement = () => {
 
       {/* Leads List */}
       <div className="space-y-4">
-        {leads.map((lead) => (
+        {filteredLeads.map((lead) => (
           <Card key={lead.id} className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
@@ -227,54 +234,61 @@ const LeadManagement = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Mail className="h-4 w-4 text-gray-500" />
-                        <span>{lead.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4 text-gray-500" />
-                        <span>{lead.phone}</span>
-                      </div>
+                      {lead.email && (
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-4 w-4 text-gray-500" />
+                          <span>{lead.email}</span>
+                        </div>
+                      )}
+                      {lead.phone && (
+                        <div className="flex items-center space-x-2">
+                          <Phone className="h-4 w-4 text-gray-500" />
+                          <span>{lead.phone}</span>
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-gray-500" />
-                        <span><strong>Source:</strong> {lead.source}</span>
+                        <span><strong>Source:</strong> {lead.source || 'Not specified'}</span>
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <div>
-                        <strong>Concerns:</strong> {lead.concerns}
+                        <strong>Concerns:</strong> {lead.concerns || 'Not specified'}
                       </div>
                       <div>
-                        <strong>Insurance:</strong> {lead.insurance}
+                        <strong>Insurance:</strong> {lead.insurance || 'Not specified'}
                       </div>
                       <div>
-                        <strong>Preferred Contact:</strong> {lead.preferredContact}
+                        <strong>Preferred Contact:</strong> {lead.preferred_contact}
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4 text-blue-600" />
-                        <span><strong>Received:</strong> {new Date(lead.dateReceived).toLocaleDateString()}</span>
+                        <span><strong>Received:</strong> {new Date(lead.date_received).toLocaleDateString()}</span>
                       </div>
-                      {lead.lastContact && (
+                      {lead.last_contact_date && (
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span><strong>Last Contact:</strong> {new Date(lead.lastContact).toLocaleDateString()}</span>
+                          <span><strong>Last Contact:</strong> {new Date(lead.last_contact_date).toLocaleDateString()}</span>
                         </div>
                       )}
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-orange-600" />
-                        <span><strong>Next Follow-up:</strong> {new Date(lead.nextFollowUp).toLocaleDateString()}</span>
-                      </div>
+                      {lead.next_followup_date && (
+                        <div className="flex items-center space-x-2">
+                          <Clock className="h-4 w-4 text-orange-600" />
+                          <span><strong>Next Follow-up:</strong> {new Date(lead.next_followup_date).toLocaleDateString()}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-700"><strong>Assigned to:</strong> {lead.assignedTo}</p>
-                    {lead.notes && <p className="text-sm text-gray-700 mt-1">{lead.notes}</p>}
-                  </div>
+                  {lead.notes && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-700">{lead.notes}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col space-y-2 ml-4">
