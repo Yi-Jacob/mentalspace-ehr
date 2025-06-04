@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 const SessionCompletionTracking: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'signed' | 'unsigned' | 'locked'>('all');
-  const [providerFilter, setProviderFilter] = useState('');
+  const [providerFilter, setProviderFilter] = useState('all');
 
   const { data: providers } = useQuery({
     queryKey: ['providers-for-sessions'],
@@ -134,7 +133,7 @@ const SessionCompletionTracking: React.FC = () => {
               <SelectValue placeholder="Filter by provider..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Providers</SelectItem>
+              <SelectItem value="all">All Providers</SelectItem>
               {providers?.map((provider) => (
                 <SelectItem key={provider.id} value={provider.id}>
                   {provider.first_name} {provider.last_name}
@@ -248,7 +247,7 @@ const SessionCompletionTracking: React.FC = () => {
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No session completions found</h3>
           <p className="text-gray-600 mb-4">
-            {searchTerm || statusFilter !== 'all' || providerFilter
+            {searchTerm || statusFilter !== 'all' || providerFilter !== 'all'
               ? 'No sessions match your search criteria.'
               : 'Session completions will appear here as appointments are completed.'
             }
