@@ -26,6 +26,7 @@ import MiscellaneousNoteForm from '@/components/documentation/miscellaneous-note
 import Message from '@/pages/Message';
 import Billing from '@/pages/Billing';
 import Compliance from '@/pages/Compliance';
+import CRM from '@/pages/CRM';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 import { cn } from '@/lib/utils';
@@ -94,6 +95,7 @@ const MainLayout: React.FC = () => {
           <Route path="/message" element={<Message />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/compliance" element={<Compliance />} />
+          <Route path="/crm" element={<CRM />} />
           <Route path="/staff" element={<StaffManagementPage />} />
           <Route path="/staff/add" element={<AddStaffPage />} />
           <Route path="*" element={<NotFound />} />
