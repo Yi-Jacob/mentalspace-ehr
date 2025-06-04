@@ -43,7 +43,7 @@ const ProviderCompensationConfig: React.FC = () => {
         .from('provider_compensation_config')
         .select(`
           *,
-          provider:users(first_name, last_name),
+          provider:users!provider_compensation_config_provider_id_fkey(first_name, last_name),
           created_by_user:users!provider_compensation_config_created_by_fkey(first_name, last_name)
         `)
         .order('created_at', { ascending: false });

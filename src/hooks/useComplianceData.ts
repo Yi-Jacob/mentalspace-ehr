@@ -10,7 +10,7 @@ export const useCompensationConfigs = (providerId?: string) => {
         .from('provider_compensation_config')
         .select(`
           *,
-          provider:users(first_name, last_name),
+          provider:users!provider_compensation_config_provider_id_fkey(first_name, last_name),
           created_by_user:users!provider_compensation_config_created_by_fkey(first_name, last_name)
         `)
         .order('created_at', { ascending: false });
@@ -80,7 +80,7 @@ export const useTimeEntries = (filters?: {
         .from('time_entries')
         .select(`
           *,
-          user:users(first_name, last_name),
+          user:users!time_entries_user_id_fkey(first_name, last_name),
           approved_by_user:users!time_entries_approved_by_fkey(first_name, last_name)
         `)
         .order('entry_date', { ascending: false });
@@ -109,7 +109,7 @@ export const useTimeEntries = (filters?: {
 
 export const usePaymentCalculations = (filters?: {
   userId?: string;
-  status?: 'pending' | 'processed' | 'paid' | 'cancelled';
+  status?: 'pending' | 'completed' | 'cancelled';
   dateRange?: { start: string; end: string };
 }) => {
   return useQuery({
@@ -119,7 +119,7 @@ export const usePaymentCalculations = (filters?: {
         .from('payment_calculations')
         .select(`
           *,
-          user:users(first_name, last_name),
+          user:users!payment_calculations_user_id_fkey(first_name, last_name),
           processed_by_user:users!payment_calculations_processed_by_fkey(first_name, last_name)
         `)
         .order('pay_period_start', { ascending: false });
@@ -155,7 +155,7 @@ export const useComplianceDeadlines = (filters?: {
         .from('compliance_deadlines')
         .select(`
           *,
-          provider:users(first_name, last_name)
+          provider:users!compliance_deadlines_provider_id_fkey(first_name, last_name)
         `)
         .order('deadline_date', { ascending: true });
 

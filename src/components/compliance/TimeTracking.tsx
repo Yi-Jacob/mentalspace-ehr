@@ -24,7 +24,7 @@ const TimeTracking: React.FC = () => {
         .from('time_entries')
         .select(`
           *,
-          user:users(first_name, last_name),
+          user:users!time_entries_user_id_fkey(first_name, last_name),
           approved_by_user:users!time_entries_approved_by_fkey(first_name, last_name)
         `)
         .gte('entry_date', selectedDate)

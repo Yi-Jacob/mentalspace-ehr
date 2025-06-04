@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { DollarSign, Calendar, Clock, FileText, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const PaymentCalculations: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processed' | 'paid' | 'cancelled'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
   const [periodFilter, setPeriodFilter] = useState('current');
 
   const { data: paymentCalculations, isLoading } = useQuery({
@@ -19,7 +18,7 @@ const PaymentCalculations: React.FC = () => {
         .from('payment_calculations')
         .select(`
           *,
-          user:users(first_name, last_name),
+          user:users!payment_calculations_user_id_fkey(first_name, last_name),
           processed_by_user:users!payment_calculations_processed_by_fkey(first_name, last_name)
         `)
         .order('pay_period_start', { ascending: false });
@@ -47,10 +46,8 @@ const PaymentCalculations: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid':
+      case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'processed':
-        return 'bg-blue-100 text-blue-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -71,15 +68,14 @@ const PaymentCalculations: React.FC = () => {
       {/* Header Actions */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Select value={statusFilter} onValueChange={(value: 'all' | 'pending' | 'processed' | 'paid' | 'cancelled') => setStatusFilter(value)}>
+          <Select value={statusFilter} onValueChange={(value: 'all' | 'pending' | 'completed' | 'cancelled') => setStatusFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processed">Processed</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
@@ -122,9 +118,9 @@ const PaymentCalculations: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Processed</p>
+                <p className="text-sm font-medium text-gray-600">Total Completed</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  ${paymentCalculations?.filter(p => p.status === 'processed').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
+                  ${paymentCalculations?.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
                 </p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
@@ -138,7 +134,7 @@ const PaymentCalculations: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Paid</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${paymentCalculations?.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
+                  ${paymentCalculations?.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
                 </p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />

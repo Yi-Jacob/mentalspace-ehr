@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ const ComplianceDeadlines: React.FC = () => {
         .from('compliance_deadlines')
         .select(`
           *,
-          provider:users(first_name, last_name)
+          provider:users!compliance_deadlines_provider_id_fkey(first_name, last_name)
         `)
         .order('deadline_date', { ascending: true });
 
@@ -44,7 +45,7 @@ const ComplianceDeadlines: React.FC = () => {
         .from('deadline_exception_requests')
         .select(`
           *,
-          provider:users(first_name, last_name),
+          provider:users!deadline_exception_requests_provider_id_fkey(first_name, last_name),
           reviewed_by_user:users!deadline_exception_requests_reviewed_by_fkey(first_name, last_name)
         `)
         .order('created_at', { ascending: false });

@@ -34,13 +34,19 @@ const ComplianceReports: React.FC = () => {
         
         supabase
           .from('session_completions')
-          .select('*, provider:users(first_name, last_name)')
+          .select(`
+            *, 
+            provider:users!session_completions_provider_id_fkey(first_name, last_name)
+          `)
           .gte('session_date', startDate.toISOString().split('T')[0])
           .lte('session_date', endDate.toISOString().split('T')[0]),
         
         supabase
           .from('time_entries')
-          .select('*, user:users(first_name, last_name)')
+          .select(`
+            *, 
+            user:users!time_entries_user_id_fkey(first_name, last_name)
+          `)
           .gte('entry_date', startDate.toISOString().split('T')[0])
           .lte('entry_date', endDate.toISOString().split('T')[0]),
         
