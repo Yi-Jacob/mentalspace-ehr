@@ -18,6 +18,7 @@ import Message from "./pages/Message";
 import Compliance from "./pages/Compliance";
 import CRM from "./pages/CRM";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -48,6 +49,7 @@ function App() {
                             <Route path="/compliance" element={<Compliance />} />
                             <Route path="/crm" element={<CRM />} />
                             <Route path="/reports" element={<Reports />} />
+                            <Route path="/settings" element={<Settings />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>
