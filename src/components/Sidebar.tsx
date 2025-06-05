@@ -14,7 +14,6 @@ import {
   Settings,
   Stethoscope,
   LogOut,
-  Home,
   Menu,
   ChevronLeft
 } from 'lucide-react';
@@ -57,6 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     if (currentPath.startsWith('/documentation')) return 'documentation';
     if (currentPath.startsWith('/scheduling')) return 'scheduling';
     if (currentPath.startsWith('/clients')) return 'clients';
+    if (currentPath.startsWith('/reports')) return 'reports';
     
     const matchedItem = menuItems.find(item => currentPath.startsWith(item.path) && item.path !== '/');
     return matchedItem?.id || 'dashboard';
@@ -75,10 +75,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   return (
     <div 
       className={cn(
-        "bg-gradient-to-b from-blue-900 to-blue-800 min-h-screen shadow-xl flex flex-col fixed left-0 top-0 z-50 transition-all duration-300 group",
+        "bg-gradient-to-b from-blue-900 to-blue-800 min-h-screen shadow-xl flex flex-col fixed left-0 top-0 z-50 transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}
-      data-collapsed={isCollapsed}
     >
       {/* Header with toggle button */}
       <div className="p-4">
