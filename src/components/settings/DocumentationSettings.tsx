@@ -11,6 +11,7 @@ const DocumentationSettings: React.FC = () => {
   const { toast } = useToast();
   const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
+  // Ensure we have safe defaults
   const documentationSettings = settings?.documentation_settings || {
     serviceCptCodes: {
       defaultCodes: ['90834', '90837', '90847', '90853'],
@@ -104,19 +105,19 @@ const DocumentationSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <ServiceCptCodesSettings
-        settings={(documentationSettings as any)?.serviceCptCodes || {}}
+        settings={documentationSettings.serviceCptCodes || {}}
         onSettingsChange={updateServiceCptCodesSettings}
         onAddCptCode={handleAddCptCode}
       />
 
       <NotesSettings
-        settings={(documentationSettings as any)?.notesSettings || {}}
+        settings={documentationSettings.notesSettings || {}}
         onSettingsChange={updateNotesSettings}
         onManageDictionary={handleManageDictionary}
       />
 
       <HealthInformationExchangeSettings
-        settings={(documentationSettings as any)?.healthInformationExchange || {}}
+        settings={documentationSettings.healthInformationExchange || {}}
         onSettingsChange={updateHealthInformationExchangeSettings}
         onConnectHIE={handleConnectHIE}
       />

@@ -24,7 +24,7 @@ interface PracticeSettings {
 // Helper function to ensure we have an object
 const ensureObject = (value: any): Record<string, any> => {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return value;
+    return value as Record<string, any>;
   }
   return {};
 };

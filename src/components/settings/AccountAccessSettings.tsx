@@ -13,20 +13,27 @@ import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 const AccountAccessSettings: React.FC = () => {
   const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
-  const practiceInfo = {
-    practice_name: settings?.practice_name || '',
-    practice_address: settings?.practice_address || {},
-    practice_contact: settings?.practice_contact || {},
-    business_hours: settings?.business_hours || {},
-    security_settings: settings?.security_settings || {}
-  };
+  // Ensure we have safe defaults for all objects
+  const practiceAddress = settings?.practice_address || {};
+  const practiceContact = settings?.practice_contact || {};
+  const businessHours = settings?.business_hours || {};
+  const securitySettings = settings?.security_settings || {};
 
   const updatePracticeInfo = (field: string, value: any) => {
     updateSettings({ [field]: value });
   };
 
   const updateNestedSetting = (category: string, field: string, value: any) => {
-    const currentSettings = practiceInfo[category as keyof typeof practiceInfo] || {};
+    const currentSettings = (() => {
+      switch (category) {
+        case 'practice_address': return practiceAddress;
+        case 'practice_contact': return practiceContact;
+        case 'business_hours': return businessHours;
+        case 'security_settings': return securitySettings;
+        default: return {};
+      }
+    })();
+
     updateSettings({
       [category]: {
         ...currentSettings,
@@ -58,7 +65,7 @@ const AccountAccessSettings: React.FC = () => {
             <Label htmlFor="practiceName">Practice Name</Label>
             <Input
               id="practiceName"
-              value={practiceInfo.practice_name}
+              value={settings?.practice_name || ''}
               onChange={(e) => updatePracticeInfo('practice_name', e.target.value)}
               placeholder="Enter practice name"
             />
@@ -68,7 +75,7 @@ const AccountAccessSettings: React.FC = () => {
             <Label htmlFor="practiceAddress">Practice Address</Label>
             <Textarea
               id="practiceAddress"
-              value={(practiceInfo.practice_address as any)?.full_address || ''}
+              value={practiceAddress.full_address || ''}
               onChange={(e) => updateNestedSetting('practice_address', 'full_address', e.target.value)}
               placeholder="Enter practice address"
             />
@@ -79,7 +86,7 @@ const AccountAccessSettings: React.FC = () => {
               <Label htmlFor="practicePhone">Phone Number</Label>
               <Input
                 id="practicePhone"
-                value={(practiceInfo.practice_contact as any)?.phone || ''}
+                value={practiceContact.phone || ''}
                 onChange={(e) => updateNestedSetting('practice_contact', 'phone', e.target.value)}
                 placeholder="(555) 123-4567"
               />
@@ -89,7 +96,7 @@ const AccountAccessSettings: React.FC = () => {
               <Input
                 id="practiceEmail"
                 type="email"
-                value={(practiceInfo.practice_contact as any)?.email || ''}
+                value={practiceContact.email || ''}
                 onChange={(e) => updateNestedSetting('practice_contact', 'email', e.target.value)}
                 placeholder="practice@example.com"
               />
@@ -113,7 +120,7 @@ const AccountAccessSettings: React.FC = () => {
               <Input
                 id="openTime"
                 type="time"
-                value={(practiceInfo.business_hours as any)?.open_time || '09:00'}
+                value={businessHours.open_time || '09:00'}
                 onChange={(e) => updateNestedSetting('business_hours', 'open_time', e.target.value)}
               />
             </div>
@@ -122,7 +129,7 @@ const AccountAccessSettings: React.FC = () => {
               <Input
                 id="closeTime"
                 type="time"
-                value={(practiceInfo.business_hours as any)?.close_time || '17:00'}
+                value={businessHours.close_time || '17:00'}
                 onChange={(e) => updateNestedSetting('business_hours', 'close_time', e.target.value)}
               />
             </div>
@@ -131,7 +138,7 @@ const AccountAccessSettings: React.FC = () => {
           <div>
             <Label htmlFor="timezone">Time Zone</Label>
             <Select 
-              value={(practiceInfo.business_hours as any)?.timezone || 'America/New_York'}
+              value={businessHours.timezone || 'America/New_York'}
               onValueChange={(value) => updateNestedSetting('business_hours', 'timezone', value)}
             >
               <SelectTrigger>
@@ -161,7 +168,7 @@ const AccountAccessSettings: React.FC = () => {
             <Label htmlFor="twoFactor">Enable Two-Factor Authentication</Label>
             <Switch
               id="twoFactor"
-              checked={(practiceInfo.security_settings as any)?.two_factor_enabled || false}
+              checked={securitySettings.two_factor_enabled || false}
               onCheckedChange={(checked) => updateNestedSetting('security_settings', 'two_factor_enabled', checked)}
             />
           </div>
@@ -170,7 +177,7 @@ const AccountAccessSettings: React.FC = () => {
             <Label htmlFor="sessionTimeout">Auto-logout after inactivity</Label>
             <Switch
               id="sessionTimeout"
-              checked={(practiceInfo.security_settings as any)?.session_timeout_enabled || false}
+              checked={securitySettings.session_timeout_enabled || false}
               onCheckedChange={(checked) => updateNestedSetting('security_settings', 'session_timeout_enabled', checked)}
             />
           </div>
@@ -178,7 +185,7 @@ const AccountAccessSettings: React.FC = () => {
           <div>
             <Label htmlFor="sessionTimeoutMinutes">Session timeout (minutes)</Label>
             <Select 
-              value={String((practiceInfo.security_settings as any)?.session_timeout_minutes || 30)}
+              value={String(securitySettings.session_timeout_minutes || 30)}
               onValueChange={(value) => updateNestedSetting('security_settings', 'session_timeout_minutes', Number(value))}
             >
               <SelectTrigger>
