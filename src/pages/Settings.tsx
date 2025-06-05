@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, User, Calendar, FileText, CreditCard } from 'lucide-react';
+import { Settings as SettingsIcon, User, Calendar, FileText, CreditCard } from 'lucide-react';
 import AccountAccessSettings from '@/components/settings/AccountAccessSettings';
 import PortalSchedulingSettings from '@/components/settings/PortalSchedulingSettings';
 import DocumentationSettings from '@/components/settings/DocumentationSettings';
@@ -15,7 +15,7 @@ const Settings = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold flex items-center space-x-3">
-          <Settings className="h-8 w-8" />
+          <SettingsIcon className="h-8 w-8" />
           <span>Practice Settings</span>
         </h1>
         <p className="text-gray-600 mt-2">
