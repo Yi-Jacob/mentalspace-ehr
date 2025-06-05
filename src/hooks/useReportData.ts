@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -209,17 +208,31 @@ export const useStaffReportsData = (timeRange: string = '30') => {
     queryFn: async () => {
       console.log('Fetching staff reports data for timeRange:', timeRange);
       
-      // Get users data
+      // Get users data with proper role information from user_roles table
       const { data: users, error: usersError } = await supabase
         .from('users')
-        .select('id, first_name, last_name, role')
-        .eq('is_active', true);
+        .select(`
+          id,
+          first_name,
+          last_name,
+          is_active,
+          user_roles!inner(role, is_active)
+        `)
+        .eq('is_active', true)
+        .eq('user_roles.is_active', true)
+        .eq('user_roles.role', 'Clinician');
 
       if (usersError) {
         console.error('Error fetching users:', usersError);
+        // Return mock data if query fails
+        return {
+          staffProductivity: [],
+          totalStaff: 0,
+          avgCompliance: 0
+        };
       }
 
-      // Mock staff productivity data
+      // Mock staff productivity data based on actual users
       const staffProductivity = users?.map(user => ({
         name: `${user.first_name} ${user.last_name}`,
         totalSessions: Math.floor(Math.random() * 50) + 20,
@@ -231,7 +244,9 @@ export const useStaffReportsData = (timeRange: string = '30') => {
       return {
         staffProductivity,
         totalStaff: users?.length || 0,
-        avgCompliance: staffProductivity.reduce((acc, p) => acc + p.complianceRate, 0) / staffProductivity.length || 0
+        avgCompliance: staffProductivity.length > 0 
+          ? staffProductivity.reduce((acc, p) => acc + p.complianceRate, 0) / staffProductivity.length 
+          : 0
       };
     },
     staleTime: 5 * 60 * 1000,
