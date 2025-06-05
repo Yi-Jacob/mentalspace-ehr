@@ -12,8 +12,10 @@ import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 const BillingSettings: React.FC = () => {
   const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
-  // Ensure we have safe defaults
-  const billingSettings = settings?.billing_settings || {};
+  // Safely extract billing settings with defaults
+  const billingSettings = (settings?.billing_settings && typeof settings.billing_settings === 'object') 
+    ? settings.billing_settings as Record<string, any> 
+    : {};
 
   const updateBillingSetting = (field: string, value: any) => {
     updateSettings({
@@ -47,7 +49,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="creditCards">Accept credit cards</Label>
             <Switch
               id="creditCards"
-              checked={billingSettings.accept_credit_cards || false}
+              checked={(billingSettings.accept_credit_cards as boolean) || false}
               onCheckedChange={(checked) => updateBillingSetting('accept_credit_cards', checked)}
             />
           </div>
@@ -56,7 +58,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="ach">Accept ACH/Bank transfers</Label>
             <Switch
               id="ach"
-              checked={billingSettings.accept_ach || false}
+              checked={(billingSettings.accept_ach as boolean) || false}
               onCheckedChange={(checked) => updateBillingSetting('accept_ach', checked)}
             />
           </div>
@@ -64,7 +66,7 @@ const BillingSettings: React.FC = () => {
           <div>
             <Label htmlFor="processor">Payment processor</Label>
             <Select 
-              value={billingSettings.payment_processor || 'stripe'}
+              value={(billingSettings.payment_processor as string) || 'stripe'}
               onValueChange={(value) => updateBillingSetting('payment_processor', value)}
             >
               <SelectTrigger>
@@ -96,7 +98,7 @@ const BillingSettings: React.FC = () => {
               <Input
                 id="defaultRate"
                 type="number"
-                value={billingSettings.default_hourly_rate || ''}
+                value={(billingSettings.default_hourly_rate as number) || ''}
                 onChange={(e) => updateBillingSetting('default_hourly_rate', Number(e.target.value))}
                 placeholder="150"
               />
@@ -104,7 +106,7 @@ const BillingSettings: React.FC = () => {
             <div>
               <Label htmlFor="currency">Currency</Label>
               <Select 
-                value={billingSettings.currency || 'USD'}
+                value={(billingSettings.currency as string) || 'USD'}
                 onValueChange={(value) => updateBillingSetting('currency', value)}
               >
                 <SelectTrigger>
@@ -124,7 +126,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="autoInvoice">Auto-generate invoices</Label>
             <Switch
               id="autoInvoice"
-              checked={billingSettings.auto_generate_invoices || false}
+              checked={(billingSettings.auto_generate_invoices as boolean) || false}
               onCheckedChange={(checked) => updateBillingSetting('auto_generate_invoices', checked)}
             />
           </div>
@@ -132,7 +134,7 @@ const BillingSettings: React.FC = () => {
           <div>
             <Label htmlFor="invoiceFrequency">Invoice frequency</Label>
             <Select 
-              value={billingSettings.invoice_frequency || 'monthly'}
+              value={(billingSettings.invoice_frequency as string) || 'monthly'}
               onValueChange={(value) => updateBillingSetting('invoice_frequency', value)}
             >
               <SelectTrigger>
@@ -162,7 +164,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="insuranceBilling">Enable insurance billing</Label>
             <Switch
               id="insuranceBilling"
-              checked={billingSettings.insurance_billing_enabled || false}
+              checked={(billingSettings.insurance_billing_enabled as boolean) || false}
               onCheckedChange={(checked) => updateBillingSetting('insurance_billing_enabled', checked)}
             />
           </div>
@@ -171,7 +173,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="electronicClaims">Submit electronic claims</Label>
             <Switch
               id="electronicClaims"
-              checked={billingSettings.electronic_claims || false}
+              checked={(billingSettings.electronic_claims as boolean) || false}
               onCheckedChange={(checked) => updateBillingSetting('electronic_claims', checked)}
             />
           </div>
@@ -179,7 +181,7 @@ const BillingSettings: React.FC = () => {
           <div>
             <Label htmlFor="clearinghouse">Clearinghouse</Label>
             <Select 
-              value={billingSettings.clearinghouse || 'change_healthcare'}
+              value={(billingSettings.clearinghouse as string) || 'change_healthcare'}
               onValueChange={(value) => updateBillingSetting('clearinghouse', value)}
             >
               <SelectTrigger>

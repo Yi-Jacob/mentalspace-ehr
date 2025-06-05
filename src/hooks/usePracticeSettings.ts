@@ -21,10 +21,22 @@ interface PracticeSettings {
   updated_at?: string;
 }
 
-// Helper function to ensure we have an object
-const ensureObject = (value: any): Record<string, any> => {
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
+// Helper function to safely convert JSONB to object
+const safeJsonToObject = (value: any): Record<string, any> => {
+  if (value === null || value === undefined) {
+    return {};
+  }
+  if (typeof value === 'object' && !Array.isArray(value)) {
     return value as Record<string, any>;
+  }
+  // If it's a string, try to parse it as JSON
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
   }
   return {};
 };
@@ -59,18 +71,18 @@ export const usePracticeSettings = () => {
         throw error;
       }
 
-      // Ensure all JSONB fields are objects
+      // Safely convert all JSONB fields to objects
       if (data) {
         return {
           ...data,
-          practice_address: ensureObject(data.practice_address),
-          practice_contact: ensureObject(data.practice_contact),
-          business_hours: ensureObject(data.business_hours),
-          security_settings: ensureObject(data.security_settings),
-          portal_settings: ensureObject(data.portal_settings),
-          scheduling_settings: ensureObject(data.scheduling_settings),
-          documentation_settings: ensureObject(data.documentation_settings),
-          billing_settings: ensureObject(data.billing_settings),
+          practice_address: safeJsonToObject(data.practice_address),
+          practice_contact: safeJsonToObject(data.practice_contact),
+          business_hours: safeJsonToObject(data.business_hours),
+          security_settings: safeJsonToObject(data.security_settings),
+          portal_settings: safeJsonToObject(data.portal_settings),
+          scheduling_settings: safeJsonToObject(data.scheduling_settings),
+          documentation_settings: safeJsonToObject(data.documentation_settings),
+          billing_settings: safeJsonToObject(data.billing_settings),
         };
       }
 

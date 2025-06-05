@@ -13,19 +13,32 @@ const PortalSchedulingSettings: React.FC = () => {
   const [activeSection, setActiveSection] = useState('portal');
   const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
-  // Ensure we have safe defaults
-  const portalSettings = settings?.portal_settings || {};
-  const schedulingSettings = settings?.scheduling_settings || {};
+  // Safely extract portal and scheduling settings with defaults
+  const safePortalSettings = (() => {
+    const portalSettings = settings?.portal_settings;
+    if (portalSettings && typeof portalSettings === 'object' && !Array.isArray(portalSettings)) {
+      return portalSettings as Record<string, any>;
+    }
+    return {};
+  })();
+
+  const safeSchedulingSettings = (() => {
+    const schedulingSettings = settings?.scheduling_settings;
+    if (schedulingSettings && typeof schedulingSettings === 'object' && !Array.isArray(schedulingSettings)) {
+      return schedulingSettings as Record<string, any>;
+    }
+    return {};
+  })();
 
   const updatePortalSettings = (newSettings: any) => {
     updateSettings({
-      portal_settings: { ...portalSettings, ...newSettings }
+      portal_settings: { ...safePortalSettings, ...newSettings }
     });
   };
 
   const updateSchedulingSettings = (newSettings: any) => {
     updateSettings({
-      scheduling_settings: { ...schedulingSettings, ...newSettings }
+      scheduling_settings: { ...safeSchedulingSettings, ...newSettings }
     });
   };
 
@@ -42,35 +55,35 @@ const PortalSchedulingSettings: React.FC = () => {
       case 'portal':
         return (
           <ClientPortalSettings
-            settings={portalSettings.clientPortal || {}}
+            settings={(safePortalSettings.clientPortal as Record<string, any>) || {}}
             onSettingsChange={(newSettings) => updatePortalSettings({ clientPortal: newSettings })}
           />
         );
       case 'messaging':
         return (
           <SecureMessagingSettings
-            settings={portalSettings.messaging || {}}
+            settings={(safePortalSettings.messaging as Record<string, any>) || {}}
             onSettingsChange={(newSettings) => updatePortalSettings({ messaging: newSettings })}
           />
         );
       case 'reminders':
         return (
           <AppointmentRemindersSettings
-            settings={schedulingSettings.reminders || {}}
+            settings={(safeSchedulingSettings.reminders as Record<string, any>) || {}}
             onSettingsChange={(newSettings) => updateSchedulingSettings({ reminders: newSettings })}
           />
         );
       case 'calendar':
         return (
           <CalendarSyncSettings
-            settings={schedulingSettings.calendarSync || {}}
+            settings={(safeSchedulingSettings.calendarSync as Record<string, any>) || {}}
             onSettingsChange={(newSettings) => updateSchedulingSettings({ calendarSync: newSettings })}
           />
         );
       case 'locations':
         return (
           <MultipleLocationsSettings
-            settings={schedulingSettings.locations || {}}
+            settings={(safeSchedulingSettings.locations as Record<string, any>) || {}}
             onSettingsChange={(newSettings) => updateSchedulingSettings({ locations: newSettings })}
           />
         );

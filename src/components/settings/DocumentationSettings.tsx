@@ -11,12 +11,22 @@ const DocumentationSettings: React.FC = () => {
   const { toast } = useToast();
   const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
-  // Ensure we have safe defaults
-  const documentationSettings = settings?.documentation_settings || {
+  // Safely extract documentation settings with proper defaults
+  const safeDocumentationSettings = (() => {
+    const docSettings = settings?.documentation_settings;
+    if (docSettings && typeof docSettings === 'object' && !Array.isArray(docSettings)) {
+      return docSettings as Record<string, any>;
+    }
+    return {};
+  })();
+
+  // Provide comprehensive defaults
+  const documentationSettings = {
     serviceCptCodes: {
       defaultCodes: ['90834', '90837', '90847', '90853'],
       customCodes: [],
       allowCustomCodes: true,
+      ...(safeDocumentationSettings.serviceCptCodes || {})
     },
     notesSettings: {
       autoSave: true,
@@ -28,12 +38,14 @@ const DocumentationSettings: React.FC = () => {
       requiredFields: ['presenting_problem', 'mental_status', 'plan'],
       signatureRequired: true,
       cosignatureRequired: false,
+      ...(safeDocumentationSettings.notesSettings || {})
     },
     healthInformationExchange: {
       enabled: false,
       registries: [],
       autoQuery: false,
       shareLevel: 'minimal',
+      ...(safeDocumentationSettings.healthInformationExchange || {})
     }
   };
 
@@ -105,19 +117,19 @@ const DocumentationSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <ServiceCptCodesSettings
-        settings={documentationSettings.serviceCptCodes || {}}
+        settings={documentationSettings.serviceCptCodes}
         onSettingsChange={updateServiceCptCodesSettings}
         onAddCptCode={handleAddCptCode}
       />
 
       <NotesSettings
-        settings={documentationSettings.notesSettings || {}}
+        settings={documentationSettings.notesSettings}
         onSettingsChange={updateNotesSettings}
         onManageDictionary={handleManageDictionary}
       />
 
       <HealthInformationExchangeSettings
-        settings={documentationSettings.healthInformationExchange || {}}
+        settings={documentationSettings.healthInformationExchange}
         onSettingsChange={updateHealthInformationExchangeSettings}
         onConnectHIE={handleConnectHIE}
       />
