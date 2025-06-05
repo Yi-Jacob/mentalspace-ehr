@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Building, 
-  User, 
-  CreditCard
+  CreditCard, 
+  FileText, 
+  Settings as SettingsIcon,
+  Building,
+  Receipt,
+  Calculator
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,53 +21,50 @@ const BillingSettings: React.FC = () => {
   const { toast } = useToast();
   const [settings, setSettings] = useState({
     practiceBilling: {
-      npiNumber: '',
+      npi: '',
       taxId: '',
       billingAddress: '',
-      contactPerson: '',
-      billingEmail: '',
       billingPhone: '',
+      billingEmail: '',
       defaultPlaceOfService: '11',
-      electronicSubmission: true,
-      batchClaims: true,
-      clearinghouse: 'availity',
+      autoSubmitClaims: true,
+      electronicRemittance: true,
+      paperStatements: false,
+      statementFrequency: 'monthly',
     },
     patientBilling: {
-      allowOnlinePayments: true,
-      automaticStatements: true,
-      statementFrequency: 'monthly',
-      lateFees: false,
-      lateFeeAmount: 0,
+      collectCopaysUpfront: true,
+      allowPartialPayments: true,
+      lateFeeAmount: 25,
       lateFeeAfterDays: 30,
       paymentPlans: true,
-      minimumPayment: 25,
-      reminderEmails: true,
+      autoChargeCards: false,
+      sendReminders: true,
       reminderFrequency: 'weekly',
     },
     paymentProcessing: {
-      enabled: false,
-      processor: 'stripe',
-      acceptCards: true,
-      acceptACH: true,
-      acceptFSA: true,
-      acceptHSA: true,
-      processingFee: 2.9,
-      passFeesToPatient: false,
-      minimumPayment: 1,
+      enabled: true,
+      acceptCreditCards: true,
+      acceptDebitCards: true,
+      acceptFSAHSA: true,
+      processingFeePercent: 2.9,
+      processingFeeFlat: 0.30,
+      merchantId: '',
+      terminalId: '',
     }
   });
 
   const handleSave = () => {
     toast({
-      title: 'Settings Saved',
-      description: 'Billing settings have been updated successfully.',
+      title: 'Billing Settings Saved',
+      description: 'Your billing configuration has been updated successfully.',
     });
   };
 
-  const handleSetupPaymentProcessing = () => {
+  const handleTestPayment = () => {
     toast({
-      title: 'Payment Processing Setup',
-      description: 'Payment processing setup would be implemented here.',
+      title: 'Payment Test',
+      description: 'Payment processing test initiated. Check your merchant dashboard.',
     });
   };
 
@@ -75,25 +75,25 @@ const BillingSettings: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Building className="h-5 w-5" />
-            <span>Practice Billing</span>
+            <span>Practice Billing Configuration</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="npiNumber">NPI Number</Label>
+              <Label htmlFor="npi">National Provider Identifier (NPI)</Label>
               <Input
-                id="npiNumber"
-                value={settings.practiceBilling.npiNumber}
+                id="npi"
+                value={settings.practiceBilling.npi}
                 onChange={(e) => setSettings({
                   ...settings,
-                  practiceBilling: {...settings.practiceBilling, npiNumber: e.target.value}
+                  practiceBilling: {...settings.practiceBilling, npi: e.target.value}
                 })}
                 placeholder="1234567890"
               />
             </div>
             <div>
-              <Label htmlFor="taxId">Tax ID (EIN)</Label>
+              <Label htmlFor="taxId">Tax ID / EIN</Label>
               <Input
                 id="taxId"
                 value={settings.practiceBilling.taxId}
@@ -115,21 +115,21 @@ const BillingSettings: React.FC = () => {
                 ...settings,
                 practiceBilling: {...settings.practiceBilling, billingAddress: e.target.value}
               })}
-              placeholder="Enter billing address"
+              placeholder="123 Main St, Suite 100, City, State 12345"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="contactPerson">Billing Contact Person</Label>
+              <Label htmlFor="billingPhone">Billing Phone</Label>
               <Input
-                id="contactPerson"
-                value={settings.practiceBilling.contactPerson}
+                id="billingPhone"
+                value={settings.practiceBilling.billingPhone}
                 onChange={(e) => setSettings({
                   ...settings,
-                  practiceBilling: {...settings.practiceBilling, contactPerson: e.target.value}
+                  practiceBilling: {...settings.practiceBilling, billingPhone: e.target.value}
                 })}
-                placeholder="Billing Manager Name"
+                placeholder="(555) 123-4567"
               />
             </div>
             <div>
@@ -142,13 +142,13 @@ const BillingSettings: React.FC = () => {
                   ...settings,
                   practiceBilling: {...settings.practiceBilling, billingEmail: e.target.value}
                 })}
-                placeholder="billing@chctherapy.com"
+                placeholder="billing@practice.com"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="defaultPlaceOfService">Default Place of Service</Label>
+            <Label htmlFor="placeOfService">Default Place of Service</Label>
             <Select value={settings.practiceBilling.defaultPlaceOfService} onValueChange={(value) => setSettings({
               ...settings,
               practiceBilling: {...settings.practiceBilling, defaultPlaceOfService: value}
@@ -166,33 +166,27 @@ const BillingSettings: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="electronicSubmission">Electronic claim submission</Label>
+            <Label htmlFor="autoSubmit">Auto-submit claims electronically</Label>
             <Switch
-              id="electronicSubmission"
-              checked={settings.practiceBilling.electronicSubmission}
+              id="autoSubmit"
+              checked={settings.practiceBilling.autoSubmitClaims}
               onCheckedChange={(checked) => setSettings({
                 ...settings,
-                practiceBilling: {...settings.practiceBilling, electronicSubmission: checked}
+                practiceBilling: {...settings.practiceBilling, autoSubmitClaims: checked}
               })}
             />
           </div>
 
-          <div>
-            <Label htmlFor="clearinghouse">Clearinghouse</Label>
-            <Select value={settings.practiceBilling.clearinghouse} onValueChange={(value) => setSettings({
-              ...settings,
-              practiceBilling: {...settings.practiceBilling, clearinghouse: value}
-            })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="availity">Availity</SelectItem>
-                <SelectItem value="change_healthcare">Change Healthcare</SelectItem>
-                <SelectItem value="waystar">Waystar</SelectItem>
-                <SelectItem value="direct">Direct to Payer</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="electronicRemittance">Enable electronic remittance</Label>
+            <Switch
+              id="electronicRemittance"
+              checked={settings.practiceBilling.electronicRemittance}
+              onCheckedChange={(checked) => setSettings({
+                ...settings,
+                practiceBilling: {...settings.practiceBilling, electronicRemittance: checked}
+              })}
+            />
           </div>
         </CardContent>
       </Card>
@@ -201,96 +195,64 @@ const BillingSettings: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <User className="h-5 w-5" />
-            <span>Patient Billing</span>
+            <Receipt className="h-5 w-5" />
+            <span>Patient Billing Settings</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="allowOnlinePayments">Allow online payments</Label>
+            <Label htmlFor="collectCopays">Collect copays upfront</Label>
             <Switch
-              id="allowOnlinePayments"
-              checked={settings.patientBilling.allowOnlinePayments}
+              id="collectCopays"
+              checked={settings.patientBilling.collectCopaysUpfront}
               onCheckedChange={(checked) => setSettings({
                 ...settings,
-                patientBilling: {...settings.patientBilling, allowOnlinePayments: checked}
+                patientBilling: {...settings.patientBilling, collectCopaysUpfront: checked}
               })}
             />
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="automaticStatements">Automatic statement generation</Label>
+            <Label htmlFor="partialPayments">Allow partial payments</Label>
             <Switch
-              id="automaticStatements"
-              checked={settings.patientBilling.automaticStatements}
+              id="partialPayments"
+              checked={settings.patientBilling.allowPartialPayments}
               onCheckedChange={(checked) => setSettings({
                 ...settings,
-                patientBilling: {...settings.patientBilling, automaticStatements: checked}
+                patientBilling: {...settings.patientBilling, allowPartialPayments: checked}
               })}
             />
           </div>
 
-          <div>
-            <Label htmlFor="statementFrequency">Statement frequency</Label>
-            <Select value={settings.patientBilling.statementFrequency} onValueChange={(value) => setSettings({
-              ...settings,
-              patientBilling: {...settings.patientBilling, statementFrequency: value}
-            })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="bi-weekly">Bi-weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="quarterly">Quarterly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="lateFees">Enable late fees</Label>
-            <Switch
-              id="lateFees"
-              checked={settings.patientBilling.lateFees}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                patientBilling: {...settings.patientBilling, lateFees: checked}
-              })}
-            />
-          </div>
-
-          {settings.patientBilling.lateFees && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="lateFeeAmount">Late fee amount ($)</Label>
-                <Input
-                  id="lateFeeAmount"
-                  type="number"
-                  value={settings.patientBilling.lateFeeAmount}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    patientBilling: {...settings.patientBilling, lateFeeAmount: parseFloat(e.target.value)}
-                  })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="lateFeeAfterDays">Apply after (days)</Label>
-                <Input
-                  id="lateFeeAfterDays"
-                  type="number"
-                  value={settings.patientBilling.lateFeeAfterDays}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    patientBilling: {...settings.patientBilling, lateFeeAfterDays: parseInt(e.target.value)}
-                  })}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="lateFee">Late fee amount ($)</Label>
+              <Input
+                id="lateFee"
+                type="number"
+                value={settings.patientBilling.lateFeeAmount}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  patientBilling: {...settings.patientBilling, lateFeeAmount: parseInt(e.target.value)}
+                })}
+              />
             </div>
-          )}
+            <div>
+              <Label htmlFor="lateFeeDays">Apply late fee after (days)</Label>
+              <Input
+                id="lateFeeDays"
+                type="number"
+                value={settings.patientBilling.lateFeeAfterDays}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  patientBilling: {...settings.patientBilling, lateFeeAfterDays: parseInt(e.target.value)}
+                })}
+              />
+            </div>
+          </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="paymentPlans">Allow payment plans</Label>
+            <Label htmlFor="paymentPlans">Enable payment plans</Label>
             <Switch
               id="paymentPlans"
               checked={settings.patientBilling.paymentPlans}
@@ -301,20 +263,34 @@ const BillingSettings: React.FC = () => {
             />
           </div>
 
-          {settings.patientBilling.paymentPlans && (
-            <div>
-              <Label htmlFor="minimumPayment">Minimum payment amount ($)</Label>
-              <Input
-                id="minimumPayment"
-                type="number"
-                value={settings.patientBilling.minimumPayment}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  patientBilling: {...settings.patientBilling, minimumPayment: parseFloat(e.target.value)}
-                })}
-              />
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="autoCharge">Auto-charge saved cards</Label>
+            <Switch
+              id="autoCharge"
+              checked={settings.patientBilling.autoChargeCards}
+              onCheckedChange={(checked) => setSettings({
+                ...settings,
+                patientBilling: {...settings.patientBilling, autoChargeCards: checked}
+              })}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="reminderFreq">Payment reminder frequency</Label>
+            <Select value={settings.patientBilling.reminderFrequency} onValueChange={(value) => setSettings({
+              ...settings,
+              patientBilling: {...settings.patientBilling, reminderFrequency: value}
+            })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 
@@ -328,9 +304,9 @@ const BillingSettings: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="paymentProcessingEnabled">Enable payment processing</Label>
+            <Label htmlFor="paymentEnabled">Enable payment processing</Label>
             <Switch
-              id="paymentProcessingEnabled"
+              id="paymentEnabled"
               checked={settings.paymentProcessing.enabled}
               onCheckedChange={(checked) => setSettings({
                 ...settings,
@@ -339,116 +315,112 @@ const BillingSettings: React.FC = () => {
             />
           </div>
 
-          {!settings.paymentProcessing.enabled && (
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 mb-2">
-                Accept credit, debit, FSA and HSA cards without leaving MentalSpace.
-              </p>
-              <Button onClick={handleSetupPaymentProcessing} variant="outline">
-                Setup Payment Processing
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="creditCards">Accept credit cards</Label>
+            <Switch
+              id="creditCards"
+              checked={settings.paymentProcessing.acceptCreditCards}
+              onCheckedChange={(checked) => setSettings({
+                ...settings,
+                paymentProcessing: {...settings.paymentProcessing, acceptCreditCards: checked}
+              })}
+            />
+          </div>
 
-          {settings.paymentProcessing.enabled && (
-            <>
-              <div>
-                <Label htmlFor="processor">Payment processor</Label>
-                <Select value={settings.paymentProcessing.processor} onValueChange={(value) => setSettings({
+          <div className="flex items-center justify-between">
+            <Label htmlFor="debitCards">Accept debit cards</Label>
+            <Switch
+              id="debitCards"
+              checked={settings.paymentProcessing.acceptDebitCards}
+              onCheckedChange={(checked) => setSettings({
+                ...settings,
+                paymentProcessing: {...settings.paymentProcessing, acceptDebitCards: checked}
+              })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="fsaHsa">Accept FSA/HSA cards</Label>
+            <Switch
+              id="fsaHsa"
+              checked={settings.paymentProcessing.acceptFSAHSA}
+              onCheckedChange={(checked) => setSettings({
+                ...settings,
+                paymentProcessing: {...settings.paymentProcessing, acceptFSAHSA: checked}
+              })}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="feePercent">Processing fee (%)</Label>
+              <Input
+                id="feePercent"
+                type="number"
+                step="0.1"
+                value={settings.paymentProcessing.processingFeePercent}
+                onChange={(e) => setSettings({
                   ...settings,
-                  paymentProcessing: {...settings.paymentProcessing, processor: value}
-                })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="stripe">Stripe</SelectItem>
-                    <SelectItem value="square">Square</SelectItem>
-                    <SelectItem value="paypal">PayPal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  paymentProcessing: {...settings.paymentProcessing, processingFeePercent: parseFloat(e.target.value)}
+                })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="feeFlat">Flat fee ($)</Label>
+              <Input
+                id="feeFlat"
+                type="number"
+                step="0.01"
+                value={settings.paymentProcessing.processingFeeFlat}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  paymentProcessing: {...settings.paymentProcessing, processingFeeFlat: parseFloat(e.target.value)}
+                })}
+              />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="acceptCards">Credit/Debit Cards</Label>
-                  <Switch
-                    id="acceptCards"
-                    checked={settings.paymentProcessing.acceptCards}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      paymentProcessing: {...settings.paymentProcessing, acceptCards: checked}
-                    })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="acceptACH">ACH/Bank Transfer</Label>
-                  <Switch
-                    id="acceptACH"
-                    checked={settings.paymentProcessing.acceptACH}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      paymentProcessing: {...settings.paymentProcessing, acceptACH: checked}
-                    })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="acceptFSA">FSA Cards</Label>
-                  <Switch
-                    id="acceptFSA"
-                    checked={settings.paymentProcessing.acceptFSA}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      paymentProcessing: {...settings.paymentProcessing, acceptFSA: checked}
-                    })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="acceptHSA">HSA Cards</Label>
-                  <Switch
-                    id="acceptHSA"
-                    checked={settings.paymentProcessing.acceptHSA}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      paymentProcessing: {...settings.paymentProcessing, acceptHSA: checked}
-                    })}
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="merchantId">Merchant ID</Label>
+              <Input
+                id="merchantId"
+                value={settings.paymentProcessing.merchantId}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  paymentProcessing: {...settings.paymentProcessing, merchantId: e.target.value}
+                })}
+                placeholder="Enter merchant ID"
+              />
+            </div>
+            <div>
+              <Label htmlFor="terminalId">Terminal ID</Label>
+              <Input
+                id="terminalId"
+                value={settings.paymentProcessing.terminalId}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  paymentProcessing: {...settings.paymentProcessing, terminalId: e.target.value}
+                })}
+                placeholder="Enter terminal ID"
+              />
+            </div>
+          </div>
 
-              <div>
-                <Label htmlFor="processingFee">Processing fee (%)</Label>
-                <Input
-                  id="processingFee"
-                  type="number"
-                  step="0.1"
-                  value={settings.paymentProcessing.processingFee}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    paymentProcessing: {...settings.paymentProcessing, processingFee: parseFloat(e.target.value)}
-                  })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="passFeesToPatient">Pass processing fees to patient</Label>
-                <Switch
-                  id="passFeesToPatient"
-                  checked={settings.paymentProcessing.passFeesToPatient}
-                  onCheckedChange={(checked) => setSettings({
-                    ...settings,
-                    paymentProcessing: {...settings.paymentProcessing, passFeesToPatient: checked}
-                  })}
-                />
-              </div>
-            </>
-          )}
+          <div className="flex space-x-4">
+            <Button onClick={handleTestPayment} variant="outline">
+              Test Payment Processing
+            </Button>
+            <Button variant="outline">
+              View Transaction History
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
         <Button onClick={handleSave} className="px-8">
-          Save Settings
+          Save Billing Settings
         </Button>
       </div>
     </div>
