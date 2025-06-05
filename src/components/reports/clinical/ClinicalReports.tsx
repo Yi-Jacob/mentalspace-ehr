@@ -5,47 +5,53 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { FileText, Users, Clock, TrendingUp, Download } from 'lucide-react';
+import { FileText, Users, Clock, TrendingUp, Download, RefreshCw } from 'lucide-react';
+import { useClinicalReportsData } from '@/hooks/useReportData';
 
 const ClinicalReports = () => {
   const [timeRange, setTimeRange] = useState('30');
   const [reportType, setReportType] = useState('overview');
 
-  // Mock data
-  const clinicalMetrics = {
-    totalNotes: 1248,
-    notesCompleted: 1156,
-    notesOverdue: 92,
-    avgCompletionTime: 2.3,
-    complianceRate: 92.6
-  };
-
-  const notesByType = [
-    { type: 'Progress Notes', count: 456, percentage: 36.5 },
-    { type: 'Initial Assessments', count: 234, percentage: 18.8 },
-    { type: 'Treatment Plans', count: 198, percentage: 15.9 },
-    { type: 'Discharge Notes', count: 156, percentage: 12.5 },
-    { type: 'Crisis Notes', count: 89, percentage: 7.1 },
-    { type: 'Other', count: 115, percentage: 9.2 }
-  ];
-
-  const providerProductivity = [
-    { provider: 'Dr. Smith', notes: 156, avgTime: 1.8, compliance: 95 },
-    { provider: 'Dr. Johnson', notes: 142, avgTime: 2.1, compliance: 89 },
-    { provider: 'Dr. Brown', notes: 134, avgTime: 2.5, compliance: 93 },
-    { provider: 'Dr. Davis', notes: 98, avgTime: 3.2, compliance: 85 }
-  ];
-
-  const diagnosisDistribution = [
-    { diagnosis: 'Anxiety Disorders', count: 89, percentage: 26.0 },
-    { diagnosis: 'Depressive Disorders', count: 76, percentage: 22.2 },
-    { diagnosis: 'ADHD', count: 45, percentage: 13.2 },
-    { diagnosis: 'PTSD', count: 38, percentage: 11.1 },
-    { diagnosis: 'Bipolar Disorder', count: 32, percentage: 9.4 },
-    { diagnosis: 'Other', count: 62, percentage: 18.1 }
-  ];
+  const { data: clinicalData, isLoading, error, refetch } = useClinicalReportsData(timeRange);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2">Loading clinical reports...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <p className="text-red-600 mb-2">Error loading clinical data</p>
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!clinicalData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <p className="text-gray-500">No clinical data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -77,6 +83,11 @@ const ClinicalReports = () => {
             </SelectContent>
           </Select>
 
+          <Button onClick={() => refetch()} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+
           <Button className="flex items-center space-x-2">
             <Download className="h-4 w-4" />
             <span>Export Report</span>
@@ -91,7 +102,7 @@ const ClinicalReports = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Notes</p>
-                <p className="text-2xl font-bold">{clinicalMetrics.totalNotes}</p>
+                <p className="text-2xl font-bold">{clinicalData.totalNotes}</p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
             </div>
@@ -103,7 +114,7 @@ const ClinicalReports = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-green-600">{clinicalMetrics.notesCompleted}</p>
+                <p className="text-2xl font-bold text-green-600">{clinicalData.notesCompleted}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-600" />
             </div>
@@ -115,7 +126,7 @@ const ClinicalReports = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">{clinicalMetrics.notesOverdue}</p>
+                <p className="text-2xl font-bold text-red-600">{clinicalData.notesOverdue}</p>
               </div>
               <Clock className="h-8 w-8 text-red-600" />
             </div>
@@ -127,7 +138,7 @@ const ClinicalReports = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Time (hrs)</p>
-                <p className="text-2xl font-bold">{clinicalMetrics.avgCompletionTime}</p>
+                <p className="text-2xl font-bold">{clinicalData.avgCompletionTime.toFixed(1)}</p>
               </div>
               <Clock className="h-8 w-8 text-purple-600" />
             </div>
@@ -139,7 +150,7 @@ const ClinicalReports = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Compliance Rate</p>
-                <p className="text-2xl font-bold text-blue-600">{clinicalMetrics.complianceRate}%</p>
+                <p className="text-2xl font-bold text-blue-600">{clinicalData.complianceRate.toFixed(1)}%</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
             </div>
@@ -157,40 +168,42 @@ const ClinicalReports = () => {
 
         <TabsContent value="documentation" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notes by Type</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={notesByType}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ type, percentage }) => `${type} ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="count"
-                    >
-                      {notesByType.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            {clinicalData.notesByType && clinicalData.notesByType.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notes by Type</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={clinicalData.notesByType}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ type, percentage }) => `${type} ${percentage}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                      >
+                        {clinicalData.notesByType.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
-                <CardTitle>Documentation Timeline</CardTitle>
+                <CardTitle>Documentation Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {notesByType.map((note, index) => (
+                  {clinicalData.notesByType && clinicalData.notesByType.map((note, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div 
@@ -212,91 +225,97 @@ const ClinicalReports = () => {
         </TabsContent>
 
         <TabsContent value="productivity" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Provider Productivity Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={providerProductivity}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="provider" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="notes" fill="#8884d8" name="Notes Completed" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {clinicalData.providerProductivity && clinicalData.providerProductivity.length > 0 && (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Provider Productivity Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={clinicalData.providerProductivity}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="provider" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="notes" fill="#8884d8" name="Notes Completed" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Provider Performance Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {providerProductivity.map((provider, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <div className="font-medium">{provider.provider}</div>
-                        <div className="text-sm text-gray-600">
-                          {provider.notes} notes completed
+              <Card>
+                <CardHeader>
+                  <CardTitle>Provider Performance Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {clinicalData.providerProductivity.map((provider, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <div className="font-medium">{provider.provider}</div>
+                            <div className="text-sm text-gray-600">
+                              {provider.notes} notes completed
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm">
+                            <span className="font-semibold">{provider.avgTime.toFixed(1)}h</span> avg time
+                          </div>
+                          <div className="text-sm">
+                            <span className="font-semibold">{provider.compliance}%</span> compliance
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm">
-                        <span className="font-semibold">{provider.avgTime}h</span> avg time
-                      </div>
-                      <div className="text-sm">
-                        <span className="font-semibold">{provider.compliance}%</span> compliance
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="diagnoses" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Diagnosis Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={diagnosisDistribution} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="diagnosis" type="category" width={150} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          {clinicalData.diagnosisDistribution && clinicalData.diagnosisDistribution.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Diagnosis Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={clinicalData.diagnosisDistribution} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="diagnosis" type="category" width={150} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="outcomes" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Patient Outcomes Summary</CardTitle>
+              <CardTitle>Clinical Outcomes Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">78%</div>
-                  <div className="text-sm text-gray-600">Treatment Goals Met</div>
+                  <div className="text-3xl font-bold text-green-600">{clinicalData.complianceRate.toFixed(0)}%</div>
+                  <div className="text-sm text-gray-600">Documentation Compliance</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">85%</div>
-                  <div className="text-sm text-gray-600">Patient Satisfaction</div>
+                  <div className="text-3xl font-bold text-blue-600">{clinicalData.avgCompletionTime.toFixed(1)}h</div>
+                  <div className="text-sm text-gray-600">Avg Completion Time</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">12%</div>
-                  <div className="text-sm text-gray-600">Readmission Rate</div>
+                  <div className="text-3xl font-bold text-purple-600">{clinicalData.totalNotes}</div>
+                  <div className="text-sm text-gray-600">Total Notes</div>
                 </div>
               </div>
             </CardContent>

@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      aggregated_metrics: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          id: string
+          metric_type: string
+          metrics: Json
+          period_end: string
+          period_start: string
+          period_type: string
+          provider_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          metric_type: string
+          metrics: Json
+          period_end: string
+          period_start: string
+          period_type: string
+          provider_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          metric_type?: string
+          metrics?: Json
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          provider_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aggregated_metrics_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aggregated_metrics_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_conflicts: {
         Row: {
           appointment_id: string | null
@@ -2498,6 +2552,165 @@ export type Database = {
         }
         Relationships: []
       }
+      report_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          execution_time_ms: number | null
+          filters: Json | null
+          id: string
+          report_type: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          execution_time_ms?: number | null
+          filters?: Json | null
+          id?: string
+          report_type: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          execution_time_ms?: number | null
+          filters?: Json | null
+          id?: string
+          report_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_cache: {
+        Row: {
+          cache_key: string
+          created_at: string | null
+          data: Json
+          expires_at: string
+          id: string
+          report_type: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string | null
+          data: Json
+          expires_at: string
+          id?: string
+          report_type: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string | null
+          data?: Json
+          expires_at?: string
+          id?: string
+          report_type?: string
+        }
+        Relationships: []
+      }
+      report_configurations: {
+        Row: {
+          created_at: string | null
+          date_range: Json | null
+          filters: Json | null
+          id: string
+          is_shared: boolean | null
+          report_name: string
+          report_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_range?: Json | null
+          filters?: Json | null
+          id?: string
+          is_shared?: boolean | null
+          report_name: string
+          report_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date_range?: Json | null
+          filters?: Json | null
+          id?: string
+          is_shared?: boolean | null
+          report_name?: string
+          report_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_configurations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_schedules: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          next_run_at: string | null
+          recipients: string[] | null
+          report_config_id: string
+          schedule_days: number[] | null
+          schedule_time: string
+          schedule_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          recipients?: string[] | null
+          report_config_id: string
+          schedule_days?: number[] | null
+          schedule_time: string
+          schedule_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          recipients?: string[] | null
+          report_config_id?: string
+          schedule_days?: number[] | null
+          schedule_time?: string
+          schedule_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_schedules_report_config_id_fkey"
+            columns: ["report_config_id"]
+            isOneToOne: false
+            referencedRelation: "report_configurations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           created_at: string | null
@@ -3129,6 +3342,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cache_report_data: {
+        Args: {
+          p_cache_key: string
+          p_report_type: string
+          p_data: Json
+          p_ttl_minutes?: number
+        }
+        Returns: undefined
+      }
       calculate_compliance_metrics: {
         Args: { user_uuid: string }
         Returns: {
@@ -3201,6 +3423,27 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["user_role"] }
         Returns: boolean
       }
+      get_cached_report_data: {
+        Args: { p_cache_key: string }
+        Returns: Json
+      }
+      get_clinical_reports_data: {
+        Args: {
+          start_date?: string
+          end_date?: string
+          provider_filter?: string
+        }
+        Returns: {
+          total_notes: number
+          notes_completed: number
+          notes_overdue: number
+          avg_completion_time: number
+          compliance_rate: number
+          notes_by_type: Json
+          provider_productivity: Json
+          diagnosis_distribution: Json
+        }[]
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -3212,6 +3455,22 @@ export type Database = {
           email: string
           first_name: string
           last_name: string
+        }[]
+      }
+      get_executive_dashboard_metrics: {
+        Args: { start_date?: string; end_date?: string }
+        Returns: {
+          total_revenue: number
+          revenue_change: number
+          total_patients: number
+          patients_change: number
+          appointments_completed: number
+          appointments_change: number
+          notes_completed: number
+          notes_change: number
+          revenue_trend: Json
+          patient_demographics: Json
+          provider_utilization: Json
         }[]
       }
       get_user_permissions: {
@@ -3244,6 +3503,16 @@ export type Database = {
           _role: Database["public"]["Enums"]["user_role"]
         }
         Returns: boolean
+      }
+      log_report_usage: {
+        Args: {
+          p_user_id: string
+          p_report_type: string
+          p_action: string
+          p_filters?: Json
+          p_execution_time_ms?: number
+        }
+        Returns: undefined
       }
     }
     Enums: {

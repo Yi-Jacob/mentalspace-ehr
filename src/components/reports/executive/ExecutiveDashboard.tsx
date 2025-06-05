@@ -5,42 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { TrendingUp, TrendingDown, Users, DollarSign, Calendar, FileText, Download, RefreshCw } from 'lucide-react';
+import { useExecutiveDashboardData } from '@/hooks/useReportData';
 
 const ExecutiveDashboard = () => {
   const [timeRange, setTimeRange] = useState('30');
-
-  // Mock data - in real implementation, this would come from your data hooks
-  const kpiData = {
-    totalRevenue: 125450,
-    revenueChange: 12.5,
-    totalPatients: 342,
-    patientsChange: 8.2,
-    appointmentsCompleted: 256,
-    appointmentsChange: -2.1,
-    notesCompleted: 240,
-    notesChange: 15.3
-  };
-
-  const revenueData = [
-    { month: 'Jan', revenue: 95000, expenses: 65000, net: 30000 },
-    { month: 'Feb', revenue: 102000, expenses: 68000, net: 34000 },
-    { month: 'Mar', revenue: 118000, expenses: 72000, net: 46000 },
-    { month: 'Apr', revenue: 125450, expenses: 75000, net: 50450 }
-  ];
-
-  const patientDemographics = [
-    { name: 'Adults (18-65)', value: 65, count: 222 },
-    { name: 'Adolescents (13-17)', value: 20, count: 68 },
-    { name: 'Children (5-12)', value: 10, count: 34 },
-    { name: 'Seniors (65+)', value: 5, count: 18 }
-  ];
-
-  const providerUtilization = [
-    { name: 'Dr. Smith', appointments: 85, capacity: 100, utilization: 85 },
-    { name: 'Dr. Johnson', appointments: 78, capacity: 100, utilization: 78 },
-    { name: 'Dr. Brown', appointments: 92, capacity: 100, utilization: 92 },
-    { name: 'Dr. Davis', appointments: 68, capacity: 100, utilization: 68 }
-  ];
+  
+  const { data: dashboardData, isLoading, error, refetch } = useExecutiveDashboardData(timeRange);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -62,7 +32,7 @@ const ExecutiveDashboard = () => {
                   <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
                 )}
                 <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {Math.abs(change)}%
+                  {Math.abs(change).toFixed(1)}%
                 </span>
                 <span className="text-sm text-gray-500 ml-1">vs last period</span>
               </div>
@@ -73,6 +43,43 @@ const ExecutiveDashboard = () => {
       </Card>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2">Loading executive dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <p className="text-red-600 mb-2">Error loading dashboard data</p>
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <p className="text-gray-500">No dashboard data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -92,7 +99,7 @@ const ExecutiveDashboard = () => {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -108,95 +115,101 @@ const ExecutiveDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
           title="Total Revenue"
-          value={kpiData.totalRevenue}
-          change={kpiData.revenueChange}
+          value={dashboardData.totalRevenue}
+          change={dashboardData.revenueChange}
           icon={DollarSign}
           format="currency"
         />
         <KPICard
           title="Active Patients"
-          value={kpiData.totalPatients}
-          change={kpiData.patientsChange}
+          value={dashboardData.totalPatients}
+          change={dashboardData.patientsChange}
           icon={Users}
         />
         <KPICard
           title="Appointments Completed"
-          value={kpiData.appointmentsCompleted}
-          change={kpiData.appointmentsChange}
+          value={dashboardData.appointmentsCompleted}
+          change={dashboardData.appointmentsChange}
           icon={Calendar}
         />
         <KPICard
           title="Notes Completed"
-          value={kpiData.notesCompleted}
-          change={kpiData.notesChange}
+          value={dashboardData.notesCompleted}
+          change={dashboardData.notesChange}
           icon={FileText}
         />
       </div>
 
       {/* Revenue Trends */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Revenue & Expenses Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, '']} />
-              <Area type="monotone" dataKey="revenue" stackId="1" stroke="#8884d8" fill="#8884d8" />
-              <Area type="monotone" dataKey="expenses" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {dashboardData.revenueData && dashboardData.revenueData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Revenue & Expenses Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={dashboardData.revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()}`, '']} />
+                <Area type="monotone" dataKey="revenue" stackId="1" stroke="#8884d8" fill="#8884d8" />
+                <Area type="monotone" dataKey="expenses" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Patient Demographics & Provider Utilization */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Patient Demographics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={patientDemographics}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {patientDemographics.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {dashboardData.patientDemographics && dashboardData.patientDemographics.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Patient Demographics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={dashboardData.patientDemographics}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name} ${Math.round((value / dashboardData.patientDemographics.reduce((sum, item) => sum + item.value, 0)) * 100)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {dashboardData.patientDemographics.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Provider Utilization</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={providerUtilization}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value) => [`${value}%`, 'Utilization']} />
-                <Bar dataKey="utilization" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {dashboardData.providerUtilization && dashboardData.providerUtilization.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Provider Utilization</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={dashboardData.providerUtilization}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Utilization']} />
+                  <Bar dataKey="utilization" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Insights */}
@@ -208,16 +221,22 @@ const ExecutiveDashboard = () => {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm">Patient Satisfaction</span>
-                <span className="font-semibold text-green-600">94%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Note Completion Rate</span>
-                <span className="font-semibold text-green-600">87%</span>
-              </div>
-              <div className="flex justify-between items-center">
                 <span className="text-sm">Revenue Growth</span>
-                <span className="font-semibold text-green-600">+12.5%</span>
+                <span className={`font-semibold ${dashboardData.revenueChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {dashboardData.revenueChange > 0 ? '+' : ''}{dashboardData.revenueChange.toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Patient Growth</span>
+                <span className={`font-semibold ${dashboardData.patientsChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {dashboardData.patientsChange > 0 ? '+' : ''}{dashboardData.patientsChange.toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Notes Growth</span>
+                <span className={`font-semibold ${dashboardData.notesChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {dashboardData.notesChange > 0 ? '+' : ''}{dashboardData.notesChange.toFixed(1)}%
+                </span>
               </div>
             </div>
           </CardContent>
@@ -225,21 +244,21 @@ const ExecutiveDashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Areas for Improvement</CardTitle>
+            <CardTitle className="text-lg">Current Metrics</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm">No-Show Rate</span>
-                <span className="font-semibold text-yellow-600">8.2%</span>
+                <span className="text-sm">Total Revenue</span>
+                <span className="font-semibold text-blue-600">${dashboardData.totalRevenue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm">Avg Response Time</span>
-                <span className="font-semibold text-yellow-600">2.1 hrs</span>
+                <span className="text-sm">Active Patients</span>
+                <span className="font-semibold text-blue-600">{dashboardData.totalPatients}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm">Claims Denial Rate</span>
-                <span className="font-semibold text-yellow-600">3.8%</span>
+                <span className="text-sm">Completed Appointments</span>
+                <span className="font-semibold text-blue-600">{dashboardData.appointmentsCompleted}</span>
               </div>
             </div>
           </CardContent>
@@ -247,21 +266,21 @@ const ExecutiveDashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Urgent Attention</CardTitle>
+            <CardTitle className="text-lg">Data Insights</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm">Overdue Notes</span>
-                <span className="font-semibold text-red-600">12</span>
+                <span className="text-sm">Report Period</span>
+                <span className="font-semibold">{timeRange} days</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm">Outstanding Claims</span>
-                <span className="font-semibold text-red-600">$8,450</span>
+                <span className="text-sm">Providers Tracked</span>
+                <span className="font-semibold">{dashboardData.providerUtilization?.length || 0}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm">License Renewals Due</span>
-                <span className="font-semibold text-red-600">2</span>
+                <span className="text-sm">Data Source</span>
+                <span className="font-semibold text-green-600">Live</span>
               </div>
             </div>
           </CardContent>
