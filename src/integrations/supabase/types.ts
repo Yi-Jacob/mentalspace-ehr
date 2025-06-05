@@ -2319,6 +2319,62 @@ export type Database = {
           },
         ]
       }
+      practice_settings: {
+        Row: {
+          billing_settings: Json | null
+          business_hours: Json | null
+          created_at: string | null
+          documentation_settings: Json | null
+          id: string
+          portal_settings: Json | null
+          practice_address: Json | null
+          practice_contact: Json | null
+          practice_name: string | null
+          scheduling_settings: Json | null
+          security_settings: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          billing_settings?: Json | null
+          business_hours?: Json | null
+          created_at?: string | null
+          documentation_settings?: Json | null
+          id?: string
+          portal_settings?: Json | null
+          practice_address?: Json | null
+          practice_contact?: Json | null
+          practice_name?: string | null
+          scheduling_settings?: Json | null
+          security_settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          billing_settings?: Json | null
+          business_hours?: Json | null
+          created_at?: string | null
+          documentation_settings?: Json | null
+          id?: string
+          portal_settings?: Json | null
+          practice_address?: Json | null
+          practice_contact?: Json | null
+          practice_name?: string | null
+          scheduling_settings?: Json | null
+          security_settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       productivity_goals: {
         Row: {
           created_at: string | null

@@ -1,82 +1,47 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Building2, 
-  CreditCard, 
-  Database, 
-  Shield, 
-  Bell, 
-  Image, 
-  FileText, 
-  Lock,
-  Palette
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { User, Shield, Building, Clock } from 'lucide-react';
+import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 
 const AccountAccessSettings: React.FC = () => {
-  const { toast } = useToast();
-  const [settings, setSettings] = useState({
-    practiceName: 'CHC Therapy',
-    practiceAddress: '',
-    practicePhone: '',
-    practiceEmail: '',
-    practiceWebsite: '',
-    practiceTimezone: 'America/New_York',
-    patientRecordsFeatures: {
-      autoSave: true,
-      versionControl: true,
-      auditTrail: true,
-      encryption: true,
-    },
-    securitySettings: {
-      twoFactorAuth: false,
-      sessionTimeout: 30,
-      passwordExpiry: 90,
-      loginAttempts: 5,
-    },
-    dashboardReminders: {
-      enabled: true,
-      overdueNotes: true,
-      upcomingAppointments: true,
-      billing: true,
-      compliance: true,
-    },
-    displayPreferences: {
-      theme: 'light',
-      fontSize: 'medium',
-      compactMode: false,
-      showTips: true,
-    }
-  });
+  const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
-  const handleSave = () => {
-    toast({
-      title: 'Settings Saved',
-      description: 'Your practice settings have been updated successfully.',
+  const practiceInfo = {
+    practice_name: settings?.practice_name || '',
+    practice_address: settings?.practice_address || {},
+    practice_contact: settings?.practice_contact || {},
+    business_hours: settings?.business_hours || {},
+    security_settings: settings?.security_settings || {}
+  };
+
+  const updatePracticeInfo = (field: string, value: any) => {
+    updateSettings({ [field]: value });
+  };
+
+  const updateNestedSetting = (category: string, field: string, value: any) => {
+    const currentSettings = settings?.[category as keyof typeof settings] || {};
+    updateSettings({
+      [category]: {
+        ...currentSettings,
+        [field]: value
+      }
     });
   };
 
-  const handleLogoUpload = () => {
-    toast({
-      title: 'Logo Upload',
-      description: 'Logo upload functionality would be implemented here.',
-    });
-  };
-
-  const handlePasswordChange = () => {
-    toast({
-      title: 'Password Change',
-      description: 'Password change functionality would be implemented here.',
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,18 +49,39 @@ const AccountAccessSettings: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Building2 className="h-5 w-5" />
+            <Building className="h-5 w-5" />
             <span>Practice Information</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="practiceName">Practice Name</Label>
+            <Input
+              id="practiceName"
+              value={practiceInfo.practice_name}
+              onChange={(e) => updatePracticeInfo('practice_name', e.target.value)}
+              placeholder="Enter practice name"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="practiceAddress">Practice Address</Label>
+            <Textarea
+              id="practiceAddress"
+              value={practiceInfo.practice_address.full_address || ''}
+              onChange={(e) => updateNestedSetting('practice_address', 'full_address', e.target.value)}
+              placeholder="Enter practice address"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="practiceName">Practice Name</Label>
+              <Label htmlFor="practicePhone">Phone Number</Label>
               <Input
-                id="practiceName"
-                value={settings.practiceName}
-                onChange={(e) => setSettings({...settings, practiceName: e.target.value})}
+                id="practicePhone"
+                value={practiceInfo.practice_contact.phone || ''}
+                onChange={(e) => updateNestedSetting('practice_contact', 'phone', e.target.value)}
+                placeholder="(555) 123-4567"
               />
             </div>
             <div>
@@ -103,42 +89,51 @@ const AccountAccessSettings: React.FC = () => {
               <Input
                 id="practiceEmail"
                 type="email"
-                value={settings.practiceEmail}
-                onChange={(e) => setSettings({...settings, practiceEmail: e.target.value})}
-                placeholder="contact@chctherapy.com"
-              />
-            </div>
-            <div>
-              <Label htmlFor="practicePhone">Phone Number</Label>
-              <Input
-                id="practicePhone"
-                value={settings.practicePhone}
-                onChange={(e) => setSettings({...settings, practicePhone: e.target.value})}
-                placeholder="(555) 123-4567"
-              />
-            </div>
-            <div>
-              <Label htmlFor="practiceWebsite">Website</Label>
-              <Input
-                id="practiceWebsite"
-                value={settings.practiceWebsite}
-                onChange={(e) => setSettings({...settings, practiceWebsite: e.target.value})}
-                placeholder="www.chctherapy.com"
+                value={practiceInfo.practice_contact.email || ''}
+                onChange={(e) => updateNestedSetting('practice_contact', 'email', e.target.value)}
+                placeholder="practice@example.com"
               />
             </div>
           </div>
-          <div>
-            <Label htmlFor="practiceAddress">Address</Label>
-            <Textarea
-              id="practiceAddress"
-              value={settings.practiceAddress}
-              onChange={(e) => setSettings({...settings, practiceAddress: e.target.value})}
-              placeholder="Enter practice address"
-            />
+        </CardContent>
+      </Card>
+
+      {/* Business Hours */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Clock className="h-5 w-5" />
+            <span>Business Hours</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="openTime">Opening Time</Label>
+              <Input
+                id="openTime"
+                type="time"
+                value={practiceInfo.business_hours.open_time || '09:00'}
+                onChange={(e) => updateNestedSetting('business_hours', 'open_time', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="closeTime">Closing Time</Label>
+              <Input
+                id="closeTime"
+                type="time"
+                value={practiceInfo.business_hours.close_time || '17:00'}
+                onChange={(e) => updateNestedSetting('business_hours', 'close_time', e.target.value)}
+              />
+            </div>
           </div>
+
           <div>
-            <Label htmlFor="timezone">Timezone</Label>
-            <Select value={settings.practiceTimezone} onValueChange={(value) => setSettings({...settings, practiceTimezone: value})}>
+            <Label htmlFor="timezone">Time Zone</Label>
+            <Select 
+              value={practiceInfo.business_hours.timezone || 'America/New_York'}
+              onValueChange={(value) => updateNestedSetting('business_hours', 'timezone', value)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -153,285 +148,56 @@ const AccountAccessSettings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* MentalSpace Subscription */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <CreditCard className="h-5 w-5" />
-            <span>MentalSpace Subscription</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h4 className="font-medium">Current Plan: Professional</h4>
-                <p className="text-sm text-gray-600">Billed monthly - $199/month</p>
-              </div>
-              <Button variant="outline">Manage Subscription</Button>
-            </div>
-            <Separator />
-            <div className="text-sm text-gray-600">
-              <p>Next billing date: January 15, 2025</p>
-              <p>Payment method: •••• •••• •••• 1234</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Patient Records */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Database className="h-5 w-5" />
-            <span>Patient Records</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="autoSave">Auto-save patient records</Label>
-            <Switch
-              id="autoSave"
-              checked={settings.patientRecordsFeatures.autoSave}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                patientRecordsFeatures: {...settings.patientRecordsFeatures, autoSave: checked}
-              })}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="versionControl">Enable version control</Label>
-            <Switch
-              id="versionControl"
-              checked={settings.patientRecordsFeatures.versionControl}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                patientRecordsFeatures: {...settings.patientRecordsFeatures, versionControl: checked}
-              })}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="auditTrail">Maintain audit trail</Label>
-            <Switch
-              id="auditTrail"
-              checked={settings.patientRecordsFeatures.auditTrail}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                patientRecordsFeatures: {...settings.patientRecordsFeatures, auditTrail: checked}
-              })}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Security */}
+      {/* Security Settings */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
-            <span>Security</span>
+            <span>Security Settings</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="twoFactor">Two-factor authentication</Label>
+            <Label htmlFor="twoFactor">Enable Two-Factor Authentication</Label>
             <Switch
               id="twoFactor"
-              checked={settings.securitySettings.twoFactorAuth}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                securitySettings: {...settings.securitySettings, twoFactorAuth: checked}
-              })}
+              checked={practiceInfo.security_settings.two_factor_enabled || false}
+              onCheckedChange={(checked) => updateNestedSetting('security_settings', 'two_factor_enabled', checked)}
             />
           </div>
-          <div>
-            <Label htmlFor="sessionTimeout">Session timeout (minutes)</Label>
-            <Input
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="sessionTimeout">Auto-logout after inactivity</Label>
+            <Switch
               id="sessionTimeout"
-              type="number"
-              value={settings.securitySettings.sessionTimeout}
-              onChange={(e) => setSettings({
-                ...settings,
-                securitySettings: {...settings.securitySettings, sessionTimeout: parseInt(e.target.value)}
-              })}
+              checked={practiceInfo.security_settings.session_timeout_enabled || false}
+              onCheckedChange={(checked) => updateNestedSetting('security_settings', 'session_timeout_enabled', checked)}
             />
           </div>
+
           <div>
-            <Label htmlFor="passwordExpiry">Password expiry (days)</Label>
-            <Input
-              id="passwordExpiry"
-              type="number"
-              value={settings.securitySettings.passwordExpiry}
-              onChange={(e) => setSettings({
-                ...settings,
-                securitySettings: {...settings.securitySettings, passwordExpiry: parseInt(e.target.value)}
-              })}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Dashboard Reminders */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Bell className="h-5 w-5" />
-            <span>Dashboard Reminders</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="overdueNotes">Overdue notes reminders</Label>
-            <Switch
-              id="overdueNotes"
-              checked={settings.dashboardReminders.overdueNotes}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                dashboardReminders: {...settings.dashboardReminders, overdueNotes: checked}
-              })}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="upcomingAppointments">Upcoming appointments</Label>
-            <Switch
-              id="upcomingAppointments"
-              checked={settings.dashboardReminders.upcomingAppointments}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                dashboardReminders: {...settings.dashboardReminders, upcomingAppointments: checked}
-              })}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="billing">Billing reminders</Label>
-            <Switch
-              id="billing"
-              checked={settings.dashboardReminders.billing}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                dashboardReminders: {...settings.dashboardReminders, billing: checked}
-              })}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Practice Logo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Image className="h-5 w-5" />
-            <span>Practice Logo</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Upload a practice logo to be used on printed documents and patient portal.
-            </p>
-            <Button onClick={handleLogoUpload} variant="outline">
-              Upload Logo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Activity Log */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="h-5 w-5" />
-            <span>Activity Log</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Search and review user activity logs to track system access and changes.
-            </p>
-            <Button variant="outline">View Activity Log</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Change Password */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Lock className="h-5 w-5" />
-            <span>Change Your Password</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Update your password to maintain account security.
-            </p>
-            <Button onClick={handlePasswordChange} variant="outline">
-              Change Password
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Display Preferences */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Palette className="h-5 w-5" />
-            <span>Display Preferences</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="theme">Theme</Label>
-            <Select value={settings.displayPreferences.theme} onValueChange={(value) => setSettings({
-              ...settings,
-              displayPreferences: {...settings.displayPreferences, theme: value}
-            })}>
+            <Label htmlFor="sessionTimeoutMinutes">Session timeout (minutes)</Label>
+            <Select 
+              value={String(practiceInfo.security_settings.session_timeout_minutes || 30)}
+              onValueChange={(value) => updateNestedSetting('security_settings', 'session_timeout_minutes', Number(value))}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="auto">Auto</SelectItem>
+                <SelectItem value="15">15 minutes</SelectItem>
+                <SelectItem value="30">30 minutes</SelectItem>
+                <SelectItem value="60">1 hour</SelectItem>
+                <SelectItem value="120">2 hours</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div>
-            <Label htmlFor="fontSize">Font Size</Label>
-            <Select value={settings.displayPreferences.fontSize} onValueChange={(value) => setSettings({
-              ...settings,
-              displayPreferences: {...settings.displayPreferences, fontSize: value}
-            })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="small">Small</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="large">Large</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="compactMode">Compact mode</Label>
-            <Switch
-              id="compactMode"
-              checked={settings.displayPreferences.compactMode}
-              onCheckedChange={(checked) => setSettings({
-                ...settings,
-                displayPreferences: {...settings.displayPreferences, compactMode: checked}
-              })}
-            />
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="px-8">
-          Save All Settings
+        <Button disabled={isUpdating}>
+          {isUpdating ? 'Saving...' : 'Settings Auto-Saved'}
         </Button>
       </div>
     </div>

@@ -1,161 +1,103 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import TelehealthSettings from './TelehealthSettings';
+import { usePracticeSettings } from '@/hooks/usePracticeSettings';
+import PortalNavigationButtons from './portal/PortalNavigationButtons';
 import ClientPortalSettings from './portal/ClientPortalSettings';
+import TelehealthSettings from './TelehealthSettings';
 import SecureMessagingSettings from './portal/SecureMessagingSettings';
 import AppointmentRemindersSettings from './portal/AppointmentRemindersSettings';
 import CalendarSyncSettings from './portal/CalendarSyncSettings';
 import MultipleLocationsSettings from './portal/MultipleLocationsSettings';
-import PortalNavigationButtons from './portal/PortalNavigationButtons';
 
 const PortalSchedulingSettings: React.FC = () => {
-  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState('portal');
-  const [settings, setSettings] = useState({
-    clientPortal: {
-      enabled: true,
-      allowSelfScheduling: true,
-      allowCancellations: true,
-      requireConfirmation: true,
-      customWelcomeMessage: '',
-      portalDomain: 'chctherapy.mentalspace.app',
-      allowDocumentUpload: true,
-      showAppointmentHistory: true,
-      enablePaymentPortal: true,
-    },
-    secureMessaging: {
-      enabled: true,
-      allowPatientInitiated: true,
-      responseTime: '24',
-      emailNotifications: true,
-      maxFileSize: 10,
-      allowedFileTypes: ['pdf', 'jpg', 'png', 'doc', 'docx'],
-      messageRetention: 365,
-    },
-    appointmentReminders: {
-      enabled: true,
-      emailReminders: true,
-      smsReminders: false,
-      reminderTiming: ['24h', '2h'],
-      customMessage: '',
-      confirmationRequired: true,
-    },
-    calendarSync: {
-      googleCalendar: false,
-      outlook365: false,
-      appleCalendar: false,
-      syncInterval: 15,
-      twoWaySync: true,
-    },
-    multipleLocations: {
-      enabled: false,
-      defaultLocation: '',
-      locations: [],
-      allowLocationSelection: true,
-    }
-  });
+  const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
 
-  const handleSave = () => {
-    toast({
-      title: 'Settings Saved',
-      description: 'Portal and scheduling settings have been updated successfully.',
+  const portalSettings = settings?.portal_settings || {};
+  const schedulingSettings = settings?.scheduling_settings || {};
+
+  const updatePortalSettings = (newSettings: any) => {
+    updateSettings({
+      portal_settings: { ...portalSettings, ...newSettings }
     });
   };
 
-  const updateClientPortalSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
-      clientPortal: newSettings
-    }));
+  const updateSchedulingSettings = (newSettings: any) => {
+    updateSettings({
+      scheduling_settings: { ...schedulingSettings, ...newSettings }
+    });
   };
 
-  const updateSecureMessagingSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
-      secureMessaging: newSettings
-    }));
-  };
-
-  const updateAppointmentRemindersSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
-      appointmentReminders: newSettings
-    }));
-  };
-
-  const updateCalendarSyncSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
-      calendarSync: newSettings
-    }));
-  };
-
-  const updateMultipleLocationsSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
-      multipleLocations: newSettings
-    }));
-  };
-
-  if (activeSection === 'telehealth') {
+  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <PortalNavigationButtons 
-          activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
-        />
-        <TelehealthSettings />
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case 'portal':
+        return (
+          <ClientPortalSettings
+            settings={portalSettings.clientPortal || {}}
+            onSettingsChange={(newSettings) => updatePortalSettings({ clientPortal: newSettings })}
+          />
+        );
+      case 'telehealth':
+        return (
+          <TelehealthSettings
+            settings={portalSettings.telehealth || {}}
+            onSettingsChange={(newSettings) => updatePortalSettings({ telehealth: newSettings })}
+          />
+        );
+      case 'messaging':
+        return (
+          <SecureMessagingSettings
+            settings={portalSettings.messaging || {}}
+            onSettingsChange={(newSettings) => updatePortalSettings({ messaging: newSettings })}
+          />
+        );
+      case 'reminders':
+        return (
+          <AppointmentRemindersSettings
+            settings={schedulingSettings.reminders || {}}
+            onSettingsChange={(newSettings) => updateSchedulingSettings({ reminders: newSettings })}
+          />
+        );
+      case 'calendar':
+        return (
+          <CalendarSyncSettings
+            settings={schedulingSettings.calendarSync || {}}
+            onSettingsChange={(newSettings) => updateSchedulingSettings({ calendarSync: newSettings })}
+          />
+        );
+      case 'locations':
+        return (
+          <MultipleLocationsSettings
+            settings={schedulingSettings.locations || {}}
+            onSettingsChange={(newSettings) => updateSchedulingSettings({ locations: newSettings })}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PortalNavigationButtons 
-        activeSection={activeSection} 
-        onSectionChange={setActiveSection} 
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
       />
 
-      {activeSection === 'portal' && (
-        <ClientPortalSettings 
-          settings={settings.clientPortal}
-          onSettingsChange={updateClientPortalSettings}
-        />
-      )}
-
-      {activeSection === 'messaging' && (
-        <SecureMessagingSettings 
-          settings={settings.secureMessaging}
-          onSettingsChange={updateSecureMessagingSettings}
-        />
-      )}
-
-      {activeSection === 'reminders' && (
-        <AppointmentRemindersSettings 
-          settings={settings.appointmentReminders}
-          onSettingsChange={updateAppointmentRemindersSettings}
-        />
-      )}
-
-      {activeSection === 'calendar' && (
-        <CalendarSyncSettings 
-          settings={settings.calendarSync}
-          onSettingsChange={updateCalendarSyncSettings}
-        />
-      )}
-
-      {activeSection === 'locations' && (
-        <MultipleLocationsSettings 
-          settings={settings.multipleLocations}
-          onSettingsChange={updateMultipleLocationsSettings}
-        />
-      )}
+      {renderActiveSection()}
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="px-8">
-          Save Settings
+        <Button disabled={isUpdating}>
+          {isUpdating ? 'Saving...' : 'Settings Auto-Saved'}
         </Button>
       </div>
     </div>

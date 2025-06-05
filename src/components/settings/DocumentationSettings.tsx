@@ -1,14 +1,17 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 import ServiceCptCodesSettings from './documentation/ServiceCptCodesSettings';
 import NotesSettings from './documentation/NotesSettings';
 import HealthInformationExchangeSettings from './documentation/HealthInformationExchangeSettings';
 
 const DocumentationSettings: React.FC = () => {
   const { toast } = useToast();
-  const [settings, setSettings] = useState({
+  const { settings, updateSettings, isLoading, isUpdating } = usePracticeSettings();
+
+  const documentationSettings = settings?.documentation_settings || {
     serviceCptCodes: {
       defaultCodes: ['90834', '90837', '90847', '90853'],
       customCodes: [],
@@ -31,12 +34,11 @@ const DocumentationSettings: React.FC = () => {
       autoQuery: false,
       shareLevel: 'minimal',
     }
-  });
+  };
 
   const handleSave = () => {
-    toast({
-      title: 'Settings Saved',
-      description: 'Documentation settings have been updated successfully.',
+    updateSettings({
+      documentation_settings: documentationSettings
     });
   };
 
@@ -62,49 +64,70 @@ const DocumentationSettings: React.FC = () => {
   };
 
   const updateServiceCptCodesSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
+    const updatedDocSettings = {
+      ...documentationSettings,
       serviceCptCodes: newSettings
-    }));
+    };
+    updateSettings({
+      documentation_settings: updatedDocSettings
+    });
   };
 
   const updateNotesSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
+    const updatedDocSettings = {
+      ...documentationSettings,
       notesSettings: newSettings
-    }));
+    };
+    updateSettings({
+      documentation_settings: updatedDocSettings
+    });
   };
 
   const updateHealthInformationExchangeSettings = (newSettings: any) => {
-    setSettings(prev => ({
-      ...prev,
+    const updatedDocSettings = {
+      ...documentationSettings,
       healthInformationExchange: newSettings
-    }));
+    };
+    updateSettings({
+      documentation_settings: updatedDocSettings
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <ServiceCptCodesSettings
-        settings={settings.serviceCptCodes}
+        settings={documentationSettings.serviceCptCodes}
         onSettingsChange={updateServiceCptCodesSettings}
         onAddCptCode={handleAddCptCode}
       />
 
       <NotesSettings
-        settings={settings.notesSettings}
+        settings={documentationSettings.notesSettings}
         onSettingsChange={updateNotesSettings}
         onManageDictionary={handleManageDictionary}
       />
 
       <HealthInformationExchangeSettings
-        settings={settings.healthInformationExchange}
+        settings={documentationSettings.healthInformationExchange}
         onSettingsChange={updateHealthInformationExchangeSettings}
         onConnectHIE={handleConnectHIE}
       />
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="px-8">
-          Save Settings
+        <Button 
+          onClick={handleSave} 
+          className="px-8"
+          disabled={isUpdating}
+        >
+          {isUpdating ? 'Saving...' : 'Save Settings'}
         </Button>
       </div>
     </div>
