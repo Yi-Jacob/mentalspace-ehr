@@ -46,7 +46,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="creditCards">Accept credit cards</Label>
             <Switch
               id="creditCards"
-              checked={billingSettings.accept_credit_cards || false}
+              checked={(billingSettings as any)?.accept_credit_cards || false}
               onCheckedChange={(checked) => updateBillingSetting('accept_credit_cards', checked)}
             />
           </div>
@@ -55,7 +55,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="ach">Accept ACH/Bank transfers</Label>
             <Switch
               id="ach"
-              checked={billingSettings.accept_ach || false}
+              checked={(billingSettings as any)?.accept_ach || false}
               onCheckedChange={(checked) => updateBillingSetting('accept_ach', checked)}
             />
           </div>
@@ -63,7 +63,7 @@ const BillingSettings: React.FC = () => {
           <div>
             <Label htmlFor="processor">Payment processor</Label>
             <Select 
-              value={billingSettings.payment_processor || 'stripe'}
+              value={(billingSettings as any)?.payment_processor || 'stripe'}
               onValueChange={(value) => updateBillingSetting('payment_processor', value)}
             >
               <SelectTrigger>
@@ -95,7 +95,7 @@ const BillingSettings: React.FC = () => {
               <Input
                 id="defaultRate"
                 type="number"
-                value={billingSettings.default_hourly_rate || ''}
+                value={(billingSettings as any)?.default_hourly_rate || ''}
                 onChange={(e) => updateBillingSetting('default_hourly_rate', Number(e.target.value))}
                 placeholder="150"
               />
@@ -103,7 +103,7 @@ const BillingSettings: React.FC = () => {
             <div>
               <Label htmlFor="currency">Currency</Label>
               <Select 
-                value={billingSettings.currency || 'USD'}
+                value={(billingSettings as any)?.currency || 'USD'}
                 onValueChange={(value) => updateBillingSetting('currency', value)}
               >
                 <SelectTrigger>
@@ -123,7 +123,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="autoInvoice">Auto-generate invoices</Label>
             <Switch
               id="autoInvoice"
-              checked={billingSettings.auto_generate_invoices || false}
+              checked={(billingSettings as any)?.auto_generate_invoices || false}
               onCheckedChange={(checked) => updateBillingSetting('auto_generate_invoices', checked)}
             />
           </div>
@@ -131,7 +131,7 @@ const BillingSettings: React.FC = () => {
           <div>
             <Label htmlFor="invoiceFrequency">Invoice frequency</Label>
             <Select 
-              value={billingSettings.invoice_frequency || 'monthly'}
+              value={(billingSettings as any)?.invoice_frequency || 'monthly'}
               onValueChange={(value) => updateBillingSetting('invoice_frequency', value)}
             >
               <SelectTrigger>
@@ -161,7 +161,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="insuranceBilling">Enable insurance billing</Label>
             <Switch
               id="insuranceBilling"
-              checked={billingSettings.insurance_billing_enabled || false}
+              checked={(billingSettings as any)?.insurance_billing_enabled || false}
               onCheckedChange={(checked) => updateBillingSetting('insurance_billing_enabled', checked)}
             />
           </div>
@@ -170,7 +170,7 @@ const BillingSettings: React.FC = () => {
             <Label htmlFor="electronicClaims">Submit electronic claims</Label>
             <Switch
               id="electronicClaims"
-              checked={billingSettings.electronic_claims || false}
+              checked={(billingSettings as any)?.electronic_claims || false}
               onCheckedChange={(checked) => updateBillingSetting('electronic_claims', checked)}
             />
           </div>
@@ -178,7 +178,7 @@ const BillingSettings: React.FC = () => {
           <div>
             <Label htmlFor="clearinghouse">Clearinghouse</Label>
             <Select 
-              value={billingSettings.clearinghouse || 'change_healthcare'}
+              value={(billingSettings as any)?.clearinghouse || 'change_healthcare'}
               onValueChange={(value) => updateBillingSetting('clearinghouse', value)}
             >
               <SelectTrigger>

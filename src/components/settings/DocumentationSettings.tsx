@@ -104,19 +104,19 @@ const DocumentationSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <ServiceCptCodesSettings
-        settings={documentationSettings.serviceCptCodes}
+        settings={(documentationSettings as any)?.serviceCptCodes || {}}
         onSettingsChange={updateServiceCptCodesSettings}
         onAddCptCode={handleAddCptCode}
       />
 
       <NotesSettings
-        settings={documentationSettings.notesSettings}
+        settings={(documentationSettings as any)?.notesSettings || {}}
         onSettingsChange={updateNotesSettings}
         onManageDictionary={handleManageDictionary}
       />
 
       <HealthInformationExchangeSettings
-        settings={documentationSettings.healthInformationExchange}
+        settings={(documentationSettings as any)?.healthInformationExchange || {}}
         onSettingsChange={updateHealthInformationExchangeSettings}
         onConnectHIE={handleConnectHIE}
       />

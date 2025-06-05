@@ -19,13 +19,13 @@ const PortalSchedulingSettings: React.FC = () => {
 
   const updatePortalSettings = (newSettings: any) => {
     updateSettings({
-      portal_settings: { ...portalSettings, ...newSettings }
+      portal_settings: { ...(portalSettings as any), ...newSettings }
     });
   };
 
   const updateSchedulingSettings = (newSettings: any) => {
     updateSettings({
-      scheduling_settings: { ...schedulingSettings, ...newSettings }
+      scheduling_settings: { ...(schedulingSettings as any), ...newSettings }
     });
   };
 
@@ -42,42 +42,42 @@ const PortalSchedulingSettings: React.FC = () => {
       case 'portal':
         return (
           <ClientPortalSettings
-            settings={portalSettings.clientPortal || {}}
+            settings={(portalSettings as any)?.clientPortal || {}}
             onSettingsChange={(newSettings) => updatePortalSettings({ clientPortal: newSettings })}
           />
         );
       case 'telehealth':
         return (
           <TelehealthSettings
-            settings={portalSettings.telehealth || {}}
+            settings={(portalSettings as any)?.telehealth || {}}
             onSettingsChange={(newSettings) => updatePortalSettings({ telehealth: newSettings })}
           />
         );
       case 'messaging':
         return (
           <SecureMessagingSettings
-            settings={portalSettings.messaging || {}}
+            settings={(portalSettings as any)?.messaging || {}}
             onSettingsChange={(newSettings) => updatePortalSettings({ messaging: newSettings })}
           />
         );
       case 'reminders':
         return (
           <AppointmentRemindersSettings
-            settings={schedulingSettings.reminders || {}}
+            settings={(schedulingSettings as any)?.reminders || {}}
             onSettingsChange={(newSettings) => updateSchedulingSettings({ reminders: newSettings })}
           />
         );
       case 'calendar':
         return (
           <CalendarSyncSettings
-            settings={schedulingSettings.calendarSync || {}}
+            settings={(schedulingSettings as any)?.calendarSync || {}}
             onSettingsChange={(newSettings) => updateSchedulingSettings({ calendarSync: newSettings })}
           />
         );
       case 'locations':
         return (
           <MultipleLocationsSettings
-            settings={schedulingSettings.locations || {}}
+            settings={(schedulingSettings as any)?.locations || {}}
             onSettingsChange={(newSettings) => updateSchedulingSettings({ locations: newSettings })}
           />
         );

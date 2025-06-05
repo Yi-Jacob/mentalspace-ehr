@@ -9,17 +9,25 @@ interface PracticeSettings {
   id?: string;
   user_id?: string;
   practice_name?: string;
-  practice_address?: any;
-  practice_contact?: any;
-  business_hours?: any;
-  security_settings?: any;
-  portal_settings?: any;
-  scheduling_settings?: any;
-  documentation_settings?: any;
-  billing_settings?: any;
+  practice_address?: Record<string, any>;
+  practice_contact?: Record<string, any>;
+  business_hours?: Record<string, any>;
+  security_settings?: Record<string, any>;
+  portal_settings?: Record<string, any>;
+  scheduling_settings?: Record<string, any>;
+  documentation_settings?: Record<string, any>;
+  billing_settings?: Record<string, any>;
   created_at?: string;
   updated_at?: string;
 }
+
+// Helper function to ensure we have an object
+const ensureObject = (value: any): Record<string, any> => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value;
+  }
+  return {};
+};
 
 export const usePracticeSettings = () => {
   const { toast } = useToast();
@@ -49,6 +57,21 @@ export const usePracticeSettings = () => {
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching practice settings:', error);
         throw error;
+      }
+
+      // Ensure all JSONB fields are objects
+      if (data) {
+        return {
+          ...data,
+          practice_address: ensureObject(data.practice_address),
+          practice_contact: ensureObject(data.practice_contact),
+          business_hours: ensureObject(data.business_hours),
+          security_settings: ensureObject(data.security_settings),
+          portal_settings: ensureObject(data.portal_settings),
+          scheduling_settings: ensureObject(data.scheduling_settings),
+          documentation_settings: ensureObject(data.documentation_settings),
+          billing_settings: ensureObject(data.billing_settings),
+        };
       }
 
       return data;
