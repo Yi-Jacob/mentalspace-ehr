@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -46,7 +45,7 @@ export const useExecutiveDashboardData = (timeRange: string = '30') => {
 
       if (cachedData) {
         console.log('Using cached data for executive dashboard');
-        return cachedData as ExecutiveDashboardData;
+        return cachedData as unknown as ExecutiveDashboardData;
       }
 
       // Get current user for logging
@@ -78,16 +77,16 @@ export const useExecutiveDashboardData = (timeRange: string = '30') => {
         appointmentsChange: Number(result.appointments_change || 0),
         notesCompleted: Number(result.notes_completed || 0),
         notesChange: Number(result.notes_change || 0),
-        revenueData: result.revenue_trend || [],
-        patientDemographics: result.patient_demographics || [],
-        providerUtilization: result.provider_utilization || []
+        revenueData: Array.isArray(result.revenue_trend) ? result.revenue_trend : [],
+        patientDemographics: Array.isArray(result.patient_demographics) ? result.patient_demographics : [],
+        providerUtilization: Array.isArray(result.provider_utilization) ? result.provider_utilization : []
       };
 
       // Cache the result
       await supabase.rpc('cache_report_data', {
         p_cache_key: cacheKey,
         p_report_type: 'executive_dashboard',
-        p_data: dashboardData,
+        p_data: dashboardData as any,
         p_ttl_minutes: 60
       });
 
@@ -129,7 +128,7 @@ export const useClinicalReportsData = (timeRange: string = '30', providerFilter?
 
       if (cachedData) {
         console.log('Using cached data for clinical reports');
-        return cachedData as ClinicalReportsData;
+        return cachedData as unknown as ClinicalReportsData;
       }
 
       // Get current user for logging
@@ -159,16 +158,16 @@ export const useClinicalReportsData = (timeRange: string = '30', providerFilter?
         notesOverdue: Number(result.notes_overdue || 0),
         avgCompletionTime: Number(result.avg_completion_time || 0),
         complianceRate: Number(result.compliance_rate || 0),
-        notesByType: result.notes_by_type || [],
-        providerProductivity: result.provider_productivity || [],
-        diagnosisDistribution: result.diagnosis_distribution || []
+        notesByType: Array.isArray(result.notes_by_type) ? result.notes_by_type : [],
+        providerProductivity: Array.isArray(result.provider_productivity) ? result.provider_productivity : [],
+        diagnosisDistribution: Array.isArray(result.diagnosis_distribution) ? result.diagnosis_distribution : []
       };
 
       // Cache the result
       await supabase.rpc('cache_report_data', {
         p_cache_key: cacheKey,
         p_report_type: 'clinical_reports',
-        p_data: clinicalData,
+        p_data: clinicalData as any,
         p_ttl_minutes: 30
       });
 
