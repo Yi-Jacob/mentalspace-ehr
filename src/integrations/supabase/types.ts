@@ -3905,6 +3905,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_practice_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_report_usage: {
         Args: {
           p_user_id: string

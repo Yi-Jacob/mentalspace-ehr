@@ -11,14 +11,14 @@ export const useEnhancedStaffRoles = () => {
   const queryClient = useQueryClient();
   const { hasPermission, canManageUsers, canAssignRoles } = usePermissions();
 
-  // Fetch all user roles using the new security definer function
+  // Fetch all user roles using the security definer function
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['current-user-roles'],
     queryFn: async () => {
       console.log('Enhanced: Fetching user roles...');
       
       try {
-        // Use the new security definer function to get current user roles
+        // Use the security definer function to get current user roles
         const { data, error } = await supabase
           .rpc('get_current_user_roles');
 

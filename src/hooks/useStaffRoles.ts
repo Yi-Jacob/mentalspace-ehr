@@ -16,7 +16,7 @@ export const useStaffRoles = () => {
       console.log('Fetching user roles...');
       
       try {
-        // Use the new security definer function to get current user roles
+        // Use the security definer function to get current user roles
         const { data, error } = await supabase
           .rpc('get_current_user_roles');
 
@@ -61,7 +61,7 @@ export const useStaffRoles = () => {
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: role as any,
+          role: role,
           assigned_by: currentUser.user_id,
         })
         .select()
@@ -95,7 +95,7 @@ export const useStaffRoles = () => {
         .from('user_roles')
         .update({ is_active: false })
         .eq('user_id', userId)
-        .eq('role', role as any);
+        .eq('role', role);
 
       if (error) throw error;
     },

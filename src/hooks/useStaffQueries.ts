@@ -11,12 +11,12 @@ export const useStaffQueries = () => {
       console.log('Fetching staff members...');
       
       try {
-        // First, get all users with their staff profiles using explicit relationship
+        // Get all users with their staff profiles
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select(`
             *,
-            staff_profile:staff_profiles!staff_profiles_user_id_fkey(*)
+            staff_profile:staff_profiles(*)
           `)
           .eq('is_active', true);
 
@@ -27,7 +27,7 @@ export const useStaffQueries = () => {
         
         console.log('Raw users data:', usersData);
 
-        // Then get all user roles separately to avoid RLS recursion
+        // Get all user roles separately
         const { data: rolesData, error: rolesError } = await supabase
           .from('user_roles')
           .select('*')
