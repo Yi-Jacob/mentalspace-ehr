@@ -9,7 +9,7 @@ export const useStaffRoles = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check if current user has specific role using the new security definer function
+  // Check if current user has specific role using the security definer function
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['current-user-roles'],
     queryFn: async () => {
@@ -32,11 +32,12 @@ export const useStaffRoles = () => {
         return [];
       }
     },
+    retry: 1,
   });
 
   const hasRole = useCallback((role: UserRole): boolean => {
     const result = userRoles?.some(r => r.role === role) || false;
-    console.log(`Checking role ${role}:`, result);
+    console.log(`Checking role ${role}:`, result, 'Available roles:', userRoles);
     return result;
   }, [userRoles]);
 

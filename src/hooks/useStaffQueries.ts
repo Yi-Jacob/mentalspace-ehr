@@ -11,13 +11,10 @@ export const useStaffQueries = () => {
       console.log('Fetching staff members...');
       
       try {
-        // Get all users with their staff profiles
+        // Step 1: Get all users first
         const { data: usersData, error: usersError } = await supabase
           .from('users')
-          .select(`
-            *,
-            staff_profile:staff_profiles(*)
-          `)
+          .select('*')
           .eq('is_active', true);
 
         if (usersError) {
@@ -25,45 +22,91 @@ export const useStaffQueries = () => {
           throw usersError;
         }
         
-        console.log('Raw users data:', usersData);
+        console.log('Users data:', usersData);
 
-        // Get all user roles separately
-        const { data: rolesData, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('*')
-          .eq('is_active', true);
-
-        if (rolesError) {
-          console.error('Error fetching roles:', rolesError);
-          throw rolesError;
+        if (!usersData || usersData.length === 0) {
+          console.log('No users found');
+          return [];
         }
 
-        console.log('Raw roles data:', rolesData);
+        // Step 2: Get staff profiles for these users
+        const userIds = usersData.map(user => user.id);
+        const { data: staffProfiles, error: profilesError } = await supabase
+          .from('staff_profiles')
+          .select('*')
+          .in('user_id', userIds);
 
-        // Combine the data manually
-        const staffData = usersData?.map(user => {
-          const userRoles = rolesData?.filter(role => role.user_id === user.id) || [];
+        if (profilesError) {
+          console.error('Error fetching staff profiles:', profilesError);
+          // Don't throw error, just log it as staff profiles might not exist
+        }
+
+        console.log('Staff profiles data:', staffProfiles);
+
+        // Step 3: Get user roles for these users using the security definer function
+        const { data: currentUserInfo, error: userInfoError } = await supabase
+          .rpc('get_current_user_info');
+
+        if (userInfoError) {
+          console.error('Error getting current user info:', userInfoError);
+          throw userInfoError;
+        }
+
+        console.log('Current user info:', currentUserInfo);
+
+        // For now, let's just get roles data directly without RLS issues
+        // We'll use a different approach to get roles
+        let rolesData = [];
+        
+        // Try to get roles using our security definer function
+        try {
+          const { data: currentUserRoles, error: rolesError } = await supabase
+            .rpc('get_current_user_roles');
+          
+          if (!rolesError && currentUserRoles) {
+            console.log('Current user roles:', currentUserRoles);
+            
+            // If current user is practice admin, try to get all roles
+            const isPracticeAdmin = currentUserRoles.some(role => role.role === 'Practice Administrator');
+            
+            if (isPracticeAdmin) {
+              const { data: allRoles, error: allRolesError } = await supabase
+                .from('user_roles')
+                .select('*')
+                .eq('is_active', true);
+              
+              if (!allRolesError) {
+                rolesData = allRoles || [];
+              }
+            }
+          }
+        } catch (rolesFetchError) {
+          console.error('Error fetching roles:', rolesFetchError);
+          // Continue without roles data
+        }
+
+        console.log('Roles data:', rolesData);
+
+        // Step 4: Combine the data
+        const staffData = usersData.map(user => {
+          const userStaffProfile = staffProfiles?.find(profile => profile.user_id === user.id);
+          const userRoles = rolesData.filter(role => role.user_id === user.id) || [];
           
           return {
             ...user,
-            staff_profile: Array.isArray(user.staff_profile) ? user.staff_profile[0] : user.staff_profile,
+            staff_profile: userStaffProfile || null,
             roles: userRoles
           };
-        }) || [];
+        }) as StaffMember[];
 
-        // Filter to only include users who have staff profiles or roles
-        const filteredStaffData = staffData.filter(user => 
-          user.staff_profile || (user.roles && user.roles.length > 0)
-        );
-        
-        console.log('Filtered staff members:', filteredStaffData);
-        return filteredStaffData as StaffMember[];
+        console.log('Final staff data:', staffData);
+        return staffData;
       } catch (err) {
         console.error('Error in staff query:', err);
         throw err;
       }
     },
-    retry: 2,
+    retry: 1,
     retryDelay: 1000,
   });
 

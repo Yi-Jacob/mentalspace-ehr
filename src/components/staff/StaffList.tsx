@@ -19,6 +19,11 @@ const StaffList: React.FC = () => {
 
   const canManageStaff = hasRole('Practice Administrator');
 
+  console.log('StaffList - staffMembers:', staffMembers);
+  console.log('StaffList - isLoading:', isLoading);
+  console.log('StaffList - error:', error);
+  console.log('StaffList - canManageStaff:', canManageStaff);
+
   const filteredStaff = staffMembers?.filter(staff =>
     `${staff.first_name} ${staff.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,6 +66,8 @@ const StaffList: React.FC = () => {
           <AlertDescription>
             Error loading staff: {error.message || 'Unknown error occurred'}
             <br />
+            Please check the console for more details.
+            <br />
             <Button 
               variant="outline" 
               size="sm" 
@@ -71,6 +78,52 @@ const StaffList: React.FC = () => {
             </Button>
           </AlertDescription>
         </Alert>
+      </div>
+    );
+  }
+
+  // Show message if no staff members at all
+  if (!staffMembers || staffMembers.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <Input
+              placeholder="Search team members by name, email, or ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 h-12 text-lg bg-white/80 backdrop-blur-sm border-white/20 rounded-xl shadow-lg focus:shadow-xl transition-all duration-300"
+            />
+          </div>
+        </div>
+
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No staff members found in the system. This could be because:
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>No staff members have been added yet</li>
+              <li>You don't have permission to view staff members</li>
+              <li>There's a configuration issue with roles and permissions</li>
+            </ul>
+            <div className="mt-3">
+              <p className="text-sm text-gray-600">
+                Current user permissions: {canManageStaff ? 'Can manage staff' : 'Cannot manage staff'}
+              </p>
+            </div>
+          </AlertDescription>
+        </Alert>
+
+        <div className="text-center py-16">
+          <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+            <Users className="h-12 w-12 text-blue-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">No team members found</h3>
+          <p className="text-gray-500">Start building your amazing team!</p>
+        </div>
       </div>
     );
   }
@@ -100,15 +153,14 @@ const StaffList: React.FC = () => {
         </Button>
       </div>
 
-      {/* Debug Info - Remove this after testing */}
-      {process.env.NODE_ENV === 'development' && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Debug: Found {staffMembers?.length || 0} staff members total, {filteredStaff.length} after filtering
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Debug Info */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Debug: Found {staffMembers?.length || 0} staff members total, {filteredStaff.length} after filtering.
+          Can manage staff: {canManageStaff ? 'Yes' : 'No'}
+        </AlertDescription>
+      </Alert>
 
       {/* Staff Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -215,24 +267,20 @@ const StaffList: React.FC = () => {
         ))}
       </div>
 
-      {filteredStaff.length === 0 && !isLoading && !error && (
+      {filteredStaff.length === 0 && searchTerm && (
         <div className="text-center py-16">
           <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
             <Users className="h-12 w-12 text-blue-600" />
           </div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No team members found</h3>
-          <p className="text-gray-500">
-            {searchTerm ? 'Try adjusting your search terms.' : 'Start building your amazing team!'}
-          </p>
-          {searchTerm && (
-            <Button 
-              variant="outline" 
-              onClick={() => setSearchTerm('')} 
-              className="mt-4 bg-white/80 backdrop-blur-sm border-white/20"
-            >
-              Clear Search
-            </Button>
-          )}
+          <p className="text-gray-500">Try adjusting your search terms.</p>
+          <Button 
+            variant="outline" 
+            onClick={() => setSearchTerm('')} 
+            className="mt-4 bg-white/80 backdrop-blur-sm border-white/20"
+          >
+            Clear Search
+          </Button>
         </div>
       )}
 
