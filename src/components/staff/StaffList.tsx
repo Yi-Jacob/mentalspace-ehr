@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +13,26 @@ import { StaffMember, UserRole } from '@/types/staff';
 import EditStaffModal from './EditStaffModal';
 
 const StaffList: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const { staffMembers, isLoading, error, deactivateStaff } = useStaffManagement();
   const { hasRole } = useStaffRoles();
 
   const canManageStaff = hasRole('Practice Administrator');
+
+  // Handle URL parameter for selected staff member
+  useEffect(() => {
+    const selectedId = searchParams.get('selected');
+    if (selectedId && staffMembers) {
+      const staff = staffMembers.find(s => s.id === selectedId);
+      if (staff) {
+        setSelectedStaff(staff);
+        // Clear the URL parameter
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, staffMembers, setSearchParams]);
 
   console.log('StaffList - staffMembers:', staffMembers);
   console.log('StaffList - isLoading:', isLoading);
