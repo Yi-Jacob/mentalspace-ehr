@@ -46,7 +46,7 @@ const StaffPage: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="roles" className="space-y-6">
+        <Tabs defaultValue="workflow" className="space-y-6">
           <TabsList className="grid w-full grid-cols-9 bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg rounded-xl p-2">
             <TabsTrigger value="workflow" className="flex items-center space-x-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white rounded-lg transition-all">
               <Settings className="h-4 w-4" />

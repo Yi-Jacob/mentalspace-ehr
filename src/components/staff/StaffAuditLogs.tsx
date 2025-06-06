@@ -11,15 +11,15 @@ const StaffAuditLogs: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <BookOpen className="h-5 w-5" />
-            <span>Audit Logs</span>
+            <span>Staff Audit Logs</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Audit logs functionality will be implemented here. This will include staff activity logs,
-              access logs, and system audit trails.
+              Staff audit logs functionality will be implemented here. This will include user activity 
+              tracking, access logs, permission changes, and system events related to staff management.
             </AlertDescription>
           </Alert>
         </CardContent>

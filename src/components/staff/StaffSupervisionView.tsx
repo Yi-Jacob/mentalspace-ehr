@@ -1,46 +1,29 @@
 
 import React from 'react';
-import { TabsContent } from '@/components/ui/tabs';
-import SupervisionHeader from './supervision/SupervisionHeader';
-import SupervisionStatsCards from './supervision/SupervisionStatsCards';
-import SupervisionTabs from './supervision/SupervisionTabs';
-import SupervisionDashboard from './supervision/SupervisionDashboard';
-import SupervisionSessions from './supervision/SupervisionSessions';
-import SupervisionRelationships from './supervision/SupervisionRelationships';
-import SupervisionReviews from './supervision/SupervisionReviews';
-import SupervisionProgress from './supervision/SupervisionProgress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { UserCog, Info } from 'lucide-react';
 
 const StaffSupervisionView: React.FC = () => {
-  const handleNewSession = () => {
-    console.log('New session clicked');
-  };
-
   return (
-    <div className="space-y-8">
-      <SupervisionHeader onNewSession={handleNewSession} />
-      <SupervisionStatsCards />
-      
-      <SupervisionTabs defaultValue="dashboard">
-        <TabsContent value="dashboard" className="space-y-6">
-          <SupervisionDashboard />
-        </TabsContent>
-
-        <TabsContent value="sessions" className="space-y-6">
-          <SupervisionSessions />
-        </TabsContent>
-
-        <TabsContent value="relationships" className="space-y-6">
-          <SupervisionRelationships />
-        </TabsContent>
-
-        <TabsContent value="notes" className="space-y-6">
-          <SupervisionReviews />
-        </TabsContent>
-
-        <TabsContent value="progress" className="space-y-6">
-          <SupervisionProgress />
-        </TabsContent>
-      </SupervisionTabs>
+    <div className="space-y-6">
+      <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <UserCog className="h-5 w-5" />
+            <span>Staff Supervision</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Staff supervision functionality will be implemented here. This will include supervision 
+              relationships, supervision notes, progress tracking, and compliance monitoring.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     </div>
   );
 };
