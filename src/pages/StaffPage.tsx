@@ -6,6 +6,7 @@ import { Plus, Users, Shield, Settings, Eye, UserCog, BookOpen, Clock, TrendingU
 import { useNavigate } from 'react-router-dom';
 import RoleManagement from '@/components/staff/RoleManagement';
 import StaffWorkflowView from '@/components/staff/StaffWorkflowView';
+import StaffList from '@/components/staff/StaffList';
 import StaffAccessManagement from '@/components/staff/StaffAccessManagement';
 import StaffSupervisionView from '@/components/staff/StaffSupervisionView';
 import StaffAuditLogs from '@/components/staff/StaffAuditLogs';
@@ -91,7 +92,7 @@ const StaffPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="staff" className="space-y-6">
-            <StaffWorkflowView />
+            <StaffList />
           </TabsContent>
 
           <TabsContent value="roles" className="space-y-6">
