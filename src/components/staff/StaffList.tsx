@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Edit, UserMinus, Phone, Mail, Star, Users } from 'lucide-react';
+import { Search, Edit, UserMinus, Phone, Mail, Star, Users, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useStaffManagement } from '@/hooks/useStaffManagement';
 import { useStaffRoles } from '@/hooks/useStaffRoles';
 import { StaffMember, UserRole } from '@/types/staff';
@@ -13,7 +14,7 @@ import EditStaffModal from './EditStaffModal';
 const StaffList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-  const { staffMembers, isLoading, deactivateStaff } = useStaffManagement();
+  const { staffMembers, isLoading, error, deactivateStaff } = useStaffManagement();
   const { hasRole } = useStaffRoles();
 
   const canManageStaff = hasRole('Practice Administrator');
@@ -51,6 +52,29 @@ const StaffList: React.FC = () => {
     );
   }
 
+  if (error) {
+    console.error('Staff loading error:', error);
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Error loading staff: {error.message || 'Unknown error occurred'}
+            <br />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Modern Search Bar */}
@@ -76,6 +100,16 @@ const StaffList: React.FC = () => {
         </Button>
       </div>
 
+      {/* Debug Info - Remove this after testing */}
+      {process.env.NODE_ENV === 'development' && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Debug: Found {staffMembers?.length || 0} staff members total, {filteredStaff.length} after filtering
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Staff Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredStaff.map((staff) => (
@@ -94,7 +128,7 @@ const StaffList: React.FC = () => {
                       <Star className="h-5 w-5 text-yellow-500" />
                     )}
                   </CardTitle>
-                  <p className="text-sm text-gray-600 font-medium">{staff.staff_profile?.job_title}</p>
+                  <p className="text-sm text-gray-600 font-medium">{staff.staff_profile?.job_title || 'No job title'}</p>
                   {staff.staff_profile?.employee_id && (
                     <p className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full w-fit">
                       ID: {staff.staff_profile.employee_id}
@@ -181,7 +215,7 @@ const StaffList: React.FC = () => {
         ))}
       </div>
 
-      {filteredStaff.length === 0 && (
+      {filteredStaff.length === 0 && !isLoading && !error && (
         <div className="text-center py-16">
           <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
             <Users className="h-12 w-12 text-blue-600" />
