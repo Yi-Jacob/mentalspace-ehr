@@ -1,117 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GraduationCap, Award, AlertTriangle, Plus, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { GraduationCap, Calendar, AlertTriangle, Plus, BookOpen, Award } from 'lucide-react';
 import { useTrainingRecords } from '@/hooks/useTrainingRecords';
-import { useCertifications } from '@/hooks/useCertifications';
-import { supabase } from '@/integrations/supabase/client';
-import { format, differenceInDays } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const TrainingCertificationView: React.FC = () => {
-  const { trainingRecords, isLoading: trainingLoading, addTrainingRecord } = useTrainingRecords();
-  const { certifications, expiringCertifications, isLoading: certLoading, addCertification } = useCertifications();
-  
-  const [showTrainingDialog, setShowTrainingDialog] = useState(false);
-  const [showCertDialog, setShowCertDialog] = useState(false);
-  
-  const [newTraining, setNewTraining] = useState({
-    training_title: '',
-    training_type: 'continuing_education',
-    provider_organization: '',
-    completion_date: '',
-    expiry_date: '',
-    hours_completed: '',
-    certificate_number: '',
-    status: 'completed',
-    notes: '',
-  });
-
-  const [newCertification, setNewCertification] = useState({
-    certification_name: '',
-    certification_number: '',
-    issuing_organization: '',
-    issue_date: '',
-    expiry_date: '',
-    renewal_period_months: '24',
-    status: 'active',
-    notes: '',
-  });
-
-  const handleAddTraining = async () => {
-    const { data: userInfo } = await supabase.rpc('get_current_user_info');
-    if (!userInfo?.[0]) return;
-
-    await addTrainingRecord.mutateAsync({
-      user_id: userInfo[0].user_id,
-      training_title: newTraining.training_title,
-      training_type: newTraining.training_type,
-      provider_organization: newTraining.provider_organization || undefined,
-      completion_date: newTraining.completion_date || undefined,
-      expiry_date: newTraining.expiry_date || undefined,
-      hours_completed: newTraining.hours_completed ? parseFloat(newTraining.hours_completed) : undefined,
-      certificate_number: newTraining.certificate_number || undefined,
-      status: newTraining.status as any,
-      notes: newTraining.notes || undefined,
-    });
-    setShowTrainingDialog(false);
-    setNewTraining({
-      training_title: '',
-      training_type: 'continuing_education',
-      provider_organization: '',
-      completion_date: '',
-      expiry_date: '',
-      hours_completed: '',
-      certificate_number: '',
-      status: 'completed',
-      notes: '',
-    });
-  };
-
-  const handleAddCertification = async () => {
-    const { data: userInfo } = await supabase.rpc('get_current_user_info');
-    if (!userInfo?.[0]) return;
-
-    await addCertification.mutateAsync({
-      user_id: userInfo[0].user_id,
-      certification_name: newCertification.certification_name,
-      certification_number: newCertification.certification_number || undefined,
-      issuing_organization: newCertification.issuing_organization,
-      issue_date: newCertification.issue_date || undefined,
-      expiry_date: newCertification.expiry_date,
-      renewal_period_months: parseInt(newCertification.renewal_period_months),
-      status: newCertification.status as any,
-      notes: newCertification.notes || undefined,
-    });
-    setShowCertDialog(false);
-    setNewCertification({
-      certification_name: '',
-      certification_number: '',
-      issuing_organization: '',
-      issue_date: '',
-      expiry_date: '',
-      renewal_period_months: '24',
-      status: 'active',
-      notes: '',
-    });
-  };
-
-  const getExpiryStatus = (expiryDate: string) => {
-    const daysUntilExpiry = differenceInDays(new Date(expiryDate), new Date());
-    if (daysUntilExpiry < 0) return { status: 'expired', color: 'bg-red-500' };
-    if (daysUntilExpiry <= 30) return { status: 'critical', color: 'bg-red-500' };
-    if (daysUntilExpiry <= 90) return { status: 'warning', color: 'bg-yellow-500' };
-    return { status: 'active', color: 'bg-green-500' };
-  };
-
-  const isLoading = trainingLoading || certLoading;
+  const { trainingRecords, isLoading } = useTrainingRecords();
 
   if (isLoading) {
     return (
@@ -121,297 +18,177 @@ const TrainingCertificationView: React.FC = () => {
     );
   }
 
+  const mockTrainingData = [
+    {
+      id: '1',
+      staff: 'Dr. Sarah Johnson',
+      certifications: [
+        { name: 'Clinical Psychology License', status: 'active', expiry: '2024-12-15' },
+        { name: 'Trauma Therapy Certification', status: 'expires_soon', expiry: '2024-08-30' }
+      ],
+      trainings: [
+        { name: 'HIPAA Compliance 2024', completed: true, date: '2024-01-15' },
+        { name: 'Crisis Intervention', completed: false, progress: 60 }
+      ]
+    },
+    {
+      id: '2',
+      staff: 'Mike Chen',
+      certifications: [
+        { name: 'Licensed Clinical Social Worker', status: 'active', expiry: '2025-06-20' },
+        { name: 'Substance Abuse Counseling', status: 'expired', expiry: '2024-01-10' }
+      ],
+      trainings: [
+        { name: 'Ethics in Practice', completed: true, date: '2024-02-20' },
+        { name: 'Motivational Interviewing', completed: false, progress: 30 }
+      ]
+    }
+  ];
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-500">Active</Badge>;
+      case 'expires_soon':
+        return <Badge variant="secondary" className="bg-yellow-500 text-white">Expires Soon</Badge>;
+      case 'expired':
+        return <Badge variant="destructive">Expired</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Expiring Certifications Alert */}
-      {expiringCertifications && expiringCertifications.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-orange-800">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Certifications Requiring Attention</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {expiringCertifications.slice(0, 3).map((cert) => (
-                <div key={cert.id} className="flex items-center justify-between">
-                  <span className="font-medium">{cert.certification_name}</span>
-                  <Badge className="bg-orange-500">
-                    Expires {format(new Date(cert.expiry_date), 'MMM dd, yyyy')}
-                  </Badge>
-                </div>
-              ))}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <GraduationCap className="h-6 w-6" />
+          <h2 className="text-2xl font-bold">Training & Certifications</h2>
+        </div>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Training Record
+        </Button>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Award className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm text-gray-600">Active Certifications</p>
+                <p className="text-2xl font-bold text-green-600">8</p>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      <Tabs defaultValue="training" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="training" className="flex items-center space-x-2">
-            <GraduationCap className="h-4 w-4" />
-            <span>Training Records</span>
-          </TabsTrigger>
-          <TabsTrigger value="certifications" className="flex items-center space-x-2">
-            <Award className="h-4 w-4" />
-            <span>Certifications</span>
-          </TabsTrigger>
-        </TabsList>
+        <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              <div>
+                <p className="text-sm text-gray-600">Expiring Soon</p>
+                <p className="text-2xl font-bold text-yellow-600">2</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="training" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Training Records</h3>
-            <Dialog open={showTrainingDialog} onOpenChange={setShowTrainingDialog}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Training
+        <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <BookOpen className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm text-gray-600">In Progress</p>
+                <p className="text-2xl font-bold text-blue-600">5</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm text-gray-600">Due This Month</p>
+                <p className="text-2xl font-bold text-purple-600">3</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Staff Training Details */}
+      <div className="space-y-4">
+        {mockTrainingData.map((staff) => (
+          <Card key={staff.id} className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>{staff.staff}</span>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Record
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add Training Record</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Training Title</Label>
-                    <Input
-                      value={newTraining.training_title}
-                      onChange={(e) => setNewTraining(prev => ({ ...prev, training_title: e.target.value }))}
-                      placeholder="Training name..."
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Type</Label>
-                      <Select 
-                        value={newTraining.training_type}
-                        onValueChange={(value) => setNewTraining(prev => ({ ...prev, training_type: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="continuing_education">Continuing Education</SelectItem>
-                          <SelectItem value="workshop">Workshop</SelectItem>
-                          <SelectItem value="conference">Conference</SelectItem>
-                          <SelectItem value="certification">Certification</SelectItem>
-                          <SelectItem value="internal_training">Internal Training</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Hours</Label>
-                      <Input
-                        type="number"
-                        value={newTraining.hours_completed}
-                        onChange={(e) => setNewTraining(prev => ({ ...prev, hours_completed: e.target.value }))}
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Provider Organization</Label>
-                    <Input
-                      value={newTraining.provider_organization}
-                      onChange={(e) => setNewTraining(prev => ({ ...prev, provider_organization: e.target.value }))}
-                      placeholder="Organization name..."
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Completion Date</Label>
-                      <Input
-                        type="date"
-                        value={newTraining.completion_date}
-                        onChange={(e) => setNewTraining(prev => ({ ...prev, completion_date: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label>Expiry Date</Label>
-                      <Input
-                        type="date"
-                        value={newTraining.expiry_date}
-                        onChange={(e) => setNewTraining(prev => ({ ...prev, expiry_date: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Certificate Number</Label>
-                    <Input
-                      value={newTraining.certificate_number}
-                      onChange={(e) => setNewTraining(prev => ({ ...prev, certificate_number: e.target.value }))}
-                      placeholder="Certificate ID..."
-                    />
-                  </div>
-                  <div>
-                    <Label>Notes</Label>
-                    <Textarea
-                      value={newTraining.notes}
-                      onChange={(e) => setNewTraining(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Additional notes..."
-                    />
-                  </div>
-                  <Button onClick={handleAddTraining} className="w-full">
-                    Add Training Record
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="grid gap-4">
-            {trainingRecords?.map((training) => (
-              <Card key={training.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <GraduationCap className="h-5 w-5 text-blue-600" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Certifications */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <Award className="h-4 w-4 mr-2" />
+                    Certifications
+                  </h4>
+                  <div className="space-y-2">
+                    {staff.certifications.map((cert, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                         <div>
-                          <h3 className="font-medium">{training.training_title}</h3>
-                          <p className="text-sm text-gray-600">{training.provider_organization}</p>
-                          {training.completion_date && (
-                            <p className="text-xs text-gray-500">
-                              Completed: {format(new Date(training.completion_date), 'MMM dd, yyyy')}
-                            </p>
+                          <p className="font-medium text-sm">{cert.name}</p>
+                          <p className="text-xs text-gray-600">Expires: {cert.expiry}</p>
+                        </div>
+                        {getStatusBadge(cert.status)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Training Progress */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Training Progress
+                  </h4>
+                  <div className="space-y-3">
+                    {staff.trainings.map((training, index) => (
+                      <div key={index} className="p-2 bg-gray-50 rounded">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium text-sm">{training.name}</p>
+                          {training.completed ? (
+                            <Badge className="bg-green-500">Completed</Badge>
+                          ) : (
+                            <span className="text-xs text-gray-600">{training.progress}%</span>
                           )}
                         </div>
-                      </div>
-                    </div>
-                    <div className="text-right space-y-1">
-                      <Badge className={training.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'}>
-                        {training.status}
-                      </Badge>
-                      {training.hours_completed && (
-                        <p className="text-sm text-gray-600">{training.hours_completed}h</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="certifications" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Certifications</h3>
-            <Dialog open={showCertDialog} onOpenChange={setShowCertDialog}>
-              <DialogTrigger asChild>
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Certification
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add Certification</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Certification Name</Label>
-                    <Input
-                      value={newCertification.certification_name}
-                      onChange={(e) => setNewCertification(prev => ({ ...prev, certification_name: e.target.value }))}
-                      placeholder="Certification name..."
-                    />
-                  </div>
-                  <div>
-                    <Label>Issuing Organization</Label>
-                    <Input
-                      value={newCertification.issuing_organization}
-                      onChange={(e) => setNewCertification(prev => ({ ...prev, issuing_organization: e.target.value }))}
-                      placeholder="Organization name..."
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Issue Date</Label>
-                      <Input
-                        type="date"
-                        value={newCertification.issue_date}
-                        onChange={(e) => setNewCertification(prev => ({ ...prev, issue_date: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label>Expiry Date</Label>
-                      <Input
-                        type="date"
-                        value={newCertification.expiry_date}
-                        onChange={(e) => setNewCertification(prev => ({ ...prev, expiry_date: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Certificate Number</Label>
-                    <Input
-                      value={newCertification.certification_number}
-                      onChange={(e) => setNewCertification(prev => ({ ...prev, certification_number: e.target.value }))}
-                      placeholder="Certificate ID..."
-                    />
-                  </div>
-                  <div>
-                    <Label>Renewal Period (months)</Label>
-                    <Select 
-                      value={newCertification.renewal_period_months}
-                      onValueChange={(value) => setNewCertification(prev => ({ ...prev, renewal_period_months: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="12">12 months</SelectItem>
-                        <SelectItem value="24">24 months</SelectItem>
-                        <SelectItem value="36">36 months</SelectItem>
-                        <SelectItem value="60">60 months</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button onClick={handleAddCertification} className="w-full">
-                    Add Certification
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="grid gap-4">
-            {certifications?.map((cert) => {
-              const expiryStatus = getExpiryStatus(cert.expiry_date);
-              return (
-                <Card key={cert.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <Award className="h-5 w-5 text-green-600" />
-                          <div>
-                            <h3 className="font-medium">{cert.certification_name}</h3>
-                            <p className="text-sm text-gray-600">{cert.issuing_organization}</p>
-                            <p className="text-xs text-gray-500">
-                              Expires: {format(new Date(cert.expiry_date), 'MMM dd, yyyy')}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right space-y-1">
-                        <Badge className={expiryStatus.color}>
-                          {cert.status}
-                        </Badge>
-                        {cert.certification_number && (
-                          <p className="text-xs text-gray-500">#{cert.certification_number}</p>
+                        {!training.completed && (
+                          <Progress value={training.progress} className="h-2" />
+                        )}
+                        {training.completed && (
+                          <p className="text-xs text-gray-600">Completed: {training.date}</p>
                         )}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </TabsContent>
-      </Tabs>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
