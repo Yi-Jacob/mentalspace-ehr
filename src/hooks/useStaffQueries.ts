@@ -11,12 +11,12 @@ export const useStaffQueries = () => {
       console.log('Fetching staff members...');
       
       try {
-        // First, get all users with their staff profiles
+        // First, get all users with their staff profiles using explicit relationship
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select(`
             *,
-            staff_profile:staff_profiles(*)
+            staff_profile:staff_profiles!staff_profiles_user_id_fkey(*)
           `)
           .eq('is_active', true);
 

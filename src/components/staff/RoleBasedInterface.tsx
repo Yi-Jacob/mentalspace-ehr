@@ -1,21 +1,30 @@
 
 import React from 'react';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
-import { UserRole } from '@/types/staff';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Users, Calendar, FileText, DollarSign } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Shield, Users, AlertTriangle } from 'lucide-react';
+import { UserRole } from '@/types/staff';
 
-const RoleBasedInterface: React.FC = () => {
-  const {
-    userRoles,
-    rolesLoading,
-    hasRole,
-    isClinicalAdministrator,
-    canSupervise,
-    canBillInsurance,
-    hasScheduleAccess,
-    canCreateNoteType
+interface RoleBasedInterfaceProps {
+  children?: React.ReactNode;
+  requiredRoles?: UserRole[];
+  fallbackMessage?: string;
+}
+
+const RoleBasedInterface: React.FC<RoleBasedInterfaceProps> = ({
+  children,
+  requiredRoles = [],
+  fallbackMessage = "You don't have permission to access this content.",
+}) => {
+  const { 
+    userRoles, 
+    rolesLoading, 
+    hasRole, 
+    hasAnyRole,
+    canManageUsers,
+    canAssignRoles 
   } = useEnhancedStaffRoles();
 
   if (rolesLoading) {
@@ -26,173 +35,94 @@ const RoleBasedInterface: React.FC = () => {
     );
   }
 
-  const activeRoles = userRoles?.filter(role => role.is_active) || [];
+  // If no specific roles required, show content
+  if (requiredRoles.length === 0) {
+    return <>{children}</>;
+  }
 
-  const getRoleCapabilities = (role: UserRole) => {
-    const capabilities: string[] = [];
+  // Check if user has any of the required roles
+  const hasAccess = hasAnyRole(requiredRoles);
 
-    switch (role) {
-      case 'Practice Administrator':
-        capabilities.push('User Management', 'System Configuration', 'Audit Logs', 'Role Assignment');
-        break;
-      case 'Clinician':
-        capabilities.push('Clinical Notes', 'Patient Records', 'Treatment Plans', 'Schedule Management');
-        break;
-      case 'Clinical Administrator':
-        capabilities.push('All Patient Access', 'Note Deletion', 'Access Management', 'Clinical Policies');
-        break;
-      case 'Supervisor':
-        capabilities.push('Supervisee Notes', 'Co-signing', 'Note Reopening', 'Supervision Sessions');
-        break;
-      case 'Practice Scheduler':
-        capabilities.push('All Schedules', 'Appointment Management', 'Basic Patient Info', 'Limited Notes');
-        break;
-      case 'Practice Biller':
-        capabilities.push('All Billing', 'Claims Management', 'Reports', 'Payment Processing');
-        break;
-      case 'Biller for Assigned Patients Only':
-        capabilities.push('Patient Billing', 'Copay Collection', 'Insurance Verification');
-        break;
-      case 'Intern':
-      case 'Assistant':
-      case 'Associate':
-        capabilities.push('Clinical Notes (Supervised)', 'Patient Records', 'No Direct Billing');
-        break;
-    }
+  if (!hasAccess) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>{fallbackMessage}</AlertDescription>
+      </Alert>
+    );
+  }
 
-    return capabilities;
-  };
+  return <>{children}</>;
+};
 
-  const getStatusIndicators = () => {
-    const indicators = [];
+// Component to display current user's roles
+export const CurrentUserRoles: React.FC = () => {
+  const { userRoles, rolesLoading } = useEnhancedStaffRoles();
 
-    if (isClinicalAdministrator()) {
-      indicators.push({ type: 'success', text: 'Clinical Admin (Valid)' });
-    } else if (hasRole('Clinical Administrator') && !hasRole('Clinician')) {
-      indicators.push({ type: 'error', text: 'Clinical Admin (Missing Clinician Role)' });
-    }
-
-    if (canSupervise()) {
-      indicators.push({ type: 'info', text: 'Supervision Enabled' });
-    }
-
-    if (!canBillInsurance() && (hasRole('Intern') || hasRole('Assistant') || hasRole('Associate'))) {
-      indicators.push({ type: 'warning', text: 'Requires Supervisor for Billing' });
-    }
-
-    return indicators;
-  };
-
-  return (
-    <div className="space-y-6">
+  if (rolesLoading) {
+    return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
-            <span>Your Role Capabilities</span>
+            <span>Your Roles</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {activeRoles.map((role) => (
-              <Badge key={role.id} variant="secondary" className="px-3 py-1">
-                {role.role}
-              </Badge>
-            ))}
-          </div>
-
-          {getStatusIndicators().map((indicator, index) => (
-            <Badge 
-              key={index}
-              variant={indicator.type === 'error' ? 'destructive' : 'secondary'}
-              className={
-                indicator.type === 'success' ? 'bg-green-100 text-green-800' :
-                indicator.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                indicator.type === 'info' ? 'bg-blue-100 text-blue-800' : ''
-              }
-            >
-              {indicator.text}
-            </Badge>
-          ))}
+        <CardContent>
+          <div className="animate-pulse">Loading roles...</div>
         </CardContent>
       </Card>
+    );
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center space-x-2">
-              <Calendar className="h-4 w-4" />
-              <span>Schedule Access</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge variant={hasScheduleAccess() ? 'default' : 'secondary'}>
-              {hasScheduleAccess() ? 'Enabled' : 'No Access'}
-            </Badge>
-          </CardContent>
-        </Card>
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <Shield className="h-5 w-5" />
+          <span>Your Roles</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2">
+          {userRoles && userRoles.length > 0 ? (
+            userRoles.map((roleData, index) => (
+              <Badge 
+                key={`${roleData.role}-${index}`}
+                variant="default"
+                className="bg-blue-100 text-blue-800"
+              >
+                {roleData.role}
+              </Badge>
+            ))
+          ) : (
+            <p className="text-gray-500">No roles assigned</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center space-x-2">
-              <FileText className="h-4 w-4" />
-              <span>Clinical Notes</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge variant={canCreateNoteType('clinical') ? 'default' : 'secondary'}>
-              {canCreateNoteType('clinical') ? 'Full Access' : 'Limited/No Access'}
-            </Badge>
-          </CardContent>
-        </Card>
+// Component for role-based content sections
+export const RoleSection: React.FC<{
+  roles: UserRole[];
+  title: string;
+  children: React.ReactNode;
+}> = ({ roles, title, children }) => {
+  const { hasAnyRole } = useEnhancedStaffRoles();
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center space-x-2">
-              <DollarSign className="h-4 w-4" />
-              <span>Billing</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge variant={canBillInsurance() ? 'default' : 'secondary'}>
-              {canBillInsurance() ? 'Direct Billing' : 'Supervised Only'}
-            </Badge>
-          </CardContent>
-        </Card>
+  if (!hasAnyRole(roles)) {
+    return null;
+  }
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span>Supervision</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge variant={canSupervise() ? 'default' : 'secondary'}>
-              {canSupervise() ? 'Can Supervise' : 'No Supervision'}
-            </Badge>
-          </CardContent>
-        </Card>
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <Users className="h-5 w-5 text-blue-600" />
+        <h3 className="text-lg font-semibold">{title}</h3>
       </div>
-
-      <div className="space-y-4">
-        {activeRoles.map((role) => (
-          <Card key={role.id}>
-            <CardHeader>
-              <CardTitle className="text-lg">{role.role}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {getRoleCapabilities(role.role as UserRole).map((capability, index) => (
-                  <Badge key={index} variant="outline">
-                    {capability}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {children}
     </div>
   );
 };
