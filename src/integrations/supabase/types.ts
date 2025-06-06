@@ -3845,6 +3845,12 @@ export type Database = {
           last_name: string
         }[]
       }
+      get_current_user_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          role: Database["public"]["Enums"]["user_role"]
+        }[]
+      }
       get_executive_dashboard_metrics: {
         Args: { start_date?: string; end_date?: string }
         Returns: {
@@ -3868,6 +3874,13 @@ export type Database = {
           action: string
           scope: string
         }[]
+      }
+      get_user_role_safe: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
       }
       has_any_role: {
         Args: {

@@ -11,13 +11,12 @@ export const useStaffQueries = () => {
       console.log('Fetching staff members...');
       
       try {
-        // Use explicit foreign key relationship to avoid ambiguity
+        // First, get all users with their staff profiles
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select(`
             *,
-            staff_profile:staff_profiles!staff_profiles_user_id_fkey(*),
-            roles:user_roles!user_roles_user_id_fkey(*)
+            staff_profile:staff_profiles(*)
           `)
           .eq('is_active', true);
 
@@ -27,21 +26,38 @@ export const useStaffQueries = () => {
         }
         
         console.log('Raw users data:', usersData);
-        
+
+        // Then get all user roles separately to avoid RLS recursion
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('*')
+          .eq('is_active', true);
+
+        if (rolesError) {
+          console.error('Error fetching roles:', rolesError);
+          throw rolesError;
+        }
+
+        console.log('Raw roles data:', rolesData);
+
+        // Combine the data manually
+        const staffData = usersData?.map(user => {
+          const userRoles = rolesData?.filter(role => role.user_id === user.id) || [];
+          
+          return {
+            ...user,
+            staff_profile: Array.isArray(user.staff_profile) ? user.staff_profile[0] : user.staff_profile,
+            roles: userRoles
+          };
+        }) || [];
+
         // Filter to only include users who have staff profiles or roles
-        const staffData = usersData?.filter(user => 
+        const filteredStaffData = staffData.filter(user => 
           user.staff_profile || (user.roles && user.roles.length > 0)
-        ) || [];
+        );
         
-        // Transform the data to match our expected structure
-        const transformedData = staffData.map(user => ({
-          ...user,
-          staff_profile: Array.isArray(user.staff_profile) ? user.staff_profile[0] : user.staff_profile,
-          roles: user.roles || []
-        })) as StaffMember[];
-        
-        console.log('Transformed staff members:', transformedData);
-        return transformedData;
+        console.log('Filtered staff members:', filteredStaffData);
+        return filteredStaffData as StaffMember[];
       } catch (err) {
         console.error('Error in staff query:', err);
         throw err;

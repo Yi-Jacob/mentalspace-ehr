@@ -17,49 +17,34 @@ export const useEnhancedStaffRoles = () => {
     queryFn: async () => {
       console.log('Enhanced: Fetching user roles...');
       
-      // Use the new security definer function to get current user info safely
-      const { data: userInfo, error: userError } = await supabase
-        .rpc('get_current_user_info');
+      try {
+        // Use the new security definer function to get current user roles
+        const { data, error } = await supabase
+          .rpc('get_current_user_roles');
 
-      if (userError) {
-        console.error('Enhanced: Error getting user info:', userError);
+        if (error) {
+          console.error('Enhanced: Error fetching user roles:', error);
+          throw error;
+        }
+        
+        console.log('Enhanced: User roles fetched:', data);
+        return data || [];
+      } catch (err) {
+        console.error('Enhanced: Unexpected error fetching roles:', err);
         return [];
       }
-
-      if (!userInfo || userInfo.length === 0) {
-        console.log('Enhanced: No user info found');
-        return [];
-      }
-
-      const currentUser = userInfo[0];
-      console.log('Enhanced: Current user found:', currentUser);
-
-      // Now get the user's roles
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', currentUser.user_id)
-        .eq('is_active', true);
-
-      if (error) {
-        console.error('Enhanced: Error fetching user roles:', error);
-        throw error;
-      }
-      
-      console.log('Enhanced: User roles fetched:', data);
-      return data || [];
     },
   });
 
   // Enhanced role checking with business logic
   const hasRole = useCallback((role: UserRole): boolean => {
-    const result = userRoles?.some(r => r.role === role && r.is_active) || false;
+    const result = userRoles?.some(r => r.role === role) || false;
     console.log(`Enhanced: Checking role ${role}:`, result);
     return result;
   }, [userRoles]);
 
   const hasAnyRole = useCallback((roles: UserRole[]): boolean => {
-    return userRoles?.some(r => roles.includes(r.role as UserRole) && r.is_active) || false;
+    return userRoles?.some(r => roles.includes(r.role as UserRole)) || false;
   }, [userRoles]);
 
   // Clinical Administrator validation - must also have Clinician role

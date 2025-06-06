@@ -15,69 +15,13 @@ export const useStaffRoles = () => {
     queryFn: async () => {
       console.log('Fetching user roles...');
       
-      // Use the new security definer function to get current user info safely
-      const { data: userInfo, error: userError } = await supabase
-        .rpc('get_current_user_info');
-
-      if (userError) {
-        console.error('Error getting user info:', userError);
-        return [];
-      }
-
-      if (!userInfo || userInfo.length === 0) {
-        console.log('No user info found');
-        return [];
-      }
-
-      const currentUser = userInfo[0];
-      console.log('Current user found:', currentUser);
-
-      // Try to get the user's roles with better error handling
-      console.log('Attempting to fetch roles for user ID:', currentUser.user_id);
-      
       try {
+        // Use the new security definer function to get current user roles
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('*')
-          .eq('user_id', currentUser.user_id)
-          .eq('is_active', true);
+          .rpc('get_current_user_roles');
 
         if (error) {
           console.error('Error fetching user roles:', error);
-          console.error('Error details:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          });
-          
-          // Try a different approach - use RPC to bypass RLS issues
-          console.log('Trying alternative approach with RPC...');
-          const { data: rpcData, error: rpcError } = await supabase
-            .rpc('has_role', { 
-              _user_id: currentUser.user_id, 
-              _role: 'Practice Administrator' 
-            });
-            
-          if (rpcError) {
-            console.error('RPC error:', rpcError);
-            return [];
-          }
-          
-          console.log('RPC result for Practice Administrator:', rpcData);
-          
-          // If the user has Practice Administrator role, create a mock role object
-          if (rpcData) {
-            return [{
-              id: 'mock-role-id',
-              user_id: currentUser.user_id,
-              role: 'Practice Administrator',
-              is_active: true,
-              assigned_at: new Date().toISOString(),
-              assigned_by: null
-            }];
-          }
-          
           return [];
         }
         
@@ -91,13 +35,13 @@ export const useStaffRoles = () => {
   });
 
   const hasRole = useCallback((role: UserRole): boolean => {
-    const result = userRoles?.some(r => r.role === role && r.is_active) || false;
+    const result = userRoles?.some(r => r.role === role) || false;
     console.log(`Checking role ${role}:`, result);
     return result;
   }, [userRoles]);
 
   const hasAnyRole = useCallback((roles: UserRole[]): boolean => {
-    return userRoles?.some(r => roles.includes(r.role as UserRole) && r.is_active) || false;
+    return userRoles?.some(r => roles.includes(r.role as UserRole)) || false;
   }, [userRoles]);
 
   // Assign role to user
