@@ -11,6 +11,7 @@ import Sidebar from "@/components/Sidebar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AddStaffPage from "./pages/AddStaffPage";
+import StaffPage from "./pages/StaffPage";
 import Scheduling from "./pages/Scheduling";
 import Documentation from "./pages/Documentation";
 import Billing from "./pages/Billing";
@@ -41,7 +42,8 @@ function App() {
                         <main className="flex-1 transition-all duration-300 ml-16 lg:ml-64">
                           <Routes>
                             <Route path="/" element={<Index />} />
-                            <Route path="/add-staff" element={<AddStaffPage />} />
+                            <Route path="/staff" element={<StaffPage />} />
+                            <Route path="/staff/add" element={<AddStaffPage />} />
                             <Route path="/scheduling" element={<Scheduling />} />
                             <Route path="/documentation" element={<Documentation />} />
                             <Route path="/billing" element={<Billing />} />

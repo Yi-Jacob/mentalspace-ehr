@@ -37,11 +37,6 @@ const moduleConfigs = {
     description: 'Manage referrals, leads, and practice growth opportunities',
     features: ['Lead Management', 'Referral Tracking', 'Marketing Campaigns', 'Follow-up Automation', 'Contact Database', 'Communication History']
   },
-  staff: {
-    title: 'Staff Management',
-    description: 'Manage staff schedules, roles, and permissions',
-    features: ['Staff Profiles', 'Role Management', 'Schedule Management', 'Time Tracking', 'Performance Metrics', 'Training Records']
-  },
   compliance: {
     title: 'Compliance & Security',
     description: 'Ensure HIPAA compliance and data security',
@@ -65,8 +60,6 @@ const Index = () => {
       setActiveModule('documentation');
     } else if (location.pathname === '/clients') {
       setActiveModule('clients');
-    } else if (location.pathname === '/staff') {
-      setActiveModule('staff');
     } else if (location.pathname === '/') {
       setActiveModule('dashboard');
     }
@@ -99,15 +92,6 @@ const Index = () => {
 
     if (activeModule === 'documentation') {
       return <Documentation />;
-    }
-
-    if (activeModule === 'staff') {
-      const StaffManagementPage = React.lazy(() => import('@/components/staff/StaffManagementPage'));
-      return (
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <StaffManagementPage />
-        </React.Suspense>
-      );
     }
 
     const config = moduleConfigs[activeModule as keyof typeof moduleConfigs];
