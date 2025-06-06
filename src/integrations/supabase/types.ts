@@ -374,6 +374,68 @@ export type Database = {
           },
         ]
       }
+      certifications: {
+        Row: {
+          certification_name: string
+          certification_number: string | null
+          created_at: string | null
+          expiry_date: string
+          id: string
+          issue_date: string | null
+          issuing_organization: string
+          notes: string | null
+          reminder_sent_30_days: boolean | null
+          reminder_sent_60_days: boolean | null
+          reminder_sent_90_days: boolean | null
+          renewal_period_months: number | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          certification_name: string
+          certification_number?: string | null
+          created_at?: string | null
+          expiry_date: string
+          id?: string
+          issue_date?: string | null
+          issuing_organization: string
+          notes?: string | null
+          reminder_sent_30_days?: boolean | null
+          reminder_sent_60_days?: boolean | null
+          reminder_sent_90_days?: boolean | null
+          renewal_period_months?: number | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          certification_name?: string
+          certification_number?: string | null
+          created_at?: string | null
+          expiry_date?: string
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string
+          notes?: string | null
+          reminder_sent_30_days?: boolean | null
+          reminder_sent_60_days?: boolean | null
+          reminder_sent_90_days?: boolean | null
+          renewal_period_months?: number | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_line_items: {
         Row: {
           adjustment_amount: number | null
@@ -2319,6 +2381,110 @@ export type Database = {
           },
         ]
       }
+      payroll_periods: {
+        Row: {
+          created_at: string | null
+          id: string
+          period_end: string
+          period_start: string
+          processed_at: string | null
+          processed_by: string | null
+          status: string | null
+          total_amount: number | null
+          total_hours: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string | null
+          total_amount?: number | null
+          total_hours?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string | null
+          total_amount?: number | null
+          total_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_periods_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_metrics: {
+        Row: {
+          created_at: string | null
+          id: string
+          measurement_period: string
+          metric_type: string
+          metric_value: number
+          notes: string | null
+          period_end: string
+          period_start: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          target_value: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          measurement_period?: string
+          metric_type: string
+          metric_value: number
+          notes?: string | null
+          period_end: string
+          period_start: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          target_value?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          measurement_period?: string
+          metric_type?: string
+          metric_value?: number
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          target_value?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_metrics_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_settings: {
         Row: {
           billing_settings: Json | null
@@ -2851,6 +3017,53 @@ export type Database = {
           },
         ]
       }
+      schedule_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          default_hours_per_week: number | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_consecutive_days: number | null
+          min_hours_between_shifts: number | null
+          preferred_shift_patterns: Json | null
+          template_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          default_hours_per_week?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_consecutive_days?: number | null
+          min_hours_between_shifts?: number | null
+          preferred_shift_patterns?: Json | null
+          template_name: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          default_hours_per_week?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_consecutive_days?: number | null
+          min_hours_between_shifts?: number | null
+          preferred_shift_patterns?: Json | null
+          template_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_completions: {
         Row: {
           appointment_id: string
@@ -3264,6 +3477,125 @@ export type Database = {
           },
         ]
       }
+      time_tracking: {
+        Row: {
+          activity_type: string
+          break_duration_minutes: number | null
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          end_time: string | null
+          id: string
+          is_billable: boolean | null
+          start_time: string
+          status: string | null
+          total_hours: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string
+          break_duration_minutes?: number | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          is_billable?: boolean | null
+          start_time: string
+          status?: string | null
+          total_hours?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          break_duration_minutes?: number | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          is_billable?: boolean | null
+          start_time?: string
+          status?: string | null
+          total_hours?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_tracking_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_tracking_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_records: {
+        Row: {
+          certificate_number: string | null
+          completion_date: string | null
+          created_at: string | null
+          expiry_date: string | null
+          hours_completed: number | null
+          id: string
+          notes: string | null
+          provider_organization: string | null
+          status: string | null
+          training_title: string
+          training_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          expiry_date?: string | null
+          hours_completed?: number | null
+          id?: string
+          notes?: string | null
+          provider_organization?: string | null
+          status?: string | null
+          training_title: string
+          training_type?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          certificate_number?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          expiry_date?: string | null
+          hours_completed?: number | null
+          id?: string
+          notes?: string | null
+          provider_organization?: string | null
+          status?: string | null
+          training_title?: string
+          training_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treatment_goals: {
         Row: {
           achieved_date: string | null
@@ -3568,6 +3900,10 @@ export type Database = {
           p_filters?: Json
           p_execution_time_ms?: number
         }
+        Returns: undefined
+      }
+      update_certification_status: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }
