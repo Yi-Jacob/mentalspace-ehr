@@ -8,23 +8,34 @@ export const useStaffQueries = () => {
   const { data: staffMembers, isLoading, error } = useQuery({
     queryKey: ['staff-members'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Fetching staff members...');
+      
+      // First, let's try a simpler query to see all users
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select(`
           *,
-          staff_profile:staff_profiles!inner(*),
+          staff_profile:staff_profiles(*),
           roles:user_roles(*)
         `)
         .eq('is_active', true);
 
-      if (error) throw error;
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        throw usersError;
+      }
+      
+      console.log('Raw users data:', usersData);
       
       // Transform the data to match our expected structure
-      return (data?.map(user => ({
+      const transformedData = (usersData?.map(user => ({
         ...user,
         staff_profile: Array.isArray(user.staff_profile) ? user.staff_profile[0] : user.staff_profile,
         roles: user.roles || []
       })) || []) as StaffMember[];
+      
+      console.log('Transformed staff members:', transformedData);
+      return transformedData;
     },
   });
 
