@@ -8,6 +8,9 @@ import OverviewCards from './components/OverviewCards';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import ErrorLogs from './components/ErrorLogs';
 import AnalyticsOverview from './components/AnalyticsOverview';
+import { HealthChecks } from './HealthChecks';
+import { AlertingSystem } from './AlertingSystem';
+import { LogAggregation } from './LogAggregation';
 
 const MonitoringDashboard = () => {
   const {
@@ -34,11 +37,14 @@ const MonitoringDashboard = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="errors">Errors</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="health">Health</TabsTrigger>
+          <TabsTrigger value="alerts">Alerts</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -58,6 +64,18 @@ const MonitoringDashboard = () => {
 
         <TabsContent value="analytics" className="space-y-4">
           <AnalyticsOverview analyticsData={analyticsData} />
+        </TabsContent>
+
+        <TabsContent value="health" className="space-y-4">
+          <HealthChecks />
+        </TabsContent>
+
+        <TabsContent value="alerts" className="space-y-4">
+          <AlertingSystem />
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-4">
+          <LogAggregation />
         </TabsContent>
       </Tabs>
     </div>
