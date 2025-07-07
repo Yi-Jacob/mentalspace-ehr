@@ -1369,6 +1369,39 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_reports: {
+        Row: {
+          created_at: string | null
+          generated_by: string
+          id: string
+          period_end: string
+          period_start: string
+          report_data: Json
+          report_type: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          generated_by: string
+          id?: string
+          period_end: string
+          period_start: string
+          report_data: Json
+          report_type: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          generated_by?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          report_data?: Json
+          report_type?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           category: string | null
@@ -1457,6 +1490,39 @@ export type Database = {
           description?: string
           id?: string
           is_active?: boolean
+        }
+        Relationships: []
+      }
+      data_classifications: {
+        Row: {
+          anonymization_rules: Json | null
+          classification: string
+          column_name: string
+          created_at: string | null
+          encryption_required: boolean | null
+          id: string
+          retention_period_days: number | null
+          table_name: string
+        }
+        Insert: {
+          anonymization_rules?: Json | null
+          classification: string
+          column_name: string
+          created_at?: string | null
+          encryption_required?: boolean | null
+          id?: string
+          retention_period_days?: number | null
+          table_name: string
+        }
+        Update: {
+          anonymization_rules?: Json | null
+          classification?: string
+          column_name?: string
+          created_at?: string | null
+          encryption_required?: boolean | null
+          id?: string
+          retention_period_days?: number | null
+          table_name?: string
         }
         Relationships: []
       }
@@ -1585,6 +1651,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hipaa_access_logs: {
+        Row: {
+          access_type: string
+          authorized: boolean | null
+          created_at: string | null
+          data_accessed: string | null
+          id: string
+          ip_address: unknown | null
+          patient_id: string
+          purpose: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type: string
+          authorized?: boolean | null
+          created_at?: string | null
+          data_accessed?: string | null
+          id?: string
+          ip_address?: unknown | null
+          patient_id: string
+          purpose?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string
+          authorized?: boolean | null
+          created_at?: string | null
+          data_accessed?: string | null
+          id?: string
+          ip_address?: unknown | null
+          patient_id?: string
+          purpose?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       insurance_verifications: {
         Row: {
@@ -3138,6 +3240,51 @@ export type Database = {
           },
         ]
       }
+      security_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string
+          session_id: string | null
+          severity: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type: string
+          session_id?: string | null
+          severity?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string
+          session_id?: string | null
+          severity?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       session_completions: {
         Row: {
           appointment_id: string
@@ -3995,6 +4142,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      log_hipaa_access: {
+        Args: {
+          p_patient_id: string
+          p_access_type: string
+          p_data_accessed?: string
+          p_purpose?: string
+        }
+        Returns: undefined
+      }
       log_report_usage: {
         Args: {
           p_user_id: string
@@ -4002,6 +4158,17 @@ export type Database = {
           p_action: string
           p_filters?: Json
           p_execution_time_ms?: number
+        }
+        Returns: undefined
+      }
+      log_security_event: {
+        Args: {
+          p_action: string
+          p_resource_type: string
+          p_resource_id?: string
+          p_details?: Json
+          p_severity?: string
+          p_status?: string
         }
         Returns: undefined
       }
