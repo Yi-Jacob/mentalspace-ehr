@@ -42,6 +42,7 @@ function App() {
                         <main className="flex-1 transition-all duration-300 ml-16 lg:ml-64">
                           <Routes>
                             <Route path="/" element={<Index />} />
+                            <Route path="/clients" element={<Index />} />
                             <Route path="/staff" element={<StaffPage />} />
                             <Route path="/staff/add" element={<AddStaffPage />} />
                             <Route path="/scheduling" element={<Scheduling />} />
