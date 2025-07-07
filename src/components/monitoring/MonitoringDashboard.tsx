@@ -11,6 +11,7 @@ import AnalyticsOverview from './components/AnalyticsOverview';
 import { HealthChecks } from './HealthChecks';
 import { AlertingSystem } from './AlertingSystem';
 import { LogAggregation } from './LogAggregation';
+import PerformanceDashboard from './PerformanceDashboard';
 
 const MonitoringDashboard = () => {
   const {
@@ -37,9 +38,10 @@ const MonitoringDashboard = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="web-vitals">Web Vitals</TabsTrigger>
           <TabsTrigger value="errors">Errors</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="health">Health</TabsTrigger>
@@ -56,6 +58,10 @@ const MonitoringDashboard = () => {
 
         <TabsContent value="performance" className="space-y-4">
           <PerformanceMetrics performanceMetrics={performanceMetrics} />
+        </TabsContent>
+
+        <TabsContent value="web-vitals" className="space-y-4">
+          <PerformanceDashboard />
         </TabsContent>
 
         <TabsContent value="errors" className="space-y-4">

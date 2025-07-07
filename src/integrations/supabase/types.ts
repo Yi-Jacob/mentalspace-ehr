@@ -4056,6 +4056,10 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["user_role"] }
         Returns: boolean
       }
+      get_cached_query: {
+        Args: { p_cache_key: string }
+        Returns: Json
+      }
       get_cached_report_data: {
         Args: { p_cache_key: string }
         Returns: Json
@@ -4194,6 +4198,10 @@ export type Database = {
           p_severity?: string
           p_status?: string
         }
+        Returns: undefined
+      }
+      set_cached_query: {
+        Args: { p_cache_key: string; p_data: Json; p_expires_minutes?: number }
         Returns: undefined
       }
       update_certification_status: {

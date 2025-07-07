@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -211,18 +211,21 @@ const trackPerformanceMetric = async (
   context?: string
 ) => {
   try {
-    // Only track in production or when explicitly enabled
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Performance: ${metricName}`, { value, context });
-      return;
-    }
-
-    await supabase.from('performance_metrics').insert({
-      metric_name: metricName,
-      metric_value: value,
-      route: window.location.pathname,
-      created_at: new Date().toISOString()
+    // Log performance metrics for now
+    console.log(`Performance: ${metricName}`, { 
+      value: `${value}ms`, 
+      context,
+      timestamp: new Date().toISOString()
     });
+
+    // In production, this could send to an analytics service
+    if ((window as any).gtag) {
+      (window as any).gtag('event', 'performance_metric', {
+        metric_name: metricName,
+        metric_value: value,
+        context: context
+      });
+    }
   } catch (error) {
     // Silently fail - don't break app for metrics
     console.warn('Failed to track performance metric:', error);
