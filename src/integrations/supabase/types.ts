@@ -2851,6 +2851,30 @@ export type Database = {
           },
         ]
       }
+      query_cache: {
+        Row: {
+          cache_data: Json
+          cache_key: string
+          created_at: string | null
+          expires_at: string
+          id: string
+        }
+        Insert: {
+          cache_data: Json
+          cache_key: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+        }
+        Update: {
+          cache_data?: Json
+          cache_key?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       quick_actions: {
         Row: {
           action_type: string
