@@ -1,22 +1,21 @@
+import { ENV_CONFIG } from './environmentConfig';
 
 interface CacheItem<T> {
   data: T;
-  timestamp: number;
-  expiresAt: number;
+  expiry: number;
+  created: number;
 }
 
 class CacheService {
   private cache = new Map<string, CacheItem<any>>();
-  private defaultTTL = 5 * 60 * 1000; // 5 minutes
+  private readonly defaultTTL = ENV_CONFIG.performance.cacheTimeout;
 
   set<T>(key: string, data: T, ttl?: number): void {
-    const now = Date.now();
-    const expiresAt = now + (ttl || this.defaultTTL);
-    
+    const expiry = Date.now() + (ttl || this.defaultTTL);
     this.cache.set(key, {
       data,
-      timestamp: now,
-      expiresAt,
+      expiry,
+      created: Date.now()
     });
   }
 
@@ -27,7 +26,7 @@ class CacheService {
       return null;
     }
 
-    if (Date.now() > item.expiresAt) {
+    if (Date.now() > item.expiry) {
       this.cache.delete(key);
       return null;
     }
@@ -35,45 +34,73 @@ class CacheService {
     return item.data as T;
   }
 
-  invalidate(key: string): void {
-    this.cache.delete(key);
-  }
-
-  invalidatePattern(pattern: string): void {
-    const regex = new RegExp(pattern);
-    for (const key of this.cache.keys()) {
-      if (regex.test(key)) {
-        this.cache.delete(key);
-      }
-    }
+  delete(key: string): boolean {
+    return this.cache.delete(key);
   }
 
   clear(): void {
     this.cache.clear();
   }
 
-  cleanup(): void {
-    const now = Date.now();
-    for (const [key, item] of this.cache.entries()) {
-      if (now > item.expiresAt) {
-        this.cache.delete(key);
-      }
+  has(key: string): boolean {
+    const item = this.cache.get(key);
+    if (!item) return false;
+    
+    if (Date.now() > item.expiry) {
+      this.cache.delete(key);
+      return false;
     }
+    
+    return true;
   }
 
+  size(): number {
+    return this.cache.size;
+  }
+
+  // Clean up expired items
+  cleanup(): number {
+    let removed = 0;
+    const now = Date.now();
+    
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expiry) {
+        this.cache.delete(key);
+        removed++;
+      }
+    }
+    
+    return removed;
+  }
+
+  // Get cache statistics
   getStats() {
+    const now = Date.now();
+    let expired = 0;
+    let total = 0;
+    
+    for (const [, item] of this.cache.entries()) {
+      total++;
+      if (now > item.expiry) {
+        expired++;
+      }
+    }
+    
     return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys()),
+      total,
+      expired,
+      active: total - expired,
+      memoryUsage: this.cache.size
     };
   }
 }
 
 export const cacheService = new CacheService();
 
-// Clean up expired cache entries every 5 minutes
-if (typeof window !== 'undefined') {
-  setInterval(() => {
-    cacheService.cleanup();
-  }, 5 * 60 * 1000);
-}
+// Auto-cleanup every 5 minutes
+setInterval(() => {
+  const removed = cacheService.cleanup();
+  if (removed > 0) {
+    console.debug(`Cache cleanup: removed ${removed} expired items`);
+  }
+}, 5 * 60 * 1000);

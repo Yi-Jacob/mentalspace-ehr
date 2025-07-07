@@ -46,6 +46,9 @@ verify_jwt = false
 [functions.api-logger]
 verify_jwt = false
 
+[functions.backup-manager]
+verify_jwt = false
+
 [edge-runtime]
 enabled = true
 ip_version = "ipv4"

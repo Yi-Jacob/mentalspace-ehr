@@ -1,204 +1,230 @@
-
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-  CRITICAL = 4
-}
+import { ENV_CONFIG, logger } from './environmentConfig';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LogEntry {
-  id: string;
-  level: LogLevel;
+  level: 'debug' | 'info' | 'warn' | 'error';
   message: string;
-  timestamp: number;
-  context?: Record<string, any>;
+  data?: any;
+  timestamp: string;
   userId?: string;
-  sessionId: string;
-  userAgent: string;
-  url: string;
-  stack?: string;
+  sessionId?: string;
+  source: string;
+  environment: string;
 }
 
-interface LoggingConfig {
-  minLevel: LogLevel;
-  maxLogs: number;
-  enableConsole: boolean;
-  enableRemote: boolean;
-  batchSize: number;
-  flushInterval: number;
-}
-
-class ProductionLoggingService {
-  private logs: LogEntry[] = [];
-  private sessionId: string;
-  private logBuffer: LogEntry[] = [];
-  private flushTimer?: NodeJS.Timeout;
-  
-  private config: LoggingConfig = {
-    minLevel: LogLevel.INFO,
-    maxLogs: 5000,
-    enableConsole: true,
-    enableRemote: false, // Enable when you have a logging endpoint
-    batchSize: 50,
-    flushInterval: 30000, // 30 seconds
-  };
+class ProductionLogger {
+  private queue: LogEntry[] = [];
+  private flushTimer: NodeJS.Timeout | null = null;
+  private readonly maxQueueSize = 100;
+  private readonly flushInterval = 5000; // 5 seconds
 
   constructor() {
-    this.sessionId = crypto.randomUUID();
-    this.startFlushTimer();
-    
-    // Capture unhandled errors
-    window.addEventListener('error', (event) => {
-      this.error('Unhandled error', {
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-        stack: event.error?.stack,
-      });
-    });
-
-    // Capture unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
-      this.error('Unhandled promise rejection', {
-        reason: event.reason,
-        stack: event.reason?.stack,
-      });
-    });
-  }
-
-  debug(message: string, context?: Record<string, any>) {
-    this.log(LogLevel.DEBUG, message, context);
-  }
-
-  info(message: string, context?: Record<string, any>) {
-    this.log(LogLevel.INFO, message, context);
-  }
-
-  warn(message: string, context?: Record<string, any>) {
-    this.log(LogLevel.WARN, message, context);
-  }
-
-  error(message: string, context?: Record<string, any>) {
-    this.log(LogLevel.ERROR, message, context);
-  }
-
-  critical(message: string, context?: Record<string, any>) {
-    this.log(LogLevel.CRITICAL, message, context);
-    // Immediately flush critical errors
-    this.flushLogs();
-  }
-
-  private log(level: LogLevel, message: string, context?: Record<string, any>) {
-    if (level < this.config.minLevel) return;
-
-    const logEntry: LogEntry = {
-      id: crypto.randomUUID(),
-      level,
-      message,
-      timestamp: Date.now(),
-      context,
-      sessionId: this.sessionId,
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-      stack: level >= LogLevel.ERROR ? new Error().stack : undefined,
-    };
-
-    // Add to local storage
-    this.logs.unshift(logEntry);
-    if (this.logs.length > this.config.maxLogs) {
-      this.logs = this.logs.slice(0, this.config.maxLogs);
-    }
-
-    // Add to buffer for remote logging
-    this.logBuffer.push(logEntry);
-
-    // Console logging
-    if (this.config.enableConsole) {
-      this.logToConsole(logEntry);
-    }
-
-    // Flush immediately for critical errors
-    if (level === LogLevel.CRITICAL) {
-      this.flushLogs();
+    // Only enable in production
+    if (ENV_CONFIG.app.environment === 'production') {
+      this.startPeriodicFlush();
     }
   }
 
-  private logToConsole(entry: LogEntry) {
-    const levelNames = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'];
-    const timestamp = new Date(entry.timestamp).toISOString();
-    const logMessage = `[${timestamp}] [${levelNames[entry.level]}] ${entry.message}`;
+  private async flush() {
+    if (this.queue.length === 0) return;
 
-    switch (entry.level) {
-      case LogLevel.DEBUG:
-        console.debug(logMessage, entry.context);
-        break;
-      case LogLevel.INFO:
-        console.info(logMessage, entry.context);
-        break;
-      case LogLevel.WARN:
-        console.warn(logMessage, entry.context);
-        break;
-      case LogLevel.ERROR:
-      case LogLevel.CRITICAL:
-        console.error(logMessage, entry.context);
-        break;
-    }
-  }
-
-  private startFlushTimer() {
-    this.flushTimer = setInterval(() => {
-      this.flushLogs();
-    }, this.config.flushInterval);
-  }
-
-  private async flushLogs() {
-    if (!this.config.enableRemote || this.logBuffer.length === 0) return;
-
-    const logsToSend = this.logBuffer.splice(0, this.config.batchSize);
+    const logsToSend = this.queue.splice(0, this.maxQueueSize);
     
     try {
-      // In a real implementation, you would send logs to your logging service
-      // Example: await this.sendToLoggingService(logsToSend);
-      console.log('Would send logs to remote service:', logsToSend);
+      // Send logs to Supabase edge function for processing
+      await supabase.functions.invoke('api-logger', {
+        body: {
+          logs: logsToSend,
+          batch: true
+        }
+      });
     } catch (error) {
-      console.error('Failed to send logs to remote service:', error);
-      // Put logs back in buffer to retry later
-      this.logBuffer.unshift(...logsToSend);
+      // Fallback to console if logging service fails
+      console.error('Failed to send logs to service:', error);
+      logsToSend.forEach(log => {
+        console[log.level](log.message, log.data);
+      });
     }
   }
 
-  setUserId(userId: string) {
-    this.logs.forEach(log => {
-      if (!log.userId) log.userId = userId;
-    });
+  private startPeriodicFlush() {
+    this.flushTimer = setInterval(() => {
+      this.flush();
+    }, this.flushInterval);
   }
 
-  getRecentLogs(hours: number = 1): LogEntry[] {
-    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
-    return this.logs.filter(log => log.timestamp > cutoff);
+  private addToQueue(entry: LogEntry) {
+    this.queue.push(entry);
+    
+    // Force flush if queue is full or on error
+    if (this.queue.length >= this.maxQueueSize || entry.level === 'error') {
+      this.flush();
+    }
   }
 
-  getLogsByLevel(level: LogLevel): LogEntry[] {
-    return this.logs.filter(log => log.level === level);
+  private createLogEntry(level: LogEntry['level'], message: string, data?: any): LogEntry {
+    return {
+      level,
+      message,
+      data,
+      timestamp: new Date().toISOString(),
+      source: 'frontend',
+      environment: ENV_CONFIG.app.environment,
+      userId: this.getCurrentUserId(),
+      sessionId: this.getSessionId()
+    };
   }
 
-  exportLogs(): string {
-    return JSON.stringify(this.logs, null, 2);
+  private getCurrentUserId(): string | undefined {
+    // This would get the current user ID from your auth system
+    try {
+      const session = JSON.parse(localStorage.getItem('mentalspace-auth') || '{}');
+      return session?.user?.id;
+    } catch {
+      return undefined;
+    }
   }
 
-  clearLogs() {
-    this.logs = [];
-    this.logBuffer = [];
+  private getSessionId(): string {
+    let sessionId = sessionStorage.getItem('session-id');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('session-id', sessionId);
+    }
+    return sessionId;
   }
 
+  debug(message: string, data?: any) {
+    logger.debug(message, data);
+    if (ENV_CONFIG.app.environment !== 'production') {
+      this.addToQueue(this.createLogEntry('debug', message, data));
+    }
+  }
+
+  info(message: string, data?: any) {
+    logger.info(message, data);
+    this.addToQueue(this.createLogEntry('info', message, data));
+  }
+
+  warn(message: string, data?: any) {
+    logger.warn(message, data);
+    this.addToQueue(this.createLogEntry('warn', message, data));
+  }
+
+  error(message: string, error?: any) {
+    logger.error(message, error);
+    
+    // Enhanced error logging for production
+    const errorData = {
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : error,
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    };
+
+    this.addToQueue(this.createLogEntry('error', message, errorData));
+  }
+
+  // Performance logging
+  performance(operation: string, duration: number, metadata?: any) {
+    const perfData = {
+      operation,
+      duration,
+      metadata,
+      performance: {
+        navigation: performance.getEntriesByType('navigation')[0],
+        memory: (performance as any).memory
+      }
+    };
+
+    this.info(`Performance: ${operation} took ${duration}ms`, perfData);
+  }
+
+  // User action tracking
+  userAction(action: string, details?: any) {
+    const actionData = {
+      action,
+      details,
+      page: window.location.pathname,
+      referrer: document.referrer
+    };
+
+    this.info(`User Action: ${action}`, actionData);
+  }
+
+  // API call logging
+  apiCall(method: string, url: string, duration: number, status: number, error?: any) {
+    const apiData = {
+      method,
+      url,
+      duration,
+      status,
+      error,
+      requestId: this.generateRequestId()
+    };
+
+    if (status >= 400) {
+      this.error(`API Error: ${method} ${url}`, apiData);
+    } else {
+      this.info(`API Call: ${method} ${url}`, apiData);
+    }
+  }
+
+  private generateRequestId(): string {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  }
+
+  // Cleanup
   destroy() {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
     }
-    this.flushLogs();
+    this.flush(); // Final flush
   }
 }
 
-export const productionLogger = new ProductionLoggingService();
+export const productionLogger = new ProductionLogger();
+
+// Global error handling
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    productionLogger.error('Global Error', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      error: event.error
+    });
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    productionLogger.error('Unhandled Promise Rejection', {
+      reason: event.reason,
+      promise: event.promise
+    });
+  });
+}
+
+// Performance observer for Core Web Vitals
+if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
+  try {
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const duration = 'duration' in entry ? entry.duration : 
+                        'value' in entry ? (entry as any).value : 0;
+        productionLogger.performance(entry.name, duration, {
+          entryType: entry.entryType,
+          detail: entry
+        });
+      }
+    });
+
+    observer.observe({ entryTypes: ['measure', 'navigation', 'paint'] });
+  } catch (error) {
+    console.warn('Performance observer not supported:', error);
+  }
+}
