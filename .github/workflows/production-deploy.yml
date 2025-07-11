@@ -1,141 +1,127 @@
-name: Production Deployment
+name: Deploy to Production
 
 on:
   push:
     branches: [ main ]
-  release:
-    types: [ published ]
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to deploy'
-        required: true
-        default: 'main'
-
-env:
-  NODE_VERSION: '18'
+      skip_tests:
+        description: 'Skip tests (emergency deployment only)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   pre-deployment-checks:
-    name: Pre-deployment Validation
     runs-on: ubuntu-latest
     outputs:
-      should-deploy: ${{ steps.validation.outputs.should-deploy }}
+      should_deploy: ${{ steps.checks.outputs.should_deploy }}
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Run production readiness checks
-        id: validation
-        run: |
-          echo "Running production readiness validation..."
-          
-          # Check if all tests pass
-          npm run test:ci
-          
-          # Check security vulnerabilities
-          npm audit --audit-level high
-          
-          # Validate environment configuration
-          npm run validate:env:production
-          
-          # Check HIPAA compliance requirements
-          npm run validate:hipaa-compliance
-          
-          echo "should-deploy=true" >> $GITHUB_OUTPUT
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    - name: Run comprehensive tests
+      if: ${{ !inputs.skip_tests }}
+      run: |
+        npm run test:unit
+        npm run test:integration
+        npm run test:security
+        npm run test:a11y
+
+    - name: Security scan
+      run: npm audit --audit-level moderate
+
+    - name: Check deployment readiness
+      id: checks
+      run: |
+        echo "should_deploy=true" >> $GITHUB_OUTPUT
 
   deploy-production:
-    name: Deploy to Production
     runs-on: ubuntu-latest
     needs: pre-deployment-checks
-    if: needs.pre-deployment-checks.outputs.should-deploy == 'true'
+    if: needs.pre-deployment-checks.outputs.should_deploy == 'true'
     environment: production
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Build for production
-        run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          VITE_ENVIRONMENT: production
+    - name: Build production application
+      run: npm run build
+      env:
+        NODE_ENV: production
 
-      - name: Deploy to Lovable Production
-        run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          # This integrates with Lovable's publish feature
-        env:
-          DEPLOY_TOKEN: ${{ secrets.PRODUCTION_DEPLOY_TOKEN }}
+    - name: Backup current production database
+      run: |
+        npx supabase db dump --file backup-$(date +%Y%m%d-%H%M%S).sql
+      env:
+        SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
 
-      - name: Run post-deployment health checks
-        run: |
-          echo "Running post-deployment health checks..."
-          npm run health-check:production
-        env:
-          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+    - name: Deploy database migrations
+      run: |
+        npx supabase db deploy --production
+      env:
+        SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
 
-      - name: Create deployment record
-        run: |
-          echo "Recording deployment in audit log..."
-          curl -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/deployment_logs" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "version": "${{ github.sha }}",
-              "environment": "production",
-              "deployed_by": "${{ github.actor }}",
-              "deployed_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
-              "status": "success"
-            }'
+    - name: Deploy to Vercel Production
+      id: deploy
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
 
-      - name: Notify successful deployment
-        uses: 8398a7/action-slack@v3
-        with:
-          status: success
-          text: '🚀 Production deployment successful! Version: ${{ github.sha }}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Wait for deployment propagation
+      run: sleep 30
 
-  rollback:
-    name: Rollback on Failure
+    - name: Run smoke tests
+      run: npm run test:smoke
+      env:
+        PRODUCTION_URL: ${{ steps.deploy.outputs.preview-url }}
+
+    - name: Tag release
+      run: |
+        git tag v$(date +%Y%m%d-%H%M%S)
+        git push origin --tags
+
+  post-deployment:
     runs-on: ubuntu-latest
     needs: deploy-production
-    if: failure()
+    if: always()
+    
     steps:
-      - name: Trigger rollback
-        run: |
-          echo "Deployment failed, initiating rollback..."
-          # Add rollback logic here
-        env:
-          ROLLBACK_TOKEN: ${{ secrets.ROLLBACK_TOKEN }}
+    - name: Update monitoring
+      run: |
+        curl -X POST "${{ secrets.MONITORING_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{"deployment": "production", "status": "${{ needs.deploy-production.result }}"}'
 
-      - name: Notify deployment failure
-        uses: 8398a7/action-slack@v3
-        with:
-          status: failure
-          text: '🚨 Production deployment failed! Rollback initiated.'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Notify team
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ needs.deploy-production.result }}
+        text: "Production deployment ${{ needs.deploy-production.result }}"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

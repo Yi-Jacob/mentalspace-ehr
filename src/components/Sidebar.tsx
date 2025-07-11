@@ -4,8 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
-  FileText,
-  Book,
+  FileText, 
   Calendar, 
   MessageSquare, 
   CreditCard, 

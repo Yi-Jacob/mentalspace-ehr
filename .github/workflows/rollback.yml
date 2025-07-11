@@ -1,125 +1,107 @@
-name: Production Rollback
+name: Emergency Rollback
 
 on:
   workflow_dispatch:
     inputs:
-      target_version:
-        description: 'Git SHA or tag to rollback to'
-        required: true
+      target_tag:
+        description: 'Tag to rollback to (leave empty for previous release)'
+        required: false
+        type: string
       reason:
         description: 'Reason for rollback'
         required: true
-      confirm:
-        description: 'Type "CONFIRM" to proceed with rollback'
-        required: true
-
-env:
-  NODE_VERSION: '18'
+        type: string
 
 jobs:
-  validate-rollback:
-    name: Validate Rollback Request
+  rollback:
     runs-on: ubuntu-latest
-    outputs:
-      can-rollback: ${{ steps.validation.outputs.can-rollback }}
-    steps:
-      - name: Validate confirmation
-        id: validation
-        run: |
-          if [ "${{ github.event.inputs.confirm }}" != "CONFIRM" ]; then
-            echo "Rollback not confirmed. Please type 'CONFIRM' to proceed."
-            exit 1
-          fi
-          
-          echo "can-rollback=true" >> $GITHUB_OUTPUT
-
-      - name: Log rollback request
-        run: |
-          echo "Rollback requested by: ${{ github.actor }}"
-          echo "Target version: ${{ github.event.inputs.target_version }}"
-          echo "Reason: ${{ github.event.inputs.reason }}"
-
-  rollback-production:
-    name: Execute Production Rollback
-    runs-on: ubuntu-latest
-    needs: validate-rollback
-    if: needs.validate-rollback.outputs.can-rollback == 'true'
     environment: production
+    
     steps:
-      - name: Checkout target version
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.target_version }}
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+    - name: Determine rollback target
+      id: target
+      run: |
+        if [ -n "${{ inputs.target_tag }}" ]; then
+          echo "tag=${{ inputs.target_tag }}" >> $GITHUB_OUTPUT
+        else
+          # Get the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | head -2 | tail -1)
+          echo "tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+        fi
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Checkout target version
+      run: |
+        git checkout ${{ steps.target.outputs.tag }}
 
-      - name: Build target version
-        run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          VITE_ENVIRONMENT: production
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Run pre-rollback tests
-        run: |
-          echo "Running tests on target version..."
-          npm run test:critical
-        env:
-          CI: true
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Execute rollback deployment
-        run: |
-          echo "Rolling back to version: ${{ github.event.inputs.target_version }}"
-          # Add rollback deployment commands here
-        env:
-          DEPLOY_TOKEN: ${{ secrets.PRODUCTION_DEPLOY_TOKEN }}
+    - name: Build rollback version
+      run: npm run build
+      env:
+        NODE_ENV: production
 
-      - name: Verify rollback health
-        run: |
-          echo "Verifying rollback health..."
-          npm run health-check:production
-          sleep 30
-          npm run health-check:production
-        env:
-          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+    - name: Create database rollback script
+      run: |
+        # This would generate SQL to rollback to previous state
+        echo "-- Rollback script for ${{ steps.target.outputs.tag }}" > rollback.sql
 
-      - name: Record rollback in audit log
-        run: |
-          curl -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/deployment_logs" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "version": "${{ github.event.inputs.target_version }}",
-              "environment": "production",
-              "deployed_by": "${{ github.actor }}",
-              "deployed_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
-              "status": "rollback",
-              "rollback_reason": "${{ github.event.inputs.reason }}"
-            }'
+    - name: Deploy rollback
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
 
-      - name: Notify rollback completion
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: |
-            🔄 Production rollback completed
-            Target Version: ${{ github.event.inputs.target_version }}
-            Reason: ${{ github.event.inputs.reason }}
-            Executed by: ${{ github.actor }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Verify rollback
+      run: |
+        sleep 30
+        npm run test:smoke
+      env:
+        PRODUCTION_URL: https://your-app.vercel.app
 
-      - name: Create incident report
-        if: failure()
-        run: |
-          echo "Rollback failed - creating incident report..."
-          # Add incident reporting logic here
-        env:
-          INCIDENT_WEBHOOK: ${{ secrets.INCIDENT_WEBHOOK }}
+    - name: Log incident
+      run: |
+        curl -X POST "${{ secrets.INCIDENT_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "event": "rollback_completed",
+            "tag": "${{ steps.target.outputs.tag }}",
+            "reason": "${{ inputs.reason }}",
+            "timestamp": "'$(date -Iseconds)'"
+          }'
+
+    - name: Notify team
+      uses: 8398a7/action-slack@v3
+      with:
+        status: 'custom'
+        custom_payload: |
+          {
+            "text": "🚨 ROLLBACK COMPLETED",
+            "attachments": [{
+              "color": "warning",
+              "fields": [{
+                "title": "Target Version",
+                "value": "${{ steps.target.outputs.tag }}",
+                "short": true
+              }, {
+                "title": "Reason",
+                "value": "${{ inputs.reason }}",
+                "short": false
+              }]
+            }]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

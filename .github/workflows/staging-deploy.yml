@@ -5,54 +5,58 @@ on:
     branches: [ develop ]
   workflow_dispatch:
 
-env:
-  NODE_VERSION: '18'
-
 jobs:
   deploy-staging:
-    name: Deploy to Staging Environment
     runs-on: ubuntu-latest
     environment: staging
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Build for staging
-        run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          VITE_ENVIRONMENT: staging
+    - name: Run tests
+      run: |
+        npm run test:unit
+        npm run test:integration
 
-      - name: Deploy to Lovable Staging
-        run: |
-          echo "Deploying to staging environment..."
-          # Add your staging deployment commands here
-          # This could be Lovable's staging deployment or another platform
-        env:
-          DEPLOY_TOKEN: ${{ secrets.STAGING_DEPLOY_TOKEN }}
+    - name: Build application
+      run: npm run build
+      env:
+        NODE_ENV: staging
 
-      - name: Run smoke tests
-        run: |
-          echo "Running post-deployment smoke tests..."
-          npm run test:smoke:staging
-        env:
-          STAGING_URL: ${{ secrets.STAGING_URL }}
+    - name: Deploy to Supabase Staging
+      run: |
+        npx supabase db deploy --staging
+      env:
+        SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_ID }}
 
-      - name: Notify deployment status
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: 'Staging deployment ${{ job.status }}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Deploy to Vercel Staging
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        scope: staging
+
+    - name: Run E2E tests against staging
+      run: npm run test:e2e:staging
+      env:
+        STAGING_URL: ${{ steps.deploy.outputs.preview-url }}
+
+    - name: Notify team of deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: "Staging deployment completed: ${{ steps.deploy.outputs.preview-url }}"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
