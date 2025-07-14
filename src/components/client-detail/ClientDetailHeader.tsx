@@ -10,7 +10,8 @@ import {
   Calendar,
   MapPin,
   MessageSquare,
-  Plus
+  Plus,
+  Edit
 } from 'lucide-react';
 import ComposeMessageModal from '@/components/messaging/ComposeMessageModal';
 import NewConversationModal from '@/components/messaging/NewConversationModal';
@@ -77,6 +78,16 @@ const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client, onEditC
           </div>
 
           <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEditClick}
+              className="flex items-center space-x-2"
+            >
+              <Edit className="h-4 w-4" />
+              <span>Edit Client</span>
+            </Button>
+            
             <Button
               variant="outline"
               size="sm"

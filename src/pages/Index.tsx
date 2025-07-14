@@ -60,6 +60,8 @@ const Index = () => {
       setActiveModule('documentation');
     } else if (location.pathname === '/clients') {
       setActiveModule('clients');
+    } else if (location.pathname.startsWith('/client/')) {
+      setActiveModule('clients'); // Stay in clients module for client detail pages
     } else if (location.pathname === '/') {
       setActiveModule('dashboard');
     }
@@ -82,6 +84,11 @@ const Index = () => {
   };
 
   const renderContent = () => {
+    // If we're on a client detail page, don't render the module content
+    if (location.pathname.startsWith('/client/')) {
+      return null; // Let the router handle client detail view
+    }
+
     if (activeModule === 'dashboard') {
       return <Dashboard />;
     }
