@@ -72,42 +72,74 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-gray-500">Full Name</label>
-                <div>{client.first_name} {client.middle_name} {client.last_name} {client.suffix}</div>
+                <div>{[client.first_name, client.middle_name, client.last_name, client.suffix].filter(Boolean).join(' ') || 'Not provided'}</div>
               </div>
-              {client.preferred_name && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Preferred Name</label>
-                  <div>{client.preferred_name}</div>
-                </div>
-              )}
-              {client.pronouns && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Pronouns</label>
-                  <div>{client.pronouns}</div>
-                </div>
-              )}
-              {client.date_of_birth && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                  <div>{formatDateOfBirth(client.date_of_birth)} ({formatAge(client.date_of_birth)})</div>
-                </div>
-              )}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Preferred Name</label>
+                <div>{client.preferred_name || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Pronouns</label>
+                <div>{client.pronouns || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Date of Birth</label>
+                <div>{client.date_of_birth ? `${formatDateOfBirth(client.date_of_birth)} (${formatAge(client.date_of_birth)})` : 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Gender Identity</label>
+                <div>{client.gender_identity || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Administrative Sex</label>
+                <div>{client.administrative_sex || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Sexual Orientation</label>
+                <div>{client.sexual_orientation || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Race</label>
+                <div>{client.race || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Ethnicity</label>
+                <div>{client.ethnicity || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Languages</label>
+                <div>{client.languages || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Marital Status</label>
+                <div>{client.marital_status || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Employment Status</label>
+                <div>{client.employment_status || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Religious Affiliation</label>
+                <div>{client.religious_affiliation || 'Not provided'}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Smoking Status</label>
+                <div>{client.smoking_status || 'Not provided'}</div>
+              </div>
             </div>
           </div>
 
           <div>
             <h3 className="font-semibold text-lg mb-4">Contact Information</h3>
             <div className="space-y-3">
-              {client.email && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <div>{client.email}</div>
-                </div>
-              )}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Email</label>
+                <div>{client.email || 'Not provided'}</div>
+              </div>
               
-              {phoneNumbers.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone Numbers</label>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Phone Numbers</label>
+                {phoneNumbers.length > 0 ? (
                   <div className="space-y-1">
                     {phoneNumbers.map((phone, index) => (
                       <div key={index} className="text-sm">
@@ -118,45 +150,71 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div>Not provided</div>
+                )}
+              </div>
               
-              {(client.address_1 || client.city || client.state) && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Address</label>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Address</label>
-                  <div>
-                    {client.address_1}<br />
-                    {client.address_2 && <>{client.address_2}<br /></>}
-                    {[client.city, client.state, client.zip_code].filter(Boolean).join(', ')}
-                  </div>
+                  {client.address_1 || client.city || client.state ? (
+                    <>
+                      {client.address_1 || 'No street address'}<br />
+                      {client.address_2 && <>{client.address_2}<br /></>}
+                      {[client.city || 'No city', client.state || 'No state', client.zip_code || 'No zip'].join(', ')}
+                    </>
+                  ) : (
+                    'Not provided'
+                  )}
                 </div>
-              )}
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">Timezone</label>
+                <div>{client.timezone && client.timezone !== 'Not Set' ? client.timezone : 'Not set'}</div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">Appointment Reminders</label>
+                <div>{client.appointment_reminders || 'Default Practice Setting'}</div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">HIPAA Signed</label>
+                <div>{client.hipaa_signed ? 'Yes' : 'No'}</div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">PCP Release</label>
+                <div>{client.pcp_release || 'Not set'}</div>
+              </div>
             </div>
           </div>
         </div>
 
-        {emergencyContacts.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Emergency Contacts</h3>
+        <div>
+          <h3 className="font-semibold text-lg mb-4">Emergency Contacts</h3>
+          {emergencyContacts.length > 0 ? (
             <div className="space-y-3">
               {emergencyContacts.map((contact, index) => (
                 <div key={index} className="border rounded-lg p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-500">Name</label>
-                      <div className="font-medium">{contact.name}</div>
+                      <div className="font-medium">{contact.name || 'Not provided'}</div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Relationship</label>
-                      <div>{contact.relationship}</div>
+                      <div>{contact.relationship || 'Not provided'}</div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Phone</label>
-                      <div>{contact.phone_number}</div>
+                      <div>{contact.phone_number || 'Not provided'}</div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Email</label>
-                      <div>{contact.email}</div>
+                      <div>{contact.email || 'Not provided'}</div>
                     </div>
                   </div>
                   {contact.is_primary && (
@@ -165,43 +223,45 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-gray-500 italic">No emergency contacts on file</div>
+          )}
+        </div>
 
-        {primaryCareProvider && primaryCareProvider.provider_name && (
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Primary Care Provider</h3>
+        <div>
+          <h3 className="font-semibold text-lg mb-4">Primary Care Provider</h3>
+          {primaryCareProvider && primaryCareProvider.provider_name ? (
             <div className="border rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Provider Name</label>
-                  <div className="font-medium">{primaryCareProvider.provider_name}</div>
+                  <div className="font-medium">{primaryCareProvider.provider_name || 'Not provided'}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Practice Name</label>
-                  <div>{primaryCareProvider.practice_name}</div>
+                  <div>{primaryCareProvider.practice_name || 'Not provided'}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <div>{primaryCareProvider.phone_number}</div>
+                  <div>{primaryCareProvider.phone_number || 'Not provided'}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Address</label>
-                  <div>{primaryCareProvider.address}</div>
+                  <div>{primaryCareProvider.address || 'Not provided'}</div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-gray-500 italic">No primary care provider on file</div>
+          )}
+        </div>
 
-        {client.patient_comments && (
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Comments</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              {client.patient_comments}
-            </div>
+        <div>
+          <h3 className="font-semibold text-lg mb-2">Comments</h3>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            {client.patient_comments || 'No comments on file'}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
