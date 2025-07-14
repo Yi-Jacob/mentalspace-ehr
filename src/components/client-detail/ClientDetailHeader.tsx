@@ -77,12 +77,12 @@ const ClientDetailHeader: React.FC<ClientDetailHeaderProps> = ({ client, onEditC
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={onEditClick}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Edit className="h-4 w-4" />
               <span>Edit Client</span>
