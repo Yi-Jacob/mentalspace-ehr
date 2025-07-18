@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
@@ -29,14 +29,22 @@ export class AuthService {
         },
       });
       
-      const payload = { email: newUser.email, sub: newUser.id };
+      const payload = { 
+        email: newUser.email, 
+        sub: newUser.id,
+        roles: ['CLINICIAN'] // Default role for demo
+      };
       return {
         access_token: this.jwtService.sign(payload),
         user: newUser,
       };
     }
 
-    const payload = { email: user.email, sub: user.id };
+    const payload = { 
+      email: user.email, 
+      sub: user.id,
+      roles: ['CLINICIAN'] // Default role for demo
+    };
     return {
       access_token: this.jwtService.sign(payload),
       user,

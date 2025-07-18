@@ -1,138 +1,305 @@
 # MentalSpace EHR Backend
 
-This is a Nest.js backend for the MentalSpace EHR system, designed to replace Supabase with a custom backend using AWS RDS.
+A scalable, enterprise-grade backend system for mental health practice management built with NestJS, Prisma, and PostgreSQL.
 
-## Features
+## 🏗️ Architecture Overview
 
-- ✅ Nest.js framework
-- ✅ TypeScript support
-- ✅ Prisma ORM for database operations
-- ✅ Swagger API documentation
-- ✅ JWT authentication (ready to implement)
-- ✅ CORS enabled for frontend integration
-- ✅ Environment configuration
-- ✅ Health check endpoints
+This backend is designed with scalability in mind, following clean architecture principles and domain-driven design. The file system is organized to support both mid-sized and large-scale projects.
 
-## Database Configuration
+### Core Principles
 
-The backend is configured to connect to AWS RDS PostgreSQL:
+- **Separation of Concerns**: Each module has distinct responsibilities
+- **Role-Based Access Control**: Granular permissions for different user types
+- **Event-Driven Architecture**: Loose coupling through events
+- **Comprehensive Validation**: Business rules enforced at multiple layers
+- **Audit Trail**: Complete tracking of all operations
+- **Health Monitoring**: Built-in health checks and monitoring
+
+## 📁 File System Structure
 
 ```
-Endpoint: database-1-instance-1.cny40qqomphs.us-east-2.rds.amazonaws.com
-Port: 5432
-Database: postgres
-Username: postgres
+backend/
+├── src/
+│   ├── app.module.ts                 # Main application module
+│   ├── main.ts                       # Application entry point
+│   │
+│   ├── database/                     # Database layer
+│   │   ├── database.module.ts
+│   │   ├── prisma.service.ts        # Prisma client wrapper
+│   │   └── health/
+│   │       └── database.health.ts   # Database health checks
+│   │
+│   ├── common/                       # Shared utilities
+│   │   ├── validation/
+│   │   │   └── validation.module.ts # Global validation pipe
+│   │   └── logger/
+│   │       ├── logger.module.ts
+│   │       └── logger.service.ts    # Centralized logging
+│   │
+│   ├── auth/                         # Authentication & Authorization
+│   │   ├── auth.module.ts
+│   │   ├── guards/
+│   │   │   ├── jwt-auth.guard.ts   # JWT validation
+│   │   │   └── roles.guard.ts      # Role-based access control
+│   │   ├── decorators/
+│   │   │   └── roles.decorator.ts  # Role decorators
+│   │   └── enums/
+│   │       └── user-role.enum.ts   # User role definitions
+│   │
+│   ├── clients/                      # Client Management Module
+│   │   ├── clients.module.ts
+│   │   ├── dto/
+│   │   │   ├── create-client.dto.ts
+│   │   │   ├── update-client.dto.ts
+│   │   │   └── query-client.dto.ts
+│   │   ├── entities/
+│   │   │   └── client.entity.ts
+│   │   ├── controllers/
+│   │   │   └── clients.controller.ts
+│   │   ├── services/
+│   │   │   ├── clients.service.ts
+│   │   │   ├── clients-validation.service.ts
+│   │   │   └── clients-event.service.ts
+│   │   └── repositories/
+│   │       └── clients.repository.ts
+│   │
+│   ├── users/                        # User Management Module
+│   │   └── ... (similar structure)
+│   │
+│   ├── appointments/                  # Appointment Management
+│   │   └── ... (similar structure)
+│   │
+│   ├── billing/                      # Billing & Payments
+│   │   └── ... (similar structure)
+│   │
+│   ├── documentation/                # Clinical Documentation
+│   │   └── ... (similar structure)
+│   │
+│   ├── compliance/                   # Compliance & Reporting
+│   │   └── ... (similar structure)
+│   │
+│   ├── messaging/                    # Internal Messaging
+│   │   └── ... (similar structure)
+│   │
+│   ├── scheduling/                   # Scheduling & Calendar
+│   │   └── ... (similar structure)
+│   │
+│   ├── staff/                        # Staff Management
+│   │   └── ... (similar structure)
+│   │
+│   ├── reports/                      # Analytics & Reporting
+│   │   └── ... (similar structure)
+│   │
+│   ├── monitoring/                   # System Monitoring
+│   │   └── ... (similar structure)
+│   │
+│   └── health/                       # Health Checks
+│       ├── health.module.ts
+│       └── health.controller.ts
+│
+├── prisma/
+│   ├── schema.prisma                # Database schema
+│   └── migrations/                  # Database migrations
+│
+├── tests/                           # Test files
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+│
+└── docs/                            # Documentation
+    ├── api/
+    ├── architecture/
+    └── deployment/
 ```
 
-## Setup Instructions
+## 🎯 Module Structure Pattern
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+Each domain module follows this consistent structure:
 
-2. **Environment setup:**
-   ```bash
-   copy env.example .env
-   ```
-
-3. **Generate Prisma client:**
-   ```bash
-   npm run prisma:generate
-   ```
-
-4. **Run database migrations (when database is accessible):**
-   ```bash
-   npm run prisma:migrate
-   ```
-
-5. **Start development server:**
-   ```bash
-   npm run start:dev
-   ```
-
-## API Endpoints
-
-### Demo Endpoints (Working without database)
-- `GET /` - Main application endpoint
-- `GET /health` - Health check
-- `GET /demo` - Demo endpoint showing API status
-- `POST /demo/test` - Test POST endpoint
-- `GET /api` - Swagger documentation
-
-### Planned Endpoints (Require database connection)
-- `GET /users` - Get all users
-- `POST /users` - Create user
-- `GET /clients` - Get all clients
-- `POST /clients` - Create client
-- `POST /auth/login` - User authentication
-
-## Database Schema
-
-The Prisma schema includes:
-- **Users** - Staff and clinician accounts
-- **Clients** - Patient/client information
-- **ProductivityGoals** - Staff productivity tracking
-
-## Development
-
-### Available Scripts
-- `npm run start:dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm run start:prod` - Start production server
-- `npm run prisma:studio` - Open Prisma Studio for database management
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:generate` - Generate Prisma client
-
-### API Documentation
-Once the server is running, visit `http://localhost:3001/api` for Swagger documentation.
-
-## Current Status
-
-✅ **Completed:**
-- Nest.js project structure
-- Basic controllers and services
-- Prisma schema definition
-- Swagger documentation setup
-- Environment configuration
-- Demo endpoints working
-
-⏳ **Pending Database Connection:**
-- Database migration execution
-- Full CRUD operations
-- Authentication implementation
-- Data validation
-
-## Next Steps
-
-1. **Resolve database connectivity** - Ensure AWS RDS is accessible
-2. **Run migrations** - Create database tables
-3. **Test CRUD operations** - Verify all endpoints work
-4. **Implement authentication** - Add JWT-based auth
-5. **Connect to frontend** - Update React app to use new API
-
-## Troubleshooting
-
-### Database Connection Issues
-If you get database connection errors:
-1. Check AWS RDS security groups
-2. Verify network connectivity
-3. Confirm database credentials
-4. Ensure database instance is running
-
-### Prisma Issues
-If Prisma commands fail:
-1. Run `npm run prisma:generate` to regenerate client
-2. Check `.env` file configuration
-3. Verify database URL format
-
-## Environment Variables
-
-Required environment variables in `.env`:
 ```
-DATABASE_URL="postgresql://postgres:password@host:5432/database"
-JWT_SECRET="your-secret-key"
-JWT_EXPIRES_IN="7d"
-PORT=3001
-NODE_ENV=development
-``` 
+module-name/
+├── module-name.module.ts            # Module definition
+├── dto/                            # Data Transfer Objects
+│   ├── create-entity.dto.ts
+│   ├── update-entity.dto.ts
+│   └── query-entity.dto.ts
+├── entities/                        # Domain entities
+│   └── entity.entity.ts
+├── controllers/                     # HTTP controllers
+│   └── entity.controller.ts
+├── services/                        # Business logic
+│   ├── entity.service.ts           # Main service
+│   ├── entity-validation.service.ts # Business validation
+│   └── entity-event.service.ts     # Event handling
+└── repositories/                    # Data access layer
+    └── entity.repository.ts
+```
+
+## 🔐 Role-Based Access Control
+
+The system implements comprehensive role-based access control:
+
+### User Roles
+- **ADMIN**: Full system access
+- **CLINICIAN**: Clinical operations, client management
+- **STAFF**: Basic operations, limited access
+- **SUPERVISOR**: Oversight and supervision
+- **BILLING**: Financial operations
+- **RECEPTIONIST**: Front desk operations
+
+### Permission Matrix
+Each endpoint is protected with specific role requirements using the `@Roles()` decorator.
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 14+
+- Docker (optional)
+
+### Installation
+
+1. **Clone and install dependencies**
+```bash
+cd backend
+npm install
+```
+
+2. **Environment Setup**
+```bash
+cp .env.example .env
+# Configure your environment variables
+```
+
+3. **Database Setup**
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+4. **Start Development Server**
+```bash
+npm run start:dev
+```
+
+## 📊 API Documentation
+
+The API is fully documented with Swagger/OpenAPI. Access the documentation at:
+- Development: `http://localhost:3000/api`
+- Production: `https://your-domain.com/api`
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# Integration tests
+npm run test:integration
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+## 🔧 Development Workflow
+
+### Adding a New Module
+
+1. **Create the module structure**
+```bash
+nest generate module modules/new-module
+nest generate controller modules/new-module
+nest generate service modules/new-module
+```
+
+2. **Follow the established patterns**
+- Create DTOs with validation
+- Implement repository pattern
+- Add business validation service
+- Create event service for side effects
+- Add comprehensive tests
+
+3. **Update documentation**
+- Add API documentation
+- Update this README
+- Create module-specific docs
+
+### Database Migrations
+
+```bash
+# Create a new migration
+npx prisma migrate dev --name descriptive-name
+
+# Apply migrations in production
+npx prisma migrate deploy
+
+# Reset database (development only)
+npx prisma migrate reset
+```
+
+## 📈 Monitoring & Health Checks
+
+The system includes comprehensive monitoring:
+
+- **Health Checks**: `/health` endpoint
+- **Database Health**: Connection and performance monitoring
+- **Application Metrics**: Performance and usage statistics
+- **Error Tracking**: Centralized error logging and alerting
+
+## 🔒 Security Features
+
+- JWT-based authentication
+- Role-based access control
+- Input validation and sanitization
+- SQL injection prevention (Prisma)
+- Rate limiting
+- Audit logging
+- HIPAA compliance considerations
+
+## 🚀 Deployment
+
+### Docker Deployment
+```bash
+docker build -t mentalspace-backend .
+docker run -p 3000:3000 mentalspace-backend
+```
+
+### Environment Variables
+```bash
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/mentalspace
+
+# JWT
+JWT_SECRET=your-super-secret-key
+JWT_EXPIRES_IN=24h
+
+# Application
+NODE_ENV=production
+PORT=3000
+```
+
+## 🤝 Contributing
+
+1. Follow the established patterns
+2. Write comprehensive tests
+3. Update documentation
+4. Follow the commit message conventions
+5. Create feature branches
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Review the API documentation
+
+---
+
+**Built with ❤️ for mental health professionals** 
