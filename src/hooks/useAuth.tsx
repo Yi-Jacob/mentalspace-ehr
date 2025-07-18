@@ -122,11 +122,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       // Force page reload for clean state
-      window.location.href = '/auth';
+      // window.location.href = '/auth';
     } catch (err) {
       console.error('Sign out error:', err);
       // Force redirect even if signout fails
-      window.location.href = '/auth';
+      // window.location.href = '/auth';
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import DocumentationTabs from '@/components/documentation/DocumentationTabs';
 import CreateNoteModal from '@/components/documentation/CreateNoteModal';
@@ -97,6 +98,9 @@ const Documentation = () => {
             onCreateNote={handleCreateNote}
             isCreatingIntake={createNoteMutation.isPending}
           />
+
+          {/* Render nested routes */}
+          <Outlet />
 
           <CreateNoteModal 
             isOpen={showCreateModal}

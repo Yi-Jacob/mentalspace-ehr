@@ -6,13 +6,13 @@ import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
-import AddClientModal from './AddClientModal';
-import ClientListHeader from './client-list/ClientListHeader';
-import ClientSearch from './client-list/ClientSearch';
-import ClientGrid from './client-list/ClientGrid';
-import ClientEmptyState from './client-list/ClientEmptyState';
-import ClientLoadingState from './client-list/ClientLoadingState';
-import ClientErrorState from './client-list/ClientErrorState';
+import AddClientModal from '../components/AddClientModal';
+import ClientListHeader from '../components/client-list/ClientListHeader';
+import ClientSearch from '../components/client-list/ClientSearch';
+import ClientGrid from '../components/client-list/ClientGrid';
+import ClientEmptyState from '../components/client-list/ClientEmptyState';
+import ClientLoadingState from '../components/client-list/ClientLoadingState';
+import ClientErrorState from '../components/client-list/ClientErrorState';
 
 interface Client {
   id: string;

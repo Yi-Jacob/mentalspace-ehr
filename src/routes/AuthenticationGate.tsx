@@ -1,16 +1,15 @@
 
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import Sidebar from '@/components/Sidebar';
+import authenticatedRoutes from './authenticated-routes';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const AuthenticationGate = () => {
   const { user, loading, error, refreshSession } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -47,7 +46,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex w-full">
+      <Sidebar />
+      <main className="flex-1 transition-all duration-300 ml-16 lg:ml-64">
+        <Outlet />
+      </main>
+    </div>
+  );
 };
 
-export default ProtectedRoute;
+export default AuthenticationGate;
