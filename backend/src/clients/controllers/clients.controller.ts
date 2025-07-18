@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  UseGuards,
   Request,
   HttpStatus,
   HttpCode,
@@ -25,20 +24,14 @@ import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { QueryClientDto } from '../dto/query-client.dto';
 import { Client } from '../entities/client.entity';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { UserRole } from '../../auth/enums/user-role.enum';
 
 @ApiTags('clients')
 @ApiBearerAuth()
 @Controller('clients')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.CLINICIAN, UserRole.STAFF)
   @ApiOperation({ summary: 'Create a new client' })
   @ApiResponse({
     status: 201,
@@ -61,7 +54,6 @@ export class ClientsController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.CLINICIAN, UserRole.STAFF)
   @ApiOperation({ summary: 'Get all clients with pagination and filtering' })
   @ApiQuery({ name: 'search', required: false, description: 'Search term for client name or email' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number })
@@ -87,7 +79,6 @@ export class ClientsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.CLINICIAN, UserRole.STAFF)
   @ApiOperation({ summary: 'Get a client by ID' })
   @ApiParam({ name: 'id', description: 'Client ID' })
   @ApiResponse({
@@ -104,7 +95,6 @@ export class ClientsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.CLINICIAN, UserRole.STAFF)
   @ApiOperation({ summary: 'Update a client' })
   @ApiParam({ name: 'id', description: 'Client ID' })
   @ApiResponse({
@@ -133,7 +123,6 @@ export class ClientsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.CLINICIAN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a client (soft delete)' })
   @ApiParam({ name: 'id', description: 'Client ID' })
@@ -153,7 +142,6 @@ export class ClientsController {
   }
 
   @Get('search/email')
-  @Roles(UserRole.ADMIN, UserRole.CLINICIAN, UserRole.STAFF)
   @ApiOperation({ summary: 'Find a client by email' })
   @ApiQuery({ name: 'email', required: true, description: 'Client email' })
   @ApiResponse({
