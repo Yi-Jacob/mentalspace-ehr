@@ -5,11 +5,9 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
-import authenticatedRoutes from './authenticated-routes';
 
 const AuthenticationGate = () => {
   const { user, loading, error, refreshSession } = useAuth();
-  const location = useLocation();
 
   if (loading) {
     return (

@@ -1,0 +1,975 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ReportCache {
+  id         String   @id @default(uuid())
+  cacheKey   String   @map("cache_key")
+  reportType String   @map("report_type")
+  data       Json
+  expiresAt  DateTime @default(now()) @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("report_cache")
+}
+
+model SecurityAuditLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  sessionId    String?  @map("session_id")
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  details      Json?
+  severity     String?
+  status       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("security_audit_logs")
+}
+
+model RateLimit {
+  id           String   @id @default(uuid())
+  identifier   String
+  requestCount Int?     @map("request_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  @@map("rate_limits")
+}
+
+model DataClassification {
+  id                  String   @id @default(uuid())
+  tableName           String   @map("table_name")
+  columnName          String   @map("column_name")
+  classification      String
+  encryptionRequired  Boolean? @map("encryption_required")
+  retentionPeriodDays Int?     @map("retention_period_days")
+  anonymizationRules  Json?    @map("anonymization_rules")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@map("data_classifications")
+}
+
+model DiagnosisCode {
+  id          String   @id @default(uuid())
+  code        String
+  description String
+  category    String?
+  isActive    Boolean  @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("diagnosis_codes")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  authUserId  String?  @map("auth_user_id")
+  email       String
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  isActive    Boolean? @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("users")
+}
+
+model Client {
+  id                    String    @id @default(uuid())
+  firstName             String    @map("first_name")
+  middleName            String?   @map("middle_name")
+  lastName              String    @map("last_name")
+  suffix                String?
+  preferredName         String?   @map("preferred_name")
+  pronouns              String?
+  dateOfBirth           DateTime  @default(now()) @map("date_of_birth")
+  administrativeSex     String?   @map("administrative_sex")
+  genderIdentity        String?   @map("gender_identity")
+  sexualOrientation     String?   @map("sexual_orientation")
+  email                 String?
+  address1              String?   @map("address_1")
+  address2              String?   @map("address_2")
+  city                  String?
+  state                 String?
+  zipCode               String?   @map("zip_code")
+  timezone              String?
+  race                  String?
+  ethnicity             String?
+  languages             String?
+  maritalStatus         String?   @map("marital_status")
+  employmentStatus      String?   @map("employment_status")
+  religiousAffiliation  String?   @map("religious_affiliation")
+  smokingStatus         String?   @map("smoking_status")
+  appointmentReminders  String?   @map("appointment_reminders")
+  hipaaSigned           Boolean?  @map("hipaa_signed")
+  pcpRelease            String?   @map("pcp_release")
+  patientComments       String?   @map("patient_comments")
+  assignedClinicianId   String?   @map("assigned_clinician_id")
+  createdBy             String?   @map("created_by")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @map("updated_at")
+  isActive              Boolean?  @map("is_active")
+
+  @@map("clients")
+}
+
+model ClientMedication {
+  id                String   @id @default(uuid())
+  clientId          String   @map("client_id")
+  medicationName    String   @map("medication_name")
+  dosage            String?
+  frequency         String?
+  prescribingDoctor String?  @map("prescribing_doctor")
+  startDate         DateTime @default(now()) @map("start_date")
+  endDate           DateTime? @map("end_date")
+  isActive          Boolean? @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("client_medications")
+}
+
+model Appointment {
+  id                  String   @id @default(uuid())
+  clientId            String   @map("client_id")
+  providerId          String   @map("provider_id")
+  appointmentType     String   @map("appointment_type")
+  title               String?
+  description         String?
+  startTime           DateTime @default(now()) @map("start_time")
+  endTime             DateTime @default(now()) @map("end_time")
+  status              String   @map("status")
+  location            String?
+  roomNumber          String?  @map("room_number")
+  notes               String?
+  isRecurring         Boolean? @map("is_recurring")
+  recurringSeriesId   String?  @map("recurring_series_id")
+  createdBy           String?  @map("created_by")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+  cancelledAt         DateTime? @map("cancelled_at")
+  cancelledBy         String?  @map("cancelled_by")
+  cancellationReason  String?  @map("cancellation_reason")
+  noShowReason        String?  @map("no_show_reason")
+  checkedInAt         DateTime? @map("checked_in_at")
+  completedAt         DateTime? @map("completed_at")
+
+  @@map("appointments")
+}
+
+model ClientPrimaryCareProvider {
+  id           String   @id @default(uuid())
+  clientId     String   @map("client_id")
+  providerName String?  @map("provider_name")
+  practiceName String?  @map("practice_name")
+  phoneNumber  String?  @map("phone_number")
+  address      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("client_primary_care_providers")
+}
+
+model HipaaAccessLog {
+  id          String   @id @default(uuid())
+  userId      String   @default(uuid()) @map("user_id")
+  patientId   String   @default(uuid()) @map("patient_id")
+  accessType  String   @map("access_type")
+  dataAccessed String? @map("data_accessed")
+  purpose     String?
+  authorized  Boolean?
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("hipaa_access_logs")
+}
+
+model Claim {
+  id                    String   @id @default(uuid())
+  claimNumber           String   @map("claim_number")
+  clientId              String   @map("client_id")
+  providerId            String   @map("provider_id")
+  payerId               String?  @map("payer_id")
+  serviceDate           DateTime @default(now()) @map("service_date")
+  submissionDate        DateTime? @map("submission_date")
+  status                String?  @map("status")
+  totalAmount           Float    @map("total_amount")
+  paidAmount            Float?   @map("paid_amount")
+  patientResponsibility Float?   @map("patient_responsibility")
+  authorizationNumber   String?  @map("authorization_number")
+  diagnosisCodes        String[] @map("diagnosis_codes")
+  procedureCodes        String[] @map("procedure_codes")
+  placeOfService        String?  @map("place_of_service")
+  claimFrequency        String?  @map("claim_frequency")
+  batchId               String?  @map("batch_id")
+  clearinghouseId       String?  @map("clearinghouse_id")
+  submissionMethod      String?  @map("submission_method")
+  rejectionReason       String?  @map("rejection_reason")
+  denialReason          String?  @map("denial_reason")
+  notes                 String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("claims")
+}
+
+model ComplianceDeadline {
+  id                  String   @id @default(uuid())
+  providerId          String   @map("provider_id")
+  deadlineType        String   @map("deadline_type")
+  deadlineDate        DateTime @default(now()) @map("deadline_date")
+  isMet               Boolean? @map("is_met")
+  notesPending        Int?     @map("notes_pending")
+  notesCompleted      Int?     @map("notes_completed")
+  reminderSent24h     Boolean? @map("reminder_sent_24h")
+  reminderSent48h     Boolean? @map("reminder_sent_48h")
+  reminderSent72h     Boolean? @map("reminder_sent_72h")
+  supervisorNotified  Boolean? @map("supervisor_notified")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  @@map("compliance_deadlines")
+}
+
+model ClientSubstanceHistory {
+  id           String   @id @default(uuid())
+  clientId     String   @map("client_id")
+  substanceType String  @map("substance_type")
+  frequency    String?
+  amount       String?
+  startDate    DateTime @default(now()) @map("start_date")
+  endDate      DateTime? @map("end_date")
+  isCurrent    Boolean? @map("is_current")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("client_substance_history")
+}
+
+model AppointmentConflict {
+  id                      String   @id @default(uuid())
+  appointmentId           String   @map("appointment_id")
+  conflictingAppointmentId String  @map("conflicting_appointment_id")
+  conflictType            String   @map("conflict_type")
+  detectedAt              DateTime @default(now()) @map("detected_at")
+  resolvedAt              DateTime? @map("resolved_at")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  @@map("appointment_conflicts")
+}
+
+model UserRole {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  role        String   @map("role")
+  assignedBy  String?  @map("assigned_by")
+  assignedAt  DateTime @default(now()) @map("assigned_at")
+  isActive    Boolean? @map("is_active")
+
+  @@map("user_roles")
+}
+
+model ReportConfiguration {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  reportType  String   @map("report_type")
+  reportName  String   @map("report_name")
+  filters     Json?
+  dateRange   Json?    @map("date_range")
+  isShared    Boolean? @map("is_shared")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("report_configurations")
+}
+
+model StaffProfile {
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  employeeId            String?  @map("employee_id")
+  npiNumber             String?  @map("npi_number")
+  licenseNumber         String?  @map("license_number")
+  licenseState          String?  @map("license_state")
+  licenseExpiryDate     DateTime @default(now()) @map("license_expiry_date")
+  department            String?
+  jobTitle              String?  @map("job_title")
+  hireDate              DateTime @default(now()) @map("hire_date")
+  terminationDate       DateTime? @map("termination_date")
+  phoneNumber           String?  @map("phone_number")
+  emergencyContactName  String?  @map("emergency_contact_name")
+  emergencyContactPhone String?  @map("emergency_contact_phone")
+  supervisorId          String?  @map("supervisor_id")
+  billingRate           Float?   @map("billing_rate")
+  canBillInsurance      Boolean? @map("can_bill_insurance")
+  status                String?  @map("status")
+  notes                 String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("staff_profiles")
+}
+
+model ScheduleTemplate {
+  id                      String   @id @default(uuid())
+  templateName            String   @map("template_name")
+  description             String?
+  defaultHoursPerWeek     Float?   @map("default_hours_per_week")
+  maxConsecutiveDays      Int?     @map("max_consecutive_days")
+  minHoursBetweenShifts   Int?     @map("min_hours_between_shifts")
+  preferredShiftPatterns  Json?    @map("preferred_shift_patterns")
+  isActive                Boolean? @map("is_active")
+  createdBy               String?  @map("created_by")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  @@map("schedule_templates")
+}
+
+model QuickAction {
+  id          String   @id @default(uuid())
+  userId      String   @default(uuid()) @map("user_id")
+  actionType  String   @map("action_type")
+  title       String
+  description String?
+  priority    Int?
+  dueDate     DateTime @default(now()) @map("due_date")
+  completed   Boolean?
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("quick_actions")
+}
+
+model ProductivityGoal {
+  id           String   @id @default(uuid())
+  userId       String   @default(uuid()) @map("user_id")
+  goalType     String   @map("goal_type")
+  targetValue  Int      @map("target_value")
+  currentValue Int?
+  date         DateTime @default(now()) @map("date")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  @@map("productivity_goals")
+}
+
+model ClientTreatmentHistory {
+  id                  String   @id @default(uuid())
+  clientId            String   @map("client_id")
+  treatmentType       String   @map("treatment_type")
+  providerName        String?
+  startDate           DateTime @default(now()) @map("start_date")
+  endDate             DateTime? @map("end_date")
+  effectivenessRating Int?     @map("effectiveness_rating")
+  notes               String?
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@map("client_treatment_history")
+}
+
+model ClientPhoneNumber {
+  id                String   @id @default(uuid())
+  clientId          String   @map("client_id")
+  phoneType         String   @map("phone_type")
+  phoneNumber       String   @map("phone_number")
+  messagePreference String?  @map("message_preference")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("client_phone_numbers")
+}
+
+model PatientAccessPermission {
+  id          String   @id @default(uuid())
+  clientId    String   @map("client_id")
+  userId      String   @map("user_id")
+  grantedBy   String?  @map("granted_by")
+  grantedAt   DateTime @default(now()) @map("granted_at")
+  revokedAt   DateTime? @map("revoked_at")
+  revokedBy   String?  @map("revoked_by")
+  accessType  String?  @map("access_type")
+  notes       String?
+  isActive    Boolean? @map("is_active")
+
+  @@map("patient_access_permissions")
+}
+
+model Payment {
+  id                    String   @id @default(uuid())
+  paymentNumber         String   @map("payment_number")
+  clientId              String   @map("client_id")
+  claimId               String?  @map("claim_id")
+  payerId               String?  @map("payer_id")
+  paymentDate           DateTime @default(now()) @map("payment_date")
+  paymentMethod         String   @map("payment_method")
+  paymentAmount         Float    @map("payment_amount")
+  status                String?  @map("status")
+  referenceNumber       String?  @map("reference_number")
+  creditCardLastFour    String?  @map("credit_card_last_four")
+  paymentProcessor      String?  @map("payment_processor")
+  processingFee         Float?   @map("processing_fee")
+  netAmount             Float?   @map("net_amount")
+  notes                 String?
+  processedBy           String?  @map("processed_by")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("payments")
+}
+
+model ReportSchedule {
+  id              String   @id @default(uuid())
+  reportConfigId  String   @map("report_config_id")
+  scheduleType    String   @map("schedule_type")
+  scheduleTime    String   @map("schedule_time")
+  scheduleDays    Int[]    @map("schedule_days")
+  isActive        Boolean? @map("is_active")
+  lastRunAt       DateTime @default(now()) @map("last_run_at")
+  nextRunAt       DateTime @default(now()) @map("next_run_at")
+  recipients      String[] @map("recipients")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  @@map("report_schedules")
+}
+
+model Certification {
+  id                      String   @id @default(uuid())
+  userId                  String   @map("user_id")
+  certificationName       String   @map("certification_name")
+  certificationNumber     String?  @map("certification_number")
+  issuingOrganization    String   @map("issuing_organization")
+  issueDate               DateTime @default(now()) @map("issue_date")
+  expiryDate              DateTime @default(now()) @map("expiry_date")
+  renewalPeriodMonths     Int?     @map("renewal_period_months")
+  status                  String?
+  reminderSent30Days      Boolean? @map("reminder_sent_30_days")
+  reminderSent60Days      Boolean? @map("reminder_sent_60_days")
+  reminderSent90Days      Boolean? @map("reminder_sent_90_days")
+  notes                   String?
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @default(now()) @map("updated_at")
+
+  @@map("certifications")
+}
+
+model AppointmentReminder {
+  id                  String   @id @default(uuid())
+  appointmentId       String   @map("appointment_id")
+  reminderType        String   @map("reminder_type")
+  sendBeforeMinutes   Int      @map("send_before_minutes")
+  sentAt              DateTime @default(now()) @map("sent_at")
+  isSent              Boolean? @map("is_sent")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@map("appointment_reminders")
+}
+
+model ClientDiagnosis {
+  id                    String   @id @default(uuid())
+  clientId              String   @map("client_id")
+  diagnosisCode         String   @map("diagnosis_code")
+  diagnosisDescription  String   @map("diagnosis_description")
+  isPrimary             Boolean  @map("is_primary")
+  diagnosedDate         DateTime @default(now()) @map("diagnosed_date")
+  status                String?
+  notes                 String?
+  providerName          String?  @map("provider_name")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("client_diagnoses")
+}
+
+model ClientEmergencyContact {
+  id          String   @id @default(uuid())
+  clientId    String   @map("client_id")
+  name        String
+  relationship String?
+  phoneNumber String?  @map("phone_number")
+  email       String?
+  isPrimary   Boolean? @map("is_primary")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("client_emergency_contacts")
+}
+
+model TimeEntry {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  entryDate     DateTime @default(now()) @map("entry_date")
+  clockInTime   DateTime @default(now()) @map("clock_in_time")
+  clockOutTime  DateTime? @map("clock_out_time")
+  breakStartTime DateTime? @map("break_start_time")
+  breakEndTime   DateTime? @map("break_end_time")
+  totalHours    Float?   @map("total_hours")
+  regularHours  Float?   @map("regular_hours")
+  overtimeHours Float?   @map("overtime_hours")
+  isApproved    Boolean? @map("is_approved")
+  approvedBy    String?  @map("approved_by")
+  approvedAt    DateTime @default(now()) @map("approved_at")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+
+  @@map("time_entries")
+}
+
+model ScheduleException {
+  id            String   @id @default(uuid())
+  providerId    String   @map("provider_id")
+  exceptionDate DateTime @default(now()) @map("exception_date")
+  startTime     String?  @map("start_time")
+  endTime       String?  @map("end_time")
+  isUnavailable Boolean? @map("is_unavailable")
+  reason        String?
+  approvedBy    String?  @map("approved_by")
+  approvedAt    DateTime @default(now()) @map("approved_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+
+  @@map("schedule_exceptions")
+}
+
+model ClinicalNote {
+  id            String   @id @default(uuid())
+  clientId      String   @map("client_id")
+  providerId    String   @map("provider_id")
+  noteType      String   @map("note_type")
+  title         String
+  content       Json
+  status        String?  @map("status")
+  signedAt      DateTime @default(now()) @map("signed_at")
+  signedBy      String?  @map("signed_by")
+  approvedAt    DateTime @default(now()) @map("approved_at")
+  approvedBy    String?  @map("approved_by")
+  coSignedAt    DateTime @default(now()) @map("co_signed_at")
+  coSignedBy    String?  @map("co_signed_by")
+  lockedAt      DateTime @default(now()) @map("locked_at")
+  version       Int?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+
+  @@map("clinical_notes")
+}
+
+model ProviderCompensationConfig {
+  id                    String   @id @default(uuid())
+  providerId            String   @map("provider_id")
+  compensationType      String   @map("compensation_type")
+  baseSessionRate       Float?   @map("base_session_rate")
+  baseHourlyRate        Float?   @map("base_hourly_rate")
+  experienceTier        Int?     @map("experience_tier")
+  isOvertimeEligible    Boolean? @map("is_overtime_eligible")
+  eveningDifferential   Float?   @map("evening_differential")
+  weekendDifferential   Float?   @map("weekend_differential")
+  effectiveDate         DateTime @default(now()) @map("effective_date")
+  expirationDate        DateTime? @map("expiration_date")
+  isActive              Boolean? @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+  createdBy             String?  @map("created_by")
+
+  @@map("provider_compensation_config")
+}
+
+model ClientInsurance {
+  id                    String   @id @default(uuid())
+  clientId              String   @map("client_id")
+  insuranceType         String?  @map("insurance_type")
+  insuranceCompany      String?  @map("insurance_company")
+  policyNumber          String?  @map("policy_number")
+  groupNumber           String?  @map("group_number")
+  subscriberName        String?  @map("subscriber_name")
+  subscriberDob         DateTime @default(now()) @map("subscriber_dob")
+  subscriberRelationship String? @map("subscriber_relationship")
+  effectiveDate         DateTime @default(now()) @map("effective_date")
+  terminationDate       DateTime? @map("termination_date")
+  copayAmount           Float?   @map("copay_amount")
+  deductibleAmount      Float?   @map("deductible_amount")
+  isActive              Boolean? @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("client_insurance")
+}
+
+model PayrollPeriod {
+  id           String   @id @default(uuid())
+  periodStart  DateTime @default(now()) @map("period_start")
+  periodEnd    DateTime @default(now()) @map("period_end")
+  status       String?
+  totalHours   Float?   @map("total_hours")
+  totalAmount  Float?   @map("total_amount")
+  processedBy  String?  @map("processed_by")
+  processedAt  DateTime @default(now()) @map("processed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("payroll_periods")
+}
+
+model SessionRateMultiplier {
+  id              String   @id @default(uuid())
+  providerId      String   @map("provider_id")
+  sessionType     String   @map("session_type")
+  multiplier      Float    @map("multiplier")
+  durationMinutes Int      @map("duration_minutes")
+  isActive        Boolean? @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("session_rate_multipliers")
+}
+
+model Conversation {
+  id              String   @id @default(uuid())
+  title           String?
+  clientId        String?  @map("client_id")
+  therapistId     String?  @map("therapist_id")
+  category        String?
+  priority        String?
+  status          String?
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+  lastMessageAt   DateTime @default(now()) @map("last_message_at")
+
+  @@map("conversations")
+}
+
+model PatientStatement {
+  id                String   @id @default(uuid())
+  statementNumber   String   @map("statement_number")
+  clientId          String   @map("client_id")
+  statementDate     DateTime @default(now()) @map("statement_date")
+  dueDate           DateTime @default(now()) @map("due_date")
+  totalAmount       Float    @map("total_amount")
+  previousBalance   Float?   @map("previous_balance")
+  paymentsReceived  Float?   @map("payments_received")
+  adjustments       Float?   @map("adjustments")
+  currentBalance    Float    @map("current_balance")
+  status            String?
+  deliveryMethod    String?  @map("delivery_method")
+  emailSentAt       DateTime @default(now()) @map("email_sent_at")
+  emailOpenedAt     DateTime @default(now()) @map("email_opened_at")
+  paymentLink       String?  @map("payment_link")
+  notes             String?
+  createdBy         String?  @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("patient_statements")
+}
+
+model ClaimLineItem {
+  id                    String   @id @default(uuid())
+  claimId               String   @map("claim_id")
+  serviceDate           DateTime @default(now()) @map("service_date")
+  cptCode               String   @map("cpt_code")
+  modifier1             String?  @map("modifier_1")
+  modifier2             String?  @map("modifier_2")
+  modifier3             String?  @map("modifier_3")
+  modifier4             String?  @map("modifier_4")
+  diagnosisPointer      Int?     @map("diagnosis_pointer")
+  units                 Int?
+  chargeAmount          Float    @map("charge_amount")
+  allowedAmount         Float?   @map("allowed_amount")
+  paidAmount            Float?   @map("paid_amount")
+  adjustmentAmount      Float?   @map("adjustment_amount")
+  patientResponsibility Float?   @map("patient_responsibility")
+  lineNote              String?  @map("line_note")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("claim_line_items")
+}
+
+model AppointmentWaitlist {
+  id                      String   @id @default(uuid())
+  clientId                String   @map("client_id")
+  providerId              String   @map("provider_id")
+  preferredDate           DateTime @default(now()) @map("preferred_date")
+  preferredTimeStart      String?  @map("preferred_time_start")
+  preferredTimeEnd        String?  @map("preferred_time_end")
+  appointmentType         String   @map("appointment_type")
+  notes                   String?
+  priority                Int?
+  createdAt               DateTime @default(now()) @map("created_at")
+  notifiedAt              DateTime @default(now()) @map("notified_at")
+  isFulfilled            Boolean? @map("is_fulfilled")
+  fulfilledAppointmentId  String?  @map("fulfilled_appointment_id")
+
+  @@map("appointment_waitlist")
+}
+
+model PaymentAllocation {
+  id                String   @id @default(uuid())
+  paymentId         String   @map("payment_id")
+  claimLineItemId   String   @map("claim_line_item_id")
+  allocatedAmount   Float    @map("allocated_amount")
+  allocationType    String?  @map("allocation_type")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("payment_allocations")
+}
+
+model SupervisionRelationship {
+  id                String   @id @default(uuid())
+  supervisorId      String   @map("supervisor_id")
+  superviseeId      String   @map("supervisee_id")
+  startDate         DateTime @default(now()) @map("start_date")
+  endDate           DateTime? @map("end_date")
+  supervisionType   String?  @map("supervision_type")
+  isActive          Boolean? @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("supervision_relationships")
+}
+
+model TreatmentGoal {
+  id              String   @id @default(uuid())
+  clientId        String   @map("client_id")
+  treatmentPlanId String?  @map("treatment_plan_id")
+  goalText        String   @map("goal_text")
+  targetDate      DateTime @default(now()) @map("target_date")
+  achievedDate    DateTime? @map("achieved_date")
+  isAchieved      Boolean? @map("is_achieved")
+  priority        Int?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  @@map("treatment_goals")
+}
+
+model InsuranceVerification {
+  id                      String   @id @default(uuid())
+  clientId                String   @map("client_id")
+  insuranceId             String   @map("insurance_id")
+  verificationDate        DateTime @default(now()) @map("verification_date")
+  verifiedBy              String?  @map("verified_by")
+  status                  String?  @map("status")
+  benefitsVerified        Boolean? @map("benefits_verified")
+  copayAmount             Float?   @map("copay_amount")
+  deductibleAmount        Float?   @map("deductible_amount")
+  deductibleMet           Float?   @map("deductible_met")
+  outOfPocketMax          Float?   @map("out_of_pocket_max")
+  outOfPocketMet          Float?   @map("out_of_pocket_met")
+  authorizationRequired    Boolean? @map("authorization_required")
+  authorizationNumber     String?  @map("authorization_number")
+  authorizationExpiry     DateTime @default(now()) @map("authorization_expiry")
+  coveredServices         String[] @map("covered_services")
+  excludedServices        String[] @map("excluded_services")
+  notes                   String?
+  nextVerificationDate    DateTime @default(now()) @map("next_verification_date")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @default(now()) @map("updated_at")
+
+  @@map("insurance_verifications")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  conversationId  String   @map("conversation_id")
+  senderId        String   @map("sender_id")
+  content         String
+  messageType     String?  @map("message_type")
+  priority        String?
+  isRead          Boolean? @map("is_read")
+  readAt          DateTime @default(now()) @map("read_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  @@map("messages")
+}
+
+model PracticeSetting {
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+  practiceName          String?  @map("practice_name")
+  practiceAddress       Json?    @map("practice_address")
+  practiceContact       Json?    @map("practice_contact")
+  businessHours         Json?    @map("business_hours")
+  securitySettings      Json?    @map("security_settings")
+  portalSettings        Json?    @map("portal_settings")
+  schedulingSettings    Json?    @map("scheduling_settings")
+  documentationSettings Json?    @map("documentation_settings")
+  billingSettings       Json?    @map("billing_settings")
+
+  @@map("practice_settings")
+}
+
+model AggregatedMetric {
+  id          String   @id @default(uuid())
+  metricType  String   @map("metric_type")
+  periodType  String   @map("period_type")
+  periodStart DateTime @default(now()) @map("period_start")
+  periodEnd   DateTime @default(now()) @map("period_end")
+  providerId  String?  @map("provider_id")
+  clientId    String?  @map("client_id")
+  metrics     Json     @map("metrics")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("aggregated_metrics")
+}
+
+model GoalObjective {
+  id             String   @id @default(uuid())
+  goalId         String   @map("goal_id")
+  objectiveText  String   @map("objective_text")
+  isCompleted    Boolean? @map("is_completed")
+  completedDate  DateTime @default(now()) @map("completed_date")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("goal_objectives")
+}
+
+model TimeTracking {
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  clientId              String   @map("client_id")
+  startTime             DateTime @default(now()) @map("start_time")
+  endTime               DateTime? @map("end_time")
+  breakDurationMinutes  Int?     @map("break_duration_minutes")
+  totalHours            Float?   @map("total_hours")
+  activityType          String   @map("activity_type")
+  description           String?
+  isBillable            Boolean? @map("is_billable")
+  status                String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("time_tracking")
+}
+
+model NoteVersion {
+  id        String   @id @default(uuid())
+  noteId    String   @map("note_id")
+  version   Int
+  content   Json
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("note_versions")
+}
+
+model MessageRecipient {
+  id          String   @id @default(uuid())
+  messageId   String   @map("message_id")
+  recipientId String   @map("recipient_id")
+  isRead      Boolean? @map("is_read")
+  readAt      DateTime @default(now()) @map("read_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("message_recipients")
+}
+
+model StatementLineItem {
+  id                    String   @id @default(uuid())
+  statementId           String   @map("statement_id")
+  claimId               String?  @map("claim_id")
+  serviceDate           DateTime @default(now()) @map("service_date")
+  description           String
+  cptCode               String?  @map("cpt_code")
+  chargeAmount          Float    @map("charge_amount")
+  insurancePayment      Float?   @map("insurance_payment")
+  adjustmentAmount      Float?   @map("adjustment_amount")
+  patientResponsibility Float    @map("patient_responsibility")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("statement_line_items")
+}
+
+model NoteCompletionTracking {
+  id                    String   @id @default(uuid())
+  noteId                String   @map("note_id")
+  userId                String   @default(uuid()) @map("user_id")
+  startedAt             DateTime @default(now()) @map("started_at")
+  completedAt           DateTime @default(now()) @map("completed_at")
+  timeSpentMinutes      Int?     @map("time_spent_minutes")
+  completionPercentage  Int?     @map("completion_percentage")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("note_completion_tracking")
+}
+
+model NoteReminder {
+  id          String   @id @default(uuid())
+  providerId  String   @map("provider_id")
+  noteId      String   @map("note_id")
+  reminderType String  @map("reminder_type")
+  dueDate     DateTime @default(now()) @map("due_date")
+  sentAt      DateTime @default(now()) @map("sent_at")
+  isDismissed Boolean? @map("is_dismissed")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("note_reminders")
+}
+
+model SessionCompletion {
+  id                        String   @id @default(uuid())
+  appointmentId             String   @map("appointment_id")
+  providerId                String   @map("provider_id")
+  clientId                  String   @map("client_id")
+  sessionType               String   @map("session_type")
+  durationMinutes           Int      @map("duration_minutes")
+  sessionDate               DateTime @default(now()) @map("session_date")
+  noteId                    String?  @map("note_id")
+  isNoteSigned              Boolean? @map("is_note_signed")
+  noteSignedAt              DateTime @default(now()) @map("note_signed_at")
+  isLocked                  Boolean? @map("is_locked")
+  lockedAt                  DateTime @default(now()) @map("locked_at")
+  calculatedAmount          Float?   @map("calculated_amount")
+  payPeriodWeek             DateTime @default(now()) @map("pay_period_week")
+  isPaid                    Boolean? @map("is_paid")
+  supervisorOverrideBy      String?  @map("supervisor_override_by")
+  supervisorOverrideReason  String?  @map("supervisor_override_reason")
+  supervisorOverrideAt      DateTime @default(now()) @map("supervisor_override_at")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @default(now()) @map("updated_at")
+
+  @@map("session_completions")
+}
+
+model DeadlineExceptionRequest {
+  id                        String   @id @default(uuid())
+  providerId                String   @map("provider_id")
+  sessionCompletionId       String   @map("session_completion_id")
+  requestedExtensionUntil   DateTime @default(now()) @map("requested_extension_until")
+  reason                    String
+  status                    String?  @map("status")
+  reviewedBy                String?  @map("reviewed_by")
+  reviewedAt                DateTime @default(now()) @map("reviewed_at")
+  reviewNotes               String?  @map("review_notes")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @default(now()) @map("updated_at")
+
+  @@map("deadline_exception_requests")
+}
+
+model ProviderSchedule {
+  id              String   @id @default(uuid())
+  providerId      String   @map("provider_id")
+  dayOfWeek       String   @map("day_of_week")
+  startTime       String   @map("start_time")
+  endTime         String   @map("end_time")
+  isAvailable     Boolean? @map("is_available")
+  breakStartTime  String?  @map("break_start_time")
+  breakEndTime    String?  @map("break_end_time")
+  effectiveFrom   DateTime @default(now()) @map("effective_from")
+  effectiveUntil  DateTime? @map("effective_until")
+  status          String?  @map("status")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  @@map("provider_schedules")
+} 
