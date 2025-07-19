@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserCog, Info } from 'lucide-react';
 
 const StaffSupervisionView: React.FC = () => {

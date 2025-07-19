@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Button } from '@/components/shared/ui/button';
-import { Badge } from '@/components/shared/ui/badge';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
-import { Input } from '@/components/shared/ui/input';
-import { Label } from '@/components/shared/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ENV_CONFIG, logger } from '@/services/environmentConfig';
 import { cacheService } from '@/services/cacheService';
 import { productionLogger } from '@/services/productionLogging';

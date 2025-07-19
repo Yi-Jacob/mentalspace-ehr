@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
-import { PaginationControls } from '@/components/shared/ui/pagination-controls';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import ClientListHeader from './components/ClientListHeader';
 import ClientSearch from './components/ClientSearch';

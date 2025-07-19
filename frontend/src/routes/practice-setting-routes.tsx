@@ -1,4 +1,4 @@
-import Settings from '../pages/Settings';
+import Settings from '../pages/settings/Settings';
 import { RouteObject } from 'react-router-dom';
 
 const practiceSettingRoutes: RouteObject[] = [

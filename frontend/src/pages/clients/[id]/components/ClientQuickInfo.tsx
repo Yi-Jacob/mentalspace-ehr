@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/shared/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { User, Mail, Calendar } from 'lucide-react';
 import { ClientFormData } from '@/types/client';
 import { format } from 'date-fns';

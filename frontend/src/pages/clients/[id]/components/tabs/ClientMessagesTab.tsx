@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Button } from '@/components/shared/ui/button';
-import { Badge } from '@/components/shared/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageSquare, Plus, Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
-import ComposeMessageModal from '@/components/messaging/ComposeMessageModal';
-import NewConversationModal from '@/components/messaging/NewConversationModal';
+import ComposeMessageModal from '@/pages/messages/components/ComposeMessageModal';
+import NewConversationModal from '@/pages/messages/components/NewConversationModal';
 
 interface ClientMessagesTabProps {
   clientId: string;

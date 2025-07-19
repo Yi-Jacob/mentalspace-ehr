@@ -9,8 +9,8 @@ type Client = ClientFormData & {
   updated_at?: string;
   phone_numbers?: Array<{ phone_number: string; phone_type: string }>;
 };
-import { Input } from '@/components/shared/ui/input';
-import { Button } from '@/components/shared/ui/button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Search, Filter, SortAsc } from 'lucide-react';
 
 interface VirtualizedClientListProps {

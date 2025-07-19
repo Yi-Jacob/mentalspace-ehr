@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Button } from '@/components/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

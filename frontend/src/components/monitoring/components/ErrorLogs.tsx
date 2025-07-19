@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Badge } from '@/components/shared/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { getStatusBadgeVariant, getStatusIcon } from '../utils/statusUtils';
 
 interface ErrorLogsProps {

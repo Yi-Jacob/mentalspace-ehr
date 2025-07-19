@@ -2,9 +2,9 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
-import { Button } from '@/components/shared/ui/button';
-import Sidebar from '@/components/shared/Sidebar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import Sidebar from '@/components/Sidebar';
 
 const AuthenticationGate = () => {
   const { user, loading, error, refreshSession } = useAuth();

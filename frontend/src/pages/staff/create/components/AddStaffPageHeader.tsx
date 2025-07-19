@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/shared/ui/button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 interface AddStaffPageHeaderProps {

@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Badge } from '@/components/shared/ui/badge';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Users, AlertTriangle } from 'lucide-react';
 import { UserRole } from '@/types/staff';
 

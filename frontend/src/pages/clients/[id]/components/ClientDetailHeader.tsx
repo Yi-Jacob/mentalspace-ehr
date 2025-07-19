@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/shared/ui/button';
-import { Card } from '@/components/shared/ui/card';
-import { Badge } from '@/components/shared/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   User, 
   Phone, 
@@ -13,8 +13,8 @@ import {
   Plus,
   Edit
 } from 'lucide-react';
-import ComposeMessageModal from '@/components/messaging/ComposeMessageModal';
-import NewConversationModal from '@/components/messaging/NewConversationModal';
+import ComposeMessageModal from '@/pages/messages/components/ComposeMessageModal';
+import NewConversationModal from '@/pages/messages/components/NewConversationModal';
 
 interface ClientDetailHeaderProps {
   client: {

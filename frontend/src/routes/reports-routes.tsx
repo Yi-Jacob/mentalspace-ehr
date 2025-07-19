@@ -1,4 +1,4 @@
-import Reports from '../pages/Reports';
+import Reports from '@/pages/reports';
 import { RouteObject } from 'react-router-dom';
 
 const reportsRoutes: RouteObject[] = [

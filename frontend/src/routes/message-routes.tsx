@@ -1,4 +1,4 @@
-import Message from '../pages/Message';
+import Message from '../pages/messages';
 import { RouteObject } from 'react-router-dom';
 
 const messageRoutes: RouteObject[] = [

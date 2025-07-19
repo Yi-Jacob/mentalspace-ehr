@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Textarea } from '@/components/shared/ui/textarea';
-import { Label } from '@/components/shared/ui/label';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 import { sanitizeInput, validateField } from '@/utils/validation';

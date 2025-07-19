@@ -1,6 +1,6 @@
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
-import { Button } from '@/components/shared/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { Plus, Users, Shield, Settings, Eye, UserCog, BookOpen, Clock, TrendingUp, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StaffList from './components/StaffList';

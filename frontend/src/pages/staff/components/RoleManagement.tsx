@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
-import { Input } from '@/components/shared/ui/input';
-import { Button } from '@/components/shared/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Search, Users, Shield, AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useStaffManagement } from '@/hooks/useStaffManagement';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
 import UserRoleCard from './UserRoleCard';

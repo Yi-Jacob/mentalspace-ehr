@@ -1,16 +1,16 @@
 import React from 'react';
-import { RouteObject, Outlet } from 'react-router-dom';
-import Documentation from '../pages/Documentation';
-import ProgressNoteForm from '../components/documentation/progress-note/ProgressNoteForm';
-import ProgressNoteView from '../components/documentation/progress-note/ProgressNoteView';
-import IntakeAssessmentForm from '../components/documentation/intake/IntakeAssessmentForm';
-import IntakeAssessmentView from '../components/documentation/intake/IntakeAssessmentView';
-import TreatmentPlanForm from '../components/documentation/treatment-plan/TreatmentPlanForm';
-import CancellationNoteForm from '../components/documentation/cancellation-note/CancellationNoteForm';
-import ContactNoteForm from '../components/documentation/contact-note/ContactNoteForm';
-import ConsultationNoteForm from '../components/documentation/consultation-note/ConsultationNoteForm';
-import MiscellaneousNoteForm from '../components/documentation/miscellaneous-note/MiscellaneousNoteForm';
-import GenericNoteView from '../components/documentation/GenericNoteView';
+import { RouteObject } from 'react-router-dom';
+import Documentation from '../pages/documentation';
+import ProgressNoteForm from '../pages/documentation/progress-note/ProgressNoteForm';
+import ProgressNoteView from '../pages/documentation/progress-note/ProgressNoteView';
+import IntakeAssessmentForm from '../pages/documentation/intake/IntakeAssessmentForm';
+import IntakeAssessmentView from '../pages/documentation/intake/IntakeAssessmentView';
+import TreatmentPlanForm from '../pages/documentation/treatment-plan/TreatmentPlanForm';
+import CancellationNoteForm from '../pages/documentation/cancellation-note/CancellationNoteForm';
+import ContactNoteForm from '../pages/documentation/contact-note/ContactNoteForm';
+import ConsultationNoteForm from '../pages/documentation/consultation-note/ConsultationNoteForm';
+import MiscellaneousNoteForm from '../pages/documentation/miscellaneous-note/MiscellaneousNoteForm';
+import GenericNoteView from '../pages/documentation/GenericNoteView';
 
 const documentationRoutes: RouteObject[] = [
   {

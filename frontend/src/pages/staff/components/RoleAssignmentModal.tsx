@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/shared/ui/dialog';
-import { Button } from '@/components/shared/ui/button';
-import { Checkbox } from '@/components/shared/ui/checkbox';
-import { Label } from '@/components/shared/ui/label';
-import { Alert, AlertDescription } from '@/components/shared/ui/alert';
-import { Badge } from '@/components/shared/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { UserPlus, AlertTriangle, Info } from 'lucide-react';
 import { UserRole } from '@/types/staff';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';

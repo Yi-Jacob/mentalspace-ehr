@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Label } from '@/components/shared/ui/label';
-import { Input } from '@/components/shared/ui/input';
-import { Button } from '@/components/shared/ui/button';
-import { Calendar } from '@/components/shared/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/shared/ui/popover';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { ClientFormData } from '@/types/client';

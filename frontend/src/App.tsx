@@ -1,14 +1,14 @@
 
 import React, { Suspense } from 'react';
-import { Toaster } from "@/components/shared/ui/toaster";
-import { Toaster as Sonner } from "@/components/shared/ui/sonner";
-import { TooltipProvider } from "@/components/shared/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SidebarProvider } from "@/hooks/useSidebarContext";
 import BaseRoutes from "./routes";
-import LoadingSpinner from "@/components/documentation/notes/LoadingSpinner";
+import LoadingSpinner from "@/pages/documentation/components/notes/LoadingSpinner";
 
 const queryClient = new QueryClient();
 const router = createBrowserRouter(BaseRoutes);

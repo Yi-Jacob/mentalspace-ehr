@@ -1,4 +1,4 @@
-import CRM from '../pages/CRM';
+import CRM from '../pages/crm';
 import { RouteObject } from 'react-router-dom';
 
 const crmRoutes: RouteObject[] = [

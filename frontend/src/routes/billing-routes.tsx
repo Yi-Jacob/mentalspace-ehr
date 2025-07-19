@@ -1,4 +1,4 @@
-import Billing from '../pages/Billing';
+import Billing from '../pages/billing';
 import { RouteObject } from 'react-router-dom';
 
 const billingRoutes: RouteObject[] = [

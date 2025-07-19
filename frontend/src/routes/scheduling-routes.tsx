@@ -1,4 +1,4 @@
-import Scheduling from '../pages/Scheduling';
+import Scheduling from '../pages/scheduling';
 import { RouteObject } from 'react-router-dom';
 
 const schedulingRoutes: RouteObject[] = [
