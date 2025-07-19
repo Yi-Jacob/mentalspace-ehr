@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { CheckCircle } from 'lucide-react';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 import CompletionStatus from './finalize/CompletionStatus';

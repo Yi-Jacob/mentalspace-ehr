@@ -1,7 +1,7 @@
 
 import React, { Component, ReactNode } from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/shared/ui/alert';
+import { Button } from '@/components/shared/ui/button';
 import { AlertTriangle, RefreshCw, Bug } from 'lucide-react';
 import { errorLogger } from '@/services/errorLogging';
 

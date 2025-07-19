@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
 import { useClinicalReportsData } from '@/hooks/useReportData';
 import ClinicalHeader from './components/ClinicalHeader';
 import ClinicalMetricsGrid from './components/ClinicalMetricsGrid';

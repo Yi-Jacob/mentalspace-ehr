@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/shared/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 import ServiceCptCodesSettings from './documentation/ServiceCptCodesSettings';

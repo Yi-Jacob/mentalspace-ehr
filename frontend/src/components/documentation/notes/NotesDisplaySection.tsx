@@ -5,7 +5,7 @@ import EmptyNotesState from './EmptyNotesState';
 import EmptySearchResults from './EmptySearchResults';
 import PaginationInfo from './PaginationInfo';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
-import { PaginationControls } from '@/components/ui/pagination-controls';
+import { PaginationControls } from '@/components/shared/ui/pagination-controls';
 
 interface ClinicalNote {
   id: string;

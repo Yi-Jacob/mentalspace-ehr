@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/shared/ui/button';
+import { Checkbox } from '@/components/shared/ui/checkbox';
+import { Label } from '@/components/shared/ui/label';
+import { Input } from '@/components/shared/ui/input';
 import { AlertTriangle } from 'lucide-react';
 import { ProgressNoteFormData } from '../../types/ProgressNoteFormData';
 

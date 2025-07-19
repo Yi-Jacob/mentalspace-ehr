@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { MessageSquare } from 'lucide-react';
 
 interface ConversationData {

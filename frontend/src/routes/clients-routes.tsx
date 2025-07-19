@@ -1,5 +1,5 @@
-import ClientList from '../pages/ClientList';
-import ClientDetailView from '../components/ClientDetailView';
+import ClientList from '@/pages/clients';
+import ClientDetailView from '@/pages/clients/[id]';
 import { RouteObject } from 'react-router-dom';
 
 const clientsRoutes: RouteObject[] = [

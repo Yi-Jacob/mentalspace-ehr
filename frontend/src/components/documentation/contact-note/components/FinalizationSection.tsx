@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/shared/ui/label';
+import { Input } from '@/components/shared/ui/input';
+import { Alert, AlertDescription } from '@/components/shared/ui/alert';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { ContactNoteFormData } from '../types/ContactNoteFormData';
 

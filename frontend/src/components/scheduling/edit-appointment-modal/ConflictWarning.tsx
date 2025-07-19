@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/shared/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 

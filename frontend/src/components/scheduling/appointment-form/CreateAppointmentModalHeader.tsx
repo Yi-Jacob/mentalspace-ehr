@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { DialogHeader, DialogTitle } from '@/components/shared/ui/dialog';
+import { Button } from '@/components/shared/ui/button';
 import { Plus, X, Sparkles } from 'lucide-react';
 
 interface CreateAppointmentModalHeaderProps {

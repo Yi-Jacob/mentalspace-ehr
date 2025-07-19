@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { FileText, Users, Shield, DollarSign, Calendar, Phone, TrendingUp } from 'lucide-react';
 import ClinicalReports from './clinical/ClinicalReports';
 import StaffReports from './staff/StaffReports';

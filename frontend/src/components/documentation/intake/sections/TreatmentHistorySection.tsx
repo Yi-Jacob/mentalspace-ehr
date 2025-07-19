@@ -1,8 +1,8 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/shared/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/shared/ui/radio-group';
+import { Checkbox } from '@/components/shared/ui/checkbox';
+import { Textarea } from '@/components/shared/ui/textarea';
 import { IntakeFormData } from '../types/IntakeFormData';
 
 const TREATMENT_TYPES = [

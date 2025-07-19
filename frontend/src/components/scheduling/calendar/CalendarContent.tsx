@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/shared/ui/card';
 import DayView from '../calendar-views/DayView';
 import WeekView from '../calendar-views/WeekView';
 import MonthView from '../calendar-views/MonthView';

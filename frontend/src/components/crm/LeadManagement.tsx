@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/shared/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useLeads, useCreateLead } from '@/hooks/useCrmData';
 import LeadManagementHeader from './lead-management/LeadManagementHeader';

@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Label } from '@/components/shared/ui/label';
+import { Input } from '@/components/shared/ui/input';
+import { Button } from '@/components/shared/ui/button';
+import { Badge } from '@/components/shared/ui/badge';
+import { Textarea } from '@/components/shared/ui/textarea';
 import { Plus, X, History } from 'lucide-react';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 import { useDiagnosesData } from '../../intake/hooks/useDiagnosesData';

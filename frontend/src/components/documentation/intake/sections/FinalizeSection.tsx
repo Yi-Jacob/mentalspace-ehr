@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Checkbox } from '@/components/shared/ui/checkbox';
+import { Separator } from '@/components/shared/ui/separator';
 import { AlertTriangle, CheckCircle, FileSignature } from 'lucide-react';
 import { IntakeFormData } from '../types/IntakeFormData';
 import { useAuth } from '@/hooks/useAuth';

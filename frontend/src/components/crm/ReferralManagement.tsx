@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/shared/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import ReferralManagementHeader from './referral-management/ReferralManagementHeader';
 import ReferralSourceCard from './referral-management/ReferralSourceCard';

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/shared/ui/label';
+import { Checkbox } from '@/components/shared/ui/checkbox';
+import { Textarea } from '@/components/shared/ui/textarea';
+import { Card, CardContent } from '@/components/shared/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { IntakeFormData } from '../types/IntakeFormData';
 

@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/shared/ui/label';
+import { Textarea } from '@/components/shared/ui/textarea';
+import { Checkbox } from '@/components/shared/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 import SmartTemplates from '../components/SmartTemplates';
 

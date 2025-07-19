@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/shared/ui/label';
+import { Textarea } from '@/components/shared/ui/textarea';
+import { Checkbox } from '@/components/shared/ui/checkbox';
 import { AlertTriangle } from 'lucide-react';
 import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
 

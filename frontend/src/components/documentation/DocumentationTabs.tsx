@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
+import { Badge } from '@/components/shared/ui/badge';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import NotesList from '@/components/documentation/NotesList';
 import CreateNoteGrid from '@/components/documentation/CreateNoteGrid';

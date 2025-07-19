@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ErrorBoundary from './ErrorBoundary';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/shared/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 
 interface FormErrorBoundaryProps {

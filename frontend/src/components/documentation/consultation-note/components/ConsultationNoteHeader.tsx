@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Button } from '@/components/shared/ui/button';
 import { Users, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

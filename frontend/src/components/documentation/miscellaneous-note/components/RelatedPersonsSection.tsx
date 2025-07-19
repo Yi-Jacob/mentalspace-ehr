@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Label } from '@/components/shared/ui/label';
+import { Input } from '@/components/shared/ui/input';
+import { Button } from '@/components/shared/ui/button';
+import { Card } from '@/components/shared/ui/card';
 import { Plus, Trash2 } from 'lucide-react';
 import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
 

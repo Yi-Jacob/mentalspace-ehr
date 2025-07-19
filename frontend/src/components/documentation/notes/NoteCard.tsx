@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/shared/ui/card';
+import { Badge } from '@/components/shared/ui/badge';
+import { Button } from '@/components/shared/ui/button';
 import { FileText, Calendar, User, Clock, AlertTriangle } from 'lucide-react';
 import { format, isAfter, subDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';

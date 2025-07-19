@@ -1436,7 +1436,7 @@ export const useDebounced = <T extends (...args: any[]) => any>(
 ```typescript
 // src/components/monitoring/MonitoringDashboard.tsx
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 

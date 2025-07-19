@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
+import { Button } from '@/components/shared/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useMonitoringData } from './hooks/useMonitoringData';
 import OverviewCards from './components/OverviewCards';

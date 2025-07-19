@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/shared/ui/card';
+import { Progress } from '@/components/shared/ui/progress';
 import { CheckCircle, Target, FileText, AlertTriangle } from 'lucide-react';
 
 interface ComplianceStatsGridProps {

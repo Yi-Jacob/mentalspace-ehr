@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@/components/shared/ui/alert-dialog';
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAppointmentMutations } from './hooks/useAppointmentMutations';

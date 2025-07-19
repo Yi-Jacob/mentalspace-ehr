@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
 import ReferralManagement from '@/components/crm/ReferralManagement';
 import LeadManagement from '@/components/crm/LeadManagement';
 import ContactDatabase from '@/components/crm/ContactDatabase';

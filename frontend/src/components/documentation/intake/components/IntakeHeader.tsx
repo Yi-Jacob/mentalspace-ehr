@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Progress } from '@/components/shared/ui/progress';
 
 interface IntakeHeaderProps {
   clientName?: string;

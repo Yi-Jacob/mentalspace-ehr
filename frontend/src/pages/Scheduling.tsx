@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
 import { Calendar, Clock, Users, Settings } from 'lucide-react';
 import CalendarView from '@/components/scheduling/CalendarView';
 import WorkScheduleManagement from '@/components/scheduling/WorkScheduleManagement';

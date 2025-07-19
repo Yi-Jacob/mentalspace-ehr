@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/shared/ui/card';
 import ClientInfoDisplay from '@/components/documentation/shared/ClientInfoDisplay';
 import ContactNoteHeader from './components/ContactNoteHeader';
 import ContactNoteNavigationButtons from './components/ContactNoteNavigationButtons';

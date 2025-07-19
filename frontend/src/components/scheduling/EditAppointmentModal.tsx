@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/shared/ui/dialog';
 import { format } from 'date-fns';
 import { useAppointmentMutations } from './hooks/useAppointmentMutations';
 import { useConflictDetection } from './hooks/useConflictDetection';

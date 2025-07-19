@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import PayerManagement from '@/components/billing/PayerManagement';
 import InsuranceVerification from '@/components/billing/InsuranceVerification';
 import ClaimsSubmission from '@/components/billing/ClaimsSubmission';
