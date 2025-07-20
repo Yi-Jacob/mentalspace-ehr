@@ -1,5 +1,3 @@
-import { ENV_CONFIG } from './environmentConfig';
-
 interface CacheItem<T> {
   data: T;
   expiry: number;
@@ -8,7 +6,7 @@ interface CacheItem<T> {
 
 class CacheService {
   private cache = new Map<string, CacheItem<any>>();
-  private readonly defaultTTL = ENV_CONFIG.performance.cacheTimeout;
+  private readonly defaultTTL = 5 * 60 * 1000; // 5 minutes default
 
   set<T>(key: string, data: T, ttl?: number): void {
     const expiry = Date.now() + (ttl || this.defaultTTL);
@@ -103,4 +101,4 @@ setInterval(() => {
   if (removed > 0) {
     console.debug(`Cache cleanup: removed ${removed} expired items`);
   }
-}, 5 * 60 * 1000);
+}, 5 * 60 * 1000); 

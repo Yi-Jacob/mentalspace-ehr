@@ -1,9 +1,9 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { APIError, APIErrorType } from '@/services/api/apiErrorTypes';
-import { APIErrorClassifier } from '@/services/api/apiErrorClassifier';
-import { RetryUtility, RetryConfig, DEFAULT_RETRY_CONFIG } from '@/services/api/retryUtils';
+import { APIError, APIErrorType } from '@/services/api-helper/apiErrorTypes';
+import { APIErrorClassifier } from '@/services/api-helper/apiErrorClassifier';
+import { RetryUtility, RetryConfig, DEFAULT_RETRY_CONFIG } from '@/services/api-helper/retryUtils';
 import { errorLogger } from '@/services/errorLogging';
 
 interface UseEnhancedErrorHandlerOptions {

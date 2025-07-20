@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, isSameDay } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import AppointmentCard from '../AppointmentCard';
 
 interface Appointment {

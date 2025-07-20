@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
 import { sanitizeInput, validateField } from '@/utils/validation';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 
 interface ValidatedTextareaProps {
   id: string;

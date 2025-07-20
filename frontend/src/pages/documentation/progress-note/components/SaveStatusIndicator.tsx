@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { CheckCircle, Clock, AlertCircle, Wifi, WifiOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 
 interface SaveStatusIndicatorProps {
   lastSaved?: Date;

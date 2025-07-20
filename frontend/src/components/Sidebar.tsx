@@ -17,7 +17,7 @@ import {
   Menu,
   ChevronLeft
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarContext } from '@/hooks/useSidebarContext';
 import { Button } from '@/components/ui/button';

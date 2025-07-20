@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from './client';
+import { errorHandler } from './errorHandler';
 
 // Enhanced validation schemas
 export const ClientValidationSchema = z.object({
@@ -50,48 +51,6 @@ export class APIMiddleware {
     return APIMiddleware.instance;
   }
 
-  // Rate limiting check
-  async checkRateLimit(endpoint: string, identifier?: string): Promise<{ allowed: boolean; error?: string; headers?: Record<string, string> }> {
-    try {
-      const { data, error } = await supabase.functions.invoke('rate-limiter', {
-        body: { 
-          identifier: identifier || this.getClientIdentifier(),
-          endpoint 
-        }
-      });
-
-      if (error) {
-        console.error('Rate limit check failed:', error);
-        return { allowed: true }; // Fail open
-      }
-
-      if (data?.error) {
-        return { 
-          allowed: false, 
-          error: data.error,
-          headers: {
-            'Retry-After': data.retryAfter?.toString() || '900',
-            'X-RateLimit-Limit': data.limit?.toString() || '100',
-            'X-RateLimit-Remaining': data.remaining?.toString() || '0',
-            'X-RateLimit-Reset': data.reset || new Date(Date.now() + 15 * 60 * 1000).toISOString()
-          }
-        };
-      }
-
-      return { 
-        allowed: true,
-        headers: {
-          'X-RateLimit-Limit': data.limit?.toString() || '100',
-          'X-RateLimit-Remaining': data.remaining?.toString() || '99',
-          'X-RateLimit-Reset': data.reset || new Date(Date.now() + 15 * 60 * 1000).toISOString()
-        }
-      };
-    } catch (error) {
-      console.error('Rate limit middleware error:', error);
-      return { allowed: true }; // Fail open
-    }
-  }
-
   // Input validation
   validate<T>(data: unknown, schema: z.ZodSchema<T>): { success: boolean; data?: T; errors?: Record<string, string> } {
     try {
@@ -123,12 +82,10 @@ export class APIMiddleware {
     errorMessage?: string;
   }): Promise<void> {
     try {
-      await supabase.functions.invoke('api-logger', {
-        body: {
-          ...requestData,
-          ipAddress: this.getClientIP(),
-          userAgent: navigator.userAgent
-        }
+      // Log to console for now, could be sent to external service
+      console.log('API Request Log:', {
+        ...requestData,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.error('Failed to log request:', error);
@@ -145,20 +102,6 @@ export class APIMiddleware {
       'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://wjaccopklttdvnutdmtu.supabase.co;",
       'Referrer-Policy': 'strict-origin-when-cross-origin'
     };
-  }
-
-  private getClientIdentifier(): string {
-    // Try to get a stable identifier for rate limiting
-    if (typeof window !== 'undefined') {
-      return window.location.hostname + '-' + (sessionStorage.getItem('session-id') || 'anonymous');
-    }
-    return 'server-side';
-  }
-
-  private getClientIP(): string {
-    // In a browser environment, we can't directly get the client IP
-    // This would typically be handled by the server/edge function
-    return 'client-side';
   }
 }
 
@@ -184,12 +127,6 @@ export class APIRequestInterceptor {
     let statusCode = 200;
 
     try {
-      // Rate limiting check
-      const rateLimitResult = await this.middleware.checkRateLimit(config.endpoint);
-      if (!rateLimitResult.allowed) {
-        throw new Error(rateLimitResult.error || 'Rate limit exceeded');
-      }
-
       // Input validation
       if (config.validation) {
         const validation = this.middleware.validate(config.validation.data, config.validation.schema);
@@ -199,26 +136,32 @@ export class APIRequestInterceptor {
         }
       }
 
-      // Execute operation
+      // Execute the API call
       result = await operation();
-      
-      return result;
-    } catch (err: any) {
-      error = err;
-      statusCode = err.status || err.statusCode || 500;
-      throw err;
-    } finally {
-      // Log request
-      const responseTime = Date.now() - startTime;
+
+      // Log successful request
       await this.middleware.logRequest({
         method: config.method,
         url: config.endpoint,
         statusCode,
-        responseTime,
-        errorMessage: error?.message
+        responseTime: Date.now() - startTime
       });
+
+      return result;
+    } catch (err) {
+      error = err;
+      statusCode = err.status || 500;
+
+      // Log failed request
+      await this.middleware.logRequest({
+        method: config.method,
+        url: config.endpoint,
+        statusCode,
+        responseTime: Date.now() - startTime,
+        errorMessage: err.message
+      });
+
+      throw err;
     }
   }
-}
-
-export const apiInterceptor = new APIRequestInterceptor();
+} 
