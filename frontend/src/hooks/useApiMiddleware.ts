@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { z } from 'zod';
-import { APIMiddleware, APIRequestInterceptor, ClientValidationSchema, ClinicalNoteValidationSchema, AppointmentValidationSchema } from '@/services/apiMiddleware';
+import { APIMiddleware, APIRequestInterceptor, ClientValidationSchema, ClinicalNoteValidationSchema, AppointmentValidationSchema } from '@/services/api-helper/apiMiddleware';
 import { toast } from '@/hooks/use-toast';
 
 export interface ApiCallConfig {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
-import { noteCreationService } from '@/services/noteCreationService';
+import { noteService } from '@/services/noteService';
 
 export const useNoteCreation = () => {
   const navigate = useNavigate();
@@ -28,10 +28,12 @@ export const useNoteCreation = () => {
       }
 
       return await executeWithRetry(async () => {
-        return await noteCreationService.createClinicalNote({
-          clientId,
-          noteType,
-          user
+        return await noteService.createNote({
+          title: `New ${noteType.replace('_', ' ')}`,
+          content: {},
+          client_id: clientId,
+          note_type: noteType as any,
+          status: 'draft'
         });
       }, `Create ${noteType}`);
     },

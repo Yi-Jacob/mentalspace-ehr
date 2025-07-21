@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { APIError, APIErrorType } from '@/services/api-helper/apiErrorTypes';
 import { APIErrorClassifier } from '@/services/api-helper/apiErrorClassifier';
 import { RetryUtility, RetryConfig, DEFAULT_RETRY_CONFIG } from '@/services/api-helper/retryUtils';
-import { errorLogger } from '@/services/errorLogging';
+import { errorLogger } from '@/utils/errorLogging';
 
 interface UseEnhancedErrorHandlerOptions {
   component?: string;

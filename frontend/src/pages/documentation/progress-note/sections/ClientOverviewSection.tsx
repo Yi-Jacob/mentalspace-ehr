@@ -3,10 +3,9 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
-import ClientInfoDisplay from '../../shared/ClientInfoDisplay';
-import SearchableSelect from '../../shared/SearchableSelect';
-import FrequencySelect from '../../shared/FrequencySelect';
 import { useCptCodes } from '@/hooks/useCptCodes';
+import SearchableSelect from '../../components/shared/SearchableSelect';
+import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
 
 interface ClientOverviewSectionProps {
   formData: ProgressNoteFormData;

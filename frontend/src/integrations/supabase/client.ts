@@ -1,7 +1,7 @@
 // Enhanced Supabase client with connection pooling and environment configuration
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
-import { ENV_CONFIG } from '@/services/environmentConfig';
+import { ENV_CONFIG } from '@/utils/environmentConfig';
 
 const SUPABASE_URL = ENV_CONFIG.supabase.url;
 const SUPABASE_PUBLISHABLE_KEY = ENV_CONFIG.supabase.anonKey;

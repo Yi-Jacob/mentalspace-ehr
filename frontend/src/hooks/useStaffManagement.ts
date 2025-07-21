@@ -1,99 +1,167 @@
 
-import { useStaffQueries } from './useStaffQueries';
-import { useStaffMutations } from './useStaffMutations';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { staffService, type CreateStaffInput, type UpdateStaffInput } from '@/services/staffService';
+import { StaffMember } from '@/types/staff';
 
 export const useStaffManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { staffMembers, isLoading, error } = useStaffQueries();
+
+  // Query for all staff members
   const {
-    createStaffMember,
-    createStaffProfile,
-    updateStaffProfile,
-    deactivateStaff,
-    isCreatingStaff,
-    isCreating,
-    isUpdating,
-    isDeactivating,
-  } = useStaffMutations();
+    data: staffMembers = [],
+    isLoading,
+    error,
+    refetch: refetchStaff,
+  } = useQuery({
+    queryKey: ['staff'],
+    queryFn: () => staffService.getAllStaff(),
+  });
 
-  // Add function to assign Practice Administrator role to current user
-  const assignAdminRoleMutation = useMutation({
-    mutationFn: async () => {
-      // Get current user info using the security definer function
-      const { data: userInfo, error: userError } = await supabase
-        .rpc('get_current_user_info');
-
-      if (userError || !userInfo || userInfo.length === 0) {
-        throw new Error('Could not get current user information');
-      }
-
-      const currentUser = userInfo[0];
-
-      // Check if user already has the role
-      const { data: existingRole } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', currentUser.user_id)
-        .eq('role', 'Practice Administrator')
-        .eq('is_active', true)
-        .single();
-
-      if (existingRole) {
-        throw new Error('User already has Practice Administrator role');
-      }
-
-      // Assign the role
-      const { data, error } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: currentUser.user_id,
-          role: 'Practice Administrator',
-          assigned_by: currentUser.user_id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+  // Mutation for creating staff
+  const createStaffMutation = useMutation({
+    mutationFn: (input: CreateStaffInput) => staffService.createStaff(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['current-user-roles'] });
-      queryClient.invalidateQueries({ queryKey: ['current-user-permissions'] });
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
       toast({
         title: 'Success',
-        description: 'Practice Administrator role assigned successfully',
+        description: 'Staff member created successfully',
       });
-      // Force a page refresh to ensure all permissions are updated
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     },
     onError: (error: any) => {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to assign Practice Administrator role',
+        description: error.message || 'Failed to create staff member',
         variant: 'destructive',
       });
     },
   });
 
+  // Mutation for updating staff
+  const updateStaffMutation = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateStaffInput }) => 
+      staffService.updateStaff(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
+      toast({
+        title: 'Success',
+        description: 'Staff member updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update staff member',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Mutation for deleting staff
+  const deleteStaffMutation = useMutation({
+    mutationFn: (id: string) => staffService.deleteStaff(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
+      toast({
+        title: 'Success',
+        description: 'Staff member deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete staff member',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Mutation for deactivating staff
+  const deactivateStaffMutation = useMutation({
+    mutationFn: (id: string) => staffService.deactivateStaff(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
+      toast({
+        title: 'Success',
+        description: 'Staff member deactivated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to deactivate staff member',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Staff management functions
+  const createStaffMember = async (input: CreateStaffInput) => {
+    try {
+      return await createStaffMutation.mutateAsync(input);
+    } catch (error) {
+      console.error('Error creating staff member:', error);
+      throw error;
+    }
+  };
+
+  const updateStaffMember = async (id: string, input: UpdateStaffInput) => {
+    try {
+      return await updateStaffMutation.mutateAsync({ id, input });
+    } catch (error) {
+      console.error('Error updating staff member:', error);
+      throw error;
+    }
+  };
+
+  const deleteStaffMember = async (id: string) => {
+    try {
+      return await deleteStaffMutation.mutateAsync(id);
+    } catch (error) {
+      console.error('Error deleting staff member:', error);
+      throw error;
+    }
+  };
+
+  const deactivateStaff = async (id: string) => {
+    try {
+      return await deactivateStaffMutation.mutateAsync(id);
+    } catch (error) {
+      console.error('Error deactivating staff member:', error);
+      throw error;
+    }
+  };
+
+  // Get staff by ID hook
+  const useStaffById = (id: string) => {
+    return useQuery({
+      queryKey: ['staff', id],
+      queryFn: () => staffService.getStaffById(id),
+      enabled: !!id,
+    });
+  };
+
   return {
+    // Data
     staffMembers,
     isLoading,
     error,
+    
+    // Mutations
     createStaffMember,
-    createStaffProfile,
-    updateStaffProfile,
+    updateStaffMember,
+    deleteStaffMember,
     deactivateStaff,
-    isCreatingStaff,
-    isCreating,
-    isUpdating,
-    isDeactivating,
-    assignAdminRole: assignAdminRoleMutation.mutate,
-    isAssigningAdmin: assignAdminRoleMutation.isPending,
+    useStaffById,
+    
+    // Loading states
+    isCreating: createStaffMutation.isPending,
+    isUpdating: updateStaffMutation.isPending,
+    isDeleting: deleteStaffMutation.isPending,
+    isDeactivating: deactivateStaffMutation.isPending,
+    
+    // Refetch function
+    refetchStaff,
   };
 };

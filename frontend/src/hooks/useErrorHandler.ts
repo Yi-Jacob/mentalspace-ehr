@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { errorLogger } from '@/services/errorLogging';
+import { errorLogger } from '@/utils/errorLogging';
 import { useEnhancedErrorHandler } from './useEnhancedErrorHandler';
 
 interface UseErrorHandlerOptions {

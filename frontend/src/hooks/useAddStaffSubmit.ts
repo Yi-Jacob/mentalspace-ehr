@@ -5,7 +5,7 @@ import { UserStatus } from '@/types/staff';
 
 export const useAddStaffSubmit = () => {
   const navigate = useNavigate();
-  const { createStaffMember, isCreatingStaff } = useStaffManagement();
+  const { createStaffMember, isCreating } = useStaffManagement();
 
   const handleSubmit = async (e: React.FormEvent, formData: any) => {
     e.preventDefault();
@@ -26,30 +26,16 @@ export const useAddStaffSubmit = () => {
       first_name: formData.first_name,
       last_name: formData.last_name,
       email: formData.email,
-      roles: formData.roles,
-      employee_id: formData.employee_id || undefined,
-      job_title: formData.job_title || undefined,
-      department: formData.department || undefined,
-      phone_number: formData.phone_number || formData.mobile_phone || undefined,
-      npi_number: formData.npi_number || undefined,
-      license_number: formData.license_number || undefined,
-      license_state: formData.license_state || undefined,
-      license_expiry_date: formData.license_expiry_date || undefined,
-      hire_date: formData.hire_date || undefined,
-      billing_rate: formData.billing_rate ? parseFloat(formData.billing_rate) : undefined,
-      can_bill_insurance: formData.can_bill_insurance,
-      status: formData.status,
-      notes: formData.notes || undefined,
-      supervision_type: formData.supervision_type || 'Not Supervised',
-      supervisor_id: formData.supervisor_id || undefined,
+      avatar_url: formData.avatar_url || undefined,
     };
 
-    createStaffMember(staffData, {
-      onSuccess: () => {
-        console.log('Staff member created successfully with supervision relationship');
-        navigate('/staff');
-      }
-    });
+    try {
+      await createStaffMember(staffData);
+      console.log('Staff member created successfully');
+      navigate('/staff');
+    } catch (error) {
+      console.error('Error creating staff member:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -59,6 +45,6 @@ export const useAddStaffSubmit = () => {
   return {
     handleSubmit,
     handleCancel,
-    isCreatingStaff
+    isCreatingStaff: isCreating
   };
 };

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useClientForm } from '@/hooks/useClientForm';
-import { createClient, updateClient } from '@/services/clientService';
+import { clientService } from '@/services/clientService';
 import { supabase } from '@/integrations/supabase/client';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
@@ -152,13 +152,26 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
       console.log('Date of birth being saved:', formData.date_of_birth);
       
       if (isEditing && editingClient?.id) {
-        await updateClient(editingClient.id, formData, phoneNumbers, emergencyContacts, insuranceInfo, primaryCareProvider);
+        await clientService.updateClientWithFormData(
+          editingClient.id,
+          formData,
+          phoneNumbers,
+          emergencyContacts,
+          insuranceInfo,
+          primaryCareProvider
+        );
         toast({
           title: "Success",
           description: "Client updated successfully",
         });
       } else {
-        await createClient(formData, phoneNumbers, emergencyContacts, insuranceInfo, primaryCareProvider);
+        await clientService.createClientWithFormData(
+          formData,
+          phoneNumbers,
+          emergencyContacts,
+          insuranceInfo,
+          primaryCareProvider
+        );
         toast({
           title: "Success",
           description: "Client created successfully",

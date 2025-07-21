@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { performanceMonitor } from '@/services/performanceMonitoring';
-import { errorLogger } from '@/services/errorLogging';
+import { errorLogger } from '@/utils/errorLogging';
 import { analytics } from '@/services/analytics';
 
 export const useMonitoringData = () => {

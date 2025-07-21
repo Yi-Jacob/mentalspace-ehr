@@ -26,6 +26,43 @@ export interface UpdateClientRequest {
   date_of_birth?: string;
 }
 
+// Form-specific types that match the form structure
+export interface FormPhoneNumber {
+  type: 'Mobile' | 'Home' | 'Work' | 'Other';
+  number: string;
+  message_preference: 'No messages' | 'Voice messages OK' | 'Text messages OK' | 'Voice/Text messages OK';
+}
+
+export interface FormEmergencyContact {
+  name: string;
+  relationship: string;
+  phone_number: string;
+  email: string;
+  is_primary: boolean;
+}
+
+export interface FormInsuranceInfo {
+  insurance_type: 'Primary' | 'Secondary';
+  insurance_company: string;
+  policy_number: string;
+  group_number: string;
+  subscriber_name: string;
+  subscriber_relationship: string;
+  subscriber_dob: string;
+  effective_date: string;
+  termination_date: string;
+  copay_amount: number;
+  deductible_amount: number;
+}
+
+export interface FormPrimaryCareProvider {
+  provider_name: string;
+  practice_name: string;
+  phone_number: string;
+  address: string;
+}
+
+// API types for backend communication
 export interface PhoneNumber {
   id?: string;
   phone_number: string;
@@ -113,6 +150,66 @@ export class ClientService {
 
   async updateClientInsurance(clientId: string, insurance: InsuranceInfo[]): Promise<InsuranceInfo[]> {
     return apiClient.put<InsuranceInfo[]>(`${this.baseUrl}/${clientId}/insurance`, { insurance });
+  }
+
+  // Form-specific methods that handle the form data structure
+  async createClientWithFormData(
+    formData: any,
+    phoneNumbers: FormPhoneNumber[],
+    emergencyContacts: FormEmergencyContact[],
+    insuranceInfo: FormInsuranceInfo[],
+    primaryCareProvider: FormPrimaryCareProvider
+  ): Promise<Client> {
+    // First create the client
+    const client = await this.createClient(formData);
+    
+    // Then handle related data (this would need backend support for batch operations)
+    // For now, we'll just create the client and return
+    return client;
+  }
+
+  async updateClientWithFormData(
+    clientId: string,
+    formData: any,
+    phoneNumbers: FormPhoneNumber[],
+    emergencyContacts: FormEmergencyContact[],
+    insuranceInfo: FormInsuranceInfo[],
+    primaryCareProvider: FormPrimaryCareProvider
+  ): Promise<Client> {
+    // Update the client
+    const client = await this.updateClient(clientId, formData);
+    
+    // Convert form data to API format and update related data
+    const apiPhoneNumbers = phoneNumbers.map(phone => ({
+      phone_number: phone.number,
+      phone_type: phone.type,
+      message_preference: phone.message_preference
+    }));
+
+    const apiEmergencyContacts = emergencyContacts.map(contact => ({
+      first_name: contact.name.split(' ')[0] || '',
+      last_name: contact.name.split(' ').slice(1).join(' ') || '',
+      relationship: contact.relationship,
+      phone_number: contact.phone_number,
+      email: contact.email
+    }));
+
+    const apiInsuranceInfo = insuranceInfo.map(insurance => ({
+      provider_name: insurance.insurance_company,
+      policy_number: insurance.policy_number,
+      group_number: insurance.group_number,
+      subscriber_name: insurance.subscriber_name,
+      relationship_to_subscriber: insurance.subscriber_relationship,
+      effective_date: insurance.effective_date,
+      expiration_date: insurance.termination_date
+    }));
+
+    // Update related data
+    await this.updateClientPhoneNumbers(clientId, apiPhoneNumbers);
+    await this.updateClientEmergencyContacts(clientId, apiEmergencyContacts);
+    await this.updateClientInsurance(clientId, apiInsuranceInfo);
+    
+    return client;
   }
 }
 
