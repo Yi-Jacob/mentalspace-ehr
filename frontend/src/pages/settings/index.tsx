@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings as SettingsIcon, User, Calendar, FileText, CreditCard } from 'lucide-react';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import AccountAccessSettings from '@/pages/settings/components/AccountAccessSettings';
 import PortalSchedulingSettings from '@/pages/settings/components/PortalSchedulingSettings';
 import DocumentationSettings from '@/pages/settings/components/DocumentationSettings';
@@ -12,16 +14,12 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('account');
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold flex items-center space-x-3">
-          <SettingsIcon className="h-8 w-8" />
-          <span>Practice Settings</span>
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Configure your practice preferences, security settings, and system features
-        </p>
-      </div>
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={SettingsIcon}
+        title="Practice Settings"
+        description="Configure your practice preferences, security settings, and system features"
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -59,7 +57,7 @@ const Settings = () => {
           <BillingSettings />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageLayout>
   );
 };
 

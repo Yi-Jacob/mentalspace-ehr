@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
+  LayoutDashboard,
   Users, 
   Calendar, 
   MessageSquare, 
@@ -11,6 +12,8 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 
 const Dashboard = () => {
   const stats = [
@@ -59,18 +62,17 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <div className="text-sm text-gray-500">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </div>
-      </div>
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Dashboard"
+        description={`${new Date().toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })}`}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -149,7 +151,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

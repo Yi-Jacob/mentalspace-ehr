@@ -8,7 +8,7 @@ export const useStaffManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Query for all staff members
+  // Query for all staff members from backend API
   const {
     data: staffMembers = [],
     isLoading,
@@ -24,6 +24,7 @@ export const useStaffManagement = () => {
     mutationFn: (input: CreateStaffInput) => staffService.createStaff(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       toast({
         title: 'Success',
         description: 'Staff member created successfully',
@@ -44,6 +45,7 @@ export const useStaffManagement = () => {
       staffService.updateStaff(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       toast({
         title: 'Success',
         description: 'Staff member updated successfully',
@@ -63,6 +65,7 @@ export const useStaffManagement = () => {
     mutationFn: (id: string) => staffService.deleteStaff(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       toast({
         title: 'Success',
         description: 'Staff member deleted successfully',
@@ -82,6 +85,7 @@ export const useStaffManagement = () => {
     mutationFn: (id: string) => staffService.deactivateStaff(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       toast({
         title: 'Success',
         description: 'Staff member deactivated successfully',
@@ -124,7 +128,7 @@ export const useStaffManagement = () => {
     }
   };
 
-  const deactivateStaff = async (id: string) => {
+  const deactivateStaffMember = async (id: string) => {
     try {
       return await deactivateStaffMutation.mutateAsync(id);
     } catch (error) {
@@ -133,35 +137,23 @@ export const useStaffManagement = () => {
     }
   };
 
-  // Get staff by ID hook
-  const useStaffById = (id: string) => {
-    return useQuery({
-      queryKey: ['staff', id],
-      queryFn: () => staffService.getStaffById(id),
-      enabled: !!id,
-    });
-  };
-
   return {
     // Data
     staffMembers,
     isLoading,
     error,
-    
+    refetchStaff,
+
     // Mutations
     createStaffMember,
     updateStaffMember,
     deleteStaffMember,
-    deactivateStaff,
-    useStaffById,
-    
+    deactivateStaffMember,
+
     // Loading states
     isCreating: createStaffMutation.isPending,
     isUpdating: updateStaffMutation.isPending,
     isDeleting: deleteStaffMutation.isPending,
     isDeactivating: deactivateStaffMutation.isPending,
-    
-    // Refetch function
-    refetchStaff,
   };
 };

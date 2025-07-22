@@ -2,6 +2,9 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CreditCard } from 'lucide-react';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import PayerManagement from '@/pages/billing/components/PayerManagement';
 import InsuranceVerification from '@/pages/billing/components/InsuranceVerification';
 import ClaimsSubmission from '@/pages/billing/components/ClaimsSubmission';
@@ -12,13 +15,12 @@ import StatementGeneration from '@/pages/billing/components/StatementGeneration'
 
 const Billing: React.FC = () => {
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Billing Management</h1>
-        <p className="text-gray-600 mt-2">
-          Comprehensive billing system for insurance management, claims processing, and financial reporting
-        </p>
-      </div>
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={CreditCard}
+        title="Billing Management"
+        description="Comprehensive billing system for insurance management, claims processing, and financial reporting"
+      />
 
       <Tabs defaultValue="payers" className="space-y-6">
         <TabsList className="grid w-full grid-cols-7">
@@ -129,7 +131,7 @@ const Billing: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </PageLayout>
   );
 };
 

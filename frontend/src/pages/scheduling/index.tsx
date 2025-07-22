@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Clock, Users, Settings } from 'lucide-react';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import CalendarView from '@/pages/scheduling/components/CalendarView';
 import WorkScheduleManagement from '@/pages/scheduling/components/WorkScheduleManagement';
 import AppointmentManagement from '@/pages/scheduling/components/AppointmentManagement';
@@ -11,13 +13,13 @@ const Scheduling = () => {
   const [activeTab, setActiveTab] = useState('calendar');
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Scheduling</h1>
-        <p className="text-gray-600 mt-2">
-          Manage appointments, work schedules, and calendar integration
-        </p>
-      </div>
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={Calendar}
+        title="Scheduling"
+        description="Manage appointments, work schedules, and calendar integration"
+
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
@@ -55,7 +57,7 @@ const Scheduling = () => {
           <SchedulingSettings />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageLayout>
   );
 };
 

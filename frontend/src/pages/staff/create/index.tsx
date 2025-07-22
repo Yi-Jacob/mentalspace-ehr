@@ -1,7 +1,10 @@
 import React from 'react';
+import { UserPlus, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAddStaffForm } from '@/hooks/useAddStaffForm';
 import { useAddStaffSubmit } from '@/hooks/useAddStaffSubmit';
-import AddStaffPageHeader from './components/AddStaffPageHeader';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import UserCommentsSection from './components/UserCommentsSection';
 import RolesSection from './components/RolesSection';
 import UserInformationSection from './components/UserInformationSection';
@@ -14,9 +17,23 @@ const CreateStaffPage: React.FC = () => {
   const { handleSubmit, handleCancel, isCreatingStaff } = useAddStaffSubmit();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-6 py-8">
-        <AddStaffPageHeader onCancel={handleCancel} />
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={UserPlus}
+        title="Add New Staff Member"
+        description="Create a new staff member record"
+
+        action={
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Staff
+          </Button>
+        }
+      />
 
         <form onSubmit={(e) => handleSubmit(e, formData)} className="space-y-8">
           <UserCommentsSection 
@@ -49,8 +66,7 @@ const CreateStaffPage: React.FC = () => {
             onCancel={handleCancel}
           />
         </form>
-      </div>
-    </div>
+    </PageLayout>
   );
 };
 

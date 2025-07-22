@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
-import ClientListHeader from './components/ClientListHeader';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import ClientSearch from './components/ClientSearch';
 import ClientGrid from './components/ClientGrid';
 import ClientEmptyState from './components/ClientEmptyState';
@@ -110,8 +113,22 @@ const ClientsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <ClientListHeader onAddClient={() => setShowAddModal(true)} />
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={User}
+        title="Client Management"
+        description="Manage your client records and information"
+
+        action={
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Client
+          </Button>
+        }
+      />
 
       <ClientSearch
         searchTerm={searchTerm}
@@ -150,7 +167,7 @@ const ClientsPage: React.FC = () => {
         onClose={() => setShowAddModal(false)}
         onClientAdded={handleClientAdded}
       />
-    </div>
+    </PageLayout>
   );
 };
 

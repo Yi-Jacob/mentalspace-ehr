@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { User, Mail, Calendar, MapPin, Edit, MessageSquare, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
-import ClientDetailHeader from './components/ClientDetailHeader';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import { ClientQuickInfo } from './components/ClientQuickInfo';
 import ClientDetailTabs from './components/ClientDetailTabs';
 import AddClientModal from '../components/AddClientModal';
@@ -153,19 +157,73 @@ const ClientDetailView = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <ClientDetailHeader 
-        client={{
-          id: client.id!,
-          first_name: client.first_name,
-          last_name: client.last_name,
-          email: client.email,
-          date_of_birth: client.date_of_birth,
-          city: client.city,
-          state: client.state,
-          is_active: client.is_active
-        }} 
-        onEditClick={() => setShowEditModal(true)} 
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={User}
+        title={`${client.first_name} ${client.last_name}`}
+        description={
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+            {client.email && (
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4" />
+                <span>{client.email}</span>
+              </div>
+            )}
+            
+            {client.date_of_birth && (
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span>DOB: {new Date(client.date_of_birth).toLocaleDateString()}</span>
+              </div>
+            )}
+            
+            {(client.city || client.state) && (
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4" />
+                <span>{client.city}, {client.state}</span>
+              </div>
+            )}
+          </div>
+        }
+        badge={
+          <Badge variant={client.is_active ? "default" : "secondary"}>
+            {client.is_active ? 'Active' : 'Inactive'}
+          </Badge>
+        }
+
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setShowEditModal(true)}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Edit className="h-4 w-4" />
+              <span>Edit Client</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {/* TODO: Implement compose modal */}}
+              className="flex items-center space-x-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Quick Message</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {/* TODO: Implement new conversation modal */}}
+              className="flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>New Conversation</span>
+            </Button>
+          </div>
+        }
       />
 
       <ClientQuickInfo client={client} />
@@ -184,7 +242,7 @@ const ClientDetailView = () => {
         onClientAdded={handleClientUpdated}
         editingClient={client}
       />
-    </div>
+    </PageLayout>
   );
 };
 

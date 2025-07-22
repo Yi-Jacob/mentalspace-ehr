@@ -1,6 +1,9 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserPlus } from 'lucide-react';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import ReferralManagement from '@/pages/crm/components/ReferralManagement';
 import LeadManagement from '@/pages/crm/components/LeadManagement';
 import ContactDatabase from '@/pages/crm/components/ContactDatabase';
@@ -9,13 +12,12 @@ import CRMDashboard from '@/pages/crm/components/CRMDashboard';
 
 const CRM = () => {
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customer Relationship Management</h1>
-          <p className="text-gray-600 mt-2">Manage referrals, leads, and practice growth opportunities</p>
-        </div>
-      </div>
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={UserPlus}
+        title="Customer Relationship Management"
+        description="Manage referrals, leads, and practice growth opportunities"
+      />
 
       <Tabs defaultValue="dashboard" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
@@ -46,7 +48,7 @@ const CRM = () => {
           <CampaignManagement />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageLayout>
   );
 };
 

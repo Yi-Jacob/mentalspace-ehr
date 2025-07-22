@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Users, Shield, DollarSign, Calendar, Phone, TrendingUp } from 'lucide-react';
+import { FileText, Users, Shield, DollarSign, Calendar, Phone, TrendingUp, BarChart3 } from 'lucide-react';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import ClinicalReports from './components/clinical/ClinicalReports';
 import StaffReports from './components/staff/StaffReports';
 import ComplianceReports from './components/compliance/ComplianceReports';
@@ -67,13 +69,13 @@ const Reports = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Practice Reports</h1>
-          <p className="text-gray-600 mt-2">Comprehensive analytics and insights across all practice operations</p>
-        </div>
-      </div>
+    <PageLayout variant="simple">
+      <PageHeader
+        icon={BarChart3}
+        title="Practice Reports"
+        description="Comprehensive analytics and insights across all practice operations"
+
+      />
 
       {/* Report Categories Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -138,7 +140,7 @@ const Reports = () => {
           <CRMReports />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageLayout>
   );
 };
 

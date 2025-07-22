@@ -8,7 +8,7 @@ const staffRoutes: RouteObject[] = [
     element: <StaffPage />,
   },
   {
-    path: 'add',
+    path: 'create',
     element: <AddStaffPage />,
   },
 ];

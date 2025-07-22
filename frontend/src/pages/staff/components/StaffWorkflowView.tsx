@@ -50,10 +50,6 @@ const StaffWorkflowView: React.FC = () => {
           <Users className="h-6 w-6" />
           <h2 className="text-2xl font-bold">Staff Directory</h2>
         </div>
-        <Button onClick={handleAddStaff} className="bg-green-600 hover:bg-green-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Staff Member
-        </Button>
       </div>
 
       {/* Search */}

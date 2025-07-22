@@ -2,6 +2,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import DocumentationTabs from '@/pages/documentation/components/DocumentationTabs';
 import CreateNoteModal from '@/pages/documentation/components/CreateNoteModal';
 import { useDocumentation } from '@/hooks/useDocumentation';
@@ -23,22 +25,13 @@ const Documentation = () => {
       componentName="Documentation"
       showErrorDetails={process.env.NODE_ENV === 'development'}
     >
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-        <div className="flex-1 space-y-8 p-6">
-          {/* Header Section */}
-          <div className="text-center space-y-4">
-            <div className="flex justify-center items-center space-x-3 mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-                <FileText className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-                Clinical Documentation
-              </h1>
-            </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Create and manage clinical notes, assessments, and documentation with ease and accountability
-            </p>
-          </div>
+      <PageLayout variant="gradient">
+        <PageHeader
+          icon={FileText}
+          title="Clinical Documentation"
+          description="Create and manage clinical notes, assessments, and documentation with ease and accountability"
+  
+        />
 
           {/* Quick Stats Bar */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -108,8 +101,7 @@ const Documentation = () => {
             noteType={selectedNoteType}
             createNoteMutation={createNoteMutation}
           />
-        </div>
-      </div>
+      </PageLayout>
     </EnhancedErrorBoundary>
   );
 };

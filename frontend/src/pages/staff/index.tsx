@@ -1,8 +1,10 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Shield, Settings, Eye, UserCog, BookOpen, Clock, TrendingUp, GraduationCap } from 'lucide-react';
+import { Plus, Stethoscope, Shield, Settings, Eye, UserCog, BookOpen, Clock, TrendingUp, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import PageLayout from '@/components/ui/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
 import StaffList from './components/StaffList';
 import RoleManagement from './components/RoleManagement';
 import StaffWorkflowView from './components/StaffWorkflowView';
@@ -21,29 +23,21 @@ const StaffPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-purple-500 to-blue-600 p-3 rounded-xl">
-              <Users className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent">
-                Staff Management
-              </h1>
-              <p className="text-gray-600 mt-1">Manage your team with style and efficiency</p>
-            </div>
-          </div>
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={Stethoscope}
+        title="Staff Management"
+        description="Manage your team with style and efficiency"
+        action={
           <Button 
             onClick={handleAddTeamMember}
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
           >
             <Plus className="h-5 w-5 mr-2" />
-            Add Team Member
+            Add Staff
           </Button>
-        </div>
+        }
+      />
 
         {/* Tabs */}
         <Tabs defaultValue="workflow" className="space-y-6">
@@ -53,7 +47,7 @@ const StaffPage: React.FC = () => {
               <span>Workflow</span>
             </TabsTrigger>
             <TabsTrigger value="staff" className="flex items-center space-x-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white rounded-lg transition-all">
-              <Users className="h-4 w-4" />
+              <Stethoscope className="h-4 w-4" />
               <span>Staff</span>
             </TabsTrigger>
             <TabsTrigger value="roles" className="flex items-center space-x-2 data-[state=active]:bg-purple-500 data-[state=active]:text-white rounded-lg transition-all">
@@ -122,8 +116,7 @@ const StaffPage: React.FC = () => {
             <StaffAuditLogs />
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+    </PageLayout>
   );
 };
 
