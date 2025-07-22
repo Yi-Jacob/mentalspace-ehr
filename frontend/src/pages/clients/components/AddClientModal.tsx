@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PageTabs from '@/components/ui/PageTabs';
 import { useToast } from '@/hooks/use-toast';
 import { useClientForm } from '@/hooks/useClientForm';
 import { clientService } from '@/services/clientService';
@@ -204,47 +204,68 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="contact">Contact</TabsTrigger>
-            <TabsTrigger value="demographics">Demographics</TabsTrigger>
-            <TabsTrigger value="billing">Billing</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="basic" className="space-y-6">
-            <BasicInfoTab formData={formData} setFormData={setFormData} />
-          </TabsContent>
-
-          <TabsContent value="contact" className="space-y-6">
-            <ContactInfoTab
-              formData={formData}
-              setFormData={setFormData}
-              phoneNumbers={phoneNumbers}
-              setPhoneNumbers={setPhoneNumbers}
-              emergencyContacts={emergencyContacts}
-              setEmergencyContacts={setEmergencyContacts}
-              primaryCareProvider={primaryCareProvider}
-              setPrimaryCareProvider={setPrimaryCareProvider}
-            />
-          </TabsContent>
-
-          <TabsContent value="demographics" className="space-y-6">
-            <DemographicsTab formData={formData} setFormData={setFormData} />
-          </TabsContent>
-
-          <TabsContent value="billing" className="space-y-6">
-            <BillingTab
-              insuranceInfo={insuranceInfo}
-              setInsuranceInfo={setInsuranceInfo}
-            />
-          </TabsContent>
-
-          <TabsContent value="settings" className="space-y-6">
-            <SettingsTab formData={formData} setFormData={setFormData} />
-          </TabsContent>
-        </Tabs>
+        <PageTabs
+          defaultValue="basic"
+          items={[
+            {
+              id: 'basic',
+              label: 'Basic Info',
+              content: (
+                <div className="space-y-4">
+                  <BasicInfoTab formData={formData} setFormData={setFormData} />
+                </div>
+              )
+            },
+            {
+              id: 'contact',
+              label: 'Contact',
+              content: (
+                <div className="space-y-4">
+                  <ContactInfoTab
+                    formData={formData}
+                    setFormData={setFormData}
+                    phoneNumbers={phoneNumbers}
+                    setPhoneNumbers={setPhoneNumbers}
+                    emergencyContacts={emergencyContacts}
+                    setEmergencyContacts={setEmergencyContacts}
+                    primaryCareProvider={primaryCareProvider}
+                    setPrimaryCareProvider={setPrimaryCareProvider}
+                  />
+                </div>
+              )
+            },
+            {
+              id: 'demographics',
+              label: 'Demographics',
+              content: (
+                <div className="space-y-4">
+                  <DemographicsTab formData={formData} setFormData={setFormData} />
+                </div>
+              )
+            },
+            {
+              id: 'billing',
+              label: 'Billing',
+              content: (
+                <div className="space-y-4">
+                  <BillingTab
+                    insuranceInfo={insuranceInfo}
+                    setInsuranceInfo={setInsuranceInfo}
+                  />
+                </div>
+              )
+            },
+            {
+              id: 'settings',
+              label: 'Settings',
+              content: (
+                <div className="space-y-4">
+                  <SettingsTab formData={formData} setFormData={setFormData} />
+                </div>
+              )
+            }
+          ]}
+        />
 
         <div className="flex justify-end space-x-2 pt-6 border-t">
           <Button variant="outline" onClick={onClose}>

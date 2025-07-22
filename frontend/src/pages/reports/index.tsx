@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Users, Shield, DollarSign, Calendar, Phone, TrendingUp, BarChart3 } from 'lucide-react';
 import PageLayout from '@/components/ui/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
+import PageTabs from '@/components/ui/PageTabs';
 import ClinicalReports from './components/clinical/ClinicalReports';
 import StaffReports from './components/staff/StaffReports';
 import ComplianceReports from './components/compliance/ComplianceReports';
@@ -74,7 +74,6 @@ const Reports = () => {
         icon={BarChart3}
         title="Practice Reports"
         description="Comprehensive analytics and insights across all practice operations"
-
       />
 
       {/* Report Categories Overview */}
@@ -103,43 +102,54 @@ const Reports = () => {
         })}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
-          {reportCategories.map((category) => (
-            <TabsTrigger key={category.id} value={category.id} className="text-xs">
-              {category.name.split(' ')[0]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="dashboard" className="space-y-6">
-          <ExecutiveDashboard />
-        </TabsContent>
-
-        <TabsContent value="clinical" className="space-y-6">
-          <ClinicalReports />
-        </TabsContent>
-
-        <TabsContent value="staff" className="space-y-6">
-          <StaffReports />
-        </TabsContent>
-
-        <TabsContent value="compliance" className="space-y-6">
-          <ComplianceReports />
-        </TabsContent>
-
-        <TabsContent value="billing" className="space-y-6">
-          <BillingReports />
-        </TabsContent>
-
-        <TabsContent value="scheduling" className="space-y-6">
-          <SchedulingReports />
-        </TabsContent>
-
-        <TabsContent value="crm" className="space-y-6">
-          <CRMReports />
-        </TabsContent>
-      </Tabs>
+      <PageTabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        items={[
+          {
+            id: 'dashboard',
+            label: 'Dashboard',
+            icon: TrendingUp,
+            content: <ExecutiveDashboard />
+          },
+          {
+            id: 'clinical',
+            label: 'Clinical',
+            icon: FileText,
+            content: <ClinicalReports />
+          },
+          {
+            id: 'staff',
+            label: 'Staff',
+            icon: Users,
+            content: <StaffReports />
+          },
+          {
+            id: 'compliance',
+            label: 'Compliance',
+            icon: Shield,
+            content: <ComplianceReports />
+          },
+          {
+            id: 'billing',
+            label: 'Billing',
+            icon: DollarSign,
+            content: <BillingReports />
+          },
+          {
+            id: 'scheduling',
+            label: 'Scheduling',
+            icon: Calendar,
+            content: <SchedulingReports />
+          },
+          {
+            id: 'crm',
+            label: 'CRM',
+            icon: Phone,
+            content: <CRMReports />
+          }
+        ]}
+      />
     </PageLayout>
   );
 };
