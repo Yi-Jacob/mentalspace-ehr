@@ -4,23 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Phone, Mail, Calendar } from 'lucide-react';
-
-interface Client {
-  id: string;
-  first_name: string;
-  last_name: string;
-  preferred_name?: string;
-  date_of_birth?: string;
-  email?: string;
-  city?: string;
-  state?: string;
-  assigned_clinician_id?: string;
-  is_active: boolean;
-  created_at: string;
-}
+import { ClientFormData } from '@/types/client';
 
 interface ClientCardProps {
-  client: Client;
+  client: ClientFormData;
   onClientClick: (clientId: string) => void;
 }
 
@@ -41,25 +28,25 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientClick }) => {
   return (
     <Card 
       className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-blue-500"
-      onClick={() => onClientClick(client.id)}
+      onClick={() => onClientClick(client.id!)}
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-start justify-between">
           <div>
             <div className="font-semibold text-gray-900">
-              {client.preferred_name && client.preferred_name !== client.first_name
-                ? `${client.preferred_name} (${client.first_name}) ${client.last_name}`
-                : `${client.first_name} ${client.last_name}`
+              {client.preferredName && client.preferredName !== client.firstName
+                ? `${client.preferredName} (${client.firstName}) ${client.lastName}`
+                : `${client.firstName} ${client.lastName}`
               }
             </div>
-            {client.date_of_birth && (
+            {client.dateOfBirth && (
               <div className="text-sm text-gray-500 font-normal mt-1">
-                {formatAge(client.date_of_birth)}
+                {formatAge(client.dateOfBirth)}
               </div>
             )}
           </div>
           <Badge variant="outline" className="text-xs">
-            Active
+            {client.isActive ? 'Active' : 'Inactive'}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -80,7 +67,10 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientClick }) => {
 
         <div className="flex justify-between items-center pt-2 border-t">
           <div className="text-xs text-gray-500">
-            Added {new Date(client.created_at).toLocaleDateString()}
+            {client.assignedClinicianId && client.assignedClinicianId !== 'unassigned' 
+              ? `Assigned to ${client.assignedClinicianId}`
+              : 'Unassigned'
+            }
           </div>
           <div className="flex space-x-2">
             <Button size="sm" variant="outline" className="h-8 w-8 p-0">

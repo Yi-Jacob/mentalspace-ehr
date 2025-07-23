@@ -72,11 +72,11 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-gray-500">Full Name</label>
-                <div>{[client.first_name, client.middle_name, client.last_name, client.suffix].filter(Boolean).join(' ') || 'Not provided'}</div>
+                <div>{[client.firstName, client.middleName, client.lastName, client.suffix].filter(Boolean).join(' ') || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Preferred Name</label>
-                <div>{client.preferred_name || 'Not provided'}</div>
+                <div>{client.preferredName || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Pronouns</label>
@@ -84,19 +84,19 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                <div>{client.date_of_birth ? `${formatDateOfBirth(client.date_of_birth)} (${formatAge(client.date_of_birth)})` : 'Not provided'}</div>
+                <div>{client.dateOfBirth ? `${formatDateOfBirth(client.dateOfBirth)} (${formatAge(client.dateOfBirth)})` : 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Gender Identity</label>
-                <div>{client.gender_identity || 'Not provided'}</div>
+                <div>{client.genderIdentity || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Administrative Sex</label>
-                <div>{client.administrative_sex || 'Not provided'}</div>
+                <div>{client.administrativeSex || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Sexual Orientation</label>
-                <div>{client.sexual_orientation || 'Not provided'}</div>
+                <div>{client.sexualOrientation || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Race</label>
@@ -112,19 +112,19 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Marital Status</label>
-                <div>{client.marital_status || 'Not provided'}</div>
+                <div>{client.maritalStatus || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Employment Status</label>
-                <div>{client.employment_status || 'Not provided'}</div>
+                <div>{client.employmentStatus || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Religious Affiliation</label>
-                <div>{client.religious_affiliation || 'Not provided'}</div>
+                <div>{client.religiousAffiliation || 'Not provided'}</div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Smoking Status</label>
-                <div>{client.smoking_status || 'Not provided'}</div>
+                <div>{client.smokingStatus || 'Not provided'}</div>
               </div>
             </div>
           </div>
@@ -144,8 +144,8 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
                     {phoneNumbers.map((phone, index) => (
                       <div key={index} className="text-sm">
                         <span className="font-medium">{phone.type}:</span> {phone.number}
-                        {phone.message_preference !== 'No messages' && (
-                          <span className="text-gray-500 ml-2">({phone.message_preference})</span>
+                        {phone.messagePreference !== 'No messages' && (
+                          <span className="text-gray-500 ml-2">({phone.messagePreference})</span>
                         )}
                       </div>
                     ))}
@@ -158,11 +158,11 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
               <div>
                 <label className="text-sm font-medium text-gray-500">Address</label>
                 <div>
-                  {client.address_1 || client.city || client.state ? (
+                  {client.address1 || client.city || client.state ? (
                     <>
-                      {client.address_1 || 'No street address'}<br />
-                      {client.address_2 && <>{client.address_2}<br /></>}
-                      {[client.city || 'No city', client.state || 'No state', client.zip_code || 'No zip'].join(', ')}
+                      {client.address1 || 'No street address'}<br />
+                      {client.address2 && <>{client.address2}<br /></>}
+                      {[client.city || 'No city', client.state || 'No state', client.zipCode || 'No zip'].join(', ')}
                     </>
                   ) : (
                     'Not provided'
@@ -177,17 +177,17 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
               
               <div>
                 <label className="text-sm font-medium text-gray-500">Appointment Reminders</label>
-                <div>{client.appointment_reminders || 'Default Practice Setting'}</div>
+                <div>{client.appointmentReminders || 'Default Practice Setting'}</div>
               </div>
               
               <div>
                 <label className="text-sm font-medium text-gray-500">HIPAA Signed</label>
-                <div>{client.hipaa_signed ? 'Yes' : 'No'}</div>
+                <div>{client.hipaaSigned ? 'Yes' : 'No'}</div>
               </div>
               
               <div>
                 <label className="text-sm font-medium text-gray-500">PCP Release</label>
-                <div>{client.pcp_release || 'Not set'}</div>
+                <div>{client.pcpRelease || 'Not set'}</div>
               </div>
             </div>
           </div>
@@ -210,14 +210,14 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Phone</label>
-                      <div>{contact.phone_number || 'Not provided'}</div>
+                      <div>{contact.phoneNumber || 'Not provided'}</div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Email</label>
                       <div>{contact.email || 'Not provided'}</div>
                     </div>
                   </div>
-                  {contact.is_primary && (
+                  {contact.isPrimary && (
                     <Badge variant="outline" className="mt-2">Primary Contact</Badge>
                   )}
                 </div>
@@ -230,20 +230,20 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
 
         <div>
           <h3 className="font-semibold text-lg mb-4">Primary Care Provider</h3>
-          {primaryCareProvider && primaryCareProvider.provider_name ? (
+          {primaryCareProvider && primaryCareProvider.providerName ? (
             <div className="border rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Provider Name</label>
-                  <div className="font-medium">{primaryCareProvider.provider_name || 'Not provided'}</div>
+                  <div className="font-medium">{primaryCareProvider.providerName || 'Not provided'}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Practice Name</label>
-                  <div>{primaryCareProvider.practice_name || 'Not provided'}</div>
+                  <div>{primaryCareProvider.practiceName || 'Not provided'}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <div>{primaryCareProvider.phone_number || 'Not provided'}</div>
+                  <div>{primaryCareProvider.phoneNumber || 'Not provided'}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Address</label>
@@ -259,7 +259,7 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
         <div>
           <h3 className="font-semibold text-lg mb-2">Comments</h3>
           <div className="bg-gray-50 p-4 rounded-lg">
-            {client.patient_comments || 'No comments on file'}
+            {client.patientComments || 'No comments on file'}
           </div>
         </div>
       </CardContent>

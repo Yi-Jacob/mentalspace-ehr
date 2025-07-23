@@ -4,7 +4,7 @@ import { Navigate, RouteObject } from 'react-router-dom';
 // Import all route arrays
 import Dashboard from '../pages/Dashboard';
 import clientsRoutes from './clients-routes';
-import documentationRoutes from './documentation-routes';
+import notesRoutes from './notes-routes';
 import schedulingRoutes from './scheduling-routes';
 import messageRoutes from './message-routes';
 import billingRoutes from './billing-routes';
@@ -25,10 +25,10 @@ const authenticatedRoutes: RouteObject[] = [
     path: 'clients',
     children: clientsRoutes,
   },
-  // Documentation
+  // Notes
   {
-    path: 'documentation',
-    children: documentationRoutes,
+    path: 'notes',
+    children: notesRoutes,
   },
   // Scheduling
   {

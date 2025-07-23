@@ -51,17 +51,17 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
 
   const handleViewNote = (note: any) => {
     if (note.note_type === 'progress_note') {
-      navigate(`/documentation/progress-note/${note.id}`);
+      navigate(`/notes/progress-note/${note.id}`);
     } else {
-      navigate(`/documentation/note/${note.id}`);
+      navigate(`/notes/note/${note.id}`);
     }
   };
 
   const handleEditNote = (note: any) => {
     if (note.note_type === 'progress_note') {
-      navigate(`/documentation/progress-note/${note.id}/edit`);
+      navigate(`/notes/progress-note/${note.id}/edit`);
     } else {
-      navigate(`/documentation/note/${note.id}/edit`);
+      navigate(`/notes/note/${note.id}/edit`);
     }
   };
 

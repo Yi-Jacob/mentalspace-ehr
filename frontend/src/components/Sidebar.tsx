@@ -30,7 +30,7 @@ interface SidebarProps {
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
-  { id: 'documentation', label: 'Documentation', icon: FileText, path: '/documentation' },
+  { id: 'notes', label: 'Notes', icon: FileText, path: '/notes' },
   { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling' },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     
     const currentPath = location.pathname;
     if (currentPath === '/') return 'dashboard';
-    if (currentPath.startsWith('/documentation')) return 'documentation';
+    if (currentPath.startsWith('/notes')) return 'notes';
     if (currentPath.startsWith('/scheduling')) return 'scheduling';
     if (currentPath.startsWith('/clients')) return 'clients';
     if (currentPath.startsWith('/reports')) return 'reports';

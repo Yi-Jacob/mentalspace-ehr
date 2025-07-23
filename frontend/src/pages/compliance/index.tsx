@@ -104,7 +104,7 @@ const ComplianceManagement: React.FC = () => {
                     <CardContent>
                       <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm">Documentation Compliance</span>
+                          <span className="text-sm">Notes Compliance</span>
                           <span className="text-sm font-semibold text-green-600">94%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">

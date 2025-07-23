@@ -7,7 +7,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import PageTabs from '@/components/ui/PageTabs';
 import AccountAccessSettings from '@/pages/settings/components/AccountAccessSettings';
 import PortalSchedulingSettings from '@/pages/settings/components/PortalSchedulingSettings';
-import DocumentationSettings from '@/pages/settings/components/DocumentationSettings';
+import NotesSettings from '@/pages/settings/components/NotesSettings';
 import BillingSettings from '@/pages/settings/components/BillingSettings';
 
 const Settings = () => {
@@ -39,10 +39,10 @@ const Settings = () => {
             content: <PortalSchedulingSettings />
           },
           {
-            id: 'documentation',
-            label: 'Documentation/Notes',
+            id: 'notes',
+            label: 'Notes',
             icon: FileText,
-            content: <DocumentationSettings />
+            content: <NotesSettings />
           },
           {
             id: 'billing',

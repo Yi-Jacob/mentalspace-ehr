@@ -10,7 +10,6 @@ import PageTabs from '@/components/ui/PageTabs';
 import { useToast } from '@/hooks/use-toast';
 import { useClientForm } from '@/hooks/useClientForm';
 import { clientService } from '@/services/clientService';
-import { supabase } from '@/integrations/supabase/client';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
 import { DemographicsTab } from './client-form/DemographicsTab';
@@ -64,69 +63,52 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
       const loadRelatedData = async () => {
         try {
           // Load phone numbers
-          const { data: phoneData } = await supabase
-            .from('client_phone_numbers')
-            .select('*')
-            .eq('client_id', editingClient.id);
-
+          const phoneData = await clientService.getClientPhoneNumbers(editingClient.id!);
           if (phoneData && phoneData.length > 0) {
             setPhoneNumbers(phoneData.map(phone => ({
-              type: phone.phone_type as any,
-              number: phone.phone_number,
-              message_preference: phone.message_preference as any
+              type: phone.phoneType as any,
+              number: phone.phoneNumber,
+              message_preference: phone.messagePreference as any
             })));
           }
 
           // Load emergency contacts
-          const { data: contactData } = await supabase
-            .from('client_emergency_contacts')
-            .select('*')
-            .eq('client_id', editingClient.id);
-
+          const contactData = await clientService.getClientEmergencyContacts(editingClient.id!);
           if (contactData && contactData.length > 0) {
             setEmergencyContacts(contactData.map(contact => ({
               name: contact.name,
               relationship: contact.relationship || '',
-              phone_number: contact.phone_number || '',
+              phone_number: contact.phoneNumber || '',
               email: contact.email || '',
-              is_primary: contact.is_primary || false
+              is_primary: contact.isPrimary || false
             })));
           }
 
           // Load insurance information
-          const { data: insuranceData } = await supabase
-            .from('client_insurance')
-            .select('*')
-            .eq('client_id', editingClient.id);
-
+          const insuranceData = await clientService.getClientInsurance(editingClient.id!);
           if (insuranceData && insuranceData.length > 0) {
             setInsuranceInfo(insuranceData.map(insurance => ({
-              insurance_type: insurance.insurance_type as any,
-              insurance_company: insurance.insurance_company || '',
-              policy_number: insurance.policy_number || '',
-              group_number: insurance.group_number || '',
-              subscriber_name: insurance.subscriber_name || '',
-              subscriber_relationship: insurance.subscriber_relationship || '',
-              subscriber_dob: insurance.subscriber_dob || '',
-              effective_date: insurance.effective_date || '',
-              termination_date: insurance.termination_date || '',
-              copay_amount: insurance.copay_amount || 0,
-              deductible_amount: insurance.deductible_amount || 0
+              insurance_type: insurance.insuranceType as any,
+              insurance_company: insurance.insuranceCompany || '',
+              policy_number: insurance.policyNumber || '',
+              group_number: insurance.groupNumber || '',
+              subscriber_name: insurance.subscriberName || '',
+              subscriber_relationship: insurance.subscriberRelationship || '',
+              subscriber_dob: insurance.subscriberDob || '',
+              effective_date: insurance.effectiveDate || '',
+              termination_date: insurance.terminationDate || '',
+              copay_amount: insurance.copayAmount || 0,
+              deductible_amount: insurance.deductibleAmount || 0
             })));
           }
 
           // Load primary care provider
-          const { data: pcpData } = await supabase
-            .from('client_primary_care_providers')
-            .select('*')
-            .eq('client_id', editingClient.id)
-            .single();
-
+          const pcpData = await clientService.getClientPrimaryCareProvider(editingClient.id!);
           if (pcpData) {
             setPrimaryCareProvider({
-              provider_name: pcpData.provider_name || '',
-              practice_name: pcpData.practice_name || '',
-              phone_number: pcpData.phone_number || '',
+              provider_name: pcpData.providerName || '',
+              practice_name: pcpData.practiceName || '',
+              phone_number: pcpData.phoneNumber || '',
               address: pcpData.address || ''
             });
           }

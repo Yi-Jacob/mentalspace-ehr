@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useClinicalReportsData } from '@/hooks/useReportData';
 import ClinicalHeader from './components/ClinicalHeader';
 import ClinicalMetricsGrid from './components/ClinicalMetricsGrid';
-import DocumentationTab from './components/DocumentationTab';
+import NotesTab from './components/NotesTab';
 import ProductivityTab from './components/ProductivityTab';
 import DiagnosesTab from './components/DiagnosesTab';
 import OutcomesTab from './components/OutcomesTab';
@@ -44,16 +44,16 @@ const ClinicalReports = () => {
 
       <ClinicalMetricsGrid data={clinicalData} />
 
-      <Tabs defaultValue="documentation" className="w-full">
+      <Tabs defaultValue="notes" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="documentation">Documentation</TabsTrigger>
+          <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="productivity">Provider Productivity</TabsTrigger>
           <TabsTrigger value="diagnoses">Diagnoses</TabsTrigger>
           <TabsTrigger value="outcomes">Outcomes</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="documentation" className="space-y-6">
-          <DocumentationTab data={clinicalData} colors={COLORS} />
+        <TabsContent value="notes" className="space-y-6">
+          <NotesTab data={clinicalData} colors={COLORS} />
         </TabsContent>
 
         <TabsContent value="productivity" className="space-y-6">

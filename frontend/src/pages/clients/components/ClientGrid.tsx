@@ -1,23 +1,10 @@
 
 import React from 'react';
 import ClientCard from './ClientCard';
-
-interface Client {
-  id: string;
-  first_name: string;
-  last_name: string;
-  preferred_name?: string;
-  date_of_birth?: string;
-  email?: string;
-  city?: string;
-  state?: string;
-  assigned_clinician_id?: string;
-  is_active: boolean;
-  created_at: string;
-}
+import { ClientFormData } from '@/types/client';
 
 interface ClientGridProps {
-  clients: Client[];
+  clients: ClientFormData[];
   onClientClick: (clientId: string) => void;
 }
 

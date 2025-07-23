@@ -47,6 +47,45 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
   }
 
+  // Enhanced transaction method with retry logic
+  async $transactionWithRetry<T>(
+    fn: (prisma: PrismaClient) => Promise<T>,
+    options?: {
+      maxWait?: number;
+      timeout?: number;
+      maxRetries?: number;
+    }
+  ): Promise<T> {
+    const maxRetries = options?.maxRetries || 3;
+    const timeout = options?.timeout || 10000; // 10 seconds
+    const maxWait = options?.maxWait || 5000; // 5 seconds
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger.log(`Starting transaction (attempt ${attempt}/${maxRetries})`);
+        
+        return await this.$transaction(fn, {
+          maxWait,
+          timeout,
+        });
+      } catch (error) {
+        this.logger.error(`Transaction attempt ${attempt} failed: ${error.message}`);
+        
+        if (attempt === maxRetries) {
+          this.logger.error('Max transaction retry attempts reached.');
+          throw error;
+        }
+        
+        // Wait before retrying with exponential backoff
+        const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        this.logger.log(`Waiting ${waitTime}ms before retrying transaction`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+    
+    throw new Error('Transaction failed after all retry attempts');
+  }
+
   async cleanDatabase() {
     if (process.env.NODE_ENV === 'test') {
       const models = Reflect.ownKeys(this).filter((key) => key[0] !== '_');

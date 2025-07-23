@@ -17,7 +17,7 @@ const OutcomesTab: React.FC<OutcomesTabProps> = ({ data }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">{data.complianceRate.toFixed(0)}%</div>
-            <div className="text-sm text-gray-600">Documentation Compliance</div>
+            <div className="text-sm text-gray-600">Notes Compliance</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600">{data.avgCompletionTime.toFixed(1)}h</div>

@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ClientStatus } from '../dto/create-client.dto';
 
 export class Client {
   @ApiProperty({ description: 'Unique identifier for the client' })
@@ -24,7 +23,7 @@ export class Client {
   address?: string;
 
   @ApiProperty({ description: 'Status of the client' })
-  status: ClientStatus;
+  status: string;
 
   @ApiProperty({ description: 'Additional notes about the client' })
   notes?: string;

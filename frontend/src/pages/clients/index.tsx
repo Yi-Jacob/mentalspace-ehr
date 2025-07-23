@@ -2,33 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import PageLayout from '@/components/ui/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
+import { clientService } from '@/services/clientService';
+import { ClientFormData } from '@/types/client';
 import ClientSearch from './components/ClientSearch';
 import ClientGrid from './components/ClientGrid';
 import ClientEmptyState from './components/ClientEmptyState';
 import ClientLoadingState from './components/ClientLoadingState';
 import ClientErrorState from './components/ClientErrorState';
 import AddClientModal from './components/AddClientModal';
-
-interface Client {
-  id: string;
-  first_name: string;
-  last_name: string;
-  preferred_name?: string;
-  date_of_birth?: string;
-  email?: string;
-  city?: string;
-  state?: string;
-  assigned_clinician_id?: string;
-  is_active: boolean;
-  created_at: string;
-}
 
 const ClientsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,29 +27,7 @@ const ClientsPage: React.FC = () => {
   const { data: clients = [], isLoading, error, refetch } = useOptimizedQuery(
     ['clients', 'active'],
     async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          preferred_name,
-          date_of_birth,
-          email,
-          city,
-          state,
-          assigned_clinician_id,
-          is_active,
-          created_at
-        `)
-        .eq('is_active', true)
-        .order('last_name', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching clients:', error);
-        throw error;
-      }
-      return data || [];
+      return await clientService.getClients();
     },
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
@@ -71,8 +36,8 @@ const ClientsPage: React.FC = () => {
   );
 
   const filteredClients = clients.filter(client => {
-    const fullName = `${client.first_name} ${client.last_name}`.toLowerCase();
-    const preferredName = client.preferred_name?.toLowerCase() || '';
+    const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+    const preferredName = client.preferredName?.toLowerCase() || '';
     const search = searchTerm.toLowerCase();
     
     return fullName.includes(search) || 
@@ -118,7 +83,6 @@ const ClientsPage: React.FC = () => {
         icon={User}
         title="Client Management"
         description="Manage your client records and information"
-
         action={
           <Button
             onClick={() => setShowAddModal(true)}

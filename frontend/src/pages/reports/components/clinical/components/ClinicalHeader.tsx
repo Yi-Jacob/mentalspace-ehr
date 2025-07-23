@@ -41,7 +41,7 @@ const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="overview">Overview</SelectItem>
-            <SelectItem value="documentation">Documentation</SelectItem>
+            <SelectItem value="notes">Notes</SelectItem>
             <SelectItem value="outcomes">Patient Outcomes</SelectItem>
             <SelectItem value="quality">Quality Metrics</SelectItem>
           </SelectContent>

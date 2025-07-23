@@ -8,7 +8,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SidebarProvider } from "@/hooks/useSidebarContext";
 import BaseRoutes from "./routes";
-import LoadingSpinner from "@/pages/documentation/components/notes/LoadingSpinner";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const queryClient = new QueryClient();
 const router = createBrowserRouter(BaseRoutes);

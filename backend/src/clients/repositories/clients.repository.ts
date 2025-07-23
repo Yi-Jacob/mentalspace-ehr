@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { CreateClientDto, ClientStatus } from '../dto/create-client.dto';
+import { CreateClientDto } from '../dto/create-client.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
 import { QueryClientDto } from '../dto/query-client.dto';
 import { Client } from '../entities/client.entity';
@@ -144,7 +144,7 @@ export class ClientsRepository {
       phone: client.phone,
       dateOfBirth: client.dateOfBirth,
       address: client.address1,
-      status: client.isActive ? ClientStatus.ACTIVE : ClientStatus.INACTIVE,
+      status: client.isActive ? 'ACTIVE' : 'INACTIVE',
       notes: client.patientComments,
       createdAt: client.createdAt,
       updatedAt: client.updatedAt,

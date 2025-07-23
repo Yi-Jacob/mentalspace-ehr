@@ -5,99 +5,99 @@ import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCa
 export const useClientForm = () => {
   const [formData, setFormData] = useState<ClientFormData>({
     // Basic Info
-    first_name: '',
-    middle_name: '',
-    last_name: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
     suffix: '',
-    preferred_name: '',
+    preferredName: '',
     pronouns: '',
-    date_of_birth: '',
-    assigned_clinician_id: 'unassigned',
+    dateOfBirth: '',
+    assignedClinicianId: 'unassigned',
     // Contact Info
     email: '',
-    address_1: '',
-    address_2: '',
+    address1: '',
+    address2: '',
     city: '',
     state: '',
-    zip_code: '',
+    zipCode: '',
     timezone: 'Not Set',
     // Demographics
-    administrative_sex: '',
-    gender_identity: '',
-    sexual_orientation: '',
+    administrativeSex: '',
+    genderIdentity: '',
+    sexualOrientation: '',
     race: '',
     ethnicity: '',
     languages: '',
-    marital_status: '',
-    employment_status: '',
-    religious_affiliation: '',
-    smoking_status: '',
+    maritalStatus: '',
+    employmentStatus: '',
+    religiousAffiliation: '',
+    smokingStatus: '',
     // Settings
-    appointment_reminders: 'Default Practice Setting',
-    hipaa_signed: false,
-    pcp_release: 'Not set',
-    patient_comments: '',
+    appointmentReminders: 'Default Practice Setting',
+    hipaaSigned: false,
+    pcpRelease: 'Not set',
+    patientComments: '',
     // Status
-    is_active: true,
+    isActive: true,
   });
 
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([
-    { type: 'Mobile', number: '', message_preference: 'No messages' }
+    { type: 'Mobile', number: '', messagePreference: 'No messages' }
   ]);
 
   const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([
-    { name: '', relationship: '', phone_number: '', email: '', is_primary: true }
+    { name: '', relationship: '', phoneNumber: '', email: '', isPrimary: true }
   ]);
 
   const [insuranceInfo, setInsuranceInfo] = useState<InsuranceInfo[]>([]);
 
   const [primaryCareProvider, setPrimaryCareProvider] = useState<PrimaryCareProvider>({
-    provider_name: '',
-    practice_name: '',
-    phone_number: '',
+    providerName: '',
+    practiceName: '',
+    phoneNumber: '',
     address: ''
   });
 
   const resetForm = useCallback(() => {
     setFormData({
-      first_name: '',
-      middle_name: '',
-      last_name: '',
+      firstName: '',
+      middleName: '',
+      lastName: '',
       suffix: '',
-      preferred_name: '',
+      preferredName: '',
       pronouns: '',
-      date_of_birth: '',
-      assigned_clinician_id: 'unassigned',
+      dateOfBirth: '',
+      assignedClinicianId: 'unassigned',
       email: '',
-      address_1: '',
-      address_2: '',
+      address1: '',
+      address2: '',
       city: '',
       state: '',
-      zip_code: '',
+      zipCode: '',
       timezone: 'Not Set',
-      administrative_sex: '',
-      gender_identity: '',
-      sexual_orientation: '',
+      administrativeSex: '',
+      genderIdentity: '',
+      sexualOrientation: '',
       race: '',
       ethnicity: '',
       languages: '',
-      marital_status: '',
-      employment_status: '',
-      religious_affiliation: '',
-      smoking_status: '',
-      appointment_reminders: 'Default Practice Setting',
-      hipaa_signed: false,
-      pcp_release: 'Not set',
-      patient_comments: '',
-      is_active: true,
+      maritalStatus: '',
+      employmentStatus: '',
+      religiousAffiliation: '',
+      smokingStatus: '',
+      appointmentReminders: 'Default Practice Setting',
+      hipaaSigned: false,
+      pcpRelease: 'Not set',
+      patientComments: '',
+      isActive: true,
     });
-    setPhoneNumbers([{ type: 'Mobile', number: '', message_preference: 'No messages' }]);
-    setEmergencyContacts([{ name: '', relationship: '', phone_number: '', email: '', is_primary: true }]);
+    setPhoneNumbers([{ type: 'Mobile', number: '', messagePreference: 'No messages' }]);
+    setEmergencyContacts([{ name: '', relationship: '', phoneNumber: '', email: '', isPrimary: true }]);
     setInsuranceInfo([]);
     setPrimaryCareProvider({
-      provider_name: '',
-      practice_name: '',
-      phone_number: '',
+      providerName: '',
+      practiceName: '',
+      phoneNumber: '',
       address: ''
     });
   }, []);

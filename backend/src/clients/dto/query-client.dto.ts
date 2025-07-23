@@ -1,7 +1,6 @@
-import { IsOptional, IsString, IsEnum, IsNumber, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ClientStatus } from './create-client.dto';
 
 export class QueryClientDto {
   @ApiPropertyOptional({ description: 'Search term for client name or email' })
@@ -11,8 +10,8 @@ export class QueryClientDto {
 
   @ApiPropertyOptional({ description: 'Filter by client status' })
   @IsOptional()
-  @IsEnum(ClientStatus)
-  status?: ClientStatus;
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional({ description: 'Page number for pagination', minimum: 1 })
   @IsOptional()

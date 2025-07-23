@@ -27,7 +27,7 @@ const RolePermissionsViewer: React.FC = () => {
         'View audit logs and system reports',
         'Manage billing for all patients',
         'Schedule appointments for all providers',
-        'Access all clinical documentation'
+        'Access all clinical notes'
       ],
       restrictions: [],
       accessLevel: 'Full'
@@ -37,7 +37,7 @@ const RolePermissionsViewer: React.FC = () => {
       permissions: [
         'Access any patient records',
         'Grant patient access to other clinicians',
-        'View all clinical documentation',
+        'View all clinical notes',
         'Manage clinical workflows',
         'Oversee clinical compliance'
       ],
@@ -69,7 +69,7 @@ const RolePermissionsViewer: React.FC = () => {
       description: 'Experienced clinicians who provide oversight to other clinical staff.',
       permissions: [
         'Access supervisee patient records',
-        'Co-sign supervisee documentation',
+        'Co-sign supervisee notes',
         'View supervisee schedules',
         'Provide clinical oversight',
         'All Clinician permissions for own patients'
@@ -138,7 +138,7 @@ const RolePermissionsViewer: React.FC = () => {
         'View provider schedules'
       ],
       restrictions: [
-        'Cannot access clinical documentation',
+        'Cannot access clinical notes',
         'Cannot view detailed patient records',
         'Cannot manage billing information',
         'Limited to scheduling functions'

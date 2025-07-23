@@ -13,7 +13,7 @@ export const useNoteCreation = () => {
     handleAPIError, 
     executeWithRetry 
   } = useEnhancedErrorHandler({
-    component: 'Documentation',
+    component: 'Notes',
     retryConfig: {
       maxRetries: 2,
       baseDelay: 1500,
@@ -45,19 +45,19 @@ export const useNoteCreation = () => {
       // Navigate based on note type with detailed logging
       let targetRoute = '';
       if (data.note_type === 'progress_note') {
-        targetRoute = `/documentation/progress-note/${data.id}/edit`;
+        targetRoute = `/notes/progress-note/${data.id}/edit`;
       } else if (data.note_type === 'treatment_plan') {
-        targetRoute = `/documentation/treatment-plan/${data.id}/edit`;
+        targetRoute = `/notes/treatment-plan/${data.id}/edit`;
       } else if (data.note_type === 'cancellation_note') {
-        targetRoute = `/documentation/cancellation-note/${data.id}/edit`;
+        targetRoute = `/notes/cancellation-note/${data.id}/edit`;
       } else if (data.note_type === 'contact_note') {
-        targetRoute = `/documentation/contact-note/${data.id}/edit`;
+        targetRoute = `/notes/contact-note/${data.id}/edit`;
       } else if (data.note_type === 'consultation_note') {
-        targetRoute = `/documentation/consultation-note/${data.id}/edit`;
+        targetRoute = `/notes/consultation-note/${data.id}/edit`;
       } else if (data.note_type === 'miscellaneous_note') {
-        targetRoute = `/documentation/miscellaneous-note/${data.id}/edit`;
+        targetRoute = `/notes/miscellaneous-note/${data.id}/edit`;
       } else {
-        targetRoute = `/documentation/note/${data.id}/edit`;
+        targetRoute = `/notes/note/${data.id}/edit`;
       }
       
       console.log('Navigating to:', targetRoute);
