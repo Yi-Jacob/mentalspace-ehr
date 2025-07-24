@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, FileText, Send, AlertTriangle, CheckCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService } from '@/services/billingService';
 
 const ClaimsSubmission: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,23 +15,26 @@ const ClaimsSubmission: React.FC = () => {
   const { data: claims, isLoading } = useQuery({
     queryKey: ['claims', searchTerm, statusFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('claims')
-        .select(`
-          *,
-          clients (first_name, last_name),
-          users (first_name, last_name),
-          payers (name)
-        `)
-        .order('created_at', { ascending: false });
-
+      // Get all claims and filter on the frontend for now
+      // In a real implementation, you might want to add search and filter parameters to the backend
+      const allClaims = await billingService.getAllClaims();
+      
+      let filteredClaims = allClaims;
+      
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        filteredClaims = filteredClaims.filter(c => c.status === statusFilter);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      if (searchTerm) {
+        // Filter by claim number or client name
+        filteredClaims = filteredClaims.filter(c => 
+          c.claimNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          c.client?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          c.client?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      return filteredClaims;
     },
   });
 
@@ -111,7 +114,7 @@ const ClaimsSubmission: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">
-                      Claim #{claim.claim_number}
+                      Claim #{claim.claimNumber}
                     </h4>
                     <div className="flex items-center space-x-1">
                       {getStatusIcon(claim.status)}
@@ -123,35 +126,35 @@ const ClaimsSubmission: React.FC = () => {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
-                      <strong>Patient:</strong> {claim.clients?.first_name} {claim.clients?.last_name}
+                      <strong>Patient:</strong> {claim.client?.firstName} {claim.client?.lastName}
                     </div>
                     <div>
-                      <strong>Provider:</strong> {claim.users?.first_name} {claim.users?.last_name}
+                      <strong>Provider:</strong> {claim.providerId}
                     </div>
                     <div>
-                      <strong>Payer:</strong> {claim.payers?.name}
+                      <strong>Payer:</strong> {claim.payer?.name}
                     </div>
                     <div>
-                      <strong>Service Date:</strong> {new Date(claim.service_date).toLocaleDateString()}
+                      <strong>Service Date:</strong> {new Date(claim.serviceDate).toLocaleDateString()}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <strong>Total Amount:</strong> ${parseFloat(claim.total_amount.toString()).toFixed(2)}
+                      <strong>Total Amount:</strong> ${parseFloat(claim.totalAmount.toString()).toFixed(2)}
                     </div>
                     <div>
-                      <strong>Paid Amount:</strong> ${parseFloat(claim.paid_amount.toString()).toFixed(2)}
+                      <strong>Paid Amount:</strong> ${parseFloat(claim.paidAmount?.toString() || '0').toFixed(2)}
                     </div>
                     <div>
-                      <strong>Patient Responsibility:</strong> ${parseFloat(claim.patient_responsibility.toString()).toFixed(2)}
+                      <strong>Patient Responsibility:</strong> ${parseFloat(claim.patientResponsibility?.toString() || '0').toFixed(2)}
                     </div>
                     <div>
-                      <strong>Submission Date:</strong> {claim.submission_date ? new Date(claim.submission_date).toLocaleDateString() : 'Not submitted'}
+                      <strong>Submission Date:</strong> {claim.submissionDate ? new Date(claim.submissionDate).toLocaleDateString() : 'Not submitted'}
                     </div>
                   </div>
 
-                  {(claim.denial_reason || claim.rejection_reason) && (
+                  {(claim.denialReason || claim.rejectionReason) && (
                     <div className="bg-red-50 p-3 rounded-lg">
                       <div className="flex items-center space-x-2 text-red-800">
                         <AlertTriangle className="h-4 w-4" />
@@ -160,7 +163,7 @@ const ClaimsSubmission: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-red-700 mt-1">
-                        {claim.denial_reason || claim.rejection_reason}
+                        {claim.denialReason || claim.rejectionReason}
                       </p>
                     </div>
                   )}

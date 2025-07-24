@@ -35,6 +35,23 @@ export class ClientsService {
     });
   }
 
+  async getClientsForNotes() {
+    return this.prisma.client.findMany({
+      where: {
+        isActive: true,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+      orderBy: {
+        lastName: 'asc',
+      },
+    });
+  }
+
   async findOne(id: string) {
     const client = await this.prisma.client.findUnique({
       where: { id },

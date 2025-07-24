@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,8 +8,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { cleanupAuthState, validateEmail, validatePassword } from '@/utils/authUtils';
+import { validateEmail, validatePassword } from '@/utils/authUtils';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { authService } from '@/services/authService';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -82,41 +82,21 @@ const Auth = () => {
     setErrors({});
 
     try {
-      // Clean up existing state
-      cleanupAuthState();
-      
-      // Attempt global sign out
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if this fails
-        console.log('Global signout failed, continuing with login');
-      }
-
-      const { data, error } = await supabase.auth.signInWithPassword({
+      await authService.login({
         email: email.trim(),
         password,
       });
 
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setErrors({ general: 'Invalid email or password. Please check your credentials and try again.' });
-        } else if (error.message.includes('Email not confirmed')) {
-          setErrors({ general: 'Please check your email and click the confirmation link before signing in.' });
-        } else {
-          setErrors({ general: error.message });
-        }
-      } else if (data.user) {
-        toast({
-          title: "Welcome back!",
-          description: "You have been logged in successfully.",
-        });
-        // Force immediate navigation with page refresh
-        window.location.href = '/';
-      }
-    } catch (err) {
+      toast({
+        title: "Welcome back!",
+        description: "You have been logged in successfully.",
+      });
+      
+      // Force immediate navigation with page refresh
+      window.location.href = '/';
+    } catch (err: any) {
       console.error('Login error:', err);
-      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+      setErrors({ general: err.message || 'An unexpected error occurred. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -133,52 +113,27 @@ const Auth = () => {
     setErrors({});
 
     try {
-      // Clean up existing state
-      cleanupAuthState();
-
-      const { data, error } = await supabase.auth.signUp({
+      await authService.register({
         email: email.trim(),
         password,
-        options: {
-          data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-          }
-        }
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
       });
 
-      if (error) {
-        if (error.message.includes('User already registered')) {
-          setErrors({ general: 'An account with this email already exists. Please sign in instead.' });
-        } else if (error.message.includes('Password should be')) {
-          setErrors({ password: error.message });
-        } else {
-          setErrors({ general: error.message });
-        }
-      } else if (data.user) {
-        // Check if email confirmation is required
-        if (!data.session) {
-          toast({
-            title: "Check your email",
-            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
-          });
-        } else {
-          toast({
-            title: "Account created!",
-            description: "Your account has been created successfully. You can now sign in.",
-          });
-        }
-        
-        // Clear form
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setFirstName('');
-        setLastName('');
-      }
-    } catch (err) {
+      toast({
+        title: "Account created!",
+        description: "Your account has been created successfully. You can now sign in.",
+      });
+      
+      // Clear form
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
+    } catch (err: any) {
       console.error('Signup error:', err);
-      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+      setErrors({ general: err.message || 'An unexpected error occurred. Please try again.' });
     } finally {
       setLoading(false);
     }

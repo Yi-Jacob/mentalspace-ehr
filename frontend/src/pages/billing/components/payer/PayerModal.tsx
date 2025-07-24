@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService, Payer } from '@/services/billingService';
 import { useToast } from '@/hooks/use-toast';
 
 interface PayerModalProps {
@@ -82,16 +82,9 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
       if (payer) {
-        const { error } = await supabase
-          .from('payers')
-          .update(data)
-          .eq('id', payer.id);
-        if (error) throw error;
+        return billingService.updatePayer(payer.id, data);
       } else {
-        const { error } = await supabase
-          .from('payers')
-          .insert([data]);
-        if (error) throw error;
+        return billingService.createPayer(data);
       }
     },
     onSuccess: () => {

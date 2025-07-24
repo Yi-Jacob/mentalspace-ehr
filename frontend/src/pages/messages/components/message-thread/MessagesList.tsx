@@ -6,13 +6,13 @@ import { format } from 'date-fns';
 interface MessageData {
   id: string;
   content: string;
-  created_at: string;
-  sender_id: string;
+  createdAt: string;
+  senderId: string;
   priority: string;
   sender: {
     id: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
 }
 
@@ -58,13 +58,13 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages, isLoading }) => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-gray-800">
-                  {message.sender.first_name} {message.sender.last_name}
+                  {message.sender.firstName} {message.sender.lastName}
                 </span>
                 {getPriorityIcon(message.priority)}
               </div>
               <div className="flex items-center space-x-1 text-xs text-gray-500">
                 <Clock className="h-3 w-3" />
-                <span>{format(new Date(message.created_at), 'MMM d, h:mm a')}</span>
+                <span>{format(new Date(message.createdAt), 'MMM d, h:mm a')}</span>
               </div>
             </div>
             <p className="text-gray-700 whitespace-pre-wrap">{message.content}</p>

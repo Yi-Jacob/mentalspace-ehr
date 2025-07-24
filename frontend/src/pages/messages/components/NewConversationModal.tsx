@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, X, Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { clientService } from '@/services/clientService';
+import { messageService } from '@/services/messageService';
 import { useToast } from '@/hooks/use-toast';
 
 interface NewConversationModalProps {
@@ -59,45 +60,12 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({
 
   const createConversationMutation = useMutation({
     mutationFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
-
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
-
-      // Check if conversation already exists
-      const { data: existingConversation } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('client_id', selectedClientId)
-        .eq('therapist_id', userRecord.id)
-        .maybeSingle();
-
-      if (existingConversation) {
-        throw new Error('A conversation with this client already exists');
-      }
-
-      // Create the conversation
-      const { data: conversation, error: conversationError } = await supabase
-        .from('conversations')
-        .insert({
-          title: title || 'New Conversation',
-          client_id: selectedClientId,
-          therapist_id: userRecord.id,
-          category,
-          priority,
-          created_by: userRecord.id,
-        })
-        .select()
-        .single();
-
-      if (conversationError) throw conversationError;
-      return conversation;
+      return messageService.createConversation({
+        title: title || 'New Conversation',
+        clientId: selectedClientId,
+        category,
+        priority,
+      });
     },
     onSuccess: () => {
       toast({

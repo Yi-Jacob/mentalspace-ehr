@@ -4,11 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/services/api-helper/client';
 import { MessageSquare, Plus, Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
 import ComposeMessageModal from '@/pages/messages/components/ComposeMessageModal';
 import NewConversationModal from '@/pages/messages/components/NewConversationModal';
+import { useAuth } from '@/hooks/useAuth';
+
+interface Message {
+  id: string;
+  content: string;
+  created_at: string;
+  sender_id: string;
+  sender: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
+interface Conversation {
+  id: string;
+  title: string;
+  category: string;
+  priority: string;
+  status: string;
+  last_message_at: string;
+  created_at: string;
+  messages: Message[];
+}
 
 interface ClientMessagesTabProps {
   clientId: string;
@@ -17,46 +40,17 @@ interface ClientMessagesTabProps {
 const ClientMessagesTab: React.FC<ClientMessagesTabProps> = ({ clientId }) => {
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
+  const { user } = useAuth();
 
   const { data: conversations, isLoading } = useQuery({
     queryKey: ['client-conversations', clientId],
     queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      if (!user) throw new Error('User not authenticated');
 
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
-
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`
-          id,
-          title,
-          category,
-          priority,
-          status,
-          last_message_at,
-          created_at,
-          messages(
-            id,
-            content,
-            created_at,
-            sender_id,
-            sender:users!messages_sender_id_fkey(first_name, last_name)
-          )
-        `)
-        .eq('client_id', clientId)
-        .eq('therapist_id', userRecord.id)
-        .order('last_message_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
+      const response = await apiClient.get<Conversation[]>(`/conversations?clientId=${clientId}&therapistId=${user.id}`);
+      return response.data || [];
     },
+    enabled: !!user,
   });
 
   const getPriorityColor = (priority: string) => {

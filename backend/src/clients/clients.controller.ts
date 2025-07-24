@@ -24,6 +24,13 @@ export class ClientsController {
     return this.clientsService.findAll();
   }
 
+  @Get('for-notes')
+  @ApiOperation({ summary: 'Get clients for notes and messages' })
+  @ApiResponse({ status: 200, description: 'List of clients for notes' })
+  getClientsForNotes() {
+    return this.clientsService.getClientsForNotes();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a client by id' })
   @ApiResponse({ status: 200, description: 'Client found' })

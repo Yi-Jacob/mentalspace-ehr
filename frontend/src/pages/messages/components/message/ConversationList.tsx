@@ -10,20 +10,20 @@ interface ConversationData {
   title: string;
   category: string;
   priority: string;
-  status: string;
-  last_message_at: string;
+  status?: string;
+  lastMessageAt: string;
   client: {
     id: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
   messages: Array<{
     id: string;
     content: string;
-    created_at: string;
+    createdAt: string;
     sender: {
-      first_name: string;
-      last_name: string;
+      firstName: string;
+      lastName: string;
     };
   }>;
 }
@@ -113,7 +113,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
         <div className="space-y-2 p-4">
           {conversations.map((conversation) => {
             const lastMessage = conversation.messages?.[conversation.messages.length - 1];
-            const clientName = `${conversation.client.first_name} ${conversation.client.last_name}`;
+            const clientName = `${conversation.client.firstName} ${conversation.client.lastName}`;
 
             return (
               <div
@@ -155,11 +155,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 {lastMessage && (
                   <div className="text-xs text-gray-500 space-y-1">
                     <p className="truncate">
-                      {lastMessage.sender.first_name}: {lastMessage.content}
+                      {lastMessage.sender.firstName}: {lastMessage.content}
                     </p>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-3 w-3" />
-                      <span>{format(new Date(lastMessage.created_at), 'MMM d, h:mm a')}</span>
+                      <span>{format(new Date(lastMessage.createdAt), 'MMM d, h:mm a')}</span>
                     </div>
                   </div>
                 )}

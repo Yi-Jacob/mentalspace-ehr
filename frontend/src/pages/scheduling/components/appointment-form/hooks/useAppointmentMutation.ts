@@ -1,7 +1,8 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/services/api-helper/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AppointmentData {
   client_id: string;
@@ -17,25 +18,13 @@ interface AppointmentData {
 
 export const useAppointmentMutation = (onSuccess: () => void) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (appointmentData: AppointmentData) => {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('User not authenticated');
-      }
-
-      // Get the user's profile to get the provider_id
-      const { data: userProfile, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (userError || !userProfile) {
-        throw new Error('User profile not found');
       }
 
       const startDateTime = new Date(appointmentData.date);
@@ -46,25 +35,20 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
       const [endHour, endMinute] = appointmentData.end_time.split(':');
       endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert({
-          client_id: appointmentData.client_id,
-          provider_id: userProfile.id, // Add the provider_id
-          appointment_type: appointmentData.appointment_type as 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other',
-          title: appointmentData.title || null,
-          location: appointmentData.location || null,
-          room_number: appointmentData.room_number || null,
-          notes: appointmentData.notes || null,
-          start_time: startDateTime.toISOString(),
-          end_time: endDateTime.toISOString(),
-          status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
-        })
-        .select()
-        .single();
+      const response = await apiClient.post('/appointments', {
+        client_id: appointmentData.client_id,
+        provider_id: user.id,
+        appointment_type: appointmentData.appointment_type,
+        title: appointmentData.title || null,
+        location: appointmentData.location || null,
+        room_number: appointmentData.room_number || null,
+        notes: appointmentData.notes || null,
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+        status: 'scheduled'
+      });
 
-      if (error) throw error;
-      return data;
+      return response.data;
     },
     onSuccess: () => {
       toast({

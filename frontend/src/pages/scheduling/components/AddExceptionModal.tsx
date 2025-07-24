@@ -12,8 +12,9 @@ import { CalendarIcon, Save, X, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/utils/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/services/api-helper/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AddExceptionModalProps {
   open: boolean;
@@ -31,37 +32,23 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
   });
 
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const createExceptionMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      // Get current user to use as provider_id
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      if (!user) throw new Error('User not authenticated');
 
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
+      const response = await apiClient.post('/schedule-exceptions', {
+        provider_id: user.id,
+        exception_date: data.exception_date.toISOString().split('T')[0],
+        start_time: data.is_unavailable ? null : data.start_time || null,
+        end_time: data.is_unavailable ? null : data.end_time || null,
+        is_unavailable: data.is_unavailable,
+        reason: data.reason || null,
+      });
 
-      const { data: result, error } = await supabase
-        .from('schedule_exceptions')
-        .insert([{
-          provider_id: userRecord.id,
-          exception_date: data.exception_date.toISOString().split('T')[0],
-          start_time: data.is_unavailable ? null : data.start_time || null,
-          end_time: data.is_unavailable ? null : data.end_time || null,
-          is_unavailable: data.is_unavailable,
-          reason: data.reason || null,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return result;
+      return response.data;
     },
     onSuccess: () => {
       toast({

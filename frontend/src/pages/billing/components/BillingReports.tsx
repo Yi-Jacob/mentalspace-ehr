@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { FileText, AlertTriangle, Clock, CheckCircle, Download } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService } from '@/services/billingService';
 
 const BillingReports: React.FC = () => {
   const [timeRange, setTimeRange] = useState('30');
@@ -16,70 +16,7 @@ const BillingReports: React.FC = () => {
   const { data: reportData, isLoading } = useQuery({
     queryKey: ['billing-reports', timeRange, reportType],
     queryFn: async () => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - parseInt(timeRange));
-
-      // Fetch claims data
-      const { data: claims, error } = await supabase
-        .from('claims')
-        .select(`
-          *,
-          clients (first_name, last_name),
-          payers (name)
-        `)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Calculate metrics
-      const totalClaims = claims?.length || 0;
-      const submittedClaims = claims?.filter(c => c.status !== 'draft').length || 0;
-      const paidClaims = claims?.filter(c => c.status === 'paid').length || 0;
-      const deniedClaims = claims?.filter(c => c.status === 'denied').length || 0;
-
-      // Status distribution
-      const statusCounts = claims?.reduce((acc: any, claim) => {
-        acc[claim.status] = (acc[claim.status] || 0) + 1;
-        return acc;
-      }, {});
-
-      const statusData = Object.entries(statusCounts || {}).map(([status, count]) => ({
-        status,
-        count,
-      }));
-
-      // Aging analysis
-      const agingData = claims?.map(claim => {
-        const daysSinceSubmission = claim.submission_date 
-          ? Math.floor((new Date().getTime() - new Date(claim.submission_date).getTime()) / (1000 * 60 * 60 * 24))
-          : 0;
-        return { ...claim, daysSinceSubmission };
-      });
-
-      const agingBuckets = {
-        '0-30 days': agingData?.filter(c => c.daysSinceSubmission <= 30).length || 0,
-        '31-60 days': agingData?.filter(c => c.daysSinceSubmission > 30 && c.daysSinceSubmission <= 60).length || 0,
-        '61-90 days': agingData?.filter(c => c.daysSinceSubmission > 60 && c.daysSinceSubmission <= 90).length || 0,
-        '90+ days': agingData?.filter(c => c.daysSinceSubmission > 90).length || 0,
-      };
-
-      const agingChartData = Object.entries(agingBuckets).map(([range, count]) => ({
-        range,
-        count,
-      }));
-
-      return {
-        totalClaims,
-        submittedClaims,
-        paidClaims,
-        deniedClaims,
-        statusData,
-        agingChartData,
-        recentClaims: claims?.slice(0, 10) || [],
-      };
+      return billingService.getBillingReports(timeRange);
     },
   });
 

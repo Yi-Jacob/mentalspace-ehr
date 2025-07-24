@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { messageService } from '@/services/messageService';
 import { useToast } from '@/hooks/use-toast';
 import MessageThreadHeader from '../message-thread/MessageThreadHeader';
 import MessagesList from '../message-thread/MessagesList';
@@ -12,13 +12,13 @@ import EmptyThreadState from '../message-thread/EmptyThreadState';
 interface MessageData {
   id: string;
   content: string;
-  created_at: string;
-  sender_id: string;
+  createdAt: string;
+  senderId: string;
   priority: string;
   sender: {
     id: string;
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
 }
 
@@ -28,8 +28,8 @@ interface ConversationData {
   category: string;
   priority: string;
   client: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
 }
 
@@ -55,37 +55,11 @@ const MessageThread: React.FC<MessageThreadProps> = ({
     mutationFn: async (content: string) => {
       if (!conversationId) throw new Error('No conversation selected');
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
-
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
-
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: userRecord.id,
-          content: content.trim(),
-          priority: messagePriority,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update conversation's last_message_at
-      await supabase
-        .from('conversations')
-        .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conversationId);
-
-      return data;
+      return messageService.sendMessage({
+        conversationId,
+        content: content.trim(),
+        priority: messagePriority,
+      });
     },
     onSuccess: () => {
       toast({

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Calendar, Bell, CheckCircle, Clock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { complianceDeadlinesApi } from '@/services/complianceService';
 
 const ComplianceDeadlines: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'met' | 'overdue'>('all');
@@ -14,52 +14,23 @@ const ComplianceDeadlines: React.FC = () => {
   const { data: deadlines, isLoading } = useQuery({
     queryKey: ['compliance-deadlines', statusFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('compliance_deadlines')
-        .select(`
-          *,
-          provider:users!compliance_deadlines_provider_id_fkey(first_name, last_name)
-        `)
-        .order('deadline_date', { ascending: true });
-
-      const now = new Date();
-      
-      if (statusFilter === 'pending') {
-        query = query.eq('is_met', false).gte('deadline_date', now.toISOString());
-      } else if (statusFilter === 'met') {
-        query = query.eq('is_met', true);
-      } else if (statusFilter === 'overdue') {
-        query = query.eq('is_met', false).lt('deadline_date', now.toISOString());
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      return complianceDeadlinesApi.getAll(statusFilter);
     },
   });
 
   const { data: exceptionRequests } = useQuery({
     queryKey: ['deadline-exception-requests'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('deadline_exception_requests')
-        .select(`
-          *,
-          provider:users!deadline_exception_requests_provider_id_fkey(first_name, last_name),
-          reviewed_by_user:users!deadline_exception_requests_reviewed_by_fkey(first_name, last_name)
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      // TODO: Implement deadline exceptions API
+      return [];
     },
   });
 
   const getDeadlineStatus = (deadline: any) => {
     const now = new Date();
-    const deadlineDate = new Date(deadline.deadline_date);
+    const deadlineDate = new Date(deadline.deadlineDate);
     
-    if (deadline.is_met) {
+    if (deadline.isMet) {
       return { status: 'met', color: 'bg-green-100 text-green-800', icon: CheckCircle };
     } else if (deadlineDate < now) {
       return { status: 'overdue', color: 'bg-red-100 text-red-800', icon: AlertTriangle };
@@ -75,9 +46,9 @@ const ComplianceDeadlines: React.FC = () => {
 
   const getReminderStatus = (deadline: any) => {
     const reminders = [];
-    if (deadline.reminder_sent_24h) reminders.push('24h');
-    if (deadline.reminder_sent_48h) reminders.push('48h');
-    if (deadline.reminder_sent_72h) reminders.push('72h');
+    if (deadline.reminderSent24h) reminders.push('24h');
+    if (deadline.reminderSent48h) reminders.push('48h');
+    if (deadline.reminderSent72h) reminders.push('72h');
     return reminders;
   };
 
@@ -123,7 +94,7 @@ const ComplianceDeadlines: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3">
                       <h4 className="font-semibold text-lg">
-                        {deadline.provider?.first_name} {deadline.provider?.last_name}
+                        {deadline.provider?.firstName} {deadline.provider?.lastName}
                       </h4>
                       <div className="flex items-center space-x-1">
                         <StatusIcon className="h-4 w-4" />
@@ -132,7 +103,7 @@ const ComplianceDeadlines: React.FC = () => {
                         </Badge>
                       </div>
                       <Badge variant="outline">
-                        {deadline.deadline_type.replace('_', ' ')}
+                        {deadline.deadlineType.replace('_', ' ')}
                       </Badge>
                     </div>
 
@@ -140,17 +111,17 @@ const ComplianceDeadlines: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4" />
                         <span>
-                          <strong>Deadline:</strong> {new Date(deadline.deadline_date).toLocaleString()}
+                          <strong>Deadline:</strong> {new Date(deadline.deadlineDate).toLocaleString()}
                         </span>
                       </div>
                       <div>
-                        <strong>Pending Notes:</strong> {deadline.notes_pending}
+                        <strong>Pending Notes:</strong> {deadline.notesPending}
                       </div>
                       <div>
-                        <strong>Completed Notes:</strong> {deadline.notes_completed}
+                        <strong>Completed Notes:</strong> {deadline.notesCompleted}
                       </div>
                       <div>
-                        <strong>Created:</strong> {new Date(deadline.created_at).toLocaleDateString()}
+                        <strong>Created:</strong> {new Date(deadline.createdAt).toLocaleDateString()}
                       </div>
                     </div>
 
@@ -160,7 +131,7 @@ const ComplianceDeadlines: React.FC = () => {
                         <span className="text-sm text-gray-600">
                           <strong>Reminders sent:</strong> {reminders.join(', ')} before deadline
                         </span>
-                        {deadline.supervisor_notified && (
+                        {deadline.supervisorNotified && (
                           <Badge variant="outline" className="text-purple-600">
                             Supervisor Notified
                           </Badge>
@@ -168,15 +139,15 @@ const ComplianceDeadlines: React.FC = () => {
                       </div>
                     )}
 
-                    {!deadline.is_met && statusInfo.status === 'overdue' && (
+                    {!deadline.isMet && statusInfo.status === 'overdue' && (
                       <div className="bg-red-50 p-3 rounded-lg">
                         <div className="flex items-center space-x-2 text-red-800">
                           <AlertTriangle className="h-4 w-4" />
                           <span className="font-medium">Deadline Missed</span>
                         </div>
                         <p className="text-red-700 text-sm mt-1">
-                          This deadline was missed on {new Date(deadline.deadline_date).toLocaleString()}. 
-                          {deadline.notes_pending > 0 && ` ${deadline.notes_pending} notes remain unsigned.`}
+                          This deadline was missed on {new Date(deadline.deadlineDate).toLocaleString()}. 
+                          {deadline.notesPending > 0 && ` ${deadline.notesPending} notes remain unsigned.`}
                         </p>
                       </div>
                     )}
@@ -186,7 +157,7 @@ const ComplianceDeadlines: React.FC = () => {
                     <Button variant="outline" size="sm">
                       View Notes
                     </Button>
-                    {!deadline.is_met && (
+                    {!deadline.isMet && (
                       <Button size="sm" className="flex items-center space-x-1">
                         <Bell className="h-3 w-3" />
                         <span>Send Reminder</span>

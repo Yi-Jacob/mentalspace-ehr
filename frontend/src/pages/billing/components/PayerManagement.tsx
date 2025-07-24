@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit, Building2, FileText, DollarSign } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService } from '@/services/billingService';
 import PayerModal from './payer/PayerModal';
 import ContractModal from './payer/ContractModal';
 import FeeScheduleModal from './payer/FeeScheduleModal';
@@ -21,19 +21,17 @@ const PayerManagement: React.FC = () => {
   const { data: payers, isLoading } = useQuery({
     queryKey: ['payers', searchTerm],
     queryFn: async () => {
-      let query = supabase
-        .from('payers')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
+      // Get all payers and filter on the frontend for now
+      // In a real implementation, you might want to add search parameter to the backend
+      const allPayers = await billingService.getAllPayers();
+      
       if (searchTerm) {
-        query = query.ilike('name', `%${searchTerm}%`);
+        return allPayers.filter(p => 
+          p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      
+      return allPayers;
     },
   });
 
@@ -96,8 +94,8 @@ const PayerManagement: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-lg">{payer.name}</CardTitle>
-                  <Badge className={getPayerTypeColor(payer.payer_type)}>
-                    {formatPayerType(payer.payer_type)}
+                  <Badge className={getPayerTypeColor(payer.payerType)}>
+                    {formatPayerType(payer.payerType)}
                   </Badge>
                 </div>
                 <Button
@@ -113,19 +111,19 @@ const PayerManagement: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {payer.electronic_payer_id && (
+              {payer.electronicPayerId && (
                 <div className="text-sm text-gray-600">
-                  <strong>Payer ID:</strong> {payer.electronic_payer_id}
+                  <strong>Payer ID:</strong> {payer.electronicPayerId}
                 </div>
               )}
               
-              {payer.phone_number && (
+              {payer.phoneNumber && (
                 <div className="text-sm text-gray-600">
-                  <strong>Phone:</strong> {payer.phone_number}
+                  <strong>Phone:</strong> {payer.phoneNumber}
                 </div>
               )}
 
-              {payer.requires_authorization && (
+              {payer.requiresAuthorization && (
                 <Badge variant="outline" className="text-xs">
                   Requires Authorization
                 </Badge>

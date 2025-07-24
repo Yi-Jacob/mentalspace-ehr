@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { clientService } from '@/services/clientService';
+import { billingService } from '@/services/billingService';
 import VerificationModal from './verification/VerificationModal';
 
 const InsuranceVerification: React.FC = () => {
@@ -18,45 +19,25 @@ const InsuranceVerification: React.FC = () => {
   const { data: verifications, isLoading } = useQuery({
     queryKey: ['insurance-verifications', searchTerm, statusFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('insurance_verifications')
-        .select(`
-          *,
-          clients (
-            first_name,
-            last_name,
-            date_of_birth
-          ),
-          client_insurance (
-            insurance_company,
-            policy_number
-          ),
-          users (
-            first_name,
-            last_name
-          )
-        `)
-        .order('verification_date', { ascending: false });
-
+      // Get all verifications and filter on the frontend for now
+      // In a real implementation, you might want to add search and filter parameters to the backend
+      const allVerifications = await billingService.getAllVerifications();
+      
+      let filteredVerifications = allVerifications;
+      
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        filteredVerifications = filteredVerifications.filter(v => v.status === statusFilter);
       }
 
       if (searchTerm) {
-        // Use client service to search for clients
-        const clientData = await clientService.getClients({ search: searchTerm });
-        
-        if (clientData && clientData.length > 0) {
-          const clientIds = clientData.map(c => c.id);
-          query = query.in('client_id', clientIds);
-        } else {
-          return []; // No matching clients found
-        }
+        // Filter by client name
+        filteredVerifications = filteredVerifications.filter(v => 
+          v.client?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          v.client?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      return filteredVerifications;
     },
   });
 
@@ -142,7 +123,7 @@ const InsuranceVerification: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">
-                      {verification.clients?.first_name} {verification.clients?.last_name}
+                      {verification.client?.firstName} {verification.client?.lastName}
                     </h4>
                     <div className="flex items-center space-x-1">
                       {getStatusIcon(verification.status)}
@@ -150,7 +131,7 @@ const InsuranceVerification: React.FC = () => {
                         {verification.status}
                       </Badge>
                     </div>
-                    {isVerificationDue(verification.next_verification_date) && (
+                    {isVerificationDue(verification.nextVerificationDate) && (
                       <Badge variant="destructive">
                         <Calendar className="h-3 w-3 mr-1" />
                         Due Soon
@@ -160,39 +141,39 @@ const InsuranceVerification: React.FC = () => {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
-                      <strong>Insurance:</strong> {verification.client_insurance?.insurance_company}
+                      <strong>Insurance:</strong> {verification.clientInsurance?.insuranceCompany}
                     </div>
                     <div>
-                      <strong>Policy:</strong> {verification.client_insurance?.policy_number}
+                      <strong>Policy:</strong> {verification.clientInsurance?.policyNumber}
                     </div>
                     <div>
-                      <strong>Verified:</strong> {new Date(verification.verification_date).toLocaleDateString()}
+                      <strong>Verified:</strong> {new Date(verification.verificationDate).toLocaleDateString()}
                     </div>
                     <div>
-                      <strong>By:</strong> {verification.users?.first_name} {verification.users?.last_name}
+                      <strong>By:</strong> {verification.verifiedBy}
                     </div>
                   </div>
 
-                  {verification.benefits_verified && (
+                  {verification.benefitsVerified && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      {verification.deductible_amount && (
+                      {verification.deductibleAmount && (
                         <div>
-                          <strong>Deductible:</strong> ${verification.deductible_amount}
-                          {verification.deductible_met && ` (Met: $${verification.deductible_met})`}
+                          <strong>Deductible:</strong> ${verification.deductibleAmount}
+                          {verification.deductibleMet && ` (Met: $${verification.deductibleMet})`}
                         </div>
                       )}
-                      {verification.copay_amount && (
+                      {verification.copayAmount && (
                         <div>
-                          <strong>Copay:</strong> ${verification.copay_amount}
+                          <strong>Copay:</strong> ${verification.copayAmount}
                         </div>
                       )}
-                      {verification.out_of_pocket_max && (
+                      {verification.outOfPocketMax && (
                         <div>
-                          <strong>OOP Max:</strong> ${verification.out_of_pocket_max}
-                          {verification.out_of_pocket_met && ` (Met: $${verification.out_of_pocket_met})`}
+                          <strong>OOP Max:</strong> ${verification.outOfPocketMax}
+                          {verification.outOfPocketMet && ` (Met: $${verification.outOfPocketMet})`}
                         </div>
                       )}
-                      {verification.authorization_required && (
+                      {verification.authorizationRequired && (
                         <div className="flex items-center space-x-1">
                           <AlertCircle className="h-4 w-4 text-orange-500" />
                           <span>Auth Required</span>
@@ -201,9 +182,9 @@ const InsuranceVerification: React.FC = () => {
                     </div>
                   )}
 
-                  {verification.next_verification_date && (
+                  {verification.nextVerificationDate && (
                     <div className="text-sm text-gray-600">
-                      <strong>Next Verification:</strong> {new Date(verification.next_verification_date).toLocaleDateString()}
+                      <strong>Next Verification:</strong> {new Date(verification.nextVerificationDate).toLocaleDateString()}
                     </div>
                   )}
                 </div>

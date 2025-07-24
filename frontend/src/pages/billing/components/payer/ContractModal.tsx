@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService, PayerContract } from '@/services/billingService';
 import { useToast } from '@/hooks/use-toast';
 
 interface ContractModalProps {
@@ -25,26 +25,20 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
   const [editingContract, setEditingContract] = useState<any>(null);
   
   const [formData, setFormData] = useState({
-    contract_name: '',
-    contract_number: '',
-    effective_date: '',
-    expiration_date: '',
+    contractName: '',
+    contractNumber: '',
+    effectiveDate: '',
+    expirationDate: '',
     status: 'active',
-    reimbursement_rate: '',
-    contract_terms: '',
+    reimbursementRate: '',
+    contractTerms: '',
   });
 
   const { data: contracts, isLoading } = useQuery({
     queryKey: ['payer-contracts', payer?.id],
     queryFn: async () => {
       if (!payer?.id) return [];
-      const { data, error } = await supabase
-        .from('payer_contracts')
-        .select('*')
-        .eq('payer_id', payer.id)
-        .order('effective_date', { ascending: false });
-      if (error) throw error;
-      return data;
+      return billingService.getAllContracts(payer.id);
     },
     enabled: !!payer?.id,
   });
@@ -53,21 +47,14 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
     mutationFn: async (data: any) => {
       const contractData = {
         ...data,
-        payer_id: payer.id,
-        reimbursement_rate: data.reimbursement_rate ? parseFloat(data.reimbursement_rate) : null,
+        payerId: payer.id,
+        reimbursementRate: data.reimbursementRate ? parseFloat(data.reimbursementRate) : null,
       };
 
       if (editingContract) {
-        const { error } = await supabase
-          .from('payer_contracts')
-          .update(contractData)
-          .eq('id', editingContract.id);
-        if (error) throw error;
+        return billingService.updateContract(editingContract.id, contractData);
       } else {
-        const { error } = await supabase
-          .from('payer_contracts')
-          .insert([contractData]);
-        if (error) throw error;
+        return billingService.createContract(contractData);
       }
     },
     onSuccess: () => {
@@ -89,11 +76,7 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
 
   const deleteMutation = useMutation({
     mutationFn: async (contractId: string) => {
-      const { error } = await supabase
-        .from('payer_contracts')
-        .delete()
-        .eq('id', contractId);
-      if (error) throw error;
+      return billingService.deleteContract(contractId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payer-contracts', payer?.id] });
@@ -113,13 +96,13 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
 
   const resetForm = () => {
     setFormData({
-      contract_name: '',
-      contract_number: '',
-      effective_date: '',
-      expiration_date: '',
+      contractName: '',
+      contractNumber: '',
+      effectiveDate: '',
+      expirationDate: '',
       status: 'active',
-      reimbursement_rate: '',
-      contract_terms: '',
+      reimbursementRate: '',
+      contractTerms: '',
     });
     setShowForm(false);
     setEditingContract(null);
@@ -127,13 +110,13 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
 
   const handleEdit = (contract: any) => {
     setFormData({
-      contract_name: contract.contract_name || '',
-      contract_number: contract.contract_number || '',
-      effective_date: contract.effective_date || '',
-      expiration_date: contract.expiration_date || '',
+      contractName: contract.contractName || '',
+      contractNumber: contract.contractNumber || '',
+      effectiveDate: contract.effectiveDate || '',
+      expirationDate: contract.expirationDate || '',
       status: contract.status || 'active',
-      reimbursement_rate: contract.reimbursement_rate?.toString() || '',
-      contract_terms: contract.contract_terms || '',
+      reimbursementRate: contract.reimbursementRate?.toString() || '',
+      contractTerms: contract.contractTerms || '',
     });
     setEditingContract(contract);
     setShowForm(true);
@@ -187,44 +170,44 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="contract_name">Contract Name *</Label>
+                      <Label htmlFor="contractName">Contract Name *</Label>
                       <Input
-                        id="contract_name"
-                        value={formData.contract_name}
-                        onChange={(e) => setFormData({ ...formData, contract_name: e.target.value })}
+                        id="contractName"
+                        value={formData.contractName}
+                        onChange={(e) => setFormData({ ...formData, contractName: e.target.value })}
                         required
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="contract_number">Contract Number</Label>
+                      <Label htmlFor="contractNumber">Contract Number</Label>
                       <Input
-                        id="contract_number"
-                        value={formData.contract_number}
-                        onChange={(e) => setFormData({ ...formData, contract_number: e.target.value })}
+                        id="contractNumber"
+                        value={formData.contractNumber}
+                        onChange={(e) => setFormData({ ...formData, contractNumber: e.target.value })}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="effective_date">Effective Date *</Label>
+                      <Label htmlFor="effectiveDate">Effective Date *</Label>
                       <Input
-                        id="effective_date"
+                        id="effectiveDate"
                         type="date"
-                        value={formData.effective_date}
-                        onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
+                        value={formData.effectiveDate}
+                        onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
                         required
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="expiration_date">Expiration Date</Label>
+                      <Label htmlFor="expirationDate">Expiration Date</Label>
                       <Input
-                        id="expiration_date"
+                        id="expirationDate"
                         type="date"
-                        value={formData.expiration_date}
-                        onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
+                        value={formData.expirationDate}
+                        onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
                       />
                     </div>
 
@@ -248,24 +231,24 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
                   </div>
 
                   <div>
-                    <Label htmlFor="reimbursement_rate">Reimbursement Rate (%)</Label>
+                    <Label htmlFor="reimbursementRate">Reimbursement Rate (%)</Label>
                     <Input
-                      id="reimbursement_rate"
+                      id="reimbursementRate"
                       type="number"
                       step="0.01"
                       min="0"
                       max="100"
-                      value={formData.reimbursement_rate}
-                      onChange={(e) => setFormData({ ...formData, reimbursement_rate: e.target.value })}
+                      value={formData.reimbursementRate}
+                      onChange={(e) => setFormData({ ...formData, reimbursementRate: e.target.value })}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="contract_terms">Contract Terms</Label>
+                    <Label htmlFor="contractTerms">Contract Terms</Label>
                     <Textarea
-                      id="contract_terms"
-                      value={formData.contract_terms}
-                      onChange={(e) => setFormData({ ...formData, contract_terms: e.target.value })}
+                      id="contractTerms"
+                      value={formData.contractTerms}
+                      onChange={(e) => setFormData({ ...formData, contractTerms: e.target.value })}
                       rows={4}
                     />
                   </div>
@@ -294,28 +277,28 @@ const ContractModal: React.FC<ContractModalProps> = ({ isOpen, onClose, payer })
                     <div className="flex justify-between items-start">
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-semibold">{contract.contract_name}</h4>
+                          <h4 className="font-semibold">{contract.contractName}</h4>
                           <Badge className={getStatusColor(contract.status)}>
                             {contract.status}
                           </Badge>
                         </div>
                         
-                        {contract.contract_number && (
+                        {contract.contractNumber && (
                           <p className="text-sm text-gray-600">
-                            Contract #: {contract.contract_number}
+                            Contract #: {contract.contractNumber}
                           </p>
                         )}
                         
                         <p className="text-sm text-gray-600">
-                          Effective: {new Date(contract.effective_date).toLocaleDateString()}
-                          {contract.expiration_date && 
-                            ` - ${new Date(contract.expiration_date).toLocaleDateString()}`
+                          Effective: {new Date(contract.effectiveDate).toLocaleDateString()}
+                          {contract.expirationDate && 
+                            ` - ${new Date(contract.expirationDate).toLocaleDateString()}`
                           }
                         </p>
                         
-                        {contract.reimbursement_rate && (
+                        {contract.reimbursementRate && (
                           <p className="text-sm text-gray-600">
-                            Reimbursement Rate: {contract.reimbursement_rate}%
+                            Reimbursement Rate: {contract.reimbursementRate}%
                           </p>
                         )}
                       </div>

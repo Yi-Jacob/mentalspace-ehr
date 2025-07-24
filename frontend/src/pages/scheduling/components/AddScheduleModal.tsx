@@ -12,8 +12,9 @@ import { CalendarIcon, Clock, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/utils/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/services/api-helper/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AddScheduleModalProps {
   open: boolean;
@@ -34,41 +35,27 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
   });
 
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const createScheduleMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      // Get current user to use as provider_id
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      if (!user) throw new Error('User not authenticated');
 
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
+      const response = await apiClient.post('/provider-schedules', {
+        provider_id: user.id,
+        day_of_week: data.day_of_week,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        break_start_time: data.break_start_time || null,
+        break_end_time: data.break_end_time || null,
+        is_available: data.is_available,
+        effective_from: data.effective_from.toISOString().split('T')[0],
+        effective_until: data.effective_until?.toISOString().split('T')[0] || null,
+        status: data.status,
+      });
 
-      const { data: result, error } = await supabase
-        .from('provider_schedules')
-        .insert({
-          provider_id: userRecord.id,
-          day_of_week: data.day_of_week as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday",
-          start_time: data.start_time,
-          end_time: data.end_time,
-          break_start_time: data.break_start_time || null,
-          break_end_time: data.break_end_time || null,
-          is_available: data.is_available,
-          effective_from: data.effective_from.toISOString().split('T')[0],
-          effective_until: data.effective_until?.toISOString().split('T')[0] || null,
-          status: data.status as "active" | "pending_approval" | "approved" | "rejected",
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return result;
+      return response.data;
     },
     onSuccess: () => {
       toast({

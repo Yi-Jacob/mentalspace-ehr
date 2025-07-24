@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -10,44 +11,107 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async register(email: string, password: string, firstName: string, lastName: string) {
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create user
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        isActive: true,
+      },
+    });
+
+    // Generate JWT token
+    const payload = { 
+      email: user.email, 
+      sub: user.id,
+      roles: ['CLINICIAN'] // Default role
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isActive: user.isActive,
+      },
+    };
+  }
+
   async login(loginDto: LoginDto) {
-    // For demo purposes, we'll create a simple authentication
-    // In a real application, you would hash passwords and implement proper authentication
-    
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
     });
 
     if (!user) {
-      // For demo purposes, create a user if it doesn't exist
-      const emailPrefix = loginDto.email.split('@')[0];
-      const newUser = await this.prisma.user.create({
-        data: {
-          email: loginDto.email,
-          firstName: emailPrefix,
-          lastName: 'User',
-        },
-      });
-      
-      const payload = { 
-        email: newUser.email, 
-        sub: newUser.id,
-        roles: ['CLINICIAN'] // Default role for demo
-      };
-      return {
-        access_token: this.jwtService.sign(payload),
-        user: newUser,
-      };
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
     }
 
     const payload = { 
       email: user.email, 
       sub: user.id,
-      roles: ['CLINICIAN'] // Default role for demo
+      roles: ['CLINICIAN'] // Default role
     };
+
     return {
       access_token: this.jwtService.sign(payload),
-      user,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isActive: user.isActive,
+      },
     };
+  }
+
+  async validateToken(token: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      if (!user || !user.isActive) {
+        return null;
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isActive: user.isActive,
+      };
+    } catch (error) {
+      return null;
+    }
   }
 } 

@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, FileText, Send, Mail, Download } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+// TODO: Create patient statements backend and service
+// import { statementService } from '@/services/statementService';
 
 const StatementGeneration: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,21 +17,10 @@ const StatementGeneration: React.FC = () => {
   const { data: statements, isLoading } = useQuery({
     queryKey: ['patient-statements', searchTerm, statusFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('patient_statements')
-        .select(`
-          *,
-          clients (first_name, last_name, email)
-        `)
-        .order('statement_date', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      // TODO: Implement patient statements backend and service
+      // For now, return empty array as placeholder
+      console.log('Patient statements backend not yet implemented');
+      return [];
     },
   });
 

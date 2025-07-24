@@ -71,6 +71,17 @@ export class ClientService {
     return apiClient.get<ClientFormData[]>(url);
   }
 
+  // Get clients for notes and messages
+  async getClientsForNotes(): Promise<{ id: string; first_name: string; last_name: string; email: string }[]> {
+    const clients = await apiClient.get<{ id: string; firstName: string; lastName: string; email?: string }[]>(`${this.baseUrl}/for-notes`);
+    return clients.map(client => ({
+      id: client.id,
+      first_name: client.firstName,
+      last_name: client.lastName,
+      email: client.email || '',
+    }));
+  }
+
   // Get single client by ID
   async getClient(id: string): Promise<ClientFormData> {
     return apiClient.get<ClientFormData>(`${this.baseUrl}/${id}`);

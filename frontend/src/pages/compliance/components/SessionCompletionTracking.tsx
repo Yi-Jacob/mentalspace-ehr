@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, FileText, Clock, Lock, CheckCircle, AlertTriangle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { sessionCompletionsApi } from '@/services/complianceService';
 
 const SessionCompletionTracking: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,48 +16,15 @@ const SessionCompletionTracking: React.FC = () => {
   const { data: providers } = useQuery({
     queryKey: ['providers-for-sessions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select(`
-          *,
-          user_roles!inner(role)
-        `)
-        .eq('user_roles.role', 'Clinician')
-        .eq('user_roles.is_active', true);
-      
-      if (error) throw error;
-      return data;
+      // TODO: Implement providers API
+      return [];
     },
   });
 
   const { data: sessionCompletions, isLoading } = useQuery({
     queryKey: ['session-completions', searchTerm, statusFilter, providerFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('session_completions')
-        .select(`
-          *,
-          provider:users!session_completions_provider_id_fkey(first_name, last_name),
-          client:clients(first_name, last_name),
-          note:clinical_notes(id, status)
-        `)
-        .order('session_date', { ascending: false });
-
-      if (statusFilter === 'signed') {
-        query = query.eq('is_note_signed', true);
-      } else if (statusFilter === 'unsigned') {
-        query = query.eq('is_note_signed', false).eq('is_locked', false);
-      } else if (statusFilter === 'locked') {
-        query = query.eq('is_locked', true);
-      }
-
-      if (providerFilter) {
-        query = query.eq('provider_id', providerFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      return sessionCompletionsApi.getAll(statusFilter, providerFilter);
     },
   });
 
@@ -153,7 +120,7 @@ const SessionCompletionTracking: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">
-                      {completion.client?.first_name} {completion.client?.last_name}
+                      {completion.client?.firstName} {completion.client?.lastName}
                     </h4>
                     <div className="flex items-center space-x-1">
                       {getStatusIcon(completion)}
@@ -165,61 +132,61 @@ const SessionCompletionTracking: React.FC = () => {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
-                      <strong>Provider:</strong> {completion.provider?.first_name} {completion.provider?.last_name}
+                      <strong>Provider:</strong> {completion.provider?.firstName} {completion.provider?.lastName}
                     </div>
                     <div>
-                      <strong>Session Date:</strong> {new Date(completion.session_date).toLocaleDateString()}
+                      <strong>Session Date:</strong> {new Date(completion.sessionDate).toLocaleDateString()}
                     </div>
                     <div>
-                      <strong>Session Type:</strong> {formatSessionType(completion.session_type)}
+                      <strong>Session Type:</strong> {formatSessionType(completion.sessionType)}
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4" />
-                      <span><strong>Duration:</strong> {completion.duration_minutes} min</span>
+                      <span><strong>Duration:</strong> {completion.durationMinutes} min</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {completion.calculated_amount && (
+                    {completion.calculatedAmount && (
                       <div>
-                        <strong>Calculated Amount:</strong> ${parseFloat(completion.calculated_amount.toString()).toFixed(2)}
+                        <strong>Calculated Amount:</strong> ${parseFloat(completion.calculatedAmount.toString()).toFixed(2)}
                       </div>
                     )}
-                    {completion.pay_period_week && (
+                    {completion.payPeriodWeek && (
                       <div>
-                        <strong>Pay Period:</strong> {new Date(completion.pay_period_week).toLocaleDateString()}
+                        <strong>Pay Period:</strong> {new Date(completion.payPeriodWeek).toLocaleDateString()}
                       </div>
                     )}
                     <div>
-                      <strong>Paid:</strong> {completion.is_paid ? 'Yes' : 'No'}
+                      <strong>Paid:</strong> {completion.isPaid ? 'Yes' : 'No'}
                     </div>
-                    {completion.note_signed_at && (
+                    {completion.noteSignedAt && (
                       <div>
-                        <strong>Note Signed:</strong> {new Date(completion.note_signed_at).toLocaleDateString()}
+                        <strong>Note Signed:</strong> {new Date(completion.noteSignedAt).toLocaleDateString()}
                       </div>
                     )}
                   </div>
 
-                  {completion.is_locked && completion.locked_at && (
+                  {completion.isLocked && completion.lockedAt && (
                     <div className="bg-red-50 p-3 rounded-lg">
                       <div className="flex items-center space-x-2 text-red-800">
                         <Lock className="h-4 w-4" />
                         <span className="font-medium">Session Locked</span>
                       </div>
                       <p className="text-red-700 text-sm mt-1">
-                        Locked on {new Date(completion.locked_at).toLocaleString()} due to missed deadline
+                        Locked on {new Date(completion.lockedAt).toLocaleString()} due to missed deadline
                       </p>
                     </div>
                   )}
 
-                  {completion.supervisor_override_by && (
+                  {completion.supervisorOverrideBy && (
                     <div className="bg-blue-50 p-3 rounded-lg">
                       <div className="flex items-center space-x-2 text-blue-800">
                         <CheckCircle className="h-4 w-4" />
                         <span className="font-medium">Supervisor Override</span>
                       </div>
                       <p className="text-blue-700 text-sm mt-1">
-                        {completion.supervisor_override_reason}
+                        {completion.supervisorOverrideReason}
                       </p>
                     </div>
                   )}
@@ -229,7 +196,7 @@ const SessionCompletionTracking: React.FC = () => {
                   <Button variant="outline" size="sm">
                     View Details
                   </Button>
-                  {!completion.is_note_signed && !completion.is_locked && (
+                  {!completion.isNoteSigned && !completion.isLocked && (
                     <Button size="sm" className="flex items-center space-x-1">
                       <FileText className="h-3 w-3" />
                       <span>Sign Note</span>

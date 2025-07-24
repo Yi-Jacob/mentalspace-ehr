@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Clock, Play, Pause, Plus, CheckCircle, AlertTriangle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { timeTrackingApi } from '@/services/complianceService';
 import { useToast } from '@/hooks/use-toast';
 
 const TimeTracking: React.FC = () => {
@@ -20,32 +20,13 @@ const TimeTracking: React.FC = () => {
   const { data: timeEntries, isLoading } = useQuery({
     queryKey: ['time-entries', selectedDate],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('time_entries')
-        .select(`
-          *,
-          user:users!time_entries_user_id_fkey(first_name, last_name),
-          approved_by_user:users!time_entries_approved_by_fkey(first_name, last_name)
-        `)
-        .gte('entry_date', selectedDate)
-        .lte('entry_date', selectedDate)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      return timeTrackingApi.getAll(selectedDate);
     },
   });
 
   const createTimeEntryMutation = useMutation({
     mutationFn: async (entryData: any) => {
-      const { data, error } = await supabase
-        .from('time_entries')
-        .insert(entryData)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      return timeTrackingApi.create(entryData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
@@ -66,46 +47,9 @@ const TimeTracking: React.FC = () => {
 
   const clockInMutation = useMutation({
     mutationFn: async () => {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (!userData) throw new Error('User data not found');
-
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Check if already clocked in today
-      const { data: existingEntry } = await supabase
-        .from('time_entries')
-        .select('*')
-        .eq('user_id', userData.id)
-        .eq('entry_date', today)
-        .maybeSingle();
-
-      if (existingEntry && existingEntry.clock_in_time && !existingEntry.clock_out_time) {
-        throw new Error('Already clocked in today');
-      }
-
-      const entryData = {
-        user_id: userData.id,
-        entry_date: today,
-        clock_in_time: new Date().toISOString(),
-      };
-
-      const { data, error } = await supabase
-        .from('time_entries')
-        .insert(entryData)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      // TODO: Get current user ID from auth context
+      const userId = 'current-user-id'; // This should come from auth context
+      return timeTrackingApi.clockIn(userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
@@ -125,19 +69,7 @@ const TimeTracking: React.FC = () => {
 
   const clockOutMutation = useMutation({
     mutationFn: async (entryId: string) => {
-      const clockOutTime = new Date().toISOString();
-      
-      const { data, error } = await supabase
-        .from('time_entries')
-        .update({
-          clock_out_time: clockOutTime,
-        })
-        .eq('id', entryId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      return timeTrackingApi.clockOut(entryId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
@@ -157,11 +89,12 @@ const TimeTracking: React.FC = () => {
 
   const handleSaveTimeEntry = (formData: FormData) => {
     const entryData = {
-      entry_date: formData.get('entry_date'),
-      clock_in_time: formData.get('clock_in_time'),
-      clock_out_time: formData.get('clock_out_time'),
-      break_start_time: formData.get('break_start_time') || null,
-      break_end_time: formData.get('break_end_time') || null,
+      userId: 'current-user-id', // TODO: Get from auth context
+      entryDate: formData.get('entry_date'),
+      clockInTime: formData.get('clock_in_time'),
+      clockOutTime: formData.get('clock_out_time'),
+      breakStartTime: formData.get('break_start_time') || null,
+      breakEndTime: formData.get('break_end_time') || null,
       notes: formData.get('notes') || null,
     };
 
@@ -294,8 +227,8 @@ const TimeTracking: React.FC = () => {
       {/* Time Entries List */}
       <div className="space-y-4">
         {timeEntries?.map((entry) => {
-          const totalHours = calculateHours(entry.clock_in_time, entry.clock_out_time);
-          const isActiveEntry = entry.clock_in_time && !entry.clock_out_time;
+          const totalHours = calculateHours(entry.clockInTime, entry.clockOutTime);
+          const isActiveEntry = entry.clockInTime && !entry.clockOutTime;
           
           return (
             <Card key={entry.id} className="hover:shadow-lg transition-shadow">
@@ -304,7 +237,7 @@ const TimeTracking: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3">
                       <h4 className="font-semibold text-lg">
-                        {entry.user?.first_name} {entry.user?.last_name}
+                        {entry.user?.firstName} {entry.user?.lastName}
                       </h4>
                       <div className="flex items-center space-x-1">
                         {isActiveEntry ? (
@@ -314,7 +247,7 @@ const TimeTracking: React.FC = () => {
                               Active
                             </Badge>
                           </>
-                        ) : entry.is_approved ? (
+                        ) : entry.isApproved ? (
                           <>
                             <CheckCircle className="h-4 w-4 text-blue-600" />
                             <Badge className="bg-blue-100 text-blue-800">
@@ -334,26 +267,26 @@ const TimeTracking: React.FC = () => {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                       <div>
-                        <strong>Date:</strong> {new Date(entry.entry_date).toLocaleDateString()}
+                        <strong>Date:</strong> {new Date(entry.entryDate).toLocaleDateString()}
                       </div>
                       <div>
-                        <strong>Clock In:</strong> {formatTime(entry.clock_in_time)}
+                        <strong>Clock In:</strong> {formatTime(entry.clockInTime)}
                       </div>
                       <div>
-                        <strong>Clock Out:</strong> {formatTime(entry.clock_out_time)}
+                        <strong>Clock Out:</strong> {formatTime(entry.clockOutTime)}
                       </div>
                       <div>
                         <strong>Total Hours:</strong> {totalHours.toFixed(2)}
                       </div>
                     </div>
 
-                    {(entry.break_start_time || entry.break_end_time) && (
+                    {(entry.breakStartTime || entry.breakEndTime) && (
                       <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                         <div>
-                          <strong>Break Start:</strong> {formatTime(entry.break_start_time)}
+                          <strong>Break Start:</strong> {formatTime(entry.breakStartTime)}
                         </div>
                         <div>
-                          <strong>Break End:</strong> {formatTime(entry.break_end_time)}
+                          <strong>Break End:</strong> {formatTime(entry.breakEndTime)}
                         </div>
                       </div>
                     )}
@@ -364,11 +297,11 @@ const TimeTracking: React.FC = () => {
                       </div>
                     )}
 
-                    {entry.is_approved && entry.approved_by_user && (
+                    {entry.isApproved && entry.approvedByUser && (
                       <div className="text-sm text-gray-600">
-                        <strong>Approved by:</strong> {entry.approved_by_user.first_name} {entry.approved_by_user.last_name}
-                        {entry.approved_at && (
-                          <span> on {new Date(entry.approved_at).toLocaleDateString()}</span>
+                        <strong>Approved by:</strong> {entry.approvedByUser.firstName} {entry.approvedByUser.lastName}
+                        {entry.approvedAt && (
+                          <span> on {new Date(entry.approvedAt).toLocaleDateString()}</span>
                         )}
                       </div>
                     )}

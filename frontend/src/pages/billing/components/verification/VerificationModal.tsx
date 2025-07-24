@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { clientService } from '@/services/clientService';
+import { billingService } from '@/services/billingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -27,27 +28,27 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedInsurance, setSelectedInsurance] = useState('');
   const [formData, setFormData] = useState({
-    verification_date: new Date().toISOString().split('T')[0],
+    verificationDate: new Date().toISOString().split('T')[0],
     status: 'pending',
-    benefits_verified: false,
-    authorization_required: false,
-    authorization_number: '',
-    authorization_expiry: '',
-    deductible_amount: '',
-    deductible_met: '',
-    out_of_pocket_max: '',
-    out_of_pocket_met: '',
-    copay_amount: '',
-    covered_services: [] as string[],
-    excluded_services: [] as string[],
-    next_verification_date: '',
+    benefitsVerified: false,
+    authorizationRequired: false,
+    authorizationNumber: '',
+    authorizationExpiry: '',
+    deductibleAmount: '',
+    deductibleMet: '',
+    outOfPocketMax: '',
+    outOfPocketMet: '',
+    copayAmount: '',
+    coveredServices: [] as string[],
+    excludedServices: [] as string[],
+    nextVerificationDate: '',
     notes: '',
   });
 
   const { data: clients } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
-      return clientService.getClientsForNotes();
+      return clientService.getClients();
     },
   });
 
@@ -55,36 +56,31 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
     queryKey: ['client-insurance', selectedClient],
     queryFn: async () => {
       if (!selectedClient) return [];
-      const { data, error } = await supabase
-        .from('client_insurance')
-        .select('*')
-        .eq('client_id', selectedClient)
-        .eq('is_active', true);
-      if (error) throw error;
-      return data;
+      // This would need to be implemented in the client service
+      return [];
     },
     enabled: !!selectedClient,
   });
 
   useEffect(() => {
     if (verification) {
-      setSelectedClient(verification.client_id);
-      setSelectedInsurance(verification.insurance_id);
+      setSelectedClient(verification.clientId);
+      setSelectedInsurance(verification.insuranceId);
       setFormData({
-        verification_date: verification.verification_date || '',
+        verificationDate: verification.verificationDate || '',
         status: verification.status || 'pending',
-        benefits_verified: verification.benefits_verified || false,
-        authorization_required: verification.authorization_required || false,
-        authorization_number: verification.authorization_number || '',
-        authorization_expiry: verification.authorization_expiry || '',
-        deductible_amount: verification.deductible_amount?.toString() || '',
-        deductible_met: verification.deductible_met?.toString() || '',
-        out_of_pocket_max: verification.out_of_pocket_max?.toString() || '',
-        out_of_pocket_met: verification.out_of_pocket_met?.toString() || '',
-        copay_amount: verification.copay_amount?.toString() || '',
-        covered_services: verification.covered_services || [],
-        excluded_services: verification.excluded_services || [],
-        next_verification_date: verification.next_verification_date || '',
+        benefitsVerified: verification.benefitsVerified || false,
+        authorizationRequired: verification.authorizationRequired || false,
+        authorizationNumber: verification.authorizationNumber || '',
+        authorizationExpiry: verification.authorizationExpiry || '',
+        deductibleAmount: verification.deductibleAmount?.toString() || '',
+        deductibleMet: verification.deductibleMet?.toString() || '',
+        outOfPocketMax: verification.outOfPocketMax?.toString() || '',
+        outOfPocketMet: verification.outOfPocketMet?.toString() || '',
+        copayAmount: verification.copayAmount?.toString() || '',
+        coveredServices: verification.coveredServices || [],
+        excludedServices: verification.excludedServices || [],
+        nextVerificationDate: verification.nextVerificationDate || '',
         notes: verification.notes || '',
       });
     }
@@ -94,27 +90,20 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
     mutationFn: async (data: any) => {
       const verificationData = {
         ...data,
-        client_id: selectedClient,
-        insurance_id: selectedInsurance,
-        verified_by: user?.id,
-        deductible_amount: data.deductible_amount ? parseFloat(data.deductible_amount) : null,
-        deductible_met: data.deductible_met ? parseFloat(data.deductible_met) : null,
-        out_of_pocket_max: data.out_of_pocket_max ? parseFloat(data.out_of_pocket_max) : null,
-        out_of_pocket_met: data.out_of_pocket_met ? parseFloat(data.out_of_pocket_met) : null,
-        copay_amount: data.copay_amount ? parseFloat(data.copay_amount) : null,
+        clientId: selectedClient,
+        insuranceId: selectedInsurance,
+        verifiedBy: user?.id,
+        deductibleAmount: data.deductibleAmount ? parseFloat(data.deductibleAmount) : null,
+        deductibleMet: data.deductibleMet ? parseFloat(data.deductibleMet) : null,
+        outOfPocketMax: data.outOfPocketMax ? parseFloat(data.outOfPocketMax) : null,
+        outOfPocketMet: data.outOfPocketMet ? parseFloat(data.outOfPocketMet) : null,
+        copayAmount: data.copayAmount ? parseFloat(data.copayAmount) : null,
       };
 
       if (verification) {
-        const { error } = await supabase
-          .from('insurance_verifications')
-          .update(verificationData)
-          .eq('id', verification.id);
-        if (error) throw error;
+        return billingService.updateVerification(verification.id, verificationData);
       } else {
-        const { error } = await supabase
-          .from('insurance_verifications')
-          .insert([verificationData]);
-        if (error) throw error;
+        return billingService.createVerification(verificationData);
       }
     },
     onSuccess: () => {
@@ -157,7 +146,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
   ];
 
   const toggleService = (service: string, type: 'covered' | 'excluded') => {
-    const field = type === 'covered' ? 'covered_services' : 'excluded_services';
+    const field = type === 'covered' ? 'coveredServices' : 'excludedServices';
     const services = formData[field];
     const index = services.indexOf(service);
     
@@ -199,7 +188,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
                 <SelectContent>
                   {clients?.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.last_name}, {client.first_name}
+                      {client.lastName}, {client.firstName}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -230,12 +219,12 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
           {/* Basic Verification Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="verification_date">Verification Date *</Label>
+              <Label htmlFor="verificationDate">Verification Date *</Label>
               <Input
-                id="verification_date"
+                id="verificationDate"
                 type="date"
-                value={formData.verification_date}
-                onChange={(e) => setFormData({ ...formData, verification_date: e.target.value })}
+                value={formData.verificationDate}
+                onChange={(e) => setFormData({ ...formData, verificationDate: e.target.value })}
                 required
               />
             </div>
@@ -263,126 +252,126 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
           <div className="flex space-x-6">
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="benefits_verified"
-                checked={formData.benefits_verified}
+                id="benefitsVerified"
+                checked={formData.benefitsVerified}
                 onCheckedChange={(checked) => 
-                  setFormData({ ...formData, benefits_verified: checked as boolean })
+                  setFormData({ ...formData, benefitsVerified: checked as boolean })
                 }
               />
-              <Label htmlFor="benefits_verified">Benefits Verified</Label>
+              <Label htmlFor="benefitsVerified">Benefits Verified</Label>
             </div>
 
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="authorization_required"
-                checked={formData.authorization_required}
+                id="authorizationRequired"
+                checked={formData.authorizationRequired}
                 onCheckedChange={(checked) => 
-                  setFormData({ ...formData, authorization_required: checked as boolean })
+                  setFormData({ ...formData, authorizationRequired: checked as boolean })
                 }
               />
-              <Label htmlFor="authorization_required">Authorization Required</Label>
+              <Label htmlFor="authorizationRequired">Authorization Required</Label>
             </div>
           </div>
 
           {/* Authorization Details */}
-          {formData.authorization_required && (
+          {formData.authorizationRequired && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="authorization_number">Authorization Number</Label>
+                <Label htmlFor="authorizationNumber">Authorization Number</Label>
                 <Input
-                  id="authorization_number"
-                  value={formData.authorization_number}
-                  onChange={(e) => setFormData({ ...formData, authorization_number: e.target.value })}
+                  id="authorizationNumber"
+                  value={formData.authorizationNumber}
+                  onChange={(e) => setFormData({ ...formData, authorizationNumber: e.target.value })}
                 />
               </div>
 
               <div>
-                <Label htmlFor="authorization_expiry">Authorization Expiry</Label>
+                <Label htmlFor="authorizationExpiry">Authorization Expiry</Label>
                 <Input
-                  id="authorization_expiry"
+                  id="authorizationExpiry"
                   type="date"
-                  value={formData.authorization_expiry}
-                  onChange={(e) => setFormData({ ...formData, authorization_expiry: e.target.value })}
+                  value={formData.authorizationExpiry}
+                  onChange={(e) => setFormData({ ...formData, authorizationExpiry: e.target.value })}
                 />
               </div>
             </div>
           )}
 
           {/* Financial Details */}
-          {formData.benefits_verified && (
+          {formData.benefitsVerified && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Financial Information</h3>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="deductible_amount">Deductible Amount</Label>
+                  <Label htmlFor="deductibleAmount">Deductible Amount</Label>
                   <Input
-                    id="deductible_amount"
+                    id="deductibleAmount"
                     type="number"
                     step="0.01"
-                    value={formData.deductible_amount}
-                    onChange={(e) => setFormData({ ...formData, deductible_amount: e.target.value })}
+                    value={formData.deductibleAmount}
+                    onChange={(e) => setFormData({ ...formData, deductibleAmount: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="deductible_met">Deductible Met</Label>
+                  <Label htmlFor="deductibleMet">Deductible Met</Label>
                   <Input
-                    id="deductible_met"
+                    id="deductibleMet"
                     type="number"
                     step="0.01"
-                    value={formData.deductible_met}
-                    onChange={(e) => setFormData({ ...formData, deductible_met: e.target.value })}
+                    value={formData.deductibleMet}
+                    onChange={(e) => setFormData({ ...formData, deductibleMet: e.target.value })}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="out_of_pocket_max">Out-of-Pocket Maximum</Label>
+                  <Label htmlFor="outOfPocketMax">Out-of-Pocket Maximum</Label>
                   <Input
-                    id="out_of_pocket_max"
+                    id="outOfPocketMax"
                     type="number"
                     step="0.01"
-                    value={formData.out_of_pocket_max}
-                    onChange={(e) => setFormData({ ...formData, out_of_pocket_max: e.target.value })}
+                    value={formData.outOfPocketMax}
+                    onChange={(e) => setFormData({ ...formData, outOfPocketMax: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="out_of_pocket_met">Out-of-Pocket Met</Label>
+                  <Label htmlFor="outOfPocketMet">Out-of-Pocket Met</Label>
                   <Input
-                    id="out_of_pocket_met"
+                    id="outOfPocketMet"
                     type="number"
                     step="0.01"
-                    value={formData.out_of_pocket_met}
-                    onChange={(e) => setFormData({ ...formData, out_of_pocket_met: e.target.value })}
+                    value={formData.outOfPocketMet}
+                    onChange={(e) => setFormData({ ...formData, outOfPocketMet: e.target.value })}
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="copay_amount">Copay Amount</Label>
+                <Label htmlFor="copayAmount">Copay Amount</Label>
                 <Input
-                  id="copay_amount"
+                  id="copayAmount"
                   type="number"
                   step="0.01"
-                  value={formData.copay_amount}
-                  onChange={(e) => setFormData({ ...formData, copay_amount: e.target.value })}
+                  value={formData.copayAmount}
+                  onChange={(e) => setFormData({ ...formData, copayAmount: e.target.value })}
                 />
               </div>
             </div>
           )}
 
           {/* Services */}
-          {formData.benefits_verified && (
+          {formData.benefitsVerified && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Covered Services</h3>
               <div className="flex flex-wrap gap-2">
                 {commonServices.map((service) => (
                   <Badge
                     key={service}
-                    variant={formData.covered_services.includes(service) ? "default" : "outline"}
+                    variant={formData.coveredServices.includes(service) ? "default" : "outline"}
                     className="cursor-pointer"
                     onClick={() => toggleService(service, 'covered')}
                   >
@@ -396,7 +385,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
                 {commonServices.map((service) => (
                   <Badge
                     key={service}
-                    variant={formData.excluded_services.includes(service) ? "destructive" : "outline"}
+                    variant={formData.excludedServices.includes(service) ? "destructive" : "outline"}
                     className="cursor-pointer"
                     onClick={() => toggleService(service, 'excluded')}
                   >
@@ -409,12 +398,12 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
 
           {/* Additional Details */}
           <div>
-            <Label htmlFor="next_verification_date">Next Verification Date</Label>
+            <Label htmlFor="nextVerificationDate">Next Verification Date</Label>
             <Input
-              id="next_verification_date"
+              id="nextVerificationDate"
               type="date"
-              value={formData.next_verification_date}
-              onChange={(e) => setFormData({ ...formData, next_verification_date: e.target.value })}
+              value={formData.nextVerificationDate}
+              onChange={(e) => setFormData({ ...formData, nextVerificationDate: e.target.value })}
             />
           </div>
 

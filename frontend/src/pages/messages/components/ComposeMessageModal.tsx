@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Send } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { clientService } from '@/services/clientService';
+import { messageService } from '@/services/messageService';
 import { useToast } from '@/hooks/use-toast';
 import ComposeMessageForm from './compose/ComposeMessageForm';
 import ComposeMessageActions from './compose/ComposeMessageActions';
@@ -61,64 +62,12 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
         throw new Error('Client and message content are required');
       }
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
-
-      const { data: userRecord } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (!userRecord) throw new Error('User record not found');
-
-      // Find or create conversation
-      let { data: conversation } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('client_id', selectedClientId)
-        .eq('therapist_id', userRecord.id)
-        .single();
-
-      if (!conversation) {
-        const { data: newConversation, error: conversationError } = await supabase
-          .from('conversations')
-          .insert({
-            client_id: selectedClientId,
-            therapist_id: userRecord.id,
-            category: messageCategory,
-            priority: messagePriority,
-            created_by: userRecord.id,
-            title: 'Quick Message'
-          })
-          .select('id')
-          .single();
-
-        if (conversationError) throw conversationError;
-        conversation = newConversation;
-      }
-
-      // Send message
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversation.id,
-          sender_id: userRecord.id,
-          content: messageContent.trim(),
-          priority: messagePriority,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update conversation's last_message_at
-      await supabase
-        .from('conversations')
-        .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conversation.id);
-
-      return data;
+      return messageService.sendQuickMessage({
+        clientId: selectedClientId,
+        content: messageContent.trim(),
+        category: messageCategory,
+        priority: messagePriority,
+      });
     },
     onSuccess: () => {
       toast({

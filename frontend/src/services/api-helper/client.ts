@@ -7,7 +7,7 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -42,30 +42,30 @@ class ApiClient {
     );
   }
 
-  // Generic request methods
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.get(url, config);
-    return response.data;
+  // Generic request methods that return the full response
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.client.get<T>(url, config);
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.post(url, data, config);
-    return response.data;
+  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.client.post<T>(url, data, config);
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.put(url, data, config);
-    return response.data;
+  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.client.put<T>(url, data, config);
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.patch(url, data, config);
-    return response.data;
+  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.client.patch<T>(url, data, config);
   }
 
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.delete(url, config);
-    return response.data;
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.client.delete<T>(url, config);
+  }
+
+  // Expose the axios instance for direct access
+  get defaults() {
+    return this.client.defaults;
   }
 }
 

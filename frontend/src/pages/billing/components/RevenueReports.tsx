@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, DollarSign, Users, Calendar } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService } from '@/services/billingService';
 
 const RevenueReports: React.FC = () => {
   const [timeRange, setTimeRange] = useState('30');
@@ -14,65 +14,7 @@ const RevenueReports: React.FC = () => {
   const { data: revenueData, isLoading } = useQuery({
     queryKey: ['revenue-reports', timeRange, reportType],
     queryFn: async () => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - parseInt(timeRange));
-
-      // Fetch payment data for revenue calculations
-      const { data: payments, error } = await supabase
-        .from('payments')
-        .select(`
-          *,
-          clients (first_name, last_name),
-          payers (name),
-          users!payments_processed_by_fkey (first_name, last_name)
-        `)
-        .eq('status', 'completed')
-        .gte('payment_date', startDate.toISOString().split('T')[0])
-        .lte('payment_date', endDate.toISOString().split('T')[0]);
-
-      if (error) throw error;
-
-      // Calculate revenue metrics
-      const totalRevenue = payments?.reduce((sum, payment) => sum + parseFloat(payment.payment_amount.toString()), 0) || 0;
-      const totalPayments = payments?.length || 0;
-      const averagePayment = totalPayments > 0 ? totalRevenue / totalPayments : 0;
-
-      // Group by date for trend analysis
-      const dailyRevenue = payments?.reduce((acc: any, payment) => {
-        const date = payment.payment_date;
-        if (!acc[date]) {
-          acc[date] = { date, revenue: 0, count: 0 };
-        }
-        acc[date].revenue += parseFloat(payment.payment_amount.toString());
-        acc[date].count += 1;
-        return acc;
-      }, {});
-
-      const trendData = Object.values(dailyRevenue || {}).sort((a: any, b: any) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-
-      // Group by payer
-      const payerRevenue = payments?.reduce((acc: any, payment) => {
-        const payerName = payment.payers?.name || 'Patient Pay';
-        if (!acc[payerName]) {
-          acc[payerName] = { name: payerName, revenue: 0, count: 0 };
-        }
-        acc[payerName].revenue += parseFloat(payment.payment_amount.toString());
-        acc[payerName].count += 1;
-        return acc;
-      }, {});
-
-      const payerData = Object.values(payerRevenue || {});
-
-      return {
-        totalRevenue,
-        totalPayments,
-        averagePayment,
-        trendData,
-        payerData,
-      };
+      return billingService.getRevenueReports(timeRange);
     },
   });
 

@@ -9,8 +9,8 @@ interface ConversationData {
   category: string;
   priority: string;
   client: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
 }
 
@@ -29,7 +29,7 @@ const MessageThreadHeader: React.FC<MessageThreadHeaderProps> = ({
       </CardTitle>
       {selectedConversation && (
         <div className="flex items-center justify-between text-purple-100 text-sm">
-          <span>Client: {selectedConversation.client.first_name} {selectedConversation.client.last_name}</span>
+          <span>Client: {selectedConversation.client.firstName} {selectedConversation.client.lastName}</span>
           <div className="flex items-center space-x-2">
             <span className="capitalize">{selectedConversation.category}</span>
             <span>•</span>

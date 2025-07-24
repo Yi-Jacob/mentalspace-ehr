@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, CreditCard, DollarSign, Calendar } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService } from '@/services/billingService';
 
 const PaymentProcessing: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,23 +16,26 @@ const PaymentProcessing: React.FC = () => {
   const { data: payments, isLoading } = useQuery({
     queryKey: ['payments', searchTerm, statusFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('payments')
-        .select(`
-          *,
-          clients (first_name, last_name),
-          claims (claim_number),
-          payers (name)
-        `)
-        .order('payment_date', { ascending: false });
-
+      // Get all payments and filter on the frontend for now
+      // In a real implementation, you might want to add search and filter parameters to the backend
+      const allPayments = await billingService.getAllPayments();
+      
+      let filteredPayments = allPayments;
+      
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        filteredPayments = filteredPayments.filter(p => p.status === statusFilter);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      if (searchTerm) {
+        // Filter by payment number or client name
+        filteredPayments = filteredPayments.filter(p => 
+          p.paymentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.client?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.client?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      return filteredPayments;
     },
   });
 
@@ -125,7 +128,7 @@ const PaymentProcessing: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">
-                      Payment #{payment.payment_number}
+                      Payment #{payment.paymentNumber}
                     </h4>
                     <Badge className={getStatusColor(payment.status)}>
                       {payment.status}
@@ -134,44 +137,44 @@ const PaymentProcessing: React.FC = () => {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
-                      <strong>Patient:</strong> {payment.clients?.first_name} {payment.clients?.last_name}
+                      <strong>Patient:</strong> {payment.client?.firstName} {payment.client?.lastName}
                     </div>
                     <div>
-                      <strong>Claim:</strong> {payment.claims?.claim_number || 'Direct Payment'}
+                      <strong>Claim:</strong> {payment.claim?.claimNumber || 'Direct Payment'}
                     </div>
                     <div>
-                      <strong>Payer:</strong> {payment.payers?.name || 'Patient'}
+                      <strong>Payer:</strong> {payment.payer?.name || 'Patient'}
                     </div>
                     <div>
-                      <strong>Date:</strong> {new Date(payment.payment_date).toLocaleDateString()}
+                      <strong>Date:</strong> {new Date(payment.paymentDate).toLocaleDateString()}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <strong>Amount:</strong> ${parseFloat(payment.payment_amount.toString()).toFixed(2)}
+                      <strong>Amount:</strong> ${parseFloat(payment.paymentAmount.toString()).toFixed(2)}
                     </div>
                     <div>
-                      <strong>Processing Fee:</strong> ${parseFloat(payment.processing_fee?.toString() || '0').toFixed(2)}
+                      <strong>Processing Fee:</strong> ${parseFloat(payment.processingFee?.toString() || '0').toFixed(2)}
                     </div>
                     <div>
-                      <strong>Net Amount:</strong> ${parseFloat(payment.net_amount?.toString() || payment.payment_amount.toString()).toFixed(2)}
+                      <strong>Net Amount:</strong> ${parseFloat(payment.netAmount?.toString() || payment.paymentAmount.toString()).toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-1">
-                      {getPaymentMethodIcon(payment.payment_method)}
-                      <span><strong>Method:</strong> {formatPaymentMethod(payment.payment_method)}</span>
+                      {getPaymentMethodIcon(payment.paymentMethod)}
+                      <span><strong>Method:</strong> {formatPaymentMethod(payment.paymentMethod)}</span>
                     </div>
                   </div>
 
-                  {payment.credit_card_last_four && (
+                  {payment.creditCardLastFour && (
                     <div className="text-sm text-gray-600">
-                      <strong>Card ending in:</strong> **** {payment.credit_card_last_four}
+                      <strong>Card ending in:</strong> **** {payment.creditCardLastFour}
                     </div>
                   )}
 
-                  {payment.reference_number && (
+                  {payment.referenceNumber && (
                     <div className="text-sm text-gray-600">
-                      <strong>Reference:</strong> {payment.reference_number}
+                      <strong>Reference:</strong> {payment.referenceNumber}
                     </div>
                   )}
 

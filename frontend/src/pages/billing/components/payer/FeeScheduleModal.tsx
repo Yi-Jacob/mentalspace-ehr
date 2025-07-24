@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, DollarSign } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { billingService, FeeSchedule, CptCode } from '@/services/billingService';
 import { useToast } from '@/hooks/use-toast';
 
 interface FeeScheduleModalProps {
@@ -24,24 +24,17 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
   const [editingFee, setEditingFee] = useState<any>(null);
   
   const [formData, setFormData] = useState({
-    cpt_code: '',
-    fee_amount: '',
-    effective_date: '',
-    expiration_date: '',
+    cptCode: '',
+    feeAmount: '',
+    effectiveDate: '',
+    expirationDate: '',
   });
 
   const { data: feeSchedules, isLoading } = useQuery({
     queryKey: ['payer-fee-schedules', payer?.id],
     queryFn: async () => {
       if (!payer?.id) return [];
-      const { data, error } = await supabase
-        .from('payer_fee_schedules')
-        .select('*')
-        .eq('payer_id', payer.id)
-        .eq('is_active', true)
-        .order('cpt_code');
-      if (error) throw error;
-      return data;
+      return billingService.getAllFeeSchedules(payer.id);
     },
     enabled: !!payer?.id,
   });
@@ -49,13 +42,7 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
   const { data: cptCodes } = useQuery({
     queryKey: ['cpt-codes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('cpt_codes')
-        .select('code, description')
-        .eq('is_active', true)
-        .order('code');
-      if (error) throw error;
-      return data;
+      return billingService.getCptCodes();
     },
   });
 
@@ -63,21 +50,14 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
     mutationFn: async (data: any) => {
       const feeData = {
         ...data,
-        payer_id: payer.id,
-        fee_amount: parseFloat(data.fee_amount),
+        payerId: payer.id,
+        feeAmount: parseFloat(data.feeAmount),
       };
 
       if (editingFee) {
-        const { error } = await supabase
-          .from('payer_fee_schedules')
-          .update(feeData)
-          .eq('id', editingFee.id);
-        if (error) throw error;
+        return billingService.updateFeeSchedule(editingFee.id, feeData);
       } else {
-        const { error } = await supabase
-          .from('payer_fee_schedules')
-          .insert([feeData]);
-        if (error) throw error;
+        return billingService.createFeeSchedule(feeData);
       }
     },
     onSuccess: () => {
@@ -99,11 +79,7 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
 
   const deleteMutation = useMutation({
     mutationFn: async (feeId: string) => {
-      const { error } = await supabase
-        .from('payer_fee_schedules')
-        .update({ is_active: false })
-        .eq('id', feeId);
-      if (error) throw error;
+      return billingService.deleteFeeSchedule(feeId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payer-fee-schedules', payer?.id] });
@@ -123,10 +99,10 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
 
   const resetForm = () => {
     setFormData({
-      cpt_code: '',
-      fee_amount: '',
-      effective_date: '',
-      expiration_date: '',
+      cptCode: '',
+      feeAmount: '',
+      effectiveDate: '',
+      expirationDate: '',
     });
     setShowForm(false);
     setEditingFee(null);
@@ -134,10 +110,10 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
 
   const handleEdit = (fee: any) => {
     setFormData({
-      cpt_code: fee.cpt_code || '',
-      fee_amount: fee.fee_amount?.toString() || '',
-      effective_date: fee.effective_date || '',
-      expiration_date: fee.expiration_date || '',
+      cptCode: fee.cptCode || '',
+      feeAmount: fee.feeAmount?.toString() || '',
+      effectiveDate: fee.effectiveDate || '',
+      expirationDate: fee.expirationDate || '',
     });
     setEditingFee(fee);
     setShowForm(true);
@@ -181,30 +157,30 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="cpt_code">CPT Code *</Label>
+                      <Label htmlFor="cptCode">CPT Code *</Label>
                       <Input
-                        id="cpt_code"
-                        value={formData.cpt_code}
-                        onChange={(e) => setFormData({ ...formData, cpt_code: e.target.value })}
+                        id="cptCode"
+                        value={formData.cptCode}
+                        onChange={(e) => setFormData({ ...formData, cptCode: e.target.value })}
                         placeholder="e.g., 90834"
                         required
                       />
-                      {formData.cpt_code && (
+                      {formData.cptCode && (
                         <p className="text-xs text-gray-600 mt-1">
-                          {getCptDescription(formData.cpt_code)}
+                          {getCptDescription(formData.cptCode)}
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <Label htmlFor="fee_amount">Fee Amount *</Label>
+                      <Label htmlFor="feeAmount">Fee Amount *</Label>
                       <Input
-                        id="fee_amount"
+                        id="feeAmount"
                         type="number"
                         step="0.01"
                         min="0"
-                        value={formData.fee_amount}
-                        onChange={(e) => setFormData({ ...formData, fee_amount: e.target.value })}
+                        value={formData.feeAmount}
+                        onChange={(e) => setFormData({ ...formData, feeAmount: e.target.value })}
                         required
                       />
                     </div>
@@ -212,23 +188,23 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="effective_date">Effective Date *</Label>
+                      <Label htmlFor="effectiveDate">Effective Date *</Label>
                       <Input
-                        id="effective_date"
+                        id="effectiveDate"
                         type="date"
-                        value={formData.effective_date}
-                        onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
+                        value={formData.effectiveDate}
+                        onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
                         required
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="expiration_date">Expiration Date</Label>
+                      <Label htmlFor="expirationDate">Expiration Date</Label>
                       <Input
-                        id="expiration_date"
+                        id="expirationDate"
                         type="date"
-                        value={formData.expiration_date}
-                        onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
+                        value={formData.expirationDate}
+                        onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
                       />
                     </div>
                   </div>
@@ -257,24 +233,24 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <h4 className="font-semibold">{fee.cpt_code}</h4>
-                            <Badge variant="outline">
-                              <DollarSign className="h-3 w-3 mr-1" />
-                              {parseFloat(fee.fee_amount.toString()).toFixed(2)}
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600">
-                            {getCptDescription(fee.cpt_code)}
-                          </p>
-                          
-                          <p className="text-sm text-gray-600">
-                            Effective: {new Date(fee.effective_date).toLocaleDateString()}
-                            {fee.expiration_date && 
-                              ` - ${new Date(fee.expiration_date).toLocaleDateString()}`
-                            }
-                          </p>
+                                                  <div className="flex items-center space-x-2">
+                          <h4 className="font-semibold">{fee.cptCode}</h4>
+                          <Badge variant="outline">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            {parseFloat(fee.feeAmount.toString()).toFixed(2)}
+                          </Badge>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600">
+                          {getCptDescription(fee.cptCode)}
+                        </p>
+                        
+                        <p className="text-sm text-gray-600">
+                          Effective: {new Date(fee.effectiveDate).toLocaleDateString()}
+                          {fee.expirationDate && 
+                            ` - ${new Date(fee.expirationDate).toLocaleDateString()}`
+                          }
+                        </p>
                         </div>
                         
                         <div className="flex space-x-2">

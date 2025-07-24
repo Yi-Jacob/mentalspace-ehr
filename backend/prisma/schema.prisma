@@ -77,7 +77,8 @@ model DiagnosisCode {
 model User {
   id          String   @id @default(uuid())
   authUserId  String?  @map("auth_user_id")
-  email       String
+  email       String   @unique
+  password    String
   firstName   String   @map("first_name")
   lastName    String   @map("last_name")
   isActive    Boolean? @map("is_active")
@@ -974,4 +975,84 @@ model ProviderSchedule {
   updatedAt       DateTime @default(now()) @map("updated_at")
 
   @@map("provider_schedules")
+}
+
+model Payer {
+  id                    String   @id @default(uuid())
+  name                  String
+  payerType             String   @map("payer_type")
+  electronicPayerId     String?  @map("electronic_payer_id")
+  addressLine1          String?  @map("address_line_1")
+  addressLine2          String?  @map("address_line_2")
+  city                  String?
+  state                 String?
+  zipCode               String?  @map("zip_code")
+  phoneNumber           String?  @map("phone_number")
+  faxNumber             String?  @map("fax_number")
+  contactPerson         String?  @map("contact_person")
+  contactEmail          String?  @map("contact_email")
+  website               String?
+  requiresAuthorization  Boolean? @map("requires_authorization")
+  notes                 String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("payers")
+}
+
+model PayerContract {
+  id                    String   @id @default(uuid())
+  payerId               String   @map("payer_id")
+  contractName          String   @map("contract_name")
+  contractNumber        String?  @map("contract_number")
+  effectiveDate         DateTime @default(now()) @map("effective_date")
+  expirationDate        DateTime? @map("expiration_date")
+  status                String?
+  reimbursementRate     Float?   @map("reimbursement_rate")
+  contractTerms         String?  @map("contract_terms")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("payer_contracts")
+}
+
+model CptCode {
+  id          String   @id @default(uuid())
+  code        String
+  description String
+  isActive    Boolean  @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("cpt_codes")
+}
+
+model PayerFeeSchedule {
+  id                    String   @id @default(uuid())
+  payerId               String   @map("payer_id")
+  cptCode               String   @map("cpt_code")
+  feeAmount             Float    @map("fee_amount")
+  effectiveDate         DateTime @default(now()) @map("effective_date")
+  expirationDate        DateTime? @map("expiration_date")
+  isActive              Boolean? @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("payer_fee_schedules")
+}
+
+model PaymentCalculation {
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  payPeriodStart        DateTime @default(now()) @map("pay_period_start")
+  payPeriodEnd          DateTime @default(now()) @map("pay_period_end")
+  totalHours            Float?   @map("total_hours")
+  totalAmount           Float?   @map("total_amount")
+  status                String?
+  processedBy           String?  @map("processed_by")
+  processedAt           DateTime @default(now()) @map("processed_at")
+  notes                 String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  @@map("payment_calculations")
 } 

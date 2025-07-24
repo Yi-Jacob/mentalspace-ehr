@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Plus, Edit, Users, DollarSign, Clock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { providerCompensationApi } from '@/services/complianceService';
 import { useToast } from '@/hooks/use-toast';
 
 const ProviderCompensationConfig: React.FC = () => {
@@ -22,70 +22,28 @@ const ProviderCompensationConfig: React.FC = () => {
   const { data: providers, isLoading: providersLoading } = useQuery({
     queryKey: ['providers'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select(`
-          *,
-          user_roles!inner(role)
-        `)
-        .eq('user_roles.role', 'Clinician')
-        .eq('user_roles.is_active', true);
-      
-      if (error) throw error;
-      return data;
+      // TODO: Implement providers API
+      return [];
     },
   });
 
   const { data: compensationConfigs, isLoading } = useQuery({
     queryKey: ['compensation-configs', selectedProvider],
     queryFn: async () => {
-      let query = supabase
-        .from('provider_compensation_config')
-        .select(`
-          *,
-          provider:users!provider_compensation_config_provider_id_fkey(first_name, last_name),
-          created_by_user:users!provider_compensation_config_created_by_fkey(first_name, last_name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (selectedProvider && selectedProvider !== 'all') {
-        query = query.eq('provider_id', selectedProvider);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      return providerCompensationApi.getAll(selectedProvider !== 'all' ? selectedProvider : undefined);
     },
   });
 
   const { data: sessionMultipliers } = useQuery({
     queryKey: ['session-multipliers', selectedProvider],
     queryFn: async () => {
-      let query = supabase
-        .from('session_rate_multipliers')
-        .select('*')
-        .order('session_type');
-
-      if (selectedProvider && selectedProvider !== 'all') {
-        query = query.eq('provider_id', selectedProvider);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      return providerCompensationApi.getSessionMultipliers(selectedProvider !== 'all' ? selectedProvider : undefined);
     },
   });
 
   const createConfigMutation = useMutation({
     mutationFn: async (configData: any) => {
-      const { data, error } = await supabase
-        .from('provider_compensation_config')
-        .insert(configData)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      return providerCompensationApi.create(configData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compensation-configs'] });
@@ -287,53 +245,53 @@ const ProviderCompensationConfig: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">
-                      {config.provider?.first_name} {config.provider?.last_name}
+                      {config.provider?.firstName} {config.provider?.lastName}
                     </h4>
-                    <Badge className={config.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                      {config.is_active ? 'Active' : 'Inactive'}
+                    <Badge className={config.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                      {config.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                     <Badge variant="outline">
-                      {config.compensation_type === 'session_based' ? 'Session Based' : 'Hourly'}
+                      {config.compensationType === 'session_based' ? 'Session Based' : 'Hourly'}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {config.base_session_rate && (
+                    {config.baseSessionRate && (
                       <div className="flex items-center space-x-2">
                         <DollarSign className="h-4 w-4 text-green-600" />
-                        <span><strong>Session Rate:</strong> ${config.base_session_rate}</span>
+                        <span><strong>Session Rate:</strong> ${config.baseSessionRate}</span>
                       </div>
                     )}
-                    {config.base_hourly_rate && (
+                    {config.baseHourlyRate && (
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-blue-600" />
-                        <span><strong>Hourly Rate:</strong> ${config.base_hourly_rate}</span>
+                        <span><strong>Hourly Rate:</strong> ${config.baseHourlyRate}</span>
                       </div>
                     )}
                     <div>
-                      <strong>Experience Tier:</strong> {config.experience_tier}
+                      <strong>Experience Tier:</strong> {config.experienceTier}
                     </div>
                     <div>
-                      <strong>Effective:</strong> {new Date(config.effective_date).toLocaleDateString()}
+                      <strong>Effective:</strong> {new Date(config.effectiveDate).toLocaleDateString()}
                     </div>
                   </div>
 
-                  {(config.evening_differential > 0 || config.weekend_differential > 0) && (
+                  {(config.eveningDifferential > 0 || config.weekendDifferential > 0) && (
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      {config.evening_differential > 0 && (
+                      {config.eveningDifferential > 0 && (
                         <div>
-                          <strong>Evening Differential:</strong> {config.evening_differential}%
+                          <strong>Evening Differential:</strong> {config.eveningDifferential}%
                         </div>
                       )}
-                      {config.weekend_differential > 0 && (
+                      {config.weekendDifferential > 0 && (
                         <div>
-                          <strong>Weekend Differential:</strong> {config.weekend_differential}%
+                          <strong>Weekend Differential:</strong> {config.weekendDifferential}%
                         </div>
                       )}
                     </div>
                   )}
 
-                  {config.is_overtime_eligible && (
+                  {config.isOvertimeEligible && (
                     <div className="text-sm">
                       <Badge variant="outline" className="text-blue-600">
                         Overtime Eligible

@@ -1,0 +1,206 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../database/prisma.service';
+
+@Injectable()
+export class ComplianceService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async getComplianceDashboard() {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get compliance deadlines
+    const deadlines = await this.prisma.complianceDeadline.findMany({
+      where: {
+        deadlineDate: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        deadlineDate: 'asc',
+      },
+    });
+
+    // Get time entries
+    const timeEntries = await this.prisma.timeEntry.findMany({
+      where: {
+        entryDate: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        approvedByUser: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Get session completions
+    const sessionCompletions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        sessionDate: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        sessionDate: 'desc',
+      },
+    });
+
+    // Calculate statistics
+    const totalDeadlines = deadlines.length;
+    const metDeadlines = deadlines.filter(d => d.isMet).length;
+    const overdueDeadlines = deadlines.filter(d => !d.isMet && d.deadlineDate < now).length;
+
+    const totalTimeEntries = timeEntries.length;
+    const approvedTimeEntries = timeEntries.filter(t => t.isApproved).length;
+    const pendingTimeEntries = timeEntries.filter(t => !t.isApproved).length;
+
+    const totalSessions = sessionCompletions.length;
+    const signedSessions = sessionCompletions.filter(s => s.isNoteSigned).length;
+    const lockedSessions = sessionCompletions.filter(s => s.isLocked).length;
+
+    return {
+      deadlines: {
+        total: totalDeadlines,
+        met: metDeadlines,
+        overdue: overdueDeadlines,
+        pending: totalDeadlines - metDeadlines - overdueDeadlines,
+        recent: deadlines.slice(0, 5),
+      },
+      timeTracking: {
+        total: totalTimeEntries,
+        approved: approvedTimeEntries,
+        pending: pendingTimeEntries,
+        recent: timeEntries.slice(0, 5),
+      },
+      sessionCompletions: {
+        total: totalSessions,
+        signed: signedSessions,
+        locked: lockedSessions,
+        pending: totalSessions - signedSessions - lockedSessions,
+        recent: sessionCompletions.slice(0, 5),
+      },
+    };
+  }
+
+  async getComplianceOverview() {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Get overdue deadlines
+    const overdueDeadlines = await this.prisma.complianceDeadline.findMany({
+      where: {
+        isMet: false,
+        deadlineDate: {
+          lt: now,
+        },
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        deadlineDate: 'asc',
+      },
+    });
+
+    // Get pending time entries
+    const pendingTimeEntries = await this.prisma.timeEntry.findMany({
+      where: {
+        isApproved: false,
+        entryDate: {
+          gte: sevenDaysAgo,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Get unsigned sessions
+    const unsignedSessions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        isNoteSigned: false,
+        isLocked: false,
+        sessionDate: {
+          gte: sevenDaysAgo,
+        },
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        sessionDate: 'desc',
+      },
+    });
+
+    return {
+      overdueDeadlines: overdueDeadlines.length,
+      pendingTimeEntries: pendingTimeEntries.length,
+      unsignedSessions: unsignedSessions.length,
+      urgentItems: [
+        ...overdueDeadlines.slice(0, 3),
+        ...pendingTimeEntries.slice(0, 3),
+        ...unsignedSessions.slice(0, 3),
+      ],
+    };
+  }
+} 
