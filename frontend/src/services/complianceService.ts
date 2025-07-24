@@ -208,22 +208,22 @@ export const timeTrackingApi = {
     if (date) params.append('date', date);
     if (userId) params.append('userId', userId);
     
-    const response = await apiClient.get(`/compliance/time-tracking?${params.toString()}`);
+    const response = await apiClient.get<TimeEntry[]>(`/compliance/time-tracking?${params.toString()}`);
     return response.data;
   },
 
   getById: async (id: string): Promise<TimeEntry> => {
-    const response = await apiClient.get(`/compliance/time-tracking/${id}`);
+    const response = await apiClient.get<TimeEntry>(`/compliance/time-tracking/${id}`);
     return response.data;
   },
 
   create: async (data: CreateTimeEntryData): Promise<TimeEntry> => {
-    const response = await apiClient.post('/compliance/time-tracking', data);
+    const response = await apiClient.post<TimeEntry>('/compliance/time-tracking', data);
     return response.data;
   },
 
   update: async (id: string, data: Partial<CreateTimeEntryData>): Promise<TimeEntry> => {
-    const response = await apiClient.put(`/compliance/time-tracking/${id}`, data);
+    const response = await apiClient.put<TimeEntry>(`/compliance/time-tracking/${id}`, data);
     return response.data;
   },
 
@@ -232,17 +232,17 @@ export const timeTrackingApi = {
   },
 
   clockIn: async (userId: string): Promise<TimeEntry> => {
-    const response = await apiClient.post('/compliance/time-tracking/clock-in', { userId });
+    const response = await apiClient.post<TimeEntry>('/compliance/time-tracking/clock-in', { userId });
     return response.data;
   },
 
   clockOut: async (id: string): Promise<TimeEntry> => {
-    const response = await apiClient.post(`/compliance/time-tracking/${id}/clock-out`);
+    const response = await apiClient.post<TimeEntry>(`/compliance/time-tracking/${id}/clock-out`);
     return response.data;
   },
 
   approve: async (id: string, approvedBy: string): Promise<TimeEntry> => {
-    const response = await apiClient.post(`/compliance/time-tracking/${id}/approve`, { approvedBy });
+    const response = await apiClient.post<TimeEntry>(`/compliance/time-tracking/${id}/approve`, { approvedBy });
     return response.data;
   },
 };
@@ -254,22 +254,22 @@ export const complianceDeadlinesApi = {
     if (status) params.append('status', status);
     if (providerId) params.append('providerId', providerId);
     
-    const response = await apiClient.get(`/compliance/deadlines?${params.toString()}`);
+    const response = await apiClient.get<ComplianceDeadline[]>(`/compliance/deadlines?${params.toString()}`);
     return response.data;
   },
 
   getById: async (id: string): Promise<ComplianceDeadline> => {
-    const response = await apiClient.get(`/compliance/deadlines/${id}`);
+    const response = await apiClient.get<ComplianceDeadline>(`/compliance/deadlines/${id}`);
     return response.data;
   },
 
   create: async (data: CreateComplianceDeadlineData): Promise<ComplianceDeadline> => {
-    const response = await apiClient.post('/compliance/deadlines', data);
+    const response = await apiClient.post<ComplianceDeadline>('/compliance/deadlines', data);
     return response.data;
   },
 
   update: async (id: string, data: Partial<CreateComplianceDeadlineData>): Promise<ComplianceDeadline> => {
-    const response = await apiClient.put(`/compliance/deadlines/${id}`, data);
+    const response = await apiClient.put<ComplianceDeadline>(`/compliance/deadlines/${id}`, data);
     return response.data;
   },
 
@@ -278,12 +278,12 @@ export const complianceDeadlinesApi = {
   },
 
   markAsMet: async (id: string): Promise<ComplianceDeadline> => {
-    const response = await apiClient.post(`/compliance/deadlines/${id}/mark-met`);
+    const response = await apiClient.post<ComplianceDeadline>(`/compliance/deadlines/${id}/mark-met`);
     return response.data;
   },
 
   sendReminders: async (): Promise<{ message: string; remindersSent: any[] }> => {
-    const response = await apiClient.post('/compliance/deadlines/send-reminders');
+    const response = await apiClient.post<{ message: string; remindersSent: any[] }>('/compliance/deadlines/send-reminders');
     return response.data;
   },
 };
@@ -296,22 +296,22 @@ export const sessionCompletionsApi = {
     if (providerId) params.append('providerId', providerId);
     if (clientId) params.append('clientId', clientId);
     
-    const response = await apiClient.get(`/compliance/session-completions?${params.toString()}`);
+    const response = await apiClient.get<SessionCompletion[]>(`/compliance/session-completions?${params.toString()}`);
     return response.data;
   },
 
   getById: async (id: string): Promise<SessionCompletion> => {
-    const response = await apiClient.get(`/compliance/session-completions/${id}`);
+    const response = await apiClient.get<SessionCompletion>(`/compliance/session-completions/${id}`);
     return response.data;
   },
 
   create: async (data: CreateSessionCompletionData): Promise<SessionCompletion> => {
-    const response = await apiClient.post('/compliance/session-completions', data);
+    const response = await apiClient.post<SessionCompletion>('/compliance/session-completions', data);
     return response.data;
   },
 
   update: async (id: string, data: Partial<CreateSessionCompletionData>): Promise<SessionCompletion> => {
-    const response = await apiClient.put(`/compliance/session-completions/${id}`, data);
+    const response = await apiClient.put<SessionCompletion>(`/compliance/session-completions/${id}`, data);
     return response.data;
   },
 
@@ -320,17 +320,17 @@ export const sessionCompletionsApi = {
   },
 
   signNote: async (id: string, signedBy: string): Promise<SessionCompletion> => {
-    const response = await apiClient.post(`/compliance/session-completions/${id}/sign-note`, { signedBy });
+    const response = await apiClient.post<SessionCompletion>(`/compliance/session-completions/${id}/sign-note`, { signedBy });
     return response.data;
   },
 
   lockSession: async (id: string, lockedBy: string, reason?: string): Promise<SessionCompletion> => {
-    const response = await apiClient.post(`/compliance/session-completions/${id}/lock-session`, { lockedBy, reason });
+    const response = await apiClient.post<SessionCompletion>(`/compliance/session-completions/${id}/lock-session`, { lockedBy, reason });
     return response.data;
   },
 
   supervisorOverride: async (id: string, overrideBy: string, reason: string): Promise<SessionCompletion> => {
-    const response = await apiClient.post(`/compliance/session-completions/${id}/supervisor-override`, { overrideBy, reason });
+    const response = await apiClient.post<SessionCompletion>(`/compliance/session-completions/${id}/supervisor-override`, { overrideBy, reason });
     return response.data;
   },
 };
@@ -423,6 +423,15 @@ export const complianceApi = {
 
   getOverview: async (): Promise<any> => {
     const response = await apiClient.get('/compliance/overview');
+    return response.data;
+  },
+
+  getMetrics: async (): Promise<{
+    completion_rate: number;
+    overdue_rate: number;
+    avg_completion_time: number;
+  }> => {
+    const response = await apiClient.get('/compliance/metrics');
     return response.data;
   },
 }; 

@@ -203,4 +203,65 @@ export class ComplianceService {
       ],
     };
   }
+
+  async getComplianceMetrics(userId: string) {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get compliance deadlines for the user
+    const deadlines = await this.prisma.complianceDeadline.findMany({
+      where: {
+        providerId: userId,
+        deadlineDate: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+
+    // Get time entries for the user
+    const timeEntries = await this.prisma.timeEntry.findMany({
+      where: {
+        userId: userId,
+        entryDate: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+
+    // Get session completions for the user
+    const sessionCompletions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId: userId,
+        sessionDate: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+
+    // Calculate metrics
+    const totalDeadlines = deadlines.length;
+    const metDeadlines = deadlines.filter(d => d.isMet).length;
+    const overdueDeadlines = deadlines.filter(d => !d.isMet && d.deadlineDate < now).length;
+    const completionRate = totalDeadlines > 0 ? (metDeadlines / totalDeadlines) * 100 : 0;
+    const overdueRate = totalDeadlines > 0 ? (overdueDeadlines / totalDeadlines) * 100 : 0;
+
+    // Calculate average completion time (in days)
+    const completedDeadlines = deadlines.filter(d => d.isMet);
+    let avgCompletionTime = 0;
+    if (completedDeadlines.length > 0) {
+      const totalCompletionTime = completedDeadlines.reduce((sum, deadline) => {
+        const completionDate = deadline.updatedAt;
+        const deadlineDate = deadline.deadlineDate;
+        const daysDiff = Math.ceil((completionDate.getTime() - deadlineDate.getTime()) / (1000 * 60 * 60 * 24));
+        return sum + Math.max(0, daysDiff); // Only count positive days (completed on time or early)
+      }, 0);
+      avgCompletionTime = totalCompletionTime / completedDeadlines.length;
+    }
+
+    return {
+      completion_rate: Math.round(completionRate * 100) / 100, // Round to 2 decimal places
+      overdue_rate: Math.round(overdueRate * 100) / 100,
+      avg_completion_time: Math.round(avgCompletionTime * 100) / 100,
+    };
+  }
 } 

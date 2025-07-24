@@ -225,4 +225,155 @@ export class UsersService {
       where: { id },
     });
   }
+
+  // User Roles methods
+  async getCurrentUserRoles(userId: string) {
+    const userRoles = await this.prisma.userRole.findMany({
+      where: {
+        userId: userId,
+        isActive: true,
+      },
+      select: {
+        role: true,
+        assignedAt: true,
+        assignedBy: true,
+      },
+    });
+
+    return userRoles.map(ur => ({
+      role: ur.role,
+      assignedAt: ur.assignedAt,
+      assignedBy: ur.assignedBy,
+    }));
+  }
+
+  async assignRole(userId: string, role: string, assignedBy: string) {
+    // Check if role already exists and is active
+    const existingRole = await this.prisma.userRole.findFirst({
+      where: {
+        userId: userId,
+        role: role,
+        isActive: true,
+      },
+    });
+
+    if (existingRole) {
+      throw new BadRequestException('User already has this role');
+    }
+
+    // Create new role assignment
+    const userRole = await this.prisma.userRole.create({
+      data: {
+        userId: userId,
+        role: role,
+        assignedBy: assignedBy,
+        isActive: true,
+      },
+    });
+
+    return userRole;
+  }
+
+  async removeRole(userId: string, role: string) {
+    const userRole = await this.prisma.userRole.findFirst({
+      where: {
+        userId: userId,
+        role: role,
+        isActive: true,
+      },
+    });
+
+    if (!userRole) {
+      throw new NotFoundException('Role not found for user');
+    }
+
+    // Soft delete by setting isActive to false
+    return this.prisma.userRole.update({
+      where: { id: userRole.id },
+      data: { isActive: false },
+    });
+  }
+
+  // Performance Metrics methods
+  async getPerformanceMetrics(userId?: string) {
+    const whereClause = userId ? { userId: userId } : {};
+
+    const metrics = await this.prisma.performanceMetric.findMany({
+      where: whereClause,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        reviewer: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        periodStart: 'desc',
+      },
+    });
+
+    return metrics.map(metric => ({
+      id: metric.id,
+      user_id: metric.userId,
+      metric_type: metric.metricType,
+      metric_value: metric.metricValue,
+      target_value: metric.targetValue,
+      measurement_period: metric.measurementPeriod,
+      period_start: metric.periodStart,
+      period_end: metric.periodEnd,
+      notes: metric.notes,
+      reviewed_by: metric.reviewedBy,
+      reviewed_at: metric.reviewedAt,
+      created_at: metric.createdAt,
+      user: metric.user,
+      reviewer: metric.reviewer,
+    }));
+  }
+
+  async createPerformanceMetric(metricData: any, createdBy: string) {
+    const metric = await this.prisma.performanceMetric.create({
+      data: {
+        userId: metricData.userId || createdBy,
+        metricType: metricData.metric_type,
+        metricValue: metricData.metric_value,
+        targetValue: metricData.target_value,
+        measurementPeriod: metricData.measurement_period,
+        periodStart: new Date(metricData.period_start),
+        periodEnd: new Date(metricData.period_end),
+        notes: metricData.notes,
+        reviewedBy: metricData.reviewed_by,
+        reviewedAt: metricData.reviewed_at ? new Date(metricData.reviewed_at) : null,
+      },
+    });
+
+    return metric;
+  }
+
+  async updatePerformanceMetric(id: string, updates: any) {
+    const updateData: any = {};
+
+    if (updates.metric_type) updateData.metricType = updates.metric_type;
+    if (updates.metric_value !== undefined) updateData.metricValue = updates.metric_value;
+    if (updates.target_value !== undefined) updateData.targetValue = updates.target_value;
+    if (updates.measurement_period) updateData.measurementPeriod = updates.measurement_period;
+    if (updates.period_start) updateData.periodStart = new Date(updates.period_start);
+    if (updates.period_end) updateData.periodEnd = new Date(updates.period_end);
+    if (updates.notes !== undefined) updateData.notes = updates.notes;
+    if (updates.reviewed_by) updateData.reviewedBy = updates.reviewed_by;
+    if (updates.reviewed_at) updateData.reviewedAt = new Date(updates.reviewed_at);
+
+    const metric = await this.prisma.performanceMetric.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return metric;
+  }
 } 

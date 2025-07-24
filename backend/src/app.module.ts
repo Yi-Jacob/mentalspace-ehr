@@ -12,6 +12,8 @@ import { BillingModule } from './billing/billing.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { MessagesModule } from './messages/messages.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
+import { ReportsModule } from './reports/reports.module';
+import { ProductivityGoalsModule } from './productivity-goals/productivity-goals.module';
 import { DatabaseModule } from './database/database.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { LoggerModule } from './common/logger/logger.module';
@@ -41,6 +43,8 @@ import { HealthModule } from './health/health.module';
     ComplianceModule,
     MessagesModule,
     SchedulingModule,
+    ReportsModule,
+    ProductivityGoalsModule,
     HealthModule,
   ],
   controllers: [AppController],

@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { complianceApi } from '@/services/complianceService';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ComplianceMetrics {
@@ -17,12 +17,7 @@ export const useComplianceMetrics = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
       
-      const { data, error } = await supabase
-        .rpc('calculate_compliance_metrics', { user_uuid: user.id });
-
-      if (error) throw error;
-      
-      return data[0] as ComplianceMetrics;
+      return await complianceApi.getMetrics();
     },
     enabled: !!user,
   });
