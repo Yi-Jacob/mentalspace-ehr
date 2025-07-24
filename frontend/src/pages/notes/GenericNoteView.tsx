@@ -6,35 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Edit, User, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 
 const GenericNoteView = () => {
   const { noteId } = useParams();
   const navigate = useNavigate();
 
   const { data: note, isLoading } = useQuery({
-    queryKey: ['clinical-note', noteId],
+    queryKey: ['note', noteId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients!inner(
-            id,
-            first_name,
-            last_name,
-            date_of_birth
-          ),
-          users!clinical_notes_provider_id_fkey(
-            first_name,
-            last_name
-          )
-        `)
-        .eq('id', noteId)
-        .single();
-
-      if (error) throw error;
-      return data;
+      if (!noteId) return null;
+      return await noteService.getNote(noteId);
     },
     enabled: !!noteId,
   });
@@ -80,9 +62,6 @@ const GenericNoteView = () => {
     ).join(' ');
   };
 
-  const client = note.clients;
-  const provider = note.users;
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
@@ -99,7 +78,7 @@ const GenericNoteView = () => {
               {note.status.replace('_', ' ').toUpperCase()}
             </Badge>
             <Badge variant="outline">
-              {formatNoteType(note.note_type)}
+              {formatNoteType(note.noteType)}
             </Badge>
           </div>
         </div>
@@ -110,22 +89,22 @@ const GenericNoteView = () => {
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-1">
                 <User className="w-4 h-4" />
-                <span>{client?.first_name} {client?.last_name}</span>
+                <span>Client ID: {note.clientId}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                <span>{format(new Date(note.created_at), 'PPP')}</span>
+                <span>{format(new Date(note.createdAt), 'PPP')}</span>
               </div>
               <div className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
-                <span>By {provider?.first_name} {provider?.last_name}</span>
+                <span>Provider ID: {note.providerId}</span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
             <Button 
               variant="outline"
-              onClick={() => navigate(`/client/${note.client_id}`)}
+              onClick={() => navigate(`/client/${note.clientId}`)}
             >
               <User className="w-4 h-4 mr-2" />
               View Client Chart
@@ -187,22 +166,24 @@ const GenericNoteView = () => {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium text-gray-900">Created:</span>
-                <p className="text-gray-600">{format(new Date(note.created_at), 'PPP p')}</p>
+                <p className="text-gray-600">{format(new Date(note.createdAt), 'PPP p')}</p>
               </div>
               <div>
                 <span className="font-medium text-gray-900">Last Updated:</span>
-                <p className="text-gray-600">{format(new Date(note.updated_at), 'PPP p')}</p>
+                <p className="text-gray-600">{format(new Date(note.updatedAt), 'PPP p')}</p>
               </div>
-              {note.signed_at && (
+              {note.signedAt && (
                 <div>
                   <span className="font-medium text-gray-900">Signed:</span>
-                  <p className="text-gray-600">{format(new Date(note.signed_at), 'PPP p')}</p>
+                  <p className="text-gray-600">{format(new Date(note.signedAt), 'PPP p')}</p>
                 </div>
               )}
-              <div>
-                <span className="font-medium text-gray-900">Version:</span>
-                <p className="text-gray-600">{note.version || 1}</p>
-              </div>
+              {note.signedBy && (
+                <div>
+                  <span className="font-medium text-gray-900">Signed By:</span>
+                  <p className="text-gray-600">{note.signedBy}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -1,24 +1,29 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { noteService } from '@/services/noteService';
 import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
 
 export const useConsultationNoteSave = (noteId?: string) => {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = async (
-    formData: ConsultationNoteFormData,
-    isDraft: boolean,
-    validateForm: () => boolean
-  ) => {
+  const handleSave = async (formData: ConsultationNoteFormData, isDraft: boolean, validateForm: () => boolean) => {
+    if (!noteId) {
+      toast({
+        title: 'Error',
+        description: 'No note ID provided.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!isDraft && !validateForm()) {
       toast({
         title: 'Validation Error',
-        description: 'Please fill in all required fields and confirm agreements.',
+        description: 'Please fill in all required fields.',
         variant: 'destructive',
       });
       return;
@@ -39,17 +44,11 @@ export const useConsultationNoteSave = (noteId?: string) => {
         content: formData as any,
         status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
         ...(isDraft ? {} : {
-          signed_at: new Date().toISOString(),
-          signed_by: formData.signature
+          signedBy: formData.signature
         })
       };
 
-      const { error } = await supabase
-        .from('clinical_notes')
-        .update(updateData)
-        .eq('id', noteId);
-
-      if (error) throw error;
+      await noteService.updateNote(noteId, updateData);
 
       toast({
         title: 'Success',

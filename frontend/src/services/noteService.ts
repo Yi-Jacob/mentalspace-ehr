@@ -1,62 +1,12 @@
 import { apiClient } from './api-helper/client';
-
-// Types
-export interface Note {
-  id: string;
-  title: string;
-  content: Record<string, any>;
-  client_id: string;
-  note_type: NoteType;
-  status: NoteStatus;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  submitted_at?: string;
-  signed_at?: string;
-  signed_by?: string;
-}
-
-export type NoteType = 
-  | 'intake'
-  | 'progress_note'
-  | 'treatment_plan'
-  | 'contact_note'
-  | 'consultation_note'
-  | 'cancellation_note'
-  | 'miscellaneous_note';
-
-export type NoteStatus = 
-  | 'draft'
-  | 'submitted_for_review'
-  | 'signed'
-  | 'locked';
-
-export interface CreateNoteRequest {
-  title: string;
-  content: Record<string, any>;
-  client_id: string;
-  note_type: NoteType;
-  status?: NoteStatus;
-}
-
-export interface UpdateNoteRequest {
-  title?: string;
-  content?: Record<string, any>;
-  status?: NoteStatus;
-}
+import { Note, CreateNoteRequest, UpdateNoteRequest, QueryNotesParams, NotesResponse } from '../types/note';
 
 // Note Service
 export class NoteService {
   private baseUrl = '/notes';
 
   // Get all notes with pagination and filtering
-  async getNotes(params?: {
-    page?: number;
-    limit?: number;
-    clientId?: string;
-    noteType?: string;
-    status?: string;
-  }): Promise<Note[]> {
+  async getNotes(params?: QueryNotesParams): Promise<NotesResponse> {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
@@ -65,7 +15,7 @@ export class NoteService {
     if (params?.status) queryParams.append('status', params.status);
 
     const url = `${this.baseUrl}?${queryParams.toString()}`;
-    return apiClient.get<Note[]>(url);
+    return apiClient.get<NotesResponse>(url);
   }
 
   // Get single note by ID
@@ -80,7 +30,7 @@ export class NoteService {
 
   // Update existing note
   async updateNote(id: string, data: UpdateNoteRequest): Promise<Note> {
-    return apiClient.put<Note>(`${this.baseUrl}/${id}`, data);
+    return apiClient.patch<Note>(`${this.baseUrl}/${id}`, data);
   }
 
   // Delete note
@@ -93,14 +43,14 @@ export class NoteService {
     page?: number;
     limit?: number;
     noteType?: string;
-  }): Promise<Note[]> {
+  }): Promise<NotesResponse> {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.noteType) queryParams.append('noteType', params.noteType);
 
     const url = `${this.baseUrl}/client/${clientId}?${queryParams.toString()}`;
-    return apiClient.get<Note[]>(url);
+    return apiClient.get<NotesResponse>(url);
   }
 
   // Submit note for review

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { clientService } from '@/services/clientService';
 import { useToast } from '@/hooks/use-toast';
 
 interface CreateNoteModalProps {
@@ -26,13 +26,7 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
   const { data: clients } = useQuery({
     queryKey: ['clients-for-notes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id, first_name, last_name')
-        .eq('is_active', true)
-        .order('last_name');
-      if (error) throw error;
-      return data;
+      return clientService.getClients();
     },
     enabled: isOpen,
   });
@@ -140,7 +134,7 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
               <SelectContent>
                 {clients?.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
-                    {client.last_name}, {client.first_name}
+                    {client.lastName}, {client.firstName}
                   </SelectItem>
                 ))}
               </SelectContent>

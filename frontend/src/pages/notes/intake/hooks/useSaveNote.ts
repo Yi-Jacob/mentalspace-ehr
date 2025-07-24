@@ -1,10 +1,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
+import { noteService } from '@/services/noteService';
 import { IntakeFormData } from '../types/IntakeFormData';
 
 export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData) => {
@@ -32,25 +32,21 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
         
         console.log('Saving note with status:', status, 'isDraft:', isDraft, 'data:', finalData);
         
-        const { error } = await supabase
-          .from('clinical_notes')
-          .update({
-            content: finalData,
-            status: status,
-            updated_at: new Date().toISOString(),
-            ...(finalData.isFinalized && {
-              signed_by: user?.id,
-              signed_at: new Date().toISOString(),
-            }),
-          })
-          .eq('id', noteId);
+        const updateData = {
+          content: finalData,
+          status: status,
+          ...(finalData.isFinalized && {
+            signedBy: user?.id,
+          }),
+        };
         
-        if (error) throw error;
-        return { isDraft, isFinalized: finalData.isFinalized };
+        const updatedNote = await noteService.updateNote(noteId, updateData);
+        
+        return { isDraft, isFinalized: finalData.isFinalized, note: updatedNote };
       }, 'Save Note');
     },
-    onSuccess: ({ isDraft, isFinalized }) => {
-      queryClient.invalidateQueries({ queryKey: ['clinical-note', noteId] });
+    onSuccess: ({ isDraft, isFinalized, note }) => {
+      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
       
       if (isDraft) {
         toast({
@@ -73,7 +69,7 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
     },
     onError: (error) => {
       console.error('Error saving note:', error);
-      handleAPIError(error, `/clinical-notes/${noteId}`, 'PATCH');
+      handleAPIError(error, `/notes/${noteId}`, 'PATCH');
     },
   });
 };

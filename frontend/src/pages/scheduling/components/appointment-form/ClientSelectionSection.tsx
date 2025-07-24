@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { clientService } from '@/services/clientService';
 import { User, AlertCircle } from 'lucide-react';
 
 interface ClientSelectionSectionProps {
@@ -20,17 +20,7 @@ const ClientSelectionSection: React.FC<ClientSelectionSectionProps> = ({
   const { data: clients, isLoading, error: queryError } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id, first_name, last_name')
-        .eq('is_active', true)
-        .order('last_name');
-
-      if (error) {
-        console.error('Error fetching clients:', error);
-        throw error;
-      }
-      return data;
+      return clientService.getClientsForNotes();
     },
   });
 

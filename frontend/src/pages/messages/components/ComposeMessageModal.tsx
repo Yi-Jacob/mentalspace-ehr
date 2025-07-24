@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Send } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { clientService } from '@/services/clientService';
 import { useToast } from '@/hooks/use-toast';
 import ComposeMessageForm from './compose/ComposeMessageForm';
 import ComposeMessageActions from './compose/ComposeMessageActions';
@@ -38,44 +38,7 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
     queryKey: ['therapist-clients-for-compose'],
     queryFn: async () => {
       console.log('Fetching clients for compose message...');
-      
-      // Get current user
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        console.error('User not authenticated:', userError);
-        throw new Error('User not authenticated');
-      }
-
-      console.log('Current user:', userData.user.id);
-
-      // Get user record from our users table
-      const { data: userRecord, error: userRecordError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (userRecordError || !userRecord) {
-        console.error('User record not found:', userRecordError);
-        throw new Error('User record not found');
-      }
-
-      console.log('User record:', userRecord);
-
-      // Fetch all active clients (for now, we'll get all clients to debug)
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id, first_name, last_name, email')
-        .eq('is_active', true)
-        .order('first_name');
-      
-      if (error) {
-        console.error('Error fetching clients:', error);
-        throw error;
-      }
-      
-      console.log('Fetched clients:', data);
-      return data || [];
+      return clientService.getClientsForNotes();
     },
     enabled: open, // Only fetch when modal is open
   });

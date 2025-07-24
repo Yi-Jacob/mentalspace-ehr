@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { clientService } from '@/services/clientService';
 import VerificationModal from './verification/VerificationModal';
 
 const InsuranceVerification: React.FC = () => {
@@ -43,11 +43,8 @@ const InsuranceVerification: React.FC = () => {
       }
 
       if (searchTerm) {
-        // Use a simpler search approach that works with Supabase
-        const { data: clientData } = await supabase
-          .from('clients')
-          .select('id')
-          .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
+        // Use client service to search for clients
+        const clientData = await clientService.getClients({ search: searchTerm });
         
         if (clientData && clientData.length > 0) {
           const clientIds = clientData.map(c => c.id);

@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 import { noteService } from '@/services/noteService';
+import { NoteType } from '@/types/note';
 
 export const useNoteCreation = () => {
   const navigate = useNavigate();
@@ -31,8 +32,8 @@ export const useNoteCreation = () => {
         return await noteService.createNote({
           title: `New ${noteType.replace('_', ' ')}`,
           content: {},
-          client_id: clientId,
-          note_type: noteType as any,
+          clientId: clientId,
+          noteType: noteType as NoteType,
           status: 'draft'
         });
       }, `Create ${noteType}`);
@@ -40,21 +41,21 @@ export const useNoteCreation = () => {
     onSuccess: (data) => {
       console.log('=== MUTATION SUCCESS - STARTING NAVIGATION ===');
       console.log('Created note:', data);
-      console.log('Note type for navigation:', data.note_type);
+      console.log('Note type for navigation:', data.noteType);
       
       // Navigate based on note type with detailed logging
       let targetRoute = '';
-      if (data.note_type === 'progress_note') {
+      if (data.noteType === 'progress_note') {
         targetRoute = `/notes/progress-note/${data.id}/edit`;
-      } else if (data.note_type === 'treatment_plan') {
+      } else if (data.noteType === 'treatment_plan') {
         targetRoute = `/notes/treatment-plan/${data.id}/edit`;
-      } else if (data.note_type === 'cancellation_note') {
+      } else if (data.noteType === 'cancellation_note') {
         targetRoute = `/notes/cancellation-note/${data.id}/edit`;
-      } else if (data.note_type === 'contact_note') {
+      } else if (data.noteType === 'contact_note') {
         targetRoute = `/notes/contact-note/${data.id}/edit`;
-      } else if (data.note_type === 'consultation_note') {
+      } else if (data.noteType === 'consultation_note') {
         targetRoute = `/notes/consultation-note/${data.id}/edit`;
-      } else if (data.note_type === 'miscellaneous_note') {
+      } else if (data.noteType === 'miscellaneous_note') {
         targetRoute = `/notes/miscellaneous-note/${data.id}/edit`;
       } else {
         targetRoute = `/notes/note/${data.id}/edit`;
@@ -68,7 +69,7 @@ export const useNoteCreation = () => {
       console.error('=== MUTATION ERROR ===');
       console.error('Full error object:', error);
       console.error('Error message:', error.message);
-      handleAPIError(error, '/clinical-notes', 'POST');
+      handleAPIError(error, '/notes', 'POST');
     },
   });
 

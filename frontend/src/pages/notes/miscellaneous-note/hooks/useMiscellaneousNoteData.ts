@@ -1,27 +1,17 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 
 export const useMiscellaneousNoteData = (noteId?: string) => {
   return useQuery({
-    queryKey: ['clinical-note', noteId],
+    queryKey: ['note', noteId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients (
-            id,
-            first_name,
-            last_name
-          )
-        `)
-        .eq('id', noteId)
-        .single();
+      if (!noteId) return null;
       
-      if (error) throw error;
-      return data;
+      const noteData = await noteService.getNote(noteId);
+      return noteData;
     },
     enabled: !!noteId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

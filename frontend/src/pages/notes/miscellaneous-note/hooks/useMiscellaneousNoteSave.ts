@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { noteService } from '@/services/noteService';
 import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
 
 export const useMiscellaneousNoteSave = (noteId?: string) => {
@@ -15,6 +15,15 @@ export const useMiscellaneousNoteSave = (noteId?: string) => {
     isDraft: boolean,
     validateForm: () => boolean
   ) => {
+    if (!noteId) {
+      toast({
+        title: 'Error',
+        description: 'No note ID provided.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!isDraft && !validateForm()) {
       toast({
         title: 'Validation Error',
@@ -39,17 +48,11 @@ export const useMiscellaneousNoteSave = (noteId?: string) => {
         content: formData as any,
         status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
         ...(isDraft ? {} : {
-          signed_at: new Date().toISOString(),
-          signed_by: formData.signature
+          signedBy: formData.signature
         })
       };
 
-      const { error } = await supabase
-        .from('clinical_notes')
-        .update(updateData)
-        .eq('id', noteId);
-
-      if (error) throw error;
+      await noteService.updateNote(noteId, updateData);
 
       toast({
         title: 'Success',

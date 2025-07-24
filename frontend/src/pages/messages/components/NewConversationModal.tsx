@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, X, Plus } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { clientService } from '@/services/clientService';
 import { useToast } from '@/hooks/use-toast';
 
 interface NewConversationModalProps {
@@ -40,44 +40,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({
     queryKey: ['therapist-clients-for-conversation'],
     queryFn: async () => {
       console.log('Fetching clients for new conversation...');
-      
-      // Get current user
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        console.error('User not authenticated:', userError);
-        throw new Error('User not authenticated');
-      }
-
-      console.log('Current user:', userData.user.id);
-
-      // Get user record from our users table
-      const { data: userRecord, error: userRecordError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', userData.user.id)
-        .single();
-      
-      if (userRecordError || !userRecord) {
-        console.error('User record not found:', userRecordError);
-        throw new Error('User record not found');
-      }
-
-      console.log('User record:', userRecord);
-
-      // Fetch all active clients (for now, we'll get all clients to debug)
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id, first_name, last_name, email')
-        .eq('is_active', true)
-        .order('first_name');
-      
-      if (error) {
-        console.error('Error fetching clients:', error);
-        throw error;
-      }
-      
-      console.log('Fetched clients:', data);
-      return data || [];
+      return clientService.getClientsForNotes();
     },
     enabled: open, // Only fetch when modal is open
   });

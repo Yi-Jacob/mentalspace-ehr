@@ -1,11 +1,12 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
+import { noteService } from '@/services/noteService';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { NoteStatus } from '@/types/note';
 
 export const useSaveTreatmentPlan = (noteId: string | undefined, formData: TreatmentPlanFormData) => {
   const { toast } = useToast();
@@ -28,29 +29,25 @@ export const useSaveTreatmentPlan = (noteId: string | undefined, formData: Treat
       
       return await executeWithRetry(async () => {
         const finalData = { ...formData, ...data };
-        const status = isDraft ? 'draft' : finalData.isFinalized ? 'signed' : 'draft';
+        const status: NoteStatus = isDraft ? 'draft' : finalData.isFinalized ? 'signed' : 'draft';
         
         console.log('Saving treatment plan with status:', status, 'isDraft:', isDraft, 'data:', finalData);
         
-        const { error } = await supabase
-          .from('clinical_notes')
-          .update({
-            content: finalData,
-            status: status,
-            updated_at: new Date().toISOString(),
-            ...(finalData.isFinalized && {
-              signed_by: user?.id,
-              signed_at: new Date().toISOString(),
-            }),
-          })
-          .eq('id', noteId);
+        const updateData = {
+          content: finalData,
+          status: status,
+          ...(finalData.isFinalized && {
+            signedBy: user?.id,
+          }),
+        };
         
-        if (error) throw error;
-        return { isDraft, isFinalized: finalData.isFinalized };
+        const updatedNote = await noteService.updateNote(noteId, updateData);
+        
+        return { isDraft, isFinalized: finalData.isFinalized, note: updatedNote };
       }, 'Save Treatment Plan');
     },
-    onSuccess: ({ isDraft, isFinalized }) => {
-      queryClient.invalidateQueries({ queryKey: ['clinical-note', noteId] });
+    onSuccess: ({ isDraft, isFinalized, note }) => {
+      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
       
       if (isDraft) {
         toast({
@@ -72,7 +69,7 @@ export const useSaveTreatmentPlan = (noteId: string | undefined, formData: Treat
     },
     onError: (error) => {
       console.error('Error saving treatment plan:', error);
-      handleAPIError(error, `/clinical-notes/${noteId}`, 'PATCH');
+      handleAPIError(error, `/notes/${noteId}`, 'PATCH');
     },
   });
 };

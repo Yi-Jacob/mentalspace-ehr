@@ -7,7 +7,7 @@ import { FileText, Calendar, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 import { ClientFormData } from '@/types/client';
 
 interface ClientNotesTabProps {
@@ -17,19 +17,14 @@ interface ClientNotesTabProps {
 export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   const navigate = useNavigate();
 
-  const { data: notes, isLoading } = useQuery({
+  const { data: notesResponse, isLoading } = useQuery({
     queryKey: ['client-notes', client.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select('*')
-        .eq('client_id', client.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      return await noteService.getClientNotes(client.id);
     },
   });
+
+  const notes = notesResponse?.notes || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -50,7 +45,7 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   };
 
   const handleViewNote = (note: any) => {
-    if (note.note_type === 'progress_note') {
+    if (note.noteType === 'progress_note') {
       navigate(`/notes/progress-note/${note.id}`);
     } else {
       navigate(`/notes/note/${note.id}`);
@@ -58,7 +53,7 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   };
 
   const handleEditNote = (note: any) => {
-    if (note.note_type === 'progress_note') {
+    if (note.noteType === 'progress_note') {
       navigate(`/notes/progress-note/${note.id}/edit`);
     } else {
       navigate(`/notes/note/${note.id}/edit`);
@@ -105,7 +100,7 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
                   <div className="flex items-center space-x-3">
                     <FileText className="h-5 w-5 text-blue-600" />
                     <h4 className="font-semibold text-lg">{note.title}</h4>
-                    <Badge variant="outline">{formatNoteType(note.note_type)}</Badge>
+                    <Badge variant="outline">{formatNoteType(note.noteType)}</Badge>
                     <Badge className={getStatusColor(note.status)}>
                       {note.status.replace('_', ' ').toUpperCase()}
                     </Badge>
@@ -114,12 +109,12 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
                   <div className="flex items-center space-x-6 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-4 w-4" />
-                      <span>Created: {format(new Date(note.created_at), 'MMM d, yyyy')}</span>
+                      <span>Created: {format(new Date(note.createdAt), 'MMM d, yyyy')}</span>
                     </div>
-                    {note.updated_at !== note.created_at && (
+                    {note.updatedAt !== note.createdAt && (
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>Updated: {format(new Date(note.updated_at), 'MMM d, yyyy')}</span>
+                        <span>Updated: {format(new Date(note.updatedAt), 'MMM d, yyyy')}</span>
                       </div>
                     )}
                   </div>
