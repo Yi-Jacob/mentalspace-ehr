@@ -34,8 +34,8 @@ const IntakeAssessmentView = () => {
   }
 
   const formData = note.content as unknown as IntakeFormData;
-  const clientName = note.clients 
-    ? `${note.clients.first_name} ${note.clients.last_name}`
+  const clientName = note.client 
+    ? `${note.client.firstName} ${note.client.lastName}`
     : 'Unknown Client';
 
   const getStatusColor = (status: string) => {
@@ -73,9 +73,9 @@ const IntakeAssessmentView = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-700">
-                    {format(new Date(note.created_at), 'MMM d, yyyy')}
-                  </span>
+                                  <span className="text-gray-700">
+                  {format(new Date(note.createdAt), 'MMM d, yyyy')}
+                </span>
                 </div>
                 <Badge className={getStatusColor(note.status)}>
                   {note.status.replace('_', ' ').toUpperCase()}
@@ -87,7 +87,7 @@ const IntakeAssessmentView = () => {
           <div className="flex space-x-2">
             <Button 
               variant="outline"
-              onClick={() => navigate(`/client/${note.client_id}`)}
+              onClick={() => navigate(`/client/${note.clientId}`)}
             >
               <User className="w-4 h-4 mr-2" />
               View Client Chart

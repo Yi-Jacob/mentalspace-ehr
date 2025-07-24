@@ -6,92 +6,84 @@ import EmptySearchResults from './EmptySearchResults';
 import PaginationInfo from './PaginationInfo';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import { PaginationControls } from '@/components/ui/pagination-controls';
-
-interface ClinicalNote {
-  id: string;
-  title: string;
-  note_type: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  client_id: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  provider?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+import { Note } from '@/types/note';
 
 interface NotesDisplaySectionProps {
-  filteredNotes: ClinicalNote[];
-  allNotes: ClinicalNote[];
-  notesData: {
-    totalCount: number;
-    totalPages: number;
-  } | undefined;
+  notes: Note[];
+  isLoading: boolean;
+  totalNotes: number;
   currentPage: number;
-  pageSize: number;
+  notesPerPage: number;
   onPageChange: (page: number) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onView?: (id: string) => void;
+  searchQuery?: string;
 }
 
 const NotesDisplaySection: React.FC<NotesDisplaySectionProps> = ({
-  filteredNotes,
-  allNotes,
-  notesData,
+  notes,
+  isLoading,
+  totalNotes,
   currentPage,
-  pageSize,
+  notesPerPage,
   onPageChange,
+  onEdit,
+  onDelete,
+  onView,
+  searchQuery,
 }) => {
-  const hasNotes = allNotes && allNotes.length > 0;
-  const hasFilteredNotes = filteredNotes && filteredNotes.length > 0;
-  const showEmptyState = !hasNotes;
-  const showEmptySearch = hasNotes && !hasFilteredNotes;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (notes.length === 0) {
+    if (searchQuery) {
+      return <EmptySearchResults searchQuery={searchQuery} />;
+    }
+    return <EmptyNotesState />;
+  }
+
+  const totalPages = Math.ceil(totalNotes / notesPerPage);
 
   return (
-    <div className="space-y-4">
-      {/* Pagination info */}
-      {notesData && (
-        <PaginationInfo
-          currentPage={currentPage}
-          pageSize={pageSize}
-          totalCount={notesData.totalCount}
-          totalPages={notesData.totalPages}
-        />
-      )}
-
-      {/* Notes list */}
-      {hasFilteredNotes && filteredNotes.map((note) => (
-        <EnhancedErrorBoundary 
-          key={note.id}
-          componentName="NoteCard"
-          fallback={
-            <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-              <p className="text-sm text-red-600">Failed to load note: {note.title}</p>
-            </div>
-          }
-        >
-          <NoteCard note={note} />
-        </EnhancedErrorBoundary>
-      ))}
-      
-      {/* Empty states */}
-      {showEmptyState && <EmptyNotesState />}
-      {showEmptySearch && <EmptySearchResults />}
-
-      {/* Pagination */}
-      {notesData && notesData.totalPages > 1 && (
-        <div className="flex justify-center mt-6">
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={notesData.totalPages}
-            onPageChange={onPageChange}
-          />
+    <EnhancedErrorBoundary>
+      <div className="space-y-6">
+        {/* Notes Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {notes.map((note) => (
+            <NoteCard
+              key={note.id}
+              note={note}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onView={onView}
+            />
+          ))}
         </div>
-      )}
-    </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+            <PaginationInfo
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalNotes}
+              itemsPerPage={notesPerPage}
+            />
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
+        )}
+      </div>
+    </EnhancedErrorBoundary>
   );
 };
 

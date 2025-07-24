@@ -22,8 +22,8 @@ const MiscellaneousNoteForm = () => {
   const { formData, updateFormData, validateForm } = useMiscellaneousNoteForm(noteData);
   const { isLoading, handleSave } = useMiscellaneousNoteSave(noteId);
 
-  const clientName = noteData?.clients 
-    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
+  const clientName = noteData?.client 
+    ? `${noteData.client.firstName} ${noteData.client.lastName}`
     : 'Unknown Client';
 
   const canFinalize = validateForm() && !!formData.signature;

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { schedulingService } from '@/services/schedulingService';
 import CreateAppointmentModal from './CreateAppointmentModal';
 import AppointmentWaitlist from './AppointmentWaitlist';
 import EditAppointmentModal from './EditAppointmentModal';
@@ -32,57 +32,21 @@ const AppointmentManagement = () => {
   const { data: appointments, isLoading } = useQuery({
     queryKey: ['appointments-management', searchTerm, statusFilter, typeFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('appointments')
-        .select(`
-          id,
-          title,
-          client_id,
-          provider_id,
-          appointment_type,
-          start_time,
-          end_time,
-          status,
-          location,
-          room_number,
-          notes,
-          clients!client_id(first_name, last_name),
-          users!provider_id(first_name, last_name)
-        `)
-        .order('start_time', { ascending: false });
-
+      const params: any = {};
+      
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+        params.status = statusFilter;
       }
 
       if (typeFilter !== 'all') {
-        query = query.eq('appointment_type', typeFilter);
+        params.appointmentType = typeFilter;
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      let filteredData = data || [];
-      
       if (searchTerm) {
-        filteredData = filteredData.filter(appointment => {
-          const clientName = appointment.clients 
-            ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
-            : '';
-          const providerName = appointment.users
-            ? `${appointment.users.first_name} ${appointment.users.last_name}`
-            : '';
-          
-          return (
-            clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            providerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (appointment.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.appointment_type.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        });
+        params.search = searchTerm;
       }
 
-      return filteredData;
+      return await schedulingService.getAppointments(params);
     },
   });
 

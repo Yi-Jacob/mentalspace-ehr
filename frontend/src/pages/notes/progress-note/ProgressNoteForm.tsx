@@ -40,8 +40,8 @@ const ProgressNoteForm = () => {
     return <ProgressNoteNotFoundState />;
   }
 
-  const clientName = note.clients 
-    ? `${note.clients.first_name} ${note.clients.last_name}`
+  const clientName = note.client 
+    ? `${note.client.firstName} ${note.client.lastName}`
     : undefined;
 
   return (
@@ -67,7 +67,7 @@ const ProgressNoteForm = () => {
             currentSection={currentSection}
             formData={formData}
             updateFormData={updateFormData}
-            clientData={note.clients}
+            clientData={note.client}
             onSave={handleSave}
             isLoading={saveNoteMutation.isPending}
             onPrevious={handlePrevious}

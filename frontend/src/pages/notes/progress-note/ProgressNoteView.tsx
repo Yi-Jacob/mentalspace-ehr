@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Edit, User, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 import { ProgressNoteFormData } from './types/ProgressNoteFormData';
 
 const ProgressNoteView = () => {
@@ -17,28 +17,7 @@ const ProgressNoteView = () => {
   const { data: note, isLoading } = useQuery({
     queryKey: ['progress-note', noteId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients (
-            id,
-            first_name,
-            last_name,
-            date_of_birth
-          ),
-          provider:users!clinical_notes_provider_id_fkey (
-            id,
-            first_name,
-            last_name
-          )
-        `)
-        .eq('id', noteId)
-        .eq('note_type', 'progress_note')
-        .single();
-      
-      if (error) throw error;
-      return data;
+      return noteService.getNote(noteId!);
     },
   });
 
@@ -62,8 +41,8 @@ const ProgressNoteView = () => {
   }
 
   const formData = note.content as unknown as ProgressNoteFormData;
-  const clientName = note.clients 
-    ? `${note.clients.first_name} ${note.clients.last_name}`
+  const clientName = note.client 
+    ? `${note.client.firstName} ${note.client.lastName}`
     : 'Unknown Client';
 
   const getStatusColor = (status: string) => {
@@ -102,7 +81,7 @@ const ProgressNoteView = () => {
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-700">
-                    {format(new Date(note.created_at), 'MMM d, yyyy')}
+                    {format(new Date(note.createdAt), 'MMM d, yyyy')}
                   </span>
                 </div>
                 <Badge className={getStatusColor(note.status)}>
@@ -115,7 +94,7 @@ const ProgressNoteView = () => {
           <div className="flex space-x-2">
             <Button 
               variant="outline"
-              onClick={() => navigate(`/client/${note.client_id}`)}
+              onClick={() => navigate(`/client/${note.clientId}`)}
             >
               <User className="w-4 h-4 mr-2" />
               View Client Chart

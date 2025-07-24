@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,29 +51,7 @@ const CancellationNoteForm = () => {
   const { data: noteData } = useQuery({
     queryKey: ['clinical-note', noteId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients (
-            id,
-            first_name,
-            last_name,
-            date_of_birth,
-            email,
-            address_1,
-            address_2,
-            city,
-            state,
-            zip_code,
-            gender_identity
-          )
-        `)
-        .eq('id', noteId)
-        .single();
-      
-      if (error) throw error;
-      return data;
+      return noteService.getNote(noteId!);
     },
     enabled: !!noteId,
   });
@@ -85,7 +63,7 @@ const CancellationNoteForm = () => {
       setFormData(prev => ({
         ...prev,
         ...contentData,
-        clientId: noteData.client_id
+        clientId: noteData.clientId
       }));
     }
   }, [noteData]);
@@ -127,18 +105,19 @@ const CancellationNoteForm = () => {
       const updateData = {
         content: formData as any,
         status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
-        ...(isDraft ? {} : {
-          signed_at: new Date().toISOString(),
-          signed_by: formData.signature
-        })
       };
 
-      const { error } = await supabase
-        .from('clinical_notes')
-        .update(updateData)
-        .eq('id', noteId);
-
-      if (error) throw error;
+      if (noteId) {
+        await noteService.updateNote(noteId, updateData);
+      } else {
+        await noteService.createNote({
+          title: `Cancellation Note - ${formData.sessionDate}`,
+          content: formData as any,
+          clientId: formData.clientId,
+          noteType: 'cancellation_note',
+          status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
+        });
+      }
 
       toast({
         title: 'Success',
@@ -160,8 +139,8 @@ const CancellationNoteForm = () => {
     }
   };
 
-  const clientName = noteData?.clients 
-    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
+  const clientName = noteData?.client 
+    ? `${noteData.client.firstName} ${noteData.client.lastName}`
     : 'Unknown Client';
 
   return (
@@ -208,7 +187,7 @@ const CancellationNoteForm = () => {
         </Card>
 
         {/* Client Information */}
-        <ClientInfoDisplay clientData={noteData?.clients} />
+        <ClientInfoDisplay clientData={noteData?.client} />
 
         {/* Form Content */}
         <Card>

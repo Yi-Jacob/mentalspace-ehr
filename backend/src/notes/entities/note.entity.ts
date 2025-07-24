@@ -1,6 +1,52 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { NoteType, NoteStatus } from '../dto/create-note.dto';
 
+export class ClientInfo {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty({ required: false })
+  dateOfBirth?: Date;
+
+  @ApiProperty({ required: false })
+  email?: string;
+
+  @ApiProperty({ required: false })
+  address1?: string;
+
+  @ApiProperty({ required: false })
+  address2?: string;
+
+  @ApiProperty({ required: false })
+  city?: string;
+
+  @ApiProperty({ required: false })
+  state?: string;
+
+  @ApiProperty({ required: false })
+  zipCode?: string;
+
+  @ApiProperty({ required: false })
+  genderIdentity?: string;
+}
+
+export class ProviderInfo {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+}
+
 export class NoteEntity {
   @ApiProperty()
   id: string;
@@ -52,4 +98,10 @@ export class NoteEntity {
 
   @ApiProperty()
   updatedAt: Date;
+
+  @ApiProperty({ type: ClientInfo, required: false })
+  client?: ClientInfo;
+
+  @ApiProperty({ type: ProviderInfo, required: false })
+  provider?: ProviderInfo;
 } 

@@ -100,7 +100,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   };
 
   const clientName = clientData 
-    ? `${clientData.first_name} ${clientData.last_name}`
+    ? `${clientData.firstName} ${clientData.lastName}`
     : 'Unknown Client';
 
   return (

@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/services/api-helper/client';
+import { schedulingService } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -35,20 +35,17 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
       const [endHour, endMinute] = appointmentData.end_time.split(':');
       endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
-      const response = await apiClient.post('/appointments', {
-        client_id: appointmentData.client_id,
-        provider_id: user.id,
-        appointment_type: appointmentData.appointment_type,
-        title: appointmentData.title || null,
-        location: appointmentData.location || null,
-        room_number: appointmentData.room_number || null,
-        notes: appointmentData.notes || null,
-        start_time: startDateTime.toISOString(),
-        end_time: endDateTime.toISOString(),
-        status: 'scheduled'
+      return await schedulingService.createAppointment({
+        clientId: appointmentData.client_id,
+        providerId: user.id,
+        appointmentType: appointmentData.appointment_type,
+        title: appointmentData.title || undefined,
+        location: appointmentData.location || undefined,
+        roomNumber: appointmentData.room_number || undefined,
+        notes: appointmentData.notes || undefined,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime.toISOString(),
       });
-
-      return response.data;
     },
     onSuccess: () => {
       toast({

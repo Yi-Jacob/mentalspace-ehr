@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,18 +12,7 @@ const PendingApprovals = () => {
   const { data: pendingNotes, isLoading } = useQuery({
     queryKey: ['pending-approvals'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients!inner(first_name, last_name),
-          provider:users!clinical_notes_provider_id_fkey(first_name, last_name)
-        `)
-        .eq('status', 'submitted_for_review')
-        .order('updated_at', { ascending: true });
-
-      if (error) throw error;
-      return data;
+      return noteService.getPendingApprovals();
     },
   });
 
@@ -62,7 +51,7 @@ const PendingApprovals = () => {
                   <FileText className="h-5 w-5 text-blue-600" />
                   <h3 className="font-semibold text-lg">{note.title}</h3>
                   <Badge variant="outline">
-                    {note.note_type.split('_').map(word => 
+                    {note.noteType.split('_').map(word => 
                       word.charAt(0).toUpperCase() + word.slice(1)
                     ).join(' ')}
                   </Badge>
@@ -74,15 +63,15 @@ const PendingApprovals = () => {
                 <div className="flex items-center space-x-6 text-sm text-gray-600">
                   <div className="flex items-center space-x-1">
                     <User className="h-4 w-4" />
-                    <span>Client: {note.clients?.first_name} {note.clients?.last_name}</span>
+                    <span>Client: {note.client?.firstName} {note.client?.lastName}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <User className="h-4 w-4" />
-                    <span>Provider: {note.provider?.first_name} {note.provider?.last_name}</span>
+                    <span>Provider: {note.provider?.firstName} {note.provider?.lastName}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Clock className="h-4 w-4" />
-                    <span>Submitted: {format(new Date(note.updated_at), 'MMM d, yyyy h:mm a')}</span>
+                    <span>Submitted: {format(new Date(note.updatedAt), 'MMM d, yyyy h:mm a')}</span>
                   </div>
                 </div>
               </div>

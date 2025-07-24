@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import NotesFilters from './notes/NotesFilters';
 import EmptyNotesState from './notes/EmptyNotesState';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import NotesDisplaySection from './notes/NotesDisplaySection';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';
-import { useNotesQuery } from './notes/hooks/useNotesQuery';
-import { filterNotesBySearch } from './notes/utils/noteFilters';
-import { useNotesErrorHandling } from './notes/hooks/useNotesErrorHandling';
+import { noteService } from '@/services/noteService';
+import { Note } from '@/types/note';
+import { filterNotes, sortNotes } from './notes/utils/noteFilters';
 
 type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
 type NoteType = 'all' | 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
@@ -18,63 +19,82 @@ const NotesList = () => {
   const [statusFilter, setStatusFilter] = useState<NoteStatus>('all');
   const [typeFilter, setTypeFilter] = useState<NoteType>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 8;
+  const [sortBy, setSortBy] = useState('updatedAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const notesPerPage = 8;
 
-  const {
-    retryCount,
-    canRetry,
-    isRetrying,
-    getErrorMessage,
-    handleRetry
-  } = useNotesErrorHandling();
-
-  const { 
-    data: notesData, 
-    isLoading, 
-    error, 
-    refetch 
-  } = useNotesQuery(statusFilter, typeFilter, {
-    page: currentPage,
-    pageSize,
-    selectFields: ['id', 'title', 'note_type', 'status', 'created_at', 'updated_at', 'client_id', 'provider_id']
+  const { data: notesResponse, isLoading, error, refetch } = useQuery({
+    queryKey: ['notes', statusFilter, typeFilter, currentPage, notesPerPage],
+    queryFn: async () => {
+      const params: any = {
+        page: currentPage,
+        limit: notesPerPage,
+      };
+      
+      if (statusFilter !== 'all') {
+        params.status = statusFilter;
+      }
+      
+      if (typeFilter !== 'all') {
+        params.noteType = typeFilter;
+      }
+      
+      return noteService.getNotes(params);
+    },
   });
 
-  const errorMessage = error ? getErrorMessage(error) : null;
-
-  console.log('=== NOTESLIST RENDER ===', { 
-    isLoading, 
-    hasError: !!error,
-    errorMessage, 
-    notesCount: notesData?.data?.length,
-    totalCount: notesData?.totalCount,
-    currentPage,
-    retryCount,
-    isRetrying
-  });
-
-  // Apply search filter to current page data
-  const filteredNotes = filterNotesBySearch(notesData?.data || [], searchTerm);
+  // Apply search filter and sorting
+  const filteredNotes = React.useMemo(() => {
+    if (!notesResponse?.notes) return [];
+    
+    let filtered = notesResponse.notes;
+    
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(note =>
+        note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${note.client?.firstName || ''} ${note.client?.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply additional filters
+    const filterOptions = {
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      noteType: typeFilter !== 'all' ? typeFilter : undefined,
+    };
+    
+    filtered = filterNotes(filtered, filterOptions);
+    
+    // Apply sorting
+    filtered = sortNotes(filtered, sortBy, sortOrder);
+    
+    return filtered;
+  }, [notesResponse?.notes, searchTerm, statusFilter, typeFilter, sortBy, sortOrder]);
 
   const handlePageChange = (page: number) => {
-    console.log('=== PAGE CHANGE ===');
-    console.log('Changing from page', currentPage, 'to page', page);
     setCurrentPage(page);
   };
 
-  // Convert error to proper Error object if needed
-  const processedError = error ? (error instanceof Error ? error : new Error(getErrorMessage(error))) : null;
+  const handleEdit = (id: string) => {
+    // Navigate to edit page
+    window.location.href = `/notes/edit/${id}`;
+  };
 
-  // Show detailed error information in development
-  if (error && process.env.NODE_ENV === 'development') {
-    console.group('🔍 DETAILED ERROR ANALYSIS');
-    console.log('Error type:', typeof error);
-    console.log('Error instanceof Error:', error instanceof Error);
-    console.log('Error object:', error);
-    console.log('Processed error message:', errorMessage);
-    console.groupEnd();
-  }
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this note?')) {
+      try {
+        await noteService.deleteNote(id);
+        refetch();
+      } catch (error) {
+        console.error('Error deleting note:', error);
+      }
+    }
+  };
 
-  const handleRetryClick = () => handleRetry(refetch);
+  const handleView = (id: string) => {
+    // Navigate to view page
+    window.location.href = `/notes/view/${id}`;
+  };
 
   return (
     <EnhancedErrorBoundary 
@@ -93,22 +113,24 @@ const NotesList = () => {
         />
 
         <LoadingWithError
-          isLoading={isLoading || isRetrying}
-          error={processedError}
-          onRetry={canRetry ? handleRetryClick : undefined}
-          retryCount={retryCount}
-          maxRetries={3}
+          isLoading={isLoading}
+          error={error}
+          onRetry={() => refetch()}
           errorTitle="Failed to load clinical notes"
           errorDescription="There was an issue loading your clinical notes. Please try again."
           loadingComponent={<LoadingSpinner />}
         >
           <NotesDisplaySection
-            filteredNotes={filteredNotes}
-            allNotes={notesData?.data || []}
-            notesData={notesData}
+            notes={filteredNotes}
+            isLoading={isLoading}
+            totalNotes={notesResponse?.total || 0}
             currentPage={currentPage}
-            pageSize={pageSize}
+            notesPerPage={notesPerPage}
             onPageChange={handlePageChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+            searchQuery={searchTerm}
           />
         </LoadingWithError>
       </div>

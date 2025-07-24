@@ -5,22 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Calendar, Edit, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { ProviderSchedule } from '@/services/schedulingService';
 
-interface ScheduleData {
-  id: string;
-  day_of_week: string;
-  start_time: string;
-  end_time: string;
-  break_start_time?: string;
-  break_end_time?: string;
-  is_available: boolean;
-  status: string;
-  effective_from: string;
-  effective_until?: string;
-}
+
 
 interface ScheduleCardProps {
-  schedules: ScheduleData[];
+  schedules: ProviderSchedule[];
   isLoading: boolean;
   dayMapping: Record<string, string>;
   getStatusColor: (status: string) => string;
@@ -90,7 +80,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-lg text-gray-800">
-                  {dayMapping[schedule.day_of_week as keyof typeof dayMapping]}
+                  {dayMapping[schedule.dayOfWeek as keyof typeof dayMapping]}
                 </h3>
                 <div className="flex items-center space-x-2">
                   <Badge className={`${getStatusColor(schedule.status)} border font-medium px-3 py-1`}>

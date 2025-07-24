@@ -67,7 +67,7 @@ const IntakeAssessmentForm = () => {
       const savedData = note.content as any;
       setFormData(prev => ({
         ...prev,
-        clientId: note.client_id || '',
+        clientId: note.clientId || '',
         ...savedData,
       }));
     }

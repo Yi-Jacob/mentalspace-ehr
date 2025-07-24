@@ -5,29 +5,11 @@ import DayView from '../calendar-views/DayView';
 import WeekView from '../calendar-views/WeekView';
 import MonthView from '../calendar-views/MonthView';
 import ListView from '../calendar-views/ListView';
+import { Appointment } from '@/services/schedulingService';
 
 type CalendarViewType = 'day' | 'week' | 'month' | 'list';
 
-interface Appointment {
-  id: string;
-  title: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  location?: string;
-  room_number?: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  users?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+
 
 interface CalendarContentProps {
   viewType: CalendarViewType;

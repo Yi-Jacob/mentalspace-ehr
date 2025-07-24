@@ -37,6 +37,13 @@ export class NotesController {
     return this.notesService.findAll(queryDto);
   }
 
+  @Get('pending-approvals')
+  @ApiOperation({ summary: 'Get all notes pending approval' })
+  @ApiResponse({ status: 200, description: 'Pending approvals retrieved successfully', type: [NoteEntity] })
+  async findPendingApprovals(): Promise<NoteEntity[]> {
+    return this.notesService.findPendingApprovals();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a note by ID' })
   @ApiResponse({ status: 200, description: 'Note retrieved successfully', type: NoteEntity })

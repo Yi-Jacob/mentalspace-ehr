@@ -1,3 +1,23 @@
+export interface ClientInfo {
+  id: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string;
+  email?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  genderIdentity?: string;
+}
+
+export interface ProviderInfo {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -16,6 +36,8 @@ export interface Note {
   version?: number;
   createdAt: string;
   updatedAt: string;
+  client?: ClientInfo;
+  provider?: ProviderInfo;
 }
 
 export type NoteType = 

@@ -40,8 +40,8 @@ const TreatmentPlanForm = () => {
     return <TreatmentPlanNotFoundState />;
   }
 
-  const clientName = note.clients 
-    ? `${note.clients.first_name} ${note.clients.last_name}`
+  const clientName = note.client 
+    ? `${note.client.firstName} ${note.client.lastName}`
     : undefined;
 
   return (

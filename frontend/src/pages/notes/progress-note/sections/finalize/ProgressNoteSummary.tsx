@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { ProgressNoteFormData } from '../../types/ProgressNoteFormData';
+import { ClientInfo } from '@/types/note';
 
 interface ProgressNoteSummaryProps {
   formData: ProgressNoteFormData;
-  clientData?: any;
+  clientData?: ClientInfo;
 }
 
 const ProgressNoteSummary: React.FC<ProgressNoteSummaryProps> = ({
@@ -12,7 +13,7 @@ const ProgressNoteSummary: React.FC<ProgressNoteSummaryProps> = ({
   clientData,
 }) => {
   const clientName = clientData 
-    ? `${clientData.first_name} ${clientData.last_name}`
+    ? `${clientData.firstName} ${clientData.lastName}`
     : 'Unknown Client';
 
   return (

@@ -5,27 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, MapPin, User, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { Appointment } from '@/services/schedulingService';
 
-interface Appointment {
-  id: string;
-  title?: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  location?: string;
-  room_number?: string;
-  client?: {
-    first_name: string;
-    last_name: string;
-  };
-  provider?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -74,22 +56,22 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     }
   };
 
-  const clientName = appointment.client 
-    ? `${appointment.client.first_name} ${appointment.client.last_name}`
+  const clientName = appointment.clients 
+    ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
     : 'Unknown Client';
 
-  const providerName = appointment.provider
-    ? `${appointment.provider.first_name} ${appointment.provider.last_name}`
+  const providerName = appointment.users
+    ? `${appointment.users.firstName} ${appointment.users.lastName}`
     : 'Unknown Provider';
 
   if (compact) {
     return (
       <div className="text-xs bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-2 mb-1 hover:shadow-md transition-all duration-200 hover:scale-102 transform">
         <div className="font-semibold truncate text-blue-900">
-          {format(new Date(appointment.start_time), 'HH:mm')} - {clientName}
+          {format(new Date(appointment.startTime), 'HH:mm')} - {clientName}
         </div>
         <div className="text-blue-700 truncate">
-          {appointment.appointment_type.replace('_', ' ')}
+          {appointment.appointmentType.replace('_', ' ')}
         </div>
       </div>
     );
@@ -104,7 +86,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               <div className="flex items-center space-x-4">
                 <div>
                   <h3 className="font-semibold text-lg text-gray-800">
-                    {appointment.title || `${appointment.appointment_type.replace('_', ' ')}`}
+                    {appointment.title || `${appointment.appointmentType.replace('_', ' ')}`}
                   </h3>
                   <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
                     <div className="flex items-center space-x-1">
@@ -115,8 +97,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4 text-green-500" />
                       <span>
-                        {format(new Date(appointment.start_time), 'MMM d, yyyy HH:mm')} - 
-                        {format(new Date(appointment.end_time), 'HH:mm')}
+                        {format(new Date(appointment.startTime), 'MMM d, yyyy HH:mm')} - 
+                        {format(new Date(appointment.endTime), 'HH:mm')}
                       </span>
                     </div>
                     {appointment.location && (
@@ -136,8 +118,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               <Badge className={`${getStatusColor(appointment.status)} border font-medium`}>
                 {appointment.status.replace('_', ' ')}
               </Badge>
-              <Badge variant="outline" className={`${getTypeColor(appointment.appointment_type)} border font-medium`}>
-                {appointment.appointment_type.replace('_', ' ')}
+              <Badge variant="outline" className={`${getTypeColor(appointment.appointmentType)} border font-medium`}>
+                {appointment.appointmentType.replace('_', ' ')}
               </Badge>
               <Button variant="ghost" size="sm" className="hover:bg-blue-50 transition-colors">
                 <Edit className="h-4 w-4" />
@@ -155,7 +137,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h3 className="font-semibold text-sm text-gray-800">
-              {appointment.title || `${appointment.appointment_type.replace('_', ' ')}`}
+              {appointment.title || `${appointment.appointmentType.replace('_', ' ')}`}
             </h3>
             <div className="text-xs text-gray-600 mt-2 space-y-1">
               <div className="flex items-center space-x-1">
@@ -165,8 +147,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               <div className="flex items-center space-x-1">
                 <Clock className="h-3 w-3 text-green-500" />
                 <span>
-                  {format(new Date(appointment.start_time), 'HH:mm')} - 
-                  {format(new Date(appointment.end_time), 'HH:mm')}
+                  {format(new Date(appointment.startTime), 'HH:mm')} - 
+                  {format(new Date(appointment.endTime), 'HH:mm')}
                 </span>
               </div>
               {appointment.location && (

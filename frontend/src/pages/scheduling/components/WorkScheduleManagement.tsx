@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { schedulingService } from '@/services/schedulingService';
 import WorkScheduleHeader from './work-schedule/WorkScheduleHeader';
 import ScheduleCard from './work-schedule/ScheduleCard';
 import ExceptionCard from './work-schedule/ExceptionCard';
@@ -16,27 +16,14 @@ const WorkScheduleManagement = () => {
   const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ['provider-schedules'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('provider_schedules')
-        .select('*')
-        .order('day_of_week')
-        .order('start_time');
-      
-      if (error) throw error;
-      return data;
+      return await schedulingService.getProviderSchedules();
     },
   });
 
   const { data: exceptions, isLoading: exceptionsLoading } = useQuery({
     queryKey: ['schedule-exceptions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('schedule_exceptions')
-        .select('*')
-        .order('exception_date');
-      
-      if (error) throw error;
-      return data;
+      return await schedulingService.getScheduleExceptions();
     },
   });
 
@@ -74,17 +61,17 @@ const WorkScheduleManagement = () => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ScheduleCard
-            schedules={schedules}
-            isLoading={schedulesLoading}
-            dayMapping={dayMapping}
-            getStatusColor={getStatusColor}
-          />
+                  <ScheduleCard
+          schedules={schedules || []}
+          isLoading={schedulesLoading}
+          dayMapping={dayMapping}
+          getStatusColor={getStatusColor}
+        />
 
-          <ExceptionCard
-            exceptions={exceptions}
-            isLoading={exceptionsLoading}
-          />
+        <ExceptionCard
+          exceptions={exceptions || []}
+          isLoading={exceptionsLoading}
+        />
         </div>
 
         <ScheduleStatsOverview

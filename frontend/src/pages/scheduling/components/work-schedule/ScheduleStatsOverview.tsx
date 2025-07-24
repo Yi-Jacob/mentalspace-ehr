@@ -2,30 +2,20 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
-
-interface ScheduleData {
-  id: string;
-  is_available: boolean;
-  status: string;
-}
-
-interface ExceptionData {
-  id: string;
-  exception_date: string;
-}
+import { ProviderSchedule, ScheduleException } from '@/services/schedulingService';
 
 interface ScheduleStatsOverviewProps {
-  schedules: ScheduleData[];
-  exceptions: ExceptionData[];
+  schedules: ProviderSchedule[];
+  exceptions: ScheduleException[];
 }
 
 const ScheduleStatsOverview: React.FC<ScheduleStatsOverviewProps> = ({
   schedules,
   exceptions,
 }) => {
-  const availableDays = schedules?.filter(s => s.is_available).length || 0;
+  const availableDays = schedules?.filter(s => s.isAvailable).length || 0;
   const activeSchedules = schedules?.filter(s => s.status === 'active').length || 0;
-  const upcomingExceptions = exceptions?.filter(e => new Date(e.exception_date) >= new Date()).length || 0;
+  const upcomingExceptions = exceptions?.filter(e => new Date(e.exceptionDate) >= new Date()).length || 0;
   const pendingApproval = schedules?.filter(s => s.status === 'pending_approval').length || 0;
 
   return (

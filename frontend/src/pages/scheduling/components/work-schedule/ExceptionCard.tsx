@@ -5,19 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Edit } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface ExceptionData {
-  id: string;
-  exception_date: string;
-  start_time?: string;
-  end_time?: string;
-  is_unavailable: boolean;
-  reason?: string;
-  approved_at?: string;
-}
+import { ScheduleException } from '@/services/schedulingService';
 
 interface ExceptionCardProps {
-  exceptions: ExceptionData[];
+  exceptions: ScheduleException[];
   isLoading: boolean;
 }
 
@@ -83,17 +74,17 @@ const ExceptionCard: React.FC<ExceptionCardProps> = ({
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-lg text-gray-800">
-                  {format(new Date(exception.exception_date), 'MMM d, yyyy')}
+                  {format(new Date(exception.exceptionDate), 'MMM d, yyyy')}
                 </h3>
                 <div className="flex items-center space-x-2">
                   <Badge 
                     className={`font-medium px-3 py-1 ${
-                      exception.is_unavailable 
+                      !exception.isAvailable 
                         ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
                         : 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300'
                     }`}
                   >
-                    {exception.is_unavailable ? 'Unavailable' : 'Modified Hours'}
+                    {!exception.isAvailable ? 'Unavailable' : 'Modified Hours'}
                   </Badge>
                   <Button 
                     variant="ghost" 

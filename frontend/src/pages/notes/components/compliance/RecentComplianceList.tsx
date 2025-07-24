@@ -4,16 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp } from 'lucide-react';
 import { format, subDays, isAfter } from 'date-fns';
-
-interface Note {
-  id: string;
-  title: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  clients?: { first_name: string; last_name: string };
-  provider?: { first_name: string; last_name: string };
-}
+import { Note } from '@/types/note';
 
 interface RecentComplianceListProps {
   notes: Note[];
@@ -31,7 +22,7 @@ const RecentComplianceList: React.FC<RecentComplianceListProps> = ({ notes }) =>
       <CardContent className="space-y-4">
         {notes.slice(0, 4).map((note) => {
           const isOverdue = note.status === 'draft' && 
-            isAfter(subDays(new Date(), 7), new Date(note.updated_at));
+            isAfter(subDays(new Date(), 7), new Date(note.updatedAt));
           
           return (
             <div key={note.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -51,12 +42,12 @@ const RecentComplianceList: React.FC<RecentComplianceListProps> = ({ notes }) =>
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600">
-                  {note.clients?.first_name} {note.clients?.last_name} • 
-                  Created: {format(new Date(note.created_at), 'MMM d, yyyy')}
+                  {note.client?.firstName} {note.client?.lastName} • 
+                  Created: {format(new Date(note.createdAt), 'MMM d, yyyy')}
                 </p>
               </div>
               <div className="text-sm text-gray-500">
-                {note.provider?.first_name} {note.provider?.last_name}
+                {note.provider?.firstName} {note.provider?.lastName}
               </div>
             </div>
           );
@@ -64,6 +55,6 @@ const RecentComplianceList: React.FC<RecentComplianceListProps> = ({ notes }) =>
       </CardContent>
     </Card>
   );
-};
+}
 
 export default RecentComplianceList;

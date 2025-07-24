@@ -1,8 +1,9 @@
 
 import React from 'react';
+import { ClientInfo } from '@/types/note';
 
 interface ClientInfoDisplayProps {
-  clientData?: any;
+  clientData?: ClientInfo;
 }
 
 const ClientInfoDisplay: React.FC<ClientInfoDisplayProps> = ({ clientData }) => {
@@ -21,24 +22,24 @@ const ClientInfoDisplay: React.FC<ClientInfoDisplayProps> = ({ clientData }) => 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="text-sm font-medium text-gray-600 block mb-1">Full Name</label>
-          <p className="text-gray-900">{`${clientData.first_name} ${clientData.last_name}`}</p>
+          <p className="text-gray-900">{`${clientData.firstName} ${clientData.lastName}`}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-600 block mb-1">Date of Birth</label>
-          <p className="text-gray-900">{clientData.date_of_birth || 'Not provided'}</p>
+          <p className="text-gray-900">{clientData.dateOfBirth || 'Not provided'}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-600 block mb-1">Address</label>
           <p className="text-gray-900">
-            {clientData.address_1 ? 
-              `${clientData.address_1}${clientData.address_2 ? `, ${clientData.address_2}` : ''}, ${clientData.city || ''} ${clientData.state || ''} ${clientData.zip_code || ''}`.trim() 
+            {clientData.address1 ? 
+              `${clientData.address1}${clientData.address2 ? `, ${clientData.address2}` : ''}, ${clientData.city || ''} ${clientData.state || ''} ${clientData.zipCode || ''}`.trim() 
               : 'Not provided'
             }
           </p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-600 block mb-1">Gender Identity</label>
-          <p className="text-gray-900">{clientData.gender_identity || 'Not provided'}</p>
+          <p className="text-gray-900">{clientData.genderIdentity || 'Not provided'}</p>
         </div>
       </div>
     </div>

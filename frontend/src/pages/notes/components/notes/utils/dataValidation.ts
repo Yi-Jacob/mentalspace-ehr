@@ -1,49 +1,74 @@
+import { Note } from '@/types/note';
 
-interface ClinicalNote {
-  id: string;
-  title: string;
-  note_type: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  client_id: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  provider?: {
-    first_name: string;
-    last_name: string;
-  };
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
 }
 
-export const validateAndFilterNotes = (enhancedNotes: any[]): ClinicalNote[] => {
-  const validNotes: ClinicalNote[] = enhancedNotes
-    .filter((item: any): item is NonNullable<typeof item> => 
-      item !== null && 
-      item !== undefined &&
-      typeof item === 'object' && 
-      'id' in item && 
-      'title' in item && 
-      'note_type' in item && 
-      'status' in item
-    )
-    .map((item: any): ClinicalNote => ({
-      id: item.id,
-      title: item.title,
-      note_type: item.note_type,
-      status: item.status,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-      client_id: item.client_id,
-      clients: item.clients,
-      provider: item.provider
-    }));
-  
-  console.log('✅ Successfully enhanced notes with client/provider data:', {
-    originalCount: enhancedNotes.length,
-    validCount: validNotes.length
-  });
-  
-  return validNotes;
+export const validateNote = (note: Partial<Note>): ValidationResult => {
+  const errors: string[] = [];
+
+  // Required fields validation
+  if (!note.title || note.title.trim() === '') {
+    errors.push('Title is required');
+  }
+
+  if (!note.clientId) {
+    errors.push('Client ID is required');
+  }
+
+  if (!note.noteType) {
+    errors.push('Note type is required');
+  }
+
+  if (!note.content) {
+    errors.push('Note content is required');
+  }
+
+  // Title length validation
+  if (note.title && note.title.length > 255) {
+    errors.push('Title must be less than 255 characters');
+  }
+
+  // Status validation
+  const validStatuses = ['draft', 'signed', 'submitted_for_review', 'locked'];
+  if (note.status && !validStatuses.includes(note.status)) {
+    errors.push('Invalid status value');
+  }
+
+  // Note type validation
+  const validNoteTypes = [
+    'intake',
+    'progress_note',
+    'treatment_plan',
+    'contact_note',
+    'consultation_note',
+    'cancellation_note',
+    'miscellaneous_note'
+  ];
+  if (note.noteType && !validNoteTypes.includes(note.noteType)) {
+    errors.push('Invalid note type');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+export const validateNoteContent = (content: any): ValidationResult => {
+  const errors: string[] = [];
+
+  if (!content || typeof content !== 'object') {
+    errors.push('Content must be an object');
+    return { isValid: false, errors };
+  }
+
+  // Add specific content validation rules here based on note type
+  // For example, check required fields for different note types
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };

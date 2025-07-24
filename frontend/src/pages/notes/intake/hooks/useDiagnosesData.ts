@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/services/api-helper/client';
 
 export interface DiagnosisOption {
   code: string;
@@ -11,15 +11,8 @@ export const useDiagnosesData = () => {
   return useQuery({
     queryKey: ['diagnoses-data'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('diagnosis_codes')
-        .select('code, description')
-        .eq('is_active', true)
-        .order('code');
-      
-      if (error) throw error;
-      
-      return data;
+      const response = await apiClient.get<DiagnosisOption[]>('/diagnoses');
+      return response.data;
     },
   });
 };

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { noteService } from '@/services/noteService';
 import { subDays, isAfter } from 'date-fns';
 import { useComplianceMetrics } from '@/hooks/useComplianceMetrics';
 import { useProductivityGoals } from '@/hooks/useProductivityGoals';
@@ -20,17 +20,8 @@ const ComplianceTracker = () => {
   const { data: complianceData, isLoading } = useQuery({
     queryKey: ['compliance-data'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_notes')
-        .select(`
-          *,
-          clients!inner(first_name, last_name),
-          provider:users!clinical_notes_provider_id_fkey(first_name, last_name)
-        `)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      const response = await noteService.getNotes();
+      return response.notes;
     },
   });
 
@@ -46,7 +37,7 @@ const ComplianceTracker = () => {
   const signedNotes = notes.filter(note => note.status === 'signed').length;
   const draftNotes = notes.filter(note => note.status === 'draft').length;
   const overdueNotes = notes.filter(note => 
-    note.status === 'draft' && isAfter(subDays(new Date(), 7), new Date(note.updated_at))
+    note.status === 'draft' && isAfter(subDays(new Date(), 7), new Date(note.updatedAt))
   ).length;
 
   const compliance24h = Math.round(metrics.completion_rate || 0);

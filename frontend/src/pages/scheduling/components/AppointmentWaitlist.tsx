@@ -5,34 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Clock, User, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { schedulingService } from '@/services/schedulingService';
 import { format } from 'date-fns';
 
 const AppointmentWaitlist = () => {
   const { data: waitlistEntries, isLoading } = useQuery({
     queryKey: ['appointment-waitlist'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('appointment_waitlist')
-        .select(`
-          id,
-          preferred_date,
-          preferred_time_start,
-          preferred_time_end,
-          appointment_type,
-          notes,
-          priority,
-          created_at,
-          is_fulfilled,
-          client:clients(first_name, last_name),
-          provider:users(first_name, last_name)
-        `)
-        .eq('is_fulfilled', false)
-        .order('priority', { ascending: false })
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return data;
+      return await schedulingService.getWaitlistEntries();
     },
   });
 
@@ -74,8 +54,8 @@ const AppointmentWaitlist = () => {
         ) : (
           <div className="space-y-4">
             {waitlistEntries?.map((entry) => {
-              const clientName = entry.client 
-                ? `${entry.client.first_name} ${entry.client.last_name}`
+              const clientName = entry.clients 
+                ? `${entry.clients.firstName} ${entry.clients.lastName}`
                 : 'Unknown Client';
 
               return (
@@ -94,24 +74,24 @@ const AppointmentWaitlist = () => {
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-3 w-3" />
                       <span>
-                        {entry.preferred_date 
-                          ? format(new Date(entry.preferred_date), 'MMM d, yyyy')
+                        {entry.preferredDate 
+                          ? format(new Date(entry.preferredDate), 'MMM d, yyyy')
                           : 'Any date'
                         }
                       </span>
                     </div>
                     
-                    {entry.preferred_time_start && (
+                    {entry.preferredTimeStart && (
                       <div className="flex items-center space-x-2">
                         <Clock className="h-3 w-3" />
                         <span>
-                          {entry.preferred_time_start} - {entry.preferred_time_end || 'End time not specified'}
+                          {entry.preferredTimeStart} - {entry.preferredTimeEnd || 'End time not specified'}
                         </span>
                       </div>
                     )}
                     
                     <div>
-                      <span className="font-medium">Type:</span> {entry.appointment_type.replace('_', ' ')}
+                      <span className="font-medium">Type:</span> {entry.appointmentType.replace('_', ' ')}
                     </div>
                     
                     {entry.notes && (
@@ -121,7 +101,7 @@ const AppointmentWaitlist = () => {
                     )}
                     
                     <div className="text-gray-400">
-                      Added {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                      Added {format(new Date(entry.createdAt), 'MMM d, yyyy')}
                     </div>
                   </div>
                   

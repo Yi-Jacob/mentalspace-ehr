@@ -3,27 +3,9 @@ import React from 'react';
 import { format, isSameDay } from 'date-fns';
 import { cn } from '@/utils/utils';
 import AppointmentCard from '../AppointmentCard';
+import { Appointment } from '@/services/schedulingService';
 
-interface Appointment {
-  id: string;
-  title: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  location?: string;
-  room_number?: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  users?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+
 
 interface DayViewProps {
   currentDate: Date;
@@ -33,7 +15,7 @@ interface DayViewProps {
 
 const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlotClick }) => {
   const dayAppointments = appointments?.filter(apt => 
-    isSameDay(new Date(apt.start_time), currentDate)
+    isSameDay(new Date(apt.startTime), currentDate)
   ) || [];
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -73,11 +55,11 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlot
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 to-purple-400/0 group-hover:from-blue-400/10 group-hover:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
                 {dayAppointments
-                  .filter(apt => new Date(apt.start_time).getHours() === hour)
+                  .filter(apt => new Date(apt.startTime).getHours() === hour)
                   .map(appointment => (
                     <AppointmentCard key={appointment.id} appointment={appointment} />
                   ))}
-                {dayAppointments.filter(apt => new Date(apt.start_time).getHours() === hour).length === 0 && (
+                {dayAppointments.filter(apt => new Date(apt.startTime).getHours() === hour).length === 0 && (
                   <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <div className="text-xs text-gray-400 font-medium bg-white/60 px-3 py-1 rounded-full backdrop-blur-sm">
                       Click to add appointment

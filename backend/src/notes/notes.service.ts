@@ -17,6 +17,30 @@ export class NotesService {
         noteType: createNoteDto.noteType,
         status: createNoteDto.status || NoteStatus.DRAFT,
       },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
     });
 
     return this.mapToEntity(note);
@@ -37,6 +61,30 @@ export class NotesService {
         skip,
         take: limit,
         orderBy: { updatedAt: 'desc' },
+        include: {
+          client: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              dateOfBirth: true,
+              email: true,
+              address1: true,
+              address2: true,
+              city: true,
+              state: true,
+              zipCode: true,
+              genderIdentity: true,
+            }
+          },
+          provider: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            }
+          }
+        }
       }),
       this.prisma.clinicalNote.count({ where }),
     ]);
@@ -50,6 +98,30 @@ export class NotesService {
   async findOne(id: string): Promise<NoteEntity> {
     const note = await this.prisma.clinicalNote.findUnique({
       where: { id },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
     });
 
     if (!note) {
@@ -73,6 +145,30 @@ export class NotesService {
         skip,
         take: limit,
         orderBy: { updatedAt: 'desc' },
+        include: {
+          client: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              dateOfBirth: true,
+              email: true,
+              address1: true,
+              address2: true,
+              city: true,
+              state: true,
+              zipCode: true,
+              genderIdentity: true,
+            }
+          },
+          provider: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            }
+          }
+        }
       }),
       this.prisma.clinicalNote.count({ where }),
     ]);
@@ -81,6 +177,41 @@ export class NotesService {
       notes: notes.map(note => this.mapToEntity(note)),
       total,
     };
+  }
+
+  async findPendingApprovals(): Promise<NoteEntity[]> {
+    const notes = await this.prisma.clinicalNote.findMany({
+      where: {
+        status: NoteStatus.SUBMITTED_FOR_REVIEW
+      },
+      orderBy: { updatedAt: 'asc' },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
+    });
+
+    return notes.map(note => this.mapToEntity(note));
   }
 
   async updateNote(id: string, updateNoteDto: UpdateNoteDto): Promise<NoteEntity> {
@@ -103,6 +234,30 @@ export class NotesService {
         ...updateNoteDto,
         updatedAt: new Date(),
       },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
     });
 
     return this.mapToEntity(note);
@@ -141,6 +296,30 @@ export class NotesService {
         status: NoteStatus.SUBMITTED_FOR_REVIEW,
         updatedAt: new Date(),
       },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
     });
 
     return this.mapToEntity(note);
@@ -167,6 +346,30 @@ export class NotesService {
         signedAt: new Date(),
         updatedAt: new Date(),
       },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
     });
 
     return this.mapToEntity(note);
@@ -188,6 +391,30 @@ export class NotesService {
         lockedAt: new Date(),
         updatedAt: new Date(),
       },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
     });
 
     return this.mapToEntity(note);
@@ -212,6 +439,8 @@ export class NotesService {
       version: note.version,
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
+      client: note.client,
+      provider: note.provider,
     };
   }
 } 

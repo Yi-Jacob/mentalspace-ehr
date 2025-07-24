@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { schedulingService } from '@/services/schedulingService';
 import CreateAppointmentModal from './CreateAppointmentModal';
 import { useCalendarNavigation } from './hooks/useCalendarNavigation';
 import { useAppointmentModal } from './hooks/useAppointmentModal';
@@ -13,26 +13,7 @@ import CalendarContent from './calendar/CalendarContent';
 
 type CalendarViewType = 'day' | 'week' | 'month' | 'list';
 
-interface Appointment {
-  id: string;
-  title: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  location?: string;
-  room_number?: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  users?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+import { Appointment } from '@/services/schedulingService';
 
 const CalendarView = () => {
   const { 
@@ -79,44 +60,10 @@ const CalendarView = () => {
           endDate = addDays(endOfWeek(currentDate, { weekStartsOn: 1 }), 30);
       }
 
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          title,
-          client_id,
-          provider_id,
-          appointment_type,
-          start_time,
-          end_time,
-          status,
-          location,
-          room_number,
-          clients!client_id(first_name, last_name),
-          users!provider_id(first_name, last_name)
-        `)
-        .gte('start_time', startDate.toISOString())
-        .lte('start_time', endDate.toISOString())
-        .order('start_time');
-
-      if (error) throw error;
-      
-      const transformedData: Appointment[] = (data || []).map(item => ({
-        id: item.id,
-        title: item.title || '',
-        client_id: item.client_id,
-        provider_id: item.provider_id,
-        appointment_type: item.appointment_type,
-        start_time: item.start_time,
-        end_time: item.end_time,
-        status: item.status,
-        location: item.location,
-        room_number: item.room_number,
-        clients: item.clients,
-        users: item.users
-      }));
-
-      return transformedData;
+      return await schedulingService.getAppointments({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
     },
   });
 

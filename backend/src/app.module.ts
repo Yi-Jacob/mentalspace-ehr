@@ -7,9 +7,11 @@ import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './clients/clients.module';
 import { UsersModule } from './staff/users.module';
 import { NotesModule } from './notes/notes.module';
+import { DiagnosesModule } from './diagnoses/diagnoses.module';
 import { BillingModule } from './billing/billing.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { MessagesModule } from './messages/messages.module';
+import { SchedulingModule } from './scheduling/scheduling.module';
 import { DatabaseModule } from './database/database.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { LoggerModule } from './common/logger/logger.module';
@@ -34,9 +36,11 @@ import { HealthModule } from './health/health.module';
     UsersModule,
     ClientsModule,
     NotesModule,
+    DiagnosesModule,
     BillingModule,
     ComplianceModule,
     MessagesModule,
+    SchedulingModule,
     HealthModule,
   ],
   controllers: [AppController],

@@ -6,195 +6,159 @@ import { Button } from '@/components/ui/button';
 import { FileText, Calendar, User, Clock, AlertTriangle } from 'lucide-react';
 import { format, isAfter, subDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-
-interface ClinicalNote {
-  id: string;
-  title: string;
-  note_type: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  client_id: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  provider?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+import { Note } from '@/types/note';
 
 interface NoteCardProps {
-  note: ClinicalNote;
+  note: Note;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onView?: (id: string) => void;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
+const NoteCard: React.FC<NoteCardProps> = ({
+  note,
+  onEdit,
+  onDelete,
+  onView,
+}) => {
   const navigate = useNavigate();
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'signed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'submitted_for_review': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'approved': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'rejected': return 'bg-red-100 text-red-800 border-red-200';
-      case 'locked': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'signed': return 'bg-green-100 text-green-800';
+      case 'submitted_for_review': return 'bg-blue-100 text-blue-800';
+      case 'approved': return 'bg-emerald-100 text-emerald-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'locked': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    return <FileText className="h-4 w-4" />;
+  const getStatusText = (status: string) => {
+    return status.replace('_', ' ').toUpperCase();
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'progress_note': return 'from-green-500 to-green-600';
-      case 'intake': return 'from-blue-500 to-blue-600';
-      case 'treatment_plan': return 'from-purple-500 to-purple-600';
-      default: return 'from-gray-500 to-gray-600';
-    }
-  };
+  const isOverdue = note.status === 'draft' && 
+    isAfter(subDays(new Date(), 7), new Date(note.updatedAt));
 
-  const formatNoteType = (type: string) => {
-    return type.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-
-  const isOverdue = (status: string, updatedAt: string) => {
-    if (status !== 'draft') return false;
-    return isAfter(subDays(new Date(), 7), new Date(updatedAt));
-  };
-
-  const handleViewNote = () => {
-    if (note.note_type === 'progress_note') {
-      navigate(`/notes/progress-note/${note.id}`);
+  const handleView = () => {
+    if (onView) {
+      onView(note.id);
     } else {
-      navigate(`/notes/note/${note.id}`);
+      navigate(`/notes/${note.noteType}/${note.id}`);
     }
   };
 
-  const handleEditNote = () => {
-    if (note.note_type === 'progress_note') {
-      navigate(`/notes/progress-note/${note.id}/edit`);
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(note.id);
     } else {
-      navigate(`/notes/note/${note.id}/edit`);
+      navigate(`/notes/${note.noteType}/${note.id}/edit`);
     }
   };
 
-  const overdue = isOverdue(note.status, note.updated_at);
-  const typeColor = getTypeColor(note.note_type);
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(note.id);
+    }
+  };
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-white/90 backdrop-blur-sm hover:scale-[1.02] overflow-hidden">
-      <div className={`h-1 bg-gradient-to-r ${typeColor}`} />
-      
+    <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-3 flex-1">
-            {/* Header with icon and title */}
-            <div className="flex items-start space-x-3">
-              <div className={`p-2 rounded-lg bg-gradient-to-br ${typeColor} text-white shadow-sm`}>
-                {getTypeIcon(note.note_type)}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
-                  <h3 className="font-semibold text-lg text-gray-900 group-hover:text-gray-700 transition-colors">
-                    {note.title}
-                  </h3>
-                  {overdue && (
-                    <AlertTriangle className="h-4 w-4 text-red-500" />
-                  )}
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="bg-white/80">
-                    {formatNoteType(note.note_type)}
-                  </Badge>
-                  <Badge className={getStatusColor(note.status)}>
-                    {note.status.replace('_', ' ').toUpperCase()}
-                  </Badge>
-                  {overdue && (
-                    <Badge className="bg-red-100 text-red-800 border-red-200">
-                      Overdue
-                    </Badge>
-                  )}
-                </div>
-              </div>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              <h3 className="font-semibold text-lg text-gray-900">{note.title}</h3>
+              <Badge className={getStatusColor(note.status)}>
+                {getStatusText(note.status)}
+              </Badge>
+              {isOverdue && (
+                <Badge className="bg-red-100 text-red-800 border-red-200">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Overdue
+                </Badge>
+              )}
             </div>
             
-            {/* Client and Provider Info */}
-            <div className="bg-gray-50/80 rounded-lg p-3 space-y-2">
-              <div className="flex items-center space-x-2 text-sm text-gray-700">
-                <User className="h-4 w-4 text-blue-500" />
-                <span className="font-medium">Client:</span>
-                <span>{note.clients?.first_name} {note.clients?.last_name}</span>
-              </div>
-              
-              {note.provider && (
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <User className="h-4 w-4 text-green-500" />
-                  <span className="font-medium">Provider:</span>
-                  <span>{note.provider.first_name} {note.provider.last_name}</span>
-                </div>
-              )}
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <span className="capitalize">{note.noteType.replace('_', ' ')}</span>
+              <span>•</span>
+              <span>ID: {note.id.slice(0, 8)}...</span>
             </div>
-
-            {/* Dates */}
-            <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 text-blue-400" />
-                <span>Created: {format(new Date(note.created_at), 'MMM d, yyyy')}</span>
-              </div>
-              {note.updated_at !== note.created_at && (
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-orange-400" />
-                  <span>Updated: {format(new Date(note.updated_at), 'MMM d, yyyy')}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-col space-y-2 ml-4">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleViewNote}
-              className="bg-white/80 hover:bg-white border-gray-200 hover:border-gray-300"
-            >
-              View
-            </Button>
-            {note.status === 'draft' && (
-              <Button 
-                size="sm"
-                onClick={handleEditNote}
-                className={`bg-gradient-to-r ${typeColor} border-0 hover:shadow-md transition-shadow`}
-              >
-                Edit
-              </Button>
-            )}
           </div>
         </div>
 
-        {/* Accountability Progress Bar for Drafts */}
-        {note.status === 'draft' && (
-          <div className="mt-4 pt-3 border-t border-gray-100">
-            <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
-              <span>Completion Status</span>
-              <span>{overdue ? 'Overdue' : 'In Progress'}</span>
+        {/* Content */}
+        <div className="space-y-4">
+          {/* Client and Provider Info */}
+          <div className="bg-gray-50/80 rounded-lg p-3 space-y-2">
+            <div className="flex items-center space-x-2 text-sm text-gray-700">
+              <User className="h-4 w-4 text-blue-500" />
+              <span className="font-medium">Client:</span>
+              <span>{note.client?.firstName} {note.client?.lastName}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  overdue ? 'bg-red-400' : 'bg-blue-400'
-                }`}
-                style={{ width: '60%' }}
-              />
-            </div>
+            
+            {note.provider && (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <User className="h-4 w-4 text-green-500" />
+                <span className="font-medium">Provider:</span>
+                <span>{note.provider.firstName} {note.provider.lastName}</span>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Dates */}
+          <div className="flex items-center space-x-6 text-sm text-gray-600">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-blue-400" />
+              <span>Created: {format(new Date(note.createdAt), 'MMM d, yyyy')}</span>
+            </div>
+            {note.updatedAt !== note.createdAt && (
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-orange-400" />
+                <span>Updated: {format(new Date(note.updatedAt), 'MMM d, yyyy')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end space-x-2 mt-6 pt-4 border-t border-gray-100">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleView}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+          >
+            View
+          </Button>
+          
+          {note.status === 'draft' && onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              className="text-green-600 border-green-200 hover:bg-green-50"
+            >
+              Edit
+            </Button>
+          )}
+          
+          {onDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              className="text-red-600 border-red-200 hover:bg-red-50"
+            >
+              Delete
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

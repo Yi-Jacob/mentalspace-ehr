@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { schedulingService } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
 
 interface UpdateAppointmentData {
@@ -63,18 +63,7 @@ export const useAppointmentMutations = () => {
         }
       }
 
-      const { data: result, error } = await supabase
-        .from('appointments')
-        .update(updateData)
-        .eq('id', data.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Update error:', error);
-        throw new Error(error.message || 'Failed to update appointment');
-      }
-      return result;
+      return await schedulingService.updateAppointment(data.id, updateData);
     },
     onSuccess: () => {
       toast({
@@ -102,15 +91,7 @@ export const useAppointmentMutations = () => {
         throw new Error('Appointment ID is required');
       }
 
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', appointmentId);
-
-      if (error) {
-        console.error('Delete error:', error);
-        throw new Error(error.message || 'Failed to delete appointment');
-      }
+      await schedulingService.deleteAppointment(appointmentId);
     },
     onSuccess: () => {
       toast({
@@ -161,18 +142,7 @@ export const useAppointmentMutations = () => {
         updateData.cancelled_at = new Date().toISOString();
       }
 
-      const { data, error } = await supabase
-        .from('appointments')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Status update error:', error);
-        throw new Error(error.message || 'Failed to update appointment status');
-      }
-      return data;
+      return await schedulingService.updateAppointmentStatus(id, status);
     },
     onSuccess: () => {
       toast({

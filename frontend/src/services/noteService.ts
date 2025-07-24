@@ -15,27 +15,37 @@ export class NoteService {
     if (params?.status) queryParams.append('status', params.status);
 
     const url = `${this.baseUrl}?${queryParams.toString()}`;
-    return apiClient.get<NotesResponse>(url);
+    const response = await apiClient.get<NotesResponse>(url);
+    return response.data;
   }
 
   // Get single note by ID
   async getNote(id: string): Promise<Note> {
-    return apiClient.get<Note>(`${this.baseUrl}/${id}`);
+    const response = await apiClient.get<Note>(`${this.baseUrl}/${id}`);
+    return response.data;
+  }
+
+  // Get pending approvals
+  async getPendingApprovals(): Promise<Note[]> {
+    const response = await apiClient.get<Note[]>(`${this.baseUrl}/pending-approvals`);
+    return response.data;
   }
 
   // Create new note
   async createNote(data: CreateNoteRequest): Promise<Note> {
-    return apiClient.post<Note>(this.baseUrl, data);
+    const response = await apiClient.post<Note>(this.baseUrl, data);
+    return response.data;
   }
 
   // Update existing note
   async updateNote(id: string, data: UpdateNoteRequest): Promise<Note> {
-    return apiClient.patch<Note>(`${this.baseUrl}/${id}`, data);
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}`, data);
+    return response.data;
   }
 
   // Delete note
   async deleteNote(id: string): Promise<void> {
-    return apiClient.delete(`${this.baseUrl}/${id}`);
+    await apiClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // Get notes by client
@@ -50,22 +60,26 @@ export class NoteService {
     if (params?.noteType) queryParams.append('noteType', params.noteType);
 
     const url = `${this.baseUrl}/client/${clientId}?${queryParams.toString()}`;
-    return apiClient.get<NotesResponse>(url);
+    const response = await apiClient.get<NotesResponse>(url);
+    return response.data;
   }
 
   // Submit note for review
   async submitForReview(id: string): Promise<Note> {
-    return apiClient.patch<Note>(`${this.baseUrl}/${id}/submit`, {});
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/submit`, {});
+    return response.data;
   }
 
   // Sign note
   async signNote(id: string, signature: string): Promise<Note> {
-    return apiClient.patch<Note>(`${this.baseUrl}/${id}/sign`, { signature });
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/sign`, { signature });
+    return response.data;
   }
 
   // Lock note
   async lockNote(id: string): Promise<Note> {
-    return apiClient.patch<Note>(`${this.baseUrl}/${id}/lock`, {});
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/lock`, {});
+    return response.data;
   }
 }
 
