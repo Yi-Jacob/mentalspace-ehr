@@ -1,54 +1,20 @@
 
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { permissionsService, Permission } from '@/services/permissionsService';
 import { useToast } from '@/hooks/use-toast';
-import { UserRole } from '@/types/staff';
-
-interface Permission {
-  category: string;
-  action: string;
-  scope: string;
-}
 
 export const usePermissions = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Get current user's permissions using the new database function
+  // Get current user's permissions
   const { data: userPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['current-user-permissions'],
     queryFn: async () => {
       console.log('Permissions: Fetching user permissions...');
-      
-      // Use the new security definer function to get current user info safely
-      const { data: userInfo, error: userError } = await supabase
-        .rpc('get_current_user_info');
-
-      if (userError) {
-        console.error('Permissions: Error getting user info:', userError);
-        return [];
-      }
-
-      if (!userInfo || userInfo.length === 0) {
-        console.log('Permissions: No user info found');
-        return [];
-      }
-
-      const currentUser = userInfo[0];
-      console.log('Permissions: Current user found:', currentUser);
-
-      // Use the get_user_permissions function
-      const { data, error } = await supabase
-        .rpc('get_user_permissions', { _user_id: currentUser.user_id });
-
-      if (error) {
-        console.error('Permissions: Error fetching user permissions:', error);
-        return [];
-      }
-
-      console.log('Permissions: User permissions fetched:', data);
-      return data || [];
+      const permissions = await permissionsService.getUserPermissions();
+      console.log('Permissions: User permissions fetched:', permissions);
+      return permissions || [];
     },
   });
 
@@ -67,35 +33,17 @@ export const usePermissions = () => {
     );
   }, [userPermissions]);
 
-  // Check if user can access specific patient using the enhanced function
+  // Check if user can access specific patient
   const canAccessPatient = useCallback(async (
     clientId: string, 
     accessType: string = 'read'
   ): Promise<boolean> => {
-    // Use the new security definer function to get current user info safely
-    const { data: userInfo, error: userError } = await supabase
-      .rpc('get_current_user_info');
-
-    if (userError || !userInfo || userInfo.length === 0) {
-      return false;
-    }
-
-    const currentUser = userInfo[0];
-
-    // Use the enhanced function that supports access types
-    const { data, error } = await supabase
-      .rpc('can_access_patient_enhanced', { 
-        _user_id: currentUser.user_id, 
-        _client_id: clientId,
-        _access_type: accessType
-      });
-
-    if (error) {
+    try {
+      return await permissionsService.canAccessPatient(clientId, accessType);
+    } catch (error) {
       console.error('Error checking patient access:', error);
       return false;
     }
-
-    return data || false;
   }, []);
 
   // Enhanced role checking with specific permission validation

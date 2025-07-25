@@ -1,12 +1,4 @@
 
-import { Database } from '@/integrations/supabase/types';
-
-export type ClientInsert = Database['public']['Tables']['clients']['Insert'];
-export type PhoneInsert = Database['public']['Tables']['client_phone_numbers']['Insert'];
-export type EmergencyContactInsert = Database['public']['Tables']['client_emergency_contacts']['Insert'];
-export type InsuranceInsert = Database['public']['Tables']['client_insurance']['Insert'];
-export type PCPInsert = Database['public']['Tables']['client_primary_care_providers']['Insert'];
-
 // API Response Types (from backend)
 export interface PhoneNumberDto {
   id?: string;

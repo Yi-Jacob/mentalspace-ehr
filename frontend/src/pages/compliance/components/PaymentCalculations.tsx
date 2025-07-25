@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DollarSign, Calendar, Clock, FileText, Users } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { complianceService } from '@/services/complianceService';
 
 const PaymentCalculations: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
@@ -14,33 +14,7 @@ const PaymentCalculations: React.FC = () => {
   const { data: paymentCalculations, isLoading } = useQuery({
     queryKey: ['payment-calculations', statusFilter, periodFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('payment_calculations')
-        .select(`
-          *,
-          user:users!payment_calculations_user_id_fkey(first_name, last_name),
-          processed_by_user:users!payment_calculations_processed_by_fkey(first_name, last_name)
-        `)
-        .order('pay_period_start', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      // Filter by period
-      if (periodFilter === 'current') {
-        const now = new Date();
-        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-        query = query.gte('pay_period_start', startOfWeek.toISOString().split('T')[0]);
-      } else if (periodFilter === 'last_month') {
-        const lastMonth = new Date();
-        lastMonth.setMonth(lastMonth.getMonth() - 1);
-        query = query.gte('pay_period_start', lastMonth.toISOString().split('T')[0]);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      return complianceService.getPaymentCalculations(statusFilter, periodFilter);
     },
   });
 
@@ -106,7 +80,7 @@ const PaymentCalculations: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Pending</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  ${paymentCalculations?.filter(p => p.status === 'pending').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
+                  ${paymentCalculations?.filter(p => p.status === 'pending').reduce((sum, p) => sum + parseFloat(p.grossAmount.toString()), 0).toFixed(2) || '0.00'}
                 </p>
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
@@ -120,7 +94,7 @@ const PaymentCalculations: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Completed</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  ${paymentCalculations?.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
+                  ${paymentCalculations?.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseFloat(p.grossAmount.toString()), 0).toFixed(2) || '0.00'}
                 </p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
@@ -134,7 +108,7 @@ const PaymentCalculations: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Paid</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${paymentCalculations?.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseFloat(p.gross_amount.toString()), 0).toFixed(2) || '0.00'}
+                  ${paymentCalculations?.filter(p => p.status === 'completed').reduce((sum, p) => sum + parseFloat(p.grossAmount.toString()), 0).toFixed(2) || '0.00'}
                 </p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -148,7 +122,7 @@ const PaymentCalculations: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Staff Count</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {new Set(paymentCalculations?.map(p => p.user_id)).size || 0}
+                  {new Set(paymentCalculations?.map(p => p.userId)).size || 0}
                 </p>
               </div>
               <Users className="h-8 w-8 text-purple-600" />
@@ -166,13 +140,13 @@ const PaymentCalculations: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <h4 className="font-semibold text-lg">
-                      {calculation.user?.first_name} {calculation.user?.last_name}
+                      {calculation.user?.firstName} {calculation.user?.lastName}
                     </h4>
                     <Badge className={getStatusColor(calculation.status)}>
                       {calculation.status}
                     </Badge>
                     <Badge variant="outline">
-                      {formatCompensationType(calculation.compensation_type)}
+                      {formatCompensationType(calculation.compensationType)}
                     </Badge>
                   </div>
 
@@ -180,22 +154,22 @@ const PaymentCalculations: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        <strong>Period:</strong> {new Date(calculation.pay_period_start).toLocaleDateString()} - {new Date(calculation.pay_period_end).toLocaleDateString()}
+                        <strong>Period:</strong> {new Date(calculation.payPeriodStart).toLocaleDateString()} - {new Date(calculation.payPeriodEnd).toLocaleDateString()}
                       </span>
                     </div>
-                    {calculation.total_sessions > 0 && (
+                    {calculation.totalSessions > 0 && (
                       <div>
-                        <strong>Sessions:</strong> {calculation.total_sessions}
+                        <strong>Sessions:</strong> {calculation.totalSessions}
                       </div>
                     )}
-                    {calculation.total_hours > 0 && (
+                    {calculation.totalHours > 0 && (
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4" />
-                        <span><strong>Hours:</strong> {calculation.total_hours}</span>
+                        <span><strong>Hours:</strong> {calculation.totalHours}</span>
                       </div>
                     )}
                     <div>
-                      <strong>Created:</strong> {new Date(calculation.created_at).toLocaleDateString()}
+                      <strong>Created:</strong> {new Date(calculation.createdAt).toLocaleDateString()}
                     </div>
                   </div>
 
@@ -203,7 +177,7 @@ const PaymentCalculations: React.FC = () => {
                     <div>
                       <strong>Gross Amount:</strong> 
                       <span className="text-green-600 font-semibold ml-1">
-                        ${parseFloat(calculation.gross_amount.toString()).toFixed(2)}
+                        ${parseFloat(calculation.grossAmount.toString()).toFixed(2)}
                       </span>
                     </div>
                     {calculation.deductions > 0 && (
@@ -217,36 +191,36 @@ const PaymentCalculations: React.FC = () => {
                     <div>
                       <strong>Net Amount:</strong> 
                       <span className="text-blue-600 font-semibold ml-1">
-                        ${parseFloat(calculation.net_amount.toString()).toFixed(2)}
+                        ${parseFloat(calculation.netAmount.toString()).toFixed(2)}
                       </span>
                     </div>
-                    {calculation.regular_hours > 0 && (
+                    {calculation.regularHours > 0 && (
                       <div>
-                        <strong>Regular Hours:</strong> {calculation.regular_hours}
-                        {calculation.overtime_hours > 0 && (
+                        <strong>Regular Hours:</strong> {calculation.regularHours}
+                        {calculation.overtimeHours > 0 && (
                           <span className="text-orange-600 ml-2">
-                            (OT: {calculation.overtime_hours})
+                            (OT: {calculation.overtimeHours})
                           </span>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {calculation.processed_at && calculation.processed_by_user && (
+                  {calculation.processedAt && calculation.processedByUser && (
                     <div className="text-sm text-gray-600">
-                      <strong>Processed by:</strong> {calculation.processed_by_user.first_name} {calculation.processed_by_user.last_name}
+                      <strong>Processed by:</strong> {calculation.processedByUser.firstName} {calculation.processedByUser.lastName}
                       <span className="ml-2">
-                        on {new Date(calculation.processed_at).toLocaleDateString()}
+                        on {new Date(calculation.processedAt).toLocaleDateString()}
                       </span>
                     </div>
                   )}
 
-                  {calculation.calculation_details && (
+                  {calculation.calculationDetails && (
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <details className="cursor-pointer">
                         <summary className="font-medium text-gray-700">Calculation Details</summary>
                         <pre className="text-xs text-gray-600 mt-2 overflow-auto">
-                          {JSON.stringify(calculation.calculation_details, null, 2)}
+                          {JSON.stringify(calculation.calculationDetails, null, 2)}
                         </pre>
                       </details>
                     </div>

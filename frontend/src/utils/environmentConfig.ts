@@ -6,11 +6,6 @@ export const ENV_CONFIG = {
     environment: import.meta.env.MODE || 'development',
     debug: import.meta.env.DEV || false,
   },
-  supabase: {
-    url: 'https://wjaccopklttdvnutdmtu.supabase.co',
-      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqYWNjb3BrbHR0ZHZudXRkbXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTg2NzcsImV4cCI6MjA2MzY3NDY3N30.kf1o-FbWRqfVEHDypcpSOGpOcRUPHFtaJgfZOCqDaek',
-      projectId: 'wjaccopklttdvnutdmtu'
-  },
   api: {
     baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
     timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '10000'),

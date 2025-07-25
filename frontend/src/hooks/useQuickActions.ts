@@ -1,62 +1,20 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-
-interface QuickAction {
-  id: string;
-  user_id: string;
-  action_type: string;
-  title: string;
-  description?: string;
-  priority: number;
-  due_date?: string;
-  completed: boolean;
-  completed_at?: string;
-  created_at: string;
-}
+import { quickActionsService, QuickAction, CreateQuickActionRequest } from '@/services/quickActionsService';
 
 export const useQuickActions = () => {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: actions, isLoading } = useQuery({
-    queryKey: ['quick-actions', user?.id],
+    queryKey: ['quick-actions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('quick_actions')
-        .select('*')
-        .eq('completed', false)
-        .order('priority', { ascending: false })
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return data as QuickAction[];
+      return quickActionsService.getQuickActions();
     },
-    enabled: !!user,
   });
 
   const createActionMutation = useMutation({
-    mutationFn: async (action: Omit<QuickAction, 'id' | 'user_id' | 'created_at' | 'completed' | 'completed_at'>) => {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_user_id', user?.id)
-        .single();
-
-      if (!userData) throw new Error('User not found');
-
-      const { data, error } = await supabase
-        .from('quick_actions')
-        .insert({
-          ...action,
-          user_id: userData.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async (action: CreateQuickActionRequest) => {
+      return quickActionsService.createQuickAction(action);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quick-actions'] });
@@ -65,18 +23,7 @@ export const useQuickActions = () => {
 
   const completeActionMutation = useMutation({
     mutationFn: async (actionId: string) => {
-      const { data, error } = await supabase
-        .from('quick_actions')
-        .update({
-          completed: true,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', actionId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      return quickActionsService.completeQuickAction(actionId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quick-actions'] });

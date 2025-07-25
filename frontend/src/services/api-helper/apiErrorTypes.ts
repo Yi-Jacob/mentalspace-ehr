@@ -9,6 +9,7 @@ export enum APIErrorType {
   RATE_LIMIT_ERROR = 'RATE_LIMIT_ERROR',
   SERVER_ERROR = 'SERVER_ERROR',
   DATABASE_ERROR = 'DATABASE_ERROR',
+  CONFLICT_ERROR = 'CONFLICT_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
 
@@ -21,6 +22,7 @@ export interface APIErrorDetails {
   retryable: boolean;
   retryAfter?: number;
   originalError?: any;
+  validationErrors?: string[];
 }
 
 export class APIError extends Error {
@@ -31,6 +33,7 @@ export class APIError extends Error {
   public readonly retryable: boolean;
   public readonly retryAfter?: number;
   public readonly originalError?: any;
+  public readonly validationErrors?: string[];
 
   constructor(details: APIErrorDetails) {
     super(details.message);
@@ -42,5 +45,6 @@ export class APIError extends Error {
     this.retryable = details.retryable;
     this.retryAfter = details.retryAfter;
     this.originalError = details.originalError;
+    this.validationErrors = details.validationErrors;
   }
 }

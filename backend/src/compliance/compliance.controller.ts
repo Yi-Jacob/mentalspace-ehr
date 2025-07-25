@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query } from '@nestjs/common';
 import { ComplianceService } from './compliance.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -26,5 +26,23 @@ export class ComplianceController {
   @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
   async getComplianceMetrics(@Request() req) {
     return this.complianceService.getComplianceMetrics(req.user.id);
+  }
+
+  @Get('payment-calculations')
+  @Roles(UserRole.ADMIN, UserRole.BILLING)
+  async getPaymentCalculations(
+    @Query('status') status?: string,
+    @Query('period') period?: string
+  ) {
+    return this.complianceService.getPaymentCalculations(status, period);
+  }
+
+  @Get('reports')
+  @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
+  async getComplianceReports(
+    @Query('timeRange') timeRange: string = '30',
+    @Query('reportType') reportType: string = 'overview'
+  ) {
+    return this.complianceService.getComplianceReports(parseInt(timeRange), reportType);
   }
 } 

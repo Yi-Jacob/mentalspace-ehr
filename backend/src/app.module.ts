@@ -14,6 +14,10 @@ import { MessagesModule } from './messages/messages.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
 import { ReportsModule } from './reports/reports.module';
 import { ProductivityGoalsModule } from './productivity-goals/productivity-goals.module';
+import { TrainingRecordsModule } from './training-records/training-records.module';
+import { PracticeSettingsModule } from './practice-settings/practice-settings.module';
+import { QuickActionsModule } from './quick-actions/quick-actions.module';
+import { PermissionsModule } from './permissions/permissions.module';
 import { DatabaseModule } from './database/database.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { LoggerModule } from './common/logger/logger.module';
@@ -45,6 +49,10 @@ import { HealthModule } from './health/health.module';
     SchedulingModule,
     ReportsModule,
     ProductivityGoalsModule,
+    TrainingRecordsModule,
+    PracticeSettingsModule,
+    QuickActionsModule,
+    PermissionsModule,
     HealthModule,
   ],
   controllers: [AppController],

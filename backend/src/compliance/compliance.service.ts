@@ -264,4 +264,178 @@ export class ComplianceService {
       avg_completion_time: Math.round(avgCompletionTime * 100) / 100,
     };
   }
+
+  async getPaymentCalculations(status?: string, period?: string) {
+    let whereClause: any = {};
+
+    // Filter by status
+    if (status && status !== 'all') {
+      whereClause.status = status;
+    }
+
+    // Filter by period
+    if (period && period !== 'all') {
+      const now = new Date();
+      if (period === 'current') {
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+        whereClause.payPeriodStart = {
+          gte: startOfWeek,
+        };
+      } else if (period === 'last_month') {
+        const lastMonth = new Date();
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        whereClause.payPeriodStart = {
+          gte: lastMonth,
+        };
+      }
+    }
+
+    const paymentCalculations = await this.prisma.paymentCalculation.findMany({
+      where: whereClause,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        processedByUser: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        payPeriodStart: 'desc',
+      },
+    });
+
+    return paymentCalculations;
+  }
+
+  async getComplianceReports(timeRange: number = 30, reportType: string = 'overview') {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - timeRange);
+
+    // Fetch comprehensive data for reporting
+    const [paymentData, sessionData, timeData, complianceData] = await Promise.all([
+      this.prisma.paymentCalculation.findMany({
+        where: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+      }),
+      
+      this.prisma.sessionCompletion.findMany({
+        where: {
+          sessionDate: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        include: {
+          provider: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
+      
+      this.prisma.timeEntry.findMany({
+        where: {
+          entryDate: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
+      
+      this.prisma.complianceDeadline.findMany({
+        where: {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+      }),
+    ]);
+
+    // Calculate metrics
+    const totalPayroll = paymentData.reduce((sum, payment) => sum + parseFloat(payment.grossAmount.toString()), 0);
+    const totalSessions = sessionData.length;
+    const signedSessions = sessionData.filter(s => s.isNoteSigned).length;
+    const complianceRate = totalSessions > 0 ? (signedSessions / totalSessions) * 100 : 0;
+
+    // Group data for charts
+    const dailyPayroll = paymentData.reduce((acc: any, payment) => {
+      const date = payment.createdAt.toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = { date, amount: 0, count: 0 };
+      }
+      acc[date].amount += parseFloat(payment.grossAmount.toString());
+      acc[date].count += 1;
+      return acc;
+    }, {});
+
+    const payrollTrend = Object.values(dailyPayroll).sort((a: any, b: any) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    // Provider performance
+    const providerStats = sessionData.reduce((acc: any, session) => {
+      const providerId = session.providerId;
+      const providerName = `${session.provider?.firstName} ${session.provider?.lastName}`;
+      
+      if (!acc[providerId]) {
+        acc[providerId] = {
+          name: providerName,
+          totalSessions: 0,
+          signedSessions: 0,
+          earnings: 0
+        };
+      }
+      
+      acc[providerId].totalSessions += 1;
+      if (session.isNoteSigned) {
+        acc[providerId].signedSessions += 1;
+      }
+      if (session.calculatedAmount) {
+        acc[providerId].earnings += parseFloat(session.calculatedAmount.toString());
+      }
+      
+      return acc;
+    }, {});
+
+    const providerPerformance = Object.values(providerStats).map((provider: any) => ({
+      ...provider,
+      complianceRate: provider.totalSessions > 0 ? (provider.signedSessions / provider.totalSessions) * 100 : 0
+    }));
+
+    return {
+      totalPayroll,
+      totalSessions,
+      signedSessions,
+      complianceRate,
+      payrollTrend,
+      providerPerformance,
+      paymentData,
+      sessionData,
+      timeData,
+      complianceData
+    };
+  }
 } 

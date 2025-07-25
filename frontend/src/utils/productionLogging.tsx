@@ -1,5 +1,5 @@
 import { ENV_CONFIG, logger } from './environmentConfig';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/services/api-helper/client';
 
 interface LogEntry {
   level: 'debug' | 'info' | 'warn' | 'error';
@@ -31,12 +31,10 @@ class ProductionLogger {
     const logsToSend = this.queue.splice(0, this.maxQueueSize);
     
     try {
-      // Send logs to Supabase edge function for processing
-      await supabase.functions.invoke('api-logger', {
-        body: {
-          logs: logsToSend,
-          batch: true
-        }
+      // Send logs to backend API for processing
+      await apiClient.post('/logs/batch', {
+        logs: logsToSend,
+        batch: true
       });
     } catch (error) {
       // Fallback to console if logging service fails

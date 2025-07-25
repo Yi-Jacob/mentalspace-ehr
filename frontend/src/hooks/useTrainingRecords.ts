@@ -1,23 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { trainingRecordsService, TrainingRecord, CreateTrainingRecordRequest, UpdateTrainingRecordRequest } from '@/services/trainingRecordsService';
 import { useToast } from '@/hooks/use-toast';
-
-export interface TrainingRecord {
-  id: string;
-  user_id: string;
-  training_title: string;
-  training_type: string;
-  provider_organization?: string;
-  completion_date?: string;
-  expiry_date?: string;
-  hours_completed?: number;
-  certificate_number?: string;
-  status: 'in_progress' | 'completed' | 'expired';
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
 
 export const useTrainingRecords = () => {
   const { toast } = useToast();
@@ -26,29 +10,13 @@ export const useTrainingRecords = () => {
   const { data: trainingRecords, isLoading } = useQuery({
     queryKey: ['training-records'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('training_records')
-        .select(`
-          *,
-          user:users!training_records_user_id_fkey(first_name, last_name)
-        `)
-        .order('completion_date', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      return trainingRecordsService.getTrainingRecords();
     },
   });
 
   const addTrainingRecord = useMutation({
-    mutationFn: async (record: Omit<TrainingRecord, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('training_records')
-        .insert(record)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async (record: CreateTrainingRecordRequest) => {
+      return trainingRecordsService.createTrainingRecord(record);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['training-records'] });
@@ -64,16 +32,8 @@ export const useTrainingRecords = () => {
   });
 
   const updateTrainingRecord = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<TrainingRecord> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('training_records')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+    mutationFn: async ({ id, ...updates }: UpdateTrainingRecordRequest & { id: string }) => {
+      return trainingRecordsService.updateTrainingRecord(id, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['training-records'] });

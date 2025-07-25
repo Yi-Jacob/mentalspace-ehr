@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, DollarSign, Users, Calendar, Download } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { complianceService } from '@/services/complianceService';
 
 const ComplianceReports: React.FC = () => {
   const [timeRange, setTimeRange] = useState('30');
@@ -15,111 +15,7 @@ const ComplianceReports: React.FC = () => {
   const { data: reportData, isLoading } = useQuery({
     queryKey: ['compliance-reports', timeRange, reportType],
     queryFn: async () => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - parseInt(timeRange));
-
-      // Fetch comprehensive data for reporting
-      const [
-        { data: paymentData },
-        { data: sessionData },
-        { data: timeData },
-        { data: complianceData }
-      ] = await Promise.all([
-        supabase
-          .from('payment_calculations')
-          .select('*')
-          .gte('created_at', startDate.toISOString())
-          .lte('created_at', endDate.toISOString()),
-        
-        supabase
-          .from('session_completions')
-          .select(`
-            *, 
-            provider:users!session_completions_provider_id_fkey(first_name, last_name)
-          `)
-          .gte('session_date', startDate.toISOString().split('T')[0])
-          .lte('session_date', endDate.toISOString().split('T')[0]),
-        
-        supabase
-          .from('time_entries')
-          .select(`
-            *, 
-            user:users!time_entries_user_id_fkey(first_name, last_name)
-          `)
-          .gte('entry_date', startDate.toISOString().split('T')[0])
-          .lte('entry_date', endDate.toISOString().split('T')[0]),
-        
-        supabase
-          .from('compliance_deadlines')
-          .select('*')
-          .gte('created_at', startDate.toISOString())
-          .lte('created_at', endDate.toISOString())
-      ]);
-
-      // Calculate metrics
-      const totalPayroll = paymentData?.reduce((sum, payment) => sum + parseFloat(payment.gross_amount.toString()), 0) || 0;
-      const totalSessions = sessionData?.length || 0;
-      const signedSessions = sessionData?.filter(s => s.is_note_signed).length || 0;
-      const complianceRate = totalSessions > 0 ? (signedSessions / totalSessions) * 100 : 0;
-
-      // Group data for charts
-      const dailyPayroll = paymentData?.reduce((acc: any, payment) => {
-        const date = payment.created_at.split('T')[0];
-        if (!acc[date]) {
-          acc[date] = { date, amount: 0, count: 0 };
-        }
-        acc[date].amount += parseFloat(payment.gross_amount.toString());
-        acc[date].count += 1;
-        return acc;
-      }, {});
-
-      const payrollTrend = Object.values(dailyPayroll || {}).sort((a: any, b: any) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-
-      // Provider performance
-      const providerStats = sessionData?.reduce((acc: any, session) => {
-        const providerId = session.provider_id;
-        const providerName = `${session.provider?.first_name} ${session.provider?.last_name}`;
-        
-        if (!acc[providerId]) {
-          acc[providerId] = {
-            name: providerName,
-            totalSessions: 0,
-            signedSessions: 0,
-            earnings: 0
-          };
-        }
-        
-        acc[providerId].totalSessions += 1;
-        if (session.is_note_signed) {
-          acc[providerId].signedSessions += 1;
-        }
-        if (session.calculated_amount) {
-          acc[providerId].earnings += parseFloat(session.calculated_amount.toString());
-        }
-        
-        return acc;
-      }, {});
-
-      const providerPerformance = Object.values(providerStats || {}).map((provider: any) => ({
-        ...provider,
-        complianceRate: provider.totalSessions > 0 ? (provider.signedSessions / provider.totalSessions) * 100 : 0
-      }));
-
-      return {
-        totalPayroll,
-        totalSessions,
-        signedSessions,
-        complianceRate,
-        payrollTrend,
-        providerPerformance,
-        paymentData,
-        sessionData,
-        timeData,
-        complianceData
-      };
+      return complianceService.getComplianceReports(parseInt(timeRange), reportType);
     },
   });
 
