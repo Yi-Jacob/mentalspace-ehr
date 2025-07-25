@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Calendar, Bell, CheckCircle, Clock } from 'lucide-react';
-import { complianceDeadlinesApi } from '@/services/complianceService';
+import { complianceService } from '@/services/complianceService';
 
 const ComplianceDeadlines: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'met' | 'overdue'>('all');
@@ -14,7 +14,7 @@ const ComplianceDeadlines: React.FC = () => {
   const { data: deadlines, isLoading } = useQuery({
     queryKey: ['compliance-deadlines', statusFilter],
     queryFn: async () => {
-      return complianceDeadlinesApi.getAll(statusFilter);
+      return complianceService.getAll(statusFilter);
     },
   });
 

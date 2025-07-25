@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -21,16 +22,25 @@ export class UsersService {
     }
   }
 
+  // Helper function to generate a default password
+  private async generateDefaultPassword(): Promise<string> {
+    const saltRounds = 10;
+    const defaultPassword = 'ChangeMe123!'; // Default password that should be changed
+    return await bcrypt.hash(defaultPassword, saltRounds);
+  }
+
   async create(createUserDto: CreateUserDto) {
     console.log('Creating staff member with data:', createUserDto);
 
     try {
       // Use Prisma transaction to ensure data consistency
       const result = await this.prisma.$transaction(async (prisma) => {
-        // 1. Create the user record
+        // 1. Create the user record with a default password
+        const hashedPassword = await this.generateDefaultPassword();
         const user = await prisma.user.create({
           data: {
             email: createUserDto.email,
+            password: hashedPassword,
             firstName: createUserDto.firstName,
             lastName: createUserDto.lastName,
             isActive: true,
@@ -57,20 +67,7 @@ export class UsersService {
           },
         });
 
-        // 3. Assign roles if provided
-        if (createUserDto.roles && createUserDto.roles.length > 0) {
-          const roleData = createUserDto.roles.map(role => ({
-            userId: user.id,
-            role: role,
-            isActive: true,
-          }));
-
-          await prisma.userRole.createMany({
-            data: roleData,
-          });
-        }
-
-        // 4. Create supervision relationship if supervisor is specified and supervision type is not 'Not Supervised'
+        // 3. Create supervision relationship if supervisor is specified and supervision type is not 'Not Supervised'
         if (createUserDto.supervisionType && 
             createUserDto.supervisionType !== 'Not Supervised' && 
             createUserDto.supervisorId) {
@@ -108,10 +105,9 @@ export class UsersService {
     // Get related data separately since relationships aren't defined
     const usersWithDetails = await Promise.all(
       users.map(async (user) => {
-        const [staffProfile, userRoles] = await Promise.all([
-          this.prisma.staffProfile.findFirst({ where: { userId: user.id } }),
-          this.prisma.userRole.findMany({ where: { userId: user.id, isActive: true } }),
-        ]);
+        const staffProfile = await this.prisma.staffProfile.findFirst({ 
+          where: { userId: user.id } 
+        });
         
         // Transform data to use camelCase
         return {
@@ -141,13 +137,6 @@ export class UsersService {
             createdAt: staffProfile.createdAt,
             updatedAt: staffProfile.updatedAt,
           } : null,
-          roles: userRoles.map(role => ({
-            id: role.id,
-            userId: role.userId,
-            role: role.role,
-            isActive: role.isActive,
-            assignedAt: role.assignedAt,
-          })),
         };
       })
     );
@@ -166,10 +155,9 @@ export class UsersService {
     }
 
     // Get related data separately
-    const [staffProfile, userRoles] = await Promise.all([
-      this.prisma.staffProfile.findFirst({ where: { userId: user.id } }),
-      this.prisma.userRole.findMany({ where: { userId: user.id, isActive: true } }),
-    ]);
+    const staffProfile = await this.prisma.staffProfile.findFirst({ 
+      where: { userId: user.id } 
+    });
 
     // Transform data to use camelCase
     return {
@@ -199,13 +187,6 @@ export class UsersService {
         createdAt: staffProfile.createdAt,
         updatedAt: staffProfile.updatedAt,
       } : null,
-      roles: userRoles.map(role => ({
-        id: role.id,
-        userId: role.userId,
-        role: role.role,
-        isActive: role.isActive,
-        assignedAt: role.assignedAt,
-      })),
     };
   }
 
@@ -226,94 +207,12 @@ export class UsersService {
     });
   }
 
-  // User Roles methods
-  async getCurrentUserRoles(userId: string) {
-    const userRoles = await this.prisma.userRole.findMany({
-      where: {
-        userId: userId,
-        isActive: true,
-      },
-      select: {
-        role: true,
-        assignedAt: true,
-        assignedBy: true,
-      },
-    });
-
-    return userRoles.map(ur => ({
-      role: ur.role,
-      assignedAt: ur.assignedAt,
-      assignedBy: ur.assignedBy,
-    }));
-  }
-
-  async assignRole(userId: string, role: string, assignedBy: string) {
-    // Check if role already exists and is active
-    const existingRole = await this.prisma.userRole.findFirst({
-      where: {
-        userId: userId,
-        role: role,
-        isActive: true,
-      },
-    });
-
-    if (existingRole) {
-      throw new BadRequestException('User already has this role');
-    }
-
-    // Create new role assignment
-    const userRole = await this.prisma.userRole.create({
-      data: {
-        userId: userId,
-        role: role,
-        assignedBy: assignedBy,
-        isActive: true,
-      },
-    });
-
-    return userRole;
-  }
-
-  async removeRole(userId: string, role: string) {
-    const userRole = await this.prisma.userRole.findFirst({
-      where: {
-        userId: userId,
-        role: role,
-        isActive: true,
-      },
-    });
-
-    if (!userRole) {
-      throw new NotFoundException('Role not found for user');
-    }
-
-    // Soft delete by setting isActive to false
-    return this.prisma.userRole.update({
-      where: { id: userRole.id },
-      data: { isActive: false },
-    });
-  }
-
   // Performance Metrics methods
   async getPerformanceMetrics(userId?: string) {
     const whereClause = userId ? { userId: userId } : {};
 
     const metrics = await this.prisma.performanceMetric.findMany({
       where: whereClause,
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        reviewer: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
       orderBy: {
         periodStart: 'desc',
       },
@@ -332,8 +231,6 @@ export class UsersService {
       reviewed_by: metric.reviewedBy,
       reviewed_at: metric.reviewedAt,
       created_at: metric.createdAt,
-      user: metric.user,
-      reviewer: metric.reviewer,
     }));
   }
 

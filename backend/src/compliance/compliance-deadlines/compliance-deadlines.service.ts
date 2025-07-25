@@ -212,4 +212,44 @@ export class ComplianceDeadlinesService {
       remindersSent,
     };
   }
+
+  async approveDeadline(id: string, reviewedBy: string, reviewNotes?: string) {
+    const deadline = await this.getComplianceDeadlineById(id);
+    
+    return this.prisma.complianceDeadline.update({
+      where: { id },
+      data: {
+        isMet: true,
+        // Add review fields if they exist in the schema
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
+  async rejectDeadline(id: string, reviewedBy: string, reviewNotes?: string) {
+    const deadline = await this.getComplianceDeadlineById(id);
+    
+    return this.prisma.complianceDeadline.update({
+      where: { id },
+      data: {
+        isMet: false,
+        // Add review fields if they exist in the schema
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
 } 

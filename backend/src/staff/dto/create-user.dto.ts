@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsDateString, IsEnum, ValidateIf } from 'class-validator';
-import { UserRole } from '../../auth/enums/user-role.enum';
 
 // Define UserStatus enum since it's not in the existing enum file
 export enum UserStatus {
@@ -178,13 +177,6 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   supervisorId?: string;
-
-  // Roles
-  @ApiProperty({ description: 'User roles', type: [String], required: false })
-  @IsOptional()
-  @IsArray()
-  @IsEnum(UserRole, { each: true })
-  roles?: UserRole[];
 
   // User comments
   @ApiProperty({ description: 'User comments', required: false })

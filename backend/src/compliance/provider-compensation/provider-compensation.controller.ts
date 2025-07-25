@@ -3,48 +3,44 @@ import { ProviderCompensationService } from './provider-compensation.service';
 import { CreateProviderCompensationDto } from './dto/create-provider-compensation.dto';
 import { UpdateProviderCompensationDto } from './dto/update-provider-compensation.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { UserRole } from '../../auth/enums/user-role.enum';
 
 @Controller('compliance/provider-compensation')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class ProviderCompensationController {
   constructor(private readonly providerCompensationService: ProviderCompensationService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
-  async getAllProviderCompensations(@Query('providerId') providerId?: string) {
-    return this.providerCompensationService.getAllProviderCompensations(providerId);
+  async getAllProviderCompensations(@Query('status') status?: string, @Query('providerId') providerId?: string) {
+    return this.providerCompensationService.getAllProviderCompensations(status, providerId);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
   async getProviderCompensationById(@Param('id') id: string) {
     return this.providerCompensationService.getProviderCompensationById(id);
   }
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.BILLING)
   async createProviderCompensation(@Body() createProviderCompensationDto: CreateProviderCompensationDto) {
     return this.providerCompensationService.createProviderCompensation(createProviderCompensationDto);
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN, UserRole.BILLING)
   async updateProviderCompensation(@Param('id') id: string, @Body() updateProviderCompensationDto: UpdateProviderCompensationDto) {
     return this.providerCompensationService.updateProviderCompensation(id, updateProviderCompensationDto);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
   async deleteProviderCompensation(@Param('id') id: string) {
     return this.providerCompensationService.deleteProviderCompensation(id);
   }
 
-  @Get('session-multipliers')
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
-  async getSessionMultipliers(@Query('providerId') providerId?: string) {
-    return this.providerCompensationService.getSessionMultipliers(providerId);
+  @Post(':id/approve')
+  async approveCompensation(@Param('id') id: string, @Body() approveDto: { reviewedBy: string; reviewNotes?: string }) {
+    return this.providerCompensationService.approveCompensation(id, approveDto.reviewedBy, approveDto.reviewNotes);
+  }
+
+  @Post(':id/reject')
+  async rejectCompensation(@Param('id') id: string, @Body() rejectDto: { reviewedBy: string; reviewNotes?: string }) {
+    return this.providerCompensationService.rejectCompensation(id, rejectDto.reviewedBy, rejectDto.reviewNotes);
   }
 } 

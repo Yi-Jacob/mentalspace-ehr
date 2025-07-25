@@ -4,13 +4,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../auth/enums/user-role.enum';
 
 @ApiTags('Staff')
 @Controller('staff')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -49,34 +46,8 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
-  // User Roles endpoints
-  @Get('roles/current')
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
-  @ApiOperation({ summary: 'Get current user roles' })
-  @ApiResponse({ status: 200, description: 'Current user roles retrieved' })
-  getCurrentUserRoles(@Request() req) {
-    return this.usersService.getCurrentUserRoles(req.user.id);
-  }
-
-  @Post('roles/assign')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Assign role to user' })
-  @ApiResponse({ status: 201, description: 'Role assigned successfully' })
-  assignRole(@Body() body: { userId: string; role: string }, @Request() req) {
-    return this.usersService.assignRole(body.userId, body.role, req.user.id);
-  }
-
-  @Post('roles/remove')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Remove role from user' })
-  @ApiResponse({ status: 200, description: 'Role removed successfully' })
-  removeRole(@Body() body: { userId: string; role: string }) {
-    return this.usersService.removeRole(body.userId, body.role);
-  }
-
   // Performance Metrics endpoints
   @Get('performance-metrics')
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER, UserRole.BILLING)
   @ApiOperation({ summary: 'Get performance metrics' })
   @ApiResponse({ status: 200, description: 'Performance metrics retrieved' })
   getPerformanceMetrics(@Query('userId') userId?: string) {
@@ -84,7 +55,6 @@ export class UsersController {
   }
 
   @Post('performance-metrics')
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER)
   @ApiOperation({ summary: 'Create performance metric' })
   @ApiResponse({ status: 201, description: 'Performance metric created' })
   createPerformanceMetric(@Body() metric: any, @Request() req) {
@@ -92,7 +62,6 @@ export class UsersController {
   }
 
   @Put('performance-metrics/:id')
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER)
   @ApiOperation({ summary: 'Update performance metric' })
   @ApiResponse({ status: 200, description: 'Performance metric updated' })
   updatePerformanceMetric(@Param('id') id: string, @Body() updates: any) {

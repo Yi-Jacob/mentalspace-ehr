@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Clock, Play, Pause, Plus, CheckCircle, AlertTriangle } from 'lucide-react';
-import { timeTrackingApi } from '@/services/complianceService';
+import { complianceService } from '@/services/complianceService';
 import { useToast } from '@/hooks/use-toast';
 
 const TimeTracking: React.FC = () => {
@@ -20,13 +20,13 @@ const TimeTracking: React.FC = () => {
   const { data: timeEntries, isLoading } = useQuery({
     queryKey: ['time-entries', selectedDate],
     queryFn: async () => {
-      return timeTrackingApi.getAll(selectedDate);
+      return complianceService.getAll(selectedDate);
     },
   });
 
   const createTimeEntryMutation = useMutation({
     mutationFn: async (entryData: any) => {
-      return timeTrackingApi.create(entryData);
+      return complianceService.create(entryData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
@@ -49,7 +49,7 @@ const TimeTracking: React.FC = () => {
     mutationFn: async () => {
       // TODO: Get current user ID from auth context
       const userId = 'current-user-id'; // This should come from auth context
-      return timeTrackingApi.clockIn(userId);
+      return complianceService.clockIn(userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
@@ -69,7 +69,7 @@ const TimeTracking: React.FC = () => {
 
   const clockOutMutation = useMutation({
     mutationFn: async (entryId: string) => {
-      return timeTrackingApi.clockOut(entryId);
+      return complianceService.clockOut(entryId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });

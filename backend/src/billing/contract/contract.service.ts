@@ -7,8 +7,16 @@ import { UpdateContractDto } from './dto/update-contract.dto';
 export class ContractService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllContracts(payerId?: string) {
-    const where = payerId ? { payerId } : {};
+  async getAllContracts(status?: string, providerId?: string) {
+    const where: any = {};
+    
+    if (status) {
+      where.status = status;
+    }
+    
+    if (providerId) {
+      where.payerId = providerId;
+    }
 
     return this.prisma.payerContract.findMany({
       where,

@@ -23,7 +23,7 @@ function App() {
               <RouterProvider router={router} />
             </Suspense>
           </SidebarProvider>
-            <Toaster />
+          <Toaster />
           <Sonner />
         </TooltipProvider>
       </AuthProvider>

@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { complianceApi } from '@/services/complianceService';
+import { complianceService } from '@/services/complianceService';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ComplianceMetrics {
@@ -17,7 +17,7 @@ export const useComplianceMetrics = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
       
-      return await complianceApi.getMetrics();
+      return await complianceService.getComplianceMetrics();
     },
     enabled: !!user,
   });

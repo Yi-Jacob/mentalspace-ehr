@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Plus, Edit, Users, DollarSign, Clock } from 'lucide-react';
-import { providerCompensationApi } from '@/services/complianceService';
+import { complianceService } from '@/services/complianceService';
 import { useToast } from '@/hooks/use-toast';
 
 const ProviderCompensationConfig: React.FC = () => {
@@ -30,20 +30,20 @@ const ProviderCompensationConfig: React.FC = () => {
   const { data: compensationConfigs, isLoading } = useQuery({
     queryKey: ['compensation-configs', selectedProvider],
     queryFn: async () => {
-      return providerCompensationApi.getAll(selectedProvider !== 'all' ? selectedProvider : undefined);
+      return complianceService.getAll(selectedProvider !== 'all' ? selectedProvider : undefined);
     },
   });
 
   const { data: sessionMultipliers } = useQuery({
     queryKey: ['session-multipliers', selectedProvider],
     queryFn: async () => {
-      return providerCompensationApi.getSessionMultipliers(selectedProvider !== 'all' ? selectedProvider : undefined);
+      return complianceService.getSessionMultipliers(selectedProvider !== 'all' ? selectedProvider : undefined);
     },
   });
 
   const createConfigMutation = useMutation({
     mutationFn: async (configData: any) => {
-      return providerCompensationApi.create(configData);
+      return complianceService.create(configData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compensation-configs'] });

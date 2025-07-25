@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { DatabaseModule } from '../database/database.module';
 import { ComplianceController } from './compliance.controller';
 import { ComplianceService } from './compliance.service';
 import { TimeTrackingController } from './time-tracking/time-tracking.controller';
@@ -13,6 +14,7 @@ import { DeadlineExceptionController } from './deadline-exception/deadline-excep
 import { DeadlineExceptionService } from './deadline-exception/deadline-exception.service';
 
 @Module({
+  imports: [DatabaseModule],
   controllers: [
     ComplianceController,
     TimeTrackingController,

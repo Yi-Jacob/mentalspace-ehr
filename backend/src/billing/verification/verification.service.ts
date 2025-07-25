@@ -7,8 +7,16 @@ import { UpdateVerificationDto } from './dto/update-verification.dto';
 export class VerificationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllVerifications(clientId?: string) {
-    const where = clientId ? { clientId } : {};
+  async getAllVerifications(status?: string, providerId?: string) {
+    const where: any = {};
+    
+    if (status) {
+      where.status = status;
+    }
+    
+    if (providerId) {
+      where.clientId = providerId;
+    }
 
     return this.prisma.insuranceVerification.findMany({
       where,
@@ -19,7 +27,7 @@ export class VerificationService {
             lastName: true,
           },
         },
-        clientInsurance: {
+        insurance: {
           select: {
             insuranceCompany: true,
             policyNumber: true,
@@ -42,7 +50,7 @@ export class VerificationService {
             lastName: true,
           },
         },
-        clientInsurance: {
+        insurance: {
           select: {
             insuranceCompany: true,
             policyNumber: true,
@@ -73,7 +81,7 @@ export class VerificationService {
             lastName: true,
           },
         },
-        clientInsurance: {
+        insurance: {
           select: {
             insuranceCompany: true,
             policyNumber: true,
@@ -107,7 +115,7 @@ export class VerificationService {
             lastName: true,
           },
         },
-        clientInsurance: {
+        insurance: {
           select: {
             insuranceCompany: true,
             policyNumber: true,

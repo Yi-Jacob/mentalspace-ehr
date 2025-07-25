@@ -7,13 +7,16 @@ import { UpdatePayerDto } from './dto/update-payer.dto';
 export class PayerService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllPayers(search?: string) {
-    const where = search ? {
-      OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { electronicPayerId: { contains: search, mode: 'insensitive' } },
-      ],
-    } : {};
+  async getAllPayers(status?: string, providerId?: string) {
+    const where: any = {};
+    
+    if (status) {
+      where.status = status;
+    }
+    
+    if (providerId) {
+      where.id = providerId;
+    }
 
     return this.prisma.payer.findMany({
       where,

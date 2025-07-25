@@ -218,4 +218,41 @@ export class ReportsService {
       payments,
     };
   }
+
+  async getVerificationReports(timeRange: string) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - parseInt(timeRange));
+
+    const verifications = await this.prisma.insuranceVerification.findMany({
+      where: {
+        verificationDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        insurance: {
+          select: {
+            insuranceCompany: true,
+            policyNumber: true,
+          },
+        },
+      },
+      orderBy: {
+        verificationDate: 'desc',
+      },
+    });
+
+    return {
+      totalVerifications: verifications.length,
+      verifications,
+    };
+  }
 } 

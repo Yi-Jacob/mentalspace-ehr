@@ -7,11 +7,16 @@ import { UpdateFeeScheduleDto } from './dto/update-fee-schedule.dto';
 export class FeeScheduleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllFeeSchedules(payerId?: string) {
-    const where = payerId ? { 
-      payerId,
-      isActive: true,
-    } : { isActive: true };
+  async getAllFeeSchedules(status?: string, providerId?: string) {
+    const where: any = { isActive: true };
+    
+    if (status) {
+      where.status = status;
+    }
+    
+    if (providerId) {
+      where.payerId = providerId;
+    }
 
     return this.prisma.payerFeeSchedule.findMany({
       where,
@@ -105,6 +110,28 @@ export class FeeScheduleService {
       },
       orderBy: {
         code: 'asc',
+      },
+    });
+  }
+
+  async approveFeeSchedule(id: string, reviewedBy: string, reviewNotes?: string) {
+    const feeSchedule = await this.getFeeScheduleById(id);
+    
+    return this.prisma.payerFeeSchedule.update({
+      where: { id },
+      data: {
+        isActive: true,
+      },
+    });
+  }
+
+  async rejectFeeSchedule(id: string, reviewedBy: string, reviewNotes?: string) {
+    const feeSchedule = await this.getFeeScheduleById(id);
+    
+    return this.prisma.payerFeeSchedule.update({
+      where: { id },
+      data: {
+        isActive: false,
       },
     });
   }

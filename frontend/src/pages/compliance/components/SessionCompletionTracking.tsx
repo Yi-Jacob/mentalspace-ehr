@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, FileText, Clock, Lock, CheckCircle, AlertTriangle } from 'lucide-react';
-import { sessionCompletionsApi } from '@/services/complianceService';
+import { complianceService } from '@/services/complianceService';
 
 const SessionCompletionTracking: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,7 +24,7 @@ const SessionCompletionTracking: React.FC = () => {
   const { data: sessionCompletions, isLoading } = useQuery({
     queryKey: ['session-completions', searchTerm, statusFilter, providerFilter],
     queryFn: async () => {
-      return sessionCompletionsApi.getAll(statusFilter, providerFilter);
+      return complianceService.getAll(statusFilter, providerFilter);
     },
   });
 

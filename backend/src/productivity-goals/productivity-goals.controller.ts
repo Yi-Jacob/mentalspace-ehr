@@ -33,7 +33,7 @@ export class ProductivityGoalsController {
   @Get()
   @ApiOperation({ summary: 'Get all productivity goals for the current user' })
   @ApiResponse({ status: 200, description: 'Productivity goals retrieved successfully', type: [ProductivityGoalEntity] })
-  async findAll(@Query('date') date?: string, @Request() req): Promise<ProductivityGoalEntity[]> {
+  async findAll(@Request() req, @Query('date') date?: string): Promise<ProductivityGoalEntity[]> {
     return this.productivityGoalsService.findAll(req.user.id, date);
   }
 

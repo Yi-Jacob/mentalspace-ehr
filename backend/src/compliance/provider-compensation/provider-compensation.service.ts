@@ -7,8 +7,12 @@ import { UpdateProviderCompensationDto } from './dto/update-provider-compensatio
 export class ProviderCompensationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllProviderCompensations(providerId?: string) {
+  async getAllProviderCompensations(status?: string, providerId?: string) {
     const where: any = {};
+
+    if (status) {
+      where.status = status;
+    }
 
     if (providerId) {
       where.providerId = providerId;
@@ -18,12 +22,6 @@ export class ProviderCompensationService {
       where,
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        createdByUser: {
           select: {
             firstName: true,
             lastName: true,
@@ -41,12 +39,6 @@ export class ProviderCompensationService {
       where: { id },
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        createdByUser: {
           select: {
             firstName: true,
             lastName: true,
@@ -81,12 +73,6 @@ export class ProviderCompensationService {
             lastName: true,
           },
         },
-        createdByUser: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
       },
     });
   }
@@ -108,12 +94,6 @@ export class ProviderCompensationService {
       data,
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        createdByUser: {
           select: {
             firstName: true,
             lastName: true,
@@ -142,6 +122,46 @@ export class ProviderCompensationService {
       where,
       orderBy: {
         sessionType: 'asc',
+      },
+    });
+  }
+
+  async approveCompensation(id: string, reviewedBy: string, reviewNotes?: string) {
+    const compensation = await this.getProviderCompensationById(id);
+    
+    return this.prisma.providerCompensationConfig.update({
+      where: { id },
+      data: {
+        isActive: true,
+        // Add review fields if they exist in the schema
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
+  async rejectCompensation(id: string, reviewedBy: string, reviewNotes?: string) {
+    const compensation = await this.getProviderCompensationById(id);
+    
+    return this.prisma.providerCompensationConfig.update({
+      where: { id },
+      data: {
+        isActive: false,
+        // Add review fields if they exist in the schema
+      },
+      include: {
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
   }

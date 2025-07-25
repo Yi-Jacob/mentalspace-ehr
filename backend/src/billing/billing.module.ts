@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { DatabaseModule } from '../database/database.module';
 import { BillingController } from './billing.controller';
 import { BillingService } from './billing.service';
 import { PayerController } from './payer/payer.controller';
@@ -15,9 +16,9 @@ import { ReportsController } from './reports/reports.controller';
 import { ReportsService } from './reports/reports.service';
 import { VerificationController } from './verification/verification.controller';
 import { VerificationService } from './verification/verification.service';
-import { PrismaService } from '../database/prisma.service';
 
 @Module({
+  imports: [DatabaseModule],
   controllers: [
     BillingController,
     PayerController,
@@ -37,7 +38,6 @@ import { PrismaService } from '../database/prisma.service';
     PaymentsService,
     ReportsService,
     VerificationService,
-    PrismaService,
   ],
   exports: [
     BillingService,
