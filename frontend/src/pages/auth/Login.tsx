@@ -12,7 +12,7 @@ import { validateEmail, validatePassword } from '@/utils/authUtils';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authService } from '@/services/authService';
 
-const Auth = () => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -359,4 +359,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export default Login;

@@ -121,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
               )}
               title={isCollapsed ? item.label : undefined}
             >
-              <IconComponent size={20} />
+              <IconComponent size={20} className="text-blue-100" />
               {!isCollapsed && <span className="font-medium">{item.label}</span>}
             </button>
           );

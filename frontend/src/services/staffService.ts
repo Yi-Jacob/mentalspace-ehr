@@ -1,4 +1,56 @@
 import { apiClient } from './api-helper/client';
+import { UserStatus, StaffMember } from '@/types/staff';
+
+export interface CreateStaffInput {
+  // Basic user information
+  email: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  suffix?: string;
+  avatarUrl?: string;
+
+  // Contact information
+  userName?: string;
+  mobilePhone?: string;
+  workPhone?: string;
+  homePhone?: string;
+  canReceiveText?: boolean;
+
+  // Address information
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+
+  // Staff profile information
+  employeeId?: string;
+  jobTitle?: string;
+  formalName?: string;
+  npiNumber?: string;
+  department?: string;
+  phoneNumber?: string;
+  licenseNumber?: string;
+  licenseState?: string;
+  licenseExpiryDate?: string;
+  hireDate?: string;
+  billingRate?: number;
+  canBillInsurance?: boolean;
+  status?: UserStatus;
+  notes?: string;
+
+  // Additional fields
+  clinicianType?: string;
+  supervisionType?: string;
+  supervisorId?: string;
+
+  // Roles
+  roles?: UserRole[];
+
+  // User comments
+  userComments?: string;
+}
 
 export interface UserRole {
   role: string;
@@ -30,6 +82,26 @@ export interface PerformanceMetric {
 }
 
 class StaffService {
+  async createStaff(input: CreateStaffInput): Promise<any> {
+    try {
+      await apiClient.post<StaffMember>('/staff', input);
+    } catch (error) {
+      console.error('Error creating staff:', error);
+      throw error;
+    }
+  }
+
+  async getAllStaff(): Promise<StaffMember[]> {
+    try {
+      const response = await apiClient.get<StaffMember[]>('/staff');
+      console.log('getAllStaff - response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+      throw error;
+    }
+  }
+  
   // User Roles
   async getCurrentUserRoles(): Promise<UserRole[]> {
     const response = await apiClient.get<UserRole[]>('/staff/roles/current');
