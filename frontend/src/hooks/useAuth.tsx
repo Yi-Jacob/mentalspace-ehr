@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  signOut: () => Promise<void>;
+  // signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
 
@@ -19,8 +19,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshSession = async () => {
     try {
-      const user = await authService.validateToken();
-      setUser(user);
+      const user = await authService.validateToken('');
+      // setUser(user);
       setError(null);
     } catch (err) {
       console.error('Session refresh error:', err);
@@ -32,22 +32,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let mounted = true;
 
     const initializeAuth = async () => {
-      try {
-        const user = await authService.initializeAuth();
-        if (mounted) {
-          setUser(user);
-          setError(null);
-        }
-      } catch (err) {
-        console.error('Auth initialization error:', err);
-        if (mounted) {
-          setError('Failed to initialize authentication');
-        }
-      } finally {
-        if (mounted) {
+    //   try {
+    //     const user = await authService.initializeAuth();
+    //     if (mounted) {
+    //       setUser(user);
+    //       setError(null);
+    //     }
+    //   } catch (err) {
+    //     console.error('Auth initialization error:', err);
+    //     if (mounted) {
+    //       setError('Failed to initialize authentication');
+    //     }
+    //   } finally {
+    //     if (mounted) {
           setLoading(false);
-        }
-      }
+      //   }
+      // }
     };
 
     initializeAuth();
@@ -58,28 +58,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const signOut = async () => {
-    try {
-      console.log('Signing out user');
-      setLoading(true);
+  // const signOut = async () => {
+  //   try {
+  //     console.log('Signing out user');
+  //     setLoading(true);
       
-      await authService.logout();
-      setUser(null);
-      setError(null);
-    } catch (err) {
-      console.error('Sign out error:', err);
-      // Force logout even if API call fails
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     await authService.logout();
+  //     setUser(null);
+  //     setError(null);
+  //   } catch (err) {
+  //     console.error('Sign out error:', err);
+  //     // Force logout even if API call fails
+  //     setUser(null);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const value = {
     user,
     loading,
     error,
-    signOut,
+    // signOut,
     refreshSession,
   };
 

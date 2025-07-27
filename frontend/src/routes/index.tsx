@@ -2,6 +2,7 @@ import { RouteObject } from 'react-router-dom';
 import Login from '../pages/auth/Login';
 import NotFound from '../pages/NotFound';
 import SetPassword from '../pages/auth/SetPassword';
+import ResetPassword from '../pages/auth/ResetPassword';
 import AuthenticationGate from './AuthenticationGate';
 import authenticatedRoutes from './authenticated-routes';
 
@@ -13,6 +14,10 @@ const BaseRoutes: RouteObject[] = [
   {
     path: '/auth/set-password',
     element: <SetPassword />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     path: '/404',

@@ -183,4 +183,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   userComments?: string;
+
+  // Roles
+  @ApiProperty({ description: 'User roles', required: false, type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  roles?: string[];
 } 

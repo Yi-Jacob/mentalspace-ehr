@@ -92,5 +92,5 @@ export interface StaffMember {
   created_at: string;
   updated_at: string;
   staff_profile?: StaffProfile;
-  roles: UserRoleAssignment[];
+  // roles: UserRoleAssignment[];
 }

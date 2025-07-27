@@ -2,11 +2,15 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
 
   // Helper function to safely parse dates
   private parseDate(dateString: string | undefined): Date | undefined {
@@ -22,25 +26,17 @@ export class UsersService {
     }
   }
 
-  // Helper function to generate a default password
-  private async generateDefaultPassword(): Promise<string> {
-    const saltRounds = 10;
-    const defaultPassword = 'ChangeMe123!'; // Default password that should be changed
-    return await bcrypt.hash(defaultPassword, saltRounds);
-  }
-
   async create(createUserDto: CreateUserDto) {
     console.log('Creating staff member with data:', createUserDto);
 
     try {
       // Use Prisma transaction to ensure data consistency
       const result = await this.prisma.$transaction(async (prisma) => {
-        // 1. Create the user record with a default password
-        const hashedPassword = await this.generateDefaultPassword();
+        // 1. Create the user record without a password
         const user = await prisma.user.create({
           data: {
             email: createUserDto.email,
-            password: hashedPassword,
+            password: null, // No password set initially
             firstName: createUserDto.firstName,
             lastName: createUserDto.lastName,
             isActive: true,
@@ -82,10 +78,14 @@ export class UsersService {
           });
         }
 
+        // 5. Generate password reset token for the new user
+        const passwordResetData = await this.authService.createPasswordResetToken(user.id);
+
         return {
           user,
           staffProfile,
-          message: 'Staff member created successfully',
+          passwordResetUrl: passwordResetData.resetUrl,
+          message: 'Staff member created successfully. Password reset link has been generated.',
         };
       });
 
@@ -109,6 +109,11 @@ export class UsersService {
           where: { userId: user.id } 
         });
         
+        // Get user roles
+        const userRoles = await this.prisma.userRole.findMany({
+          where: { userId: user.id, isActive: true },
+        });
+
         // Transform data to use camelCase
         return {
           id: user.id,
@@ -118,6 +123,7 @@ export class UsersService {
           isActive: user.isActive,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
+          roles: userRoles.map(role => role.role),
           staffProfile: staffProfile ? {
             id: staffProfile.id,
             userId: staffProfile.userId,
@@ -159,6 +165,11 @@ export class UsersService {
       where: { userId: user.id } 
     });
 
+    // Get user roles
+    const userRoles = await this.prisma.userRole.findMany({
+      where: { userId: user.id, isActive: true },
+    });
+
     // Transform data to use camelCase
     return {
       id: user.id,
@@ -168,6 +179,7 @@ export class UsersService {
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      roles: userRoles.map(role => role.role),
       staffProfile: staffProfile ? {
         id: staffProfile.id,
         userId: staffProfile.userId,

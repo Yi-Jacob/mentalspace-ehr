@@ -84,7 +84,11 @@ export interface PerformanceMetric {
 class StaffService {
   async createStaff(input: CreateStaffInput): Promise<any> {
     try {
-      await apiClient.post<StaffMember>('/staff', input);
+      console.log('createStaff - input:', input);
+      const response = await apiClient.post<any>('/staff', input);
+      console.log('createStaff - response:', response.data.passwordResetUrl);
+      alert(response.data.passwordResetUrl);
+      return response.data;
     } catch (error) {
       console.error('Error creating staff:', error);
       throw error;
