@@ -13,50 +13,6 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(email: string, password: string, firstName: string, lastName: string) {
-    // Check if user already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
-
-    // Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create user
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        isActive: true,
-      },
-    });
-
-    // Generate JWT token
-    const payload = { 
-      email: user.email, 
-      sub: user.id,
-      roles: ['CLINICIAN'] // Default role
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isActive: user.isActive,
-      },
-    };
-  }
-
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
@@ -116,7 +72,6 @@ export class AuthService {
       return null;
     }
   }
-
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     // Validate that passwords match
@@ -191,5 +146,13 @@ export class AuthService {
       token, // Remove this in production
       expiresAt: resetToken.expiresAt,
     };
+  }
+
+  async logout(token?: string) {
+    
+      return {
+        message: 'Logged out successfully',
+        timestamp: new Date().toISOString(),
+      }
   }
 } 

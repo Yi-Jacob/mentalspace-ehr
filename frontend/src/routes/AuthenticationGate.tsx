@@ -1,13 +1,9 @@
-
-import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import Sidebar from '@/components/Sidebar';
 
 const AuthenticationGate = () => {
-  const { user, loading, error, refreshSession } = useAuth();
+  const { user, loading, error } = useAuth();
 
   if (loading) {
     return (
@@ -20,29 +16,9 @@ const AuthenticationGate = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full">
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <div className="flex gap-2">
-            <Button onClick={refreshSession} variant="outline" className="flex-1">
-              Retry
-            </Button>
-            <Button onClick={() => window.location.href = '/auth'} className="flex-1">
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+  if ((!user || error) && !loading) {
+    return <Navigate to="/auth/login" replace />;
   }
-
-  // if (!user) {
-  //   return <Navigate to="/auth" replace />;
-  // }
 
   return (
     <div className="flex w-full">

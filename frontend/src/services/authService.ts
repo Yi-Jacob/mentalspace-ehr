@@ -24,8 +24,6 @@ export interface LoginResponse {
   };
 }
 
-
-
 export interface ResetPasswordRequest {
   token: string;
   password: string;
@@ -40,30 +38,23 @@ export interface ValidateTokenRequest {
   token: string;
 }
 
-export interface ValidateTokenResponse {
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    isActive: boolean;
-  };
-}
-
 class AuthService {
-  private readonly USER_KEY = 'auth_user';
-
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
+    this.setToken(response.data.access_token);
+    this.setUser(response.data.user);
     return response.data;
   }
 
-  async validateToken(token: string): Promise<ValidateTokenResponse> {
-    const response = await apiClient.post<ValidateTokenResponse>('/auth/validate', { token });
+  async validateToken(): Promise<User> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No token found');
+    }
+    const response = await apiClient.post<User>('/auth/validate', { token });
+    this.setUser(response.data);
     return response.data;
   }
-
-
 
   async resetPassword(data: ResetPasswordRequest): Promise<ResetPasswordResponse> {
     const response = await apiClient.post<ResetPasswordResponse>('/auth/reset-password', data);
@@ -87,7 +78,7 @@ class AuthService {
 
   // Store user in localStorage
   private setUser(user: User): void {
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(user));
   }
 
   // Check if user is authenticated
@@ -95,10 +86,37 @@ class AuthService {
     const token = this.getToken();
     return !!token;
   }
-  
 
+  async logout(): Promise<void> {
+    try {
+      const token = this.getToken();
+      if (token) {
+        await apiClient.post('/auth/logout', {}, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+    } catch (error) {
+      // Even if backend call fails, we should still clear local storage
+      console.warn('Backend logout failed, but clearing local storage:', error);
+    } finally {
+      // Always clear local storage
+      this.removeToken();
+      this.removeUser();
+    }
+  }
+
+  // Get user from localStorage
+  getUser(): User | null {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  // Remove user from localStorage
+  private removeUser(): void {
+    localStorage.removeItem('user');
+  }
 }
-
-
 
 export const authService = new AuthService(); 
