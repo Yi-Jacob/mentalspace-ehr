@@ -48,13 +48,13 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
     return undefined;
   };
 
-  const [dateInputValue, setDateInputValue] = useState(getDisplayDate(formData.date_of_birth));
+  const [dateInputValue, setDateInputValue] = useState(getDisplayDate(formData.dateOfBirth));
   const [showCalendar, setShowCalendar] = useState(false);
 
   // Update the display value when formData changes (e.g., when editing a client)
   useEffect(() => {
-    setDateInputValue(getDisplayDate(formData.date_of_birth));
-  }, [formData.date_of_birth]);
+    setDateInputValue(getDisplayDate(formData.dateOfBirth));
+  }, [formData.dateOfBirth]);
 
   const handleDateOfBirthChange = (date: Date | undefined) => {
     if (date) {
@@ -67,12 +67,12 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
       console.log('Calendar date selected:', date);
       console.log('Formatted for database:', formattedDate);
       
-      setFormData(prev => ({...prev, date_of_birth: formattedDate}));
+      setFormData(prev => ({...prev, dateOfBirth: formattedDate}));
       // Display in M/D/YYYY format
       setDateInputValue(format(date, 'M/d/yyyy'));
       setShowCalendar(false);
     } else {
-      setFormData(prev => ({...prev, date_of_birth: ''}));
+      setFormData(prev => ({...prev, dateOfBirth: ''}));
       setDateInputValue('');
     }
   };
@@ -103,20 +103,20 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
       console.log('Input date parsed:', parsedDate);
       console.log('Formatted for database:', formattedDate);
       
-      setFormData(prev => ({...prev, date_of_birth: formattedDate}));
+      setFormData(prev => ({...prev, dateOfBirth: formattedDate}));
     } else if (value === '') {
-      setFormData(prev => ({...prev, date_of_birth: ''}));
+      setFormData(prev => ({...prev, dateOfBirth: ''}));
     }
   };
 
-  const dateOfBirthValue = getCalendarDate(formData.date_of_birth);
+  const dateOfBirthValue = getCalendarDate(formData.dateOfBirth);
 
   return (
     <div>
-      <Label htmlFor="date_of_birth">Date of Birth</Label>
+      <Label htmlFor="dateOfBirth">Date of Birth</Label>
       <div className="flex gap-2">
         <Input
-          id="date_of_birth"
+          id="dateOfBirth"
           type="text"
           value={dateInputValue}
           onChange={handleDateInputChange}

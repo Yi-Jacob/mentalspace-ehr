@@ -123,8 +123,8 @@ const IntakeAssessmentView = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-500">Date of Birth</label>
                     <p className="text-gray-900">
-                      {note.clients.date_of_birth 
-                        ? format(new Date(note.clients.date_of_birth), 'MMM d, yyyy')
+                      {note.clients.dateOfBirth 
+                        ? format(new Date(note.clients.dateOfBirth), 'MMM d, yyyy')
                         : 'Not specified'
                       }
                     </p>

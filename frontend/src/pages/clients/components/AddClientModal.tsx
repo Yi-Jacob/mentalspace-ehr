@@ -7,8 +7,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import PageTabs from '@/components/ui/PageTabs';
-import { useToast } from '@/hooks/use-toast';
 import { useClientForm } from '@/hooks/useClientForm';
+import { useClients } from '@/hooks/useClients';
 import { clientService } from '@/services/clientService';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
@@ -30,7 +30,6 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   onClientAdded,
   editingClient 
 }) => {
-  const { toast } = useToast();
   const {
     formData,
     setFormData,
@@ -45,18 +44,29 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
     resetForm,
   } = useClientForm();
 
+  const { createClient, updateClient, isCreating, isUpdating } = useClients({
+    onCreateSuccess: () => {
+      onClientAdded();
+      onClose();
+    },
+    onUpdateSuccess: () => {
+      onClientAdded();
+      onClose();
+    }
+  });
+
   const isEditing = !!editingClient;
 
   // Load client data when editing
   useEffect(() => {
     if (editingClient && isOpen) {
       console.log('Loading client data for editing:', editingClient);
-      // Ensure date_of_birth is in proper format when loading for editing
+      // Ensure dateOfBirth is in proper format when loading for editing
       const clientData = {
         ...editingClient,
-        date_of_birth: editingClient.date_of_birth || ''
+        dateOfBirth: editingClient.dateOfBirth || ''
       };
-      console.log('Date of birth loaded:', clientData.date_of_birth);
+      console.log('Date of birth loaded:', clientData.dateOfBirth);
       setFormData(clientData);
       
       // Load related data when editing
@@ -65,11 +75,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
           // Load phone numbers
           const phoneData = await clientService.getClientPhoneNumbers(editingClient.id!);
           if (phoneData && phoneData.length > 0) {
-            setPhoneNumbers(phoneData.map(phone => ({
-              type: phone.phoneType as any,
-              number: phone.phoneNumber,
-              message_preference: phone.messagePreference as any
-            })));
+            setPhoneNumbers(phoneData);
           }
 
           // Load emergency contacts
@@ -78,9 +84,9 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
             setEmergencyContacts(contactData.map(contact => ({
               name: contact.name,
               relationship: contact.relationship || '',
-              phone_number: contact.phoneNumber || '',
+              phoneNumber: contact.phoneNumber || '',
               email: contact.email || '',
-              is_primary: contact.isPrimary || false
+              isPrimary: contact.isPrimary || false
             })));
           }
 
@@ -88,17 +94,17 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
           const insuranceData = await clientService.getClientInsurance(editingClient.id!);
           if (insuranceData && insuranceData.length > 0) {
             setInsuranceInfo(insuranceData.map(insurance => ({
-              insurance_type: insurance.insuranceType as any,
-              insurance_company: insurance.insuranceCompany || '',
-              policy_number: insurance.policyNumber || '',
-              group_number: insurance.groupNumber || '',
-              subscriber_name: insurance.subscriberName || '',
-              subscriber_relationship: insurance.subscriberRelationship || '',
-              subscriber_dob: insurance.subscriberDob || '',
-              effective_date: insurance.effectiveDate || '',
-              termination_date: insurance.terminationDate || '',
-              copay_amount: insurance.copayAmount || 0,
-              deductible_amount: insurance.deductibleAmount || 0
+              insuranceType: insurance.insuranceType as any,
+              insuranceCompany: insurance.insuranceCompany || '',
+              policyNumber: insurance.policyNumber || '',
+              groupNumber: insurance.groupNumber || '',
+              subscriberName: insurance.subscriberName || '',
+              subscriberRelationship: insurance.subscriberRelationship || '',
+              subscriberDob: insurance.subscriberDob || '',
+              effectiveDate: insurance.effectiveDate || '',
+              terminationDate: insurance.terminationDate || '',
+              copayAmount: insurance.copayAmount || 0,
+              deductibleAmount: insurance.deductibleAmount || 0
             })));
           }
 
@@ -106,9 +112,9 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
           const pcpData = await clientService.getClientPrimaryCareProvider(editingClient.id!);
           if (pcpData) {
             setPrimaryCareProvider({
-              provider_name: pcpData.providerName || '',
-              practice_name: pcpData.practiceName || '',
-              phone_number: pcpData.phoneNumber || '',
+              providerName: pcpData.providerName || '',
+              practiceName: pcpData.practiceName || '',
+              phoneNumber: pcpData.phoneNumber || '',
               address: pcpData.address || ''
             });
           }
@@ -128,52 +134,34 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
     }
   }, [isOpen, isEditing, resetForm]);
 
-  const handleSave = async (createAnother: boolean = false) => {
-    try {
-      console.log('Saving client data:', formData);
-      console.log('Date of birth being saved:', formData.date_of_birth);
-      
-      if (isEditing && editingClient?.id) {
-        await clientService.updateClientWithFormData(
-          editingClient.id,
+  const handleSave = (createAnother: boolean = false) => {
+    console.log('Saving client data:', formData);
+    console.log('Date of birth being saved:', formData.dateOfBirth);
+    
+    if (isEditing && editingClient?.id) {
+      updateClient({
+        clientId: editingClient.id,
+        data: {
           formData,
           phoneNumbers,
           emergencyContacts,
           insuranceInfo,
           primaryCareProvider
-        );
-        toast({
-          title: "Success",
-          description: "Client updated successfully",
-        });
-      } else {
-        await clientService.createClientWithFormData(
-          formData,
-          phoneNumbers,
-          emergencyContacts,
-          insuranceInfo,
-          primaryCareProvider
-        );
-        toast({
-          title: "Success",
-          description: "Client created successfully",
-        });
-      }
-
-      onClientAdded();
-      
-      if (createAnother && !isEditing) {
-        resetForm();
-      } else {
-        onClose();
-      }
-    } catch (error) {
-      console.error('Error saving client:', error);
-      toast({
-        title: "Error",
-        description: isEditing ? "Failed to update client" : "Failed to create client",
-        variant: "destructive",
+        }
       });
+    } else {
+      createClient({
+        formData,
+        phoneNumbers,
+        emergencyContacts,
+        insuranceInfo,
+        primaryCareProvider
+      });
+    }
+
+    // If creating another, reset form after successful creation
+    if (createAnother && !isEditing) {
+      resetForm();
     }
   };
 
@@ -250,7 +238,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
         />
 
         <div className="flex justify-end space-x-2 pt-6 border-t">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isCreating || isUpdating}>
             Cancel
           </Button>
           {!isEditing && (
@@ -258,12 +246,17 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
               onClick={() => handleSave(true)}
               variant="outline"
               className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300"
+              disabled={isCreating || isUpdating}
             >
               Save and Create Another
             </Button>
           )}
-          <Button onClick={() => handleSave(false)} className="bg-blue-600 hover:bg-blue-700">
-            {isEditing ? 'Update Client' : 'Save New Client'}
+          <Button 
+            onClick={() => handleSave(false)} 
+            className="bg-blue-600 hover:bg-blue-700"
+            disabled={isCreating || isUpdating}
+          >
+            {isCreating || isUpdating ? 'Saving...' : (isEditing ? 'Update Client' : 'Save New Client')}
           </Button>
         </div>
       </DialogContent>

@@ -14,31 +14,31 @@ export const PatientInfoFields: React.FC<PatientInfoFieldsProps> = ({ formData, 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <Label htmlFor="first_name">First Name *</Label>
+        <Label htmlFor="firstName">First Name *</Label>
         <Input
-          id="first_name"
-          value={formData.first_name}
-          onChange={(e) => setFormData(prev => ({...prev, first_name: e.target.value}))}
+          id="firstName"
+          value={formData.firstName}
+          onChange={(e) => setFormData(prev => ({...prev, firstName: e.target.value}))}
           required
         />
       </div>
       
       <div>
-        <Label htmlFor="last_name">Last Name *</Label>
+        <Label htmlFor="lastName">Last Name *</Label>
         <Input
-          id="last_name"
-          value={formData.last_name}
-          onChange={(e) => setFormData(prev => ({...prev, last_name: e.target.value}))}
+          id="lastName"
+          value={formData.lastName}
+          onChange={(e) => setFormData(prev => ({...prev, lastName: e.target.value}))}
           required
         />
       </div>
 
       <div>
-        <Label htmlFor="middle_name">Middle Name</Label>
+        <Label htmlFor="middleName">Middle Name</Label>
         <Input
-          id="middle_name"
-          value={formData.middle_name}
-          onChange={(e) => setFormData(prev => ({...prev, middle_name: e.target.value}))}
+          id="middleName"
+          value={formData.middleName}
+          onChange={(e) => setFormData(prev => ({...prev, middleName: e.target.value}))}
         />
       </div>
 
@@ -53,10 +53,10 @@ export const PatientInfoFields: React.FC<PatientInfoFieldsProps> = ({ formData, 
       </div>
 
       <div>
-        <Label htmlFor="preferred_name">Preferred Name</Label>
+        <Label htmlFor="preferredName">Preferred Name</Label>
         <Input
-          id="preferred_name"
-          value={formData.preferred_name}
+          id="preferredName"
+          value={formData.preferredName}
           onChange={(e) => setFormData(prev => ({...prev, preferred_name: e.target.value}))}
         />
       </div>

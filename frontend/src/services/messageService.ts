@@ -56,32 +56,38 @@ export class MessageService {
 
   // Get all conversations for the authenticated therapist
   async getConversations(): Promise<ConversationData[]> {
-    return apiClient.get<ConversationData[]>(`${this.baseUrl}/conversations`);
+    const response = await apiClient.get<ConversationData[]>(`${this.baseUrl}/conversations`);
+    return response.data;
   }
 
   // Get a specific conversation
   async getConversation(id: string): Promise<ConversationData> {
-    return apiClient.get<ConversationData>(`${this.baseUrl}/conversations/${id}`);
+    const response = await apiClient.get<ConversationData>(`${this.baseUrl}/conversations/${id}`);
+    return response.data;
   }
 
   // Create a new conversation
   async createConversation(data: CreateConversationData): Promise<ConversationData> {
-    return apiClient.post<ConversationData>(`${this.baseUrl}/conversations`, data);
+    const response = await apiClient.post<ConversationData>(`${this.baseUrl}/conversations`, data);
+    return response.data;
   }
 
   // Get messages for a conversation
   async getMessages(conversationId: string): Promise<MessageData[]> {
-    return apiClient.get<MessageData[]>(`${this.baseUrl}/conversations/${conversationId}/messages`);
+    const response = await apiClient.get<MessageData[]>(`${this.baseUrl}/conversations/${conversationId}/messages`);
+    return response.data;
   }
 
   // Send a message
   async sendMessage(data: CreateMessageData): Promise<MessageData> {
-    return apiClient.post<MessageData>(`${this.baseUrl}/messages`, data);
+    const response = await apiClient.post<MessageData>(`${this.baseUrl}/messages`, data);
+    return response.data;
   }
 
   // Send a quick message (find or create conversation and send message)
   async sendQuickMessage(data: QuickMessageData): Promise<MessageData> {
-    return apiClient.post<MessageData>(`${this.baseUrl}/quick-message`, data);
+    const response = await apiClient.post<MessageData>(`${this.baseUrl}/quick-message`, data);
+    return response.data;
   }
 }
 

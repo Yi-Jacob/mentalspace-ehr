@@ -68,12 +68,14 @@ export class ClientService {
     if (params?.search) queryParams.append('search', params.search);
 
     const url = `${this.baseUrl}?${queryParams.toString()}`;
-    return apiClient.get<ClientFormData[]>(url);
+    const response = await apiClient.get<ClientFormData[]>(url);
+    return response.data;
   }
 
   // Get clients for notes and messages
   async getClientsForNotes(): Promise<{ id: string; first_name: string; last_name: string; email: string }[]> {
-    const clients = await apiClient.get<{ id: string; firstName: string; lastName: string; email?: string }[]>(`${this.baseUrl}/for-notes`);
+    const response = await apiClient.get<{ id: string; firstName: string; lastName: string; email?: string }[]>(`${this.baseUrl}/for-notes`);
+    const clients = response.data;
     return clients.map(client => ({
       id: client.id,
       first_name: client.firstName,
@@ -84,65 +86,76 @@ export class ClientService {
 
   // Get single client by ID
   async getClient(id: string): Promise<ClientFormData> {
-    return apiClient.get<ClientFormData>(`${this.baseUrl}/${id}`);
+    const response = await apiClient.get<ClientFormData>(`${this.baseUrl}/${id}`);
+    return response.data;
   }
 
   // Create new client
   async createClient(data: ClientFormData): Promise<ClientFormData> {
-    return apiClient.post<ClientFormData>(this.baseUrl, data);
+    const response = await apiClient.post<ClientFormData>(this.baseUrl, data);
+    return response.data;
   }
 
   // Update existing client
   async updateClient(id: string, data: Partial<ClientFormData>): Promise<ClientFormData> {
-    return apiClient.put<ClientFormData>(`${this.baseUrl}/${id}`, data);
+    const response = await apiClient.put<ClientFormData>(`${this.baseUrl}/${id}`, data);
+    return response.data;
   }
 
   // Delete client
   async deleteClient(id: string): Promise<void> {
-    return apiClient.delete(`${this.baseUrl}/${id}`);
+    await apiClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // Phone numbers
   async getClientPhoneNumbers(clientId: string): Promise<PhoneNumber[]> {
-    const dtos = await apiClient.get<PhoneNumberDto[]>(`${this.baseUrl}/${clientId}/phone-numbers`);
+    const response = await apiClient.get<PhoneNumberDto[]>(`${this.baseUrl}/${clientId}/phone-numbers`);
+    const dtos = response.data;
     return dtos.map(dto => this.convertPhoneDtoToForm(dto));
   }
 
   async updateClientPhoneNumbers(clientId: string, phoneNumbers: PhoneNumber[]): Promise<PhoneNumber[]> {
-    const dtos = await apiClient.put<PhoneNumberDto[]>(`${this.baseUrl}/${clientId}/phone-numbers`, phoneNumbers);
+    const response = await apiClient.put<PhoneNumberDto[]>(`${this.baseUrl}/${clientId}/phone-numbers`, phoneNumbers);
+    const dtos = response.data;
     return dtos.map(dto => this.convertPhoneDtoToForm(dto));
   }
 
   // Emergency contacts
   async getClientEmergencyContacts(clientId: string): Promise<EmergencyContact[]> {
-    const dtos = await apiClient.get<EmergencyContactDto[]>(`${this.baseUrl}/${clientId}/emergency-contacts`);
+    const response = await apiClient.get<EmergencyContactDto[]>(`${this.baseUrl}/${clientId}/emergency-contacts`);
+    const dtos = response.data;
     return dtos.map(dto => this.convertEmergencyContactDtoToForm(dto));
   }
 
   async updateClientEmergencyContacts(clientId: string, contacts: EmergencyContact[]): Promise<EmergencyContact[]> {
-    const dtos = await apiClient.put<EmergencyContactDto[]>(`${this.baseUrl}/${clientId}/emergency-contacts`, contacts);
+    const response = await apiClient.put<EmergencyContactDto[]>(`${this.baseUrl}/${clientId}/emergency-contacts`, contacts);
+    const dtos = response.data;
     return dtos.map(dto => this.convertEmergencyContactDtoToForm(dto));
   }
 
   // Insurance
   async getClientInsurance(clientId: string): Promise<InsuranceInfo[]> {
-    const dtos = await apiClient.get<InsuranceInfoDto[]>(`${this.baseUrl}/${clientId}/insurance`);
+    const response = await apiClient.get<InsuranceInfoDto[]>(`${this.baseUrl}/${clientId}/insurance`);
+    const dtos = response.data;
     return dtos.map(dto => this.convertInsuranceDtoToForm(dto));
   }
 
   async updateClientInsurance(clientId: string, insurance: InsuranceInfo[]): Promise<InsuranceInfo[]> {
-    const dtos = await apiClient.put<InsuranceInfoDto[]>(`${this.baseUrl}/${clientId}/insurance`, insurance);
+    const response = await apiClient.put<InsuranceInfoDto[]>(`${this.baseUrl}/${clientId}/insurance`, insurance);
+    const dtos = response.data;
     return dtos.map(dto => this.convertInsuranceDtoToForm(dto));
   }
 
   // Primary care provider
   async getClientPrimaryCareProvider(clientId: string): Promise<PrimaryCareProvider | null> {
-    const dto = await apiClient.get<PrimaryCareProviderDto | null>(`${this.baseUrl}/${clientId}/primary-care-provider`);
+    const response = await apiClient.get<PrimaryCareProviderDto | null>(`${this.baseUrl}/${clientId}/primary-care-provider`);
+    const dto = response.data;
     return dto ? this.convertPcpDtoToForm(dto) : null;
   }
 
   async updateClientPrimaryCareProvider(clientId: string, pcp: PrimaryCareProvider): Promise<PrimaryCareProvider | null> {
-    const dto = await apiClient.put<PrimaryCareProviderDto | null>(`${this.baseUrl}/${clientId}/primary-care-provider`, pcp);
+    const response = await apiClient.put<PrimaryCareProviderDto | null>(`${this.baseUrl}/${clientId}/primary-care-provider`, pcp);
+    const dto = response.data;
     return dto ? this.convertPcpDtoToForm(dto) : null;
   }
 
@@ -162,7 +175,8 @@ export class ClientService {
       primaryCareProvider,
     };
 
-    return apiClient.post<ClientFormData>(`${this.baseUrl}/with-form-data`, data);
+    const response = await apiClient.post<ClientFormData>(`${this.baseUrl}/with-form-data`, data);
+    return response.data;
   }
 
   // Update client with form data
@@ -182,7 +196,8 @@ export class ClientService {
       primaryCareProvider,
     };
 
-    return apiClient.put<ClientFormData>(`${this.baseUrl}/${clientId}/with-form-data`, data);
+    const response = await apiClient.put<ClientFormData>(`${this.baseUrl}/${clientId}/with-form-data`, data);
+    return response.data;
   }
 }
 

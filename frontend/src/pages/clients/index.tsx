@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
-import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import PageLayout from '@/components/ui/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
-import { clientService } from '@/services/clientService';
-import { ClientFormData } from '@/types/client';
+import { useClients } from '@/hooks/useClients';
 import ClientSearch from './components/ClientSearch';
 import ClientGrid from './components/ClientGrid';
 import ClientEmptyState from './components/ClientEmptyState';
@@ -20,20 +17,15 @@ import AddClientModal from './components/AddClientModal';
 const ClientsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Optimized query with specific field selection
-  const { data: clients = [], isLoading, error, refetch } = useOptimizedQuery(
-    ['clients', 'active'],
-    async () => {
-      return await clientService.getClients();
-    },
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
-    }
-  );
+  // Use the new useClients hook
+  const { 
+    clients, 
+    isLoading, 
+    error, 
+    refetchClients 
+  } = useClients();
 
   const filteredClients = clients.filter(client => {
     const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
@@ -57,12 +49,7 @@ const ClientsPage: React.FC = () => {
   } = usePagination(filteredClients, { pageSize: 12 });
 
   const handleClientAdded = () => {
-    refetch();
     setShowAddModal(false);
-    toast({
-      title: "Success",
-      description: "Client added successfully",
-    });
   };
 
   const handleClientClick = (clientId: string) => {
@@ -70,7 +57,7 @@ const ClientsPage: React.FC = () => {
   };
 
   if (error) {
-    return <ClientErrorState onRetry={() => refetch()} />;
+    return <ClientErrorState onRetry={() => refetchClients()} />;
   }
 
   if (isLoading) {

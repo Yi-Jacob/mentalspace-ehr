@@ -39,7 +39,7 @@ export const ClientQuickInfo: React.FC<ClientQuickInfoProps> = ({ client }) => {
             <div>
               <div className="text-sm text-gray-500">Date of Birth</div>
               <div className="font-medium">
-                {formatDateOfBirth(client.date_of_birth)}
+                {formatDateOfBirth(client.dateOfBirth)}
               </div>
             </div>
           </div>
