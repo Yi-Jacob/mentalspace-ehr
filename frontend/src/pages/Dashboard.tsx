@@ -98,9 +98,9 @@ const Dashboard = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Recent Activities */}
-        <Card className="border-0 shadow-md">
+        <Card className="border-0 shadow-md shadow-my-2">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
               <Clock className="h-5 w-5 mr-2 text-blue-600" />
