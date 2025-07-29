@@ -1,5 +1,5 @@
 import React from 'react';
-import PageTabs from '@/components/ui/PageTabs';
+import PageTabs from '@/components/basic/PageTabs';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
 import { DemographicsTab } from './client-form/DemographicsTab';

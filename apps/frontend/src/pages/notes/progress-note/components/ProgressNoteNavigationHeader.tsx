@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/basic/progress';
+import { Button } from '@/components/basic/button';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

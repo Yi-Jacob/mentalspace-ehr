@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/basic/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { useQuery } from '@tanstack/react-query';
 import { clientService } from '@/services/clientService';
 import { User, AlertCircle } from 'lucide-react';

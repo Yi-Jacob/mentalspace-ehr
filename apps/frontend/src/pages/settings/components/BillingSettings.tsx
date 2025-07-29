@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
+import { Switch } from '@/components/basic/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { CreditCard, DollarSign, FileText } from 'lucide-react';
 import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 

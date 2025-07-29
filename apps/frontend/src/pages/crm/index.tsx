@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { UserPlus, BarChart3, Users, Database, Megaphone } from 'lucide-react';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import PageTabs from '@/components/ui/PageTabs';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import PageTabs from '@/components/basic/PageTabs';
 import ReferralManagement from '@/pages/crm/components/ReferralManagement';
 import LeadManagement from '@/pages/crm/components/LeadManagement';
 import ContactDatabase from '@/pages/crm/components/ContactDatabase';

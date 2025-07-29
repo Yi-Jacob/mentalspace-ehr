@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
 import { Search, ChevronDown } from 'lucide-react';
 
 interface Option {

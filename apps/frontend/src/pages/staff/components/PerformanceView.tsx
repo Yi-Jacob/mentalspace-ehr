@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
+import { Progress } from '@/components/basic/progress';
 import { TrendingUp, Target, Clock, Users, BarChart3 } from 'lucide-react';
 import { usePerformanceTracking } from '@/hooks/usePerformanceTracking';
 

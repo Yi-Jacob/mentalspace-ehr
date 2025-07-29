@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/basic/button';
 import { usePracticeSettings } from '@/hooks/usePracticeSettings';
 import PortalNavigationButtons from './portal/PortalNavigationButtons';
 import ClientPortalSettings from './portal/ClientPortalSettings';

@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/basic/dialog';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { Switch } from '@/components/basic/switch';
+import { Calendar } from '@/components/basic/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/basic/popover';
 import { CalendarIcon, Clock, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/utils/utils';

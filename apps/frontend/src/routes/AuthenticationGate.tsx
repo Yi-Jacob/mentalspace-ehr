@@ -1,23 +1,23 @@
+import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { Navigate, Outlet } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 
-const AuthenticationGate = () => {
+interface AuthenticationGateProps {
+  children: React.ReactNode;
+}
+
+const AuthenticationGate: React.FC<AuthenticationGateProps> = ({ children }) => {
   const { user, loading, error } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your session...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading your session..." />;
   }
 
   if ((!user || error) && !loading) {
     return <Navigate to="/auth/login" replace />;
+     
   }
 
   return (

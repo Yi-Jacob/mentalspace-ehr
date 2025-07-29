@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/basic/badge';
 import { Save, Clock, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 

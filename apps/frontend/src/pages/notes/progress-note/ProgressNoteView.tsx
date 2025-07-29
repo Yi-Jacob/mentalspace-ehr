@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/basic/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
 import { ArrowLeft, Edit, User, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';

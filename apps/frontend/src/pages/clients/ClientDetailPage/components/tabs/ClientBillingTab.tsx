@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
 import { InsuranceInfo } from '@/types/client';
 
 interface ClientBillingTabProps {

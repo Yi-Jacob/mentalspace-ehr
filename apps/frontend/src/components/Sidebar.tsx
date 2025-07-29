@@ -20,7 +20,7 @@ import {
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarContext } from '@/hooks/useSidebarContext';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/basic/button';
 
 interface SidebarProps {
   activeItem?: string;

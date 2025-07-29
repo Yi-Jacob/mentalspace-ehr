@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Settings as SettingsIcon, User, Calendar, FileText, CreditCard } from 'lucide-react';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import PageTabs from '@/components/ui/PageTabs';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import PageTabs from '@/components/basic/PageTabs';
 import AccountAccessSettings from '@/pages/settings/components/AccountAccessSettings';
 import PortalSchedulingSettings from '@/pages/settings/components/PortalSchedulingSettings';
 import NotesSettings from '@/pages/settings/components/NotesSettings';

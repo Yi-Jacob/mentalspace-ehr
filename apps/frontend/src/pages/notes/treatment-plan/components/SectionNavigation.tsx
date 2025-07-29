@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/basic/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 
 interface SectionNavigationProps {
   sections: Array<{ id: string; title: string }>;

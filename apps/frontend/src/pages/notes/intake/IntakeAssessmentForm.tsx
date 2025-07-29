@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/basic/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { IntakeFormData } from './types/IntakeFormData';
 import { SECTIONS } from './constants/sections';
 import { useNoteData } from './hooks/useNoteData';

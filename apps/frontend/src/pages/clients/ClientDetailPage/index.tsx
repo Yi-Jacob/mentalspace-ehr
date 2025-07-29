@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User, Mail, Calendar, MapPin, Edit, MessageSquare, Plus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
 import { useToast } from '@/hooks/use-toast';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
 import { clientService } from '@/services/clientService';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import EmptyState from '@/components/EmptyState';
 import { ClientQuickInfo } from './components/ClientQuickInfo';
 import ClientDetailTabs from './components/ClientDetailTabs';
 
@@ -75,24 +77,16 @@ const ClientDetailView = () => {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading client details..." />;
   }
 
   if (!client) {
     return (
-      <div className="p-6">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Client not found</h2>
-        </div>
-      </div>
+      <EmptyState 
+        title="Client not found"
+        description="The client you're looking for doesn't exist or has been removed."
+        icon={User}
+      />
     );
   }
 

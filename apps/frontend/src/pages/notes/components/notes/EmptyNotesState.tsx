@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/basic/card';
 import { FileText } from 'lucide-react';
 
 const EmptyNotesState: React.FC = () => {

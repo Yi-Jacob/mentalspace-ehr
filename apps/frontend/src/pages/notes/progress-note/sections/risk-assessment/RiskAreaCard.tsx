@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/basic/label';
+import { Textarea } from '@/components/basic/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { Button } from '@/components/basic/button';
+import { RadioGroup, RadioGroupItem } from '@/components/basic/radio-group';
 import { X } from 'lucide-react';
 import { RiskFactorQuickButtons } from './RiskFactorQuickButtons';
 

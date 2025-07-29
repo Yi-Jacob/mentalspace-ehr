@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Users, TrendingUp, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
 import { useCrmAnalytics, useReferralSources, useLeads } from '@/hooks/useCrmData';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/basic/skeleton';
 
 const CRMDashboard = () => {
   const { data: analytics, isLoading: analyticsLoading } = useCrmAnalytics();

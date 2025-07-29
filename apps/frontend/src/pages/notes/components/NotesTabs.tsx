@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { FileText, Plus, Clock, Shield } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import PageTabs from '@/components/ui/PageTabs';
+import { Badge } from '@/components/basic/badge';
+import PageTabs from '@/components/basic/PageTabs';
 import NotesList from './NotesList';
 import CreateNoteGrid from './CreateNoteGrid';
 import PendingApprovals from './PendingApprovals';

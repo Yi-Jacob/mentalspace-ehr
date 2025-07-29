@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
+import { Card } from '@/components/basic/card';
 import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tabs';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/utils/utils';
 

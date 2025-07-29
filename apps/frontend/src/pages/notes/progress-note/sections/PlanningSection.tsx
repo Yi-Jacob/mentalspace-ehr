@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/basic/label';
+import { Textarea } from '@/components/basic/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 import SmartTemplates from '../components/SmartTemplates';
 

@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Settings } from 'lucide-react';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import PageTabs from '@/components/ui/PageTabs';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import PageTabs from '@/components/basic/PageTabs';
 import CalendarView from '@/pages/scheduling/components/CalendarView';
 import WorkScheduleManagement from '@/pages/scheduling/components/WorkScheduleManagement';
 import AppointmentManagement from '@/pages/scheduling/components/AppointmentManagement';

@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/basic/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
+import { Textarea } from '@/components/basic/textarea';
 import { Lightbulb, Plus, X } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/basic/collapsible';
 
 interface Template {
   id: string;

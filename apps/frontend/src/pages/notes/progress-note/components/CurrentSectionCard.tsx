@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import NavigationButtons from './NavigationButtons';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { SECTIONS } from '../constants/sections';

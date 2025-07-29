@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/basic/button';
+import { Card, CardHeader, CardTitle } from '@/components/basic/card';
 import { ArrowLeft, Phone } from 'lucide-react';
 
 interface ContactNoteHeaderProps {

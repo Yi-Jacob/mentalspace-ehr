@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User, MessageSquare, Users, FileText, CreditCard, Settings } from 'lucide-react';
-import PageTabs from '@/components/ui/PageTabs';
+import PageTabs from '@/components/basic/PageTabs';
 import { ClientInfoTab } from './tabs/ClientInfoTab';
 import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
 import { ClientNotesTab } from './tabs/ClientNotesTab';

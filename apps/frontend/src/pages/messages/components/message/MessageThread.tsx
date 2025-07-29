@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/basic/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { messageService } from '@/services/messageService';
 import { useToast } from '@/hooks/use-toast';

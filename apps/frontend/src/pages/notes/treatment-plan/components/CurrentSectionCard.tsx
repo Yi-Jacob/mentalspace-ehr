@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/basic/card';
 import { SECTIONS } from '../constants/sections';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 import NavigationButtons from './NavigationButtons';

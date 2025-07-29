@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { ClientFormData } from '@/types/client';
 
 interface PatientInfoFieldsProps {

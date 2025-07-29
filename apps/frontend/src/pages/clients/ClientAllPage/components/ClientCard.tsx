@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
 import { Phone, Mail, Calendar } from 'lucide-react';
 import { ClientFormData } from '@/types/client';
 

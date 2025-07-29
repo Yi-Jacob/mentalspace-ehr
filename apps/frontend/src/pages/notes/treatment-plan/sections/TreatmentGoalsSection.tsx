@@ -1,14 +1,14 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/basic/collapsible';
+import { Badge } from '@/components/basic/badge';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } from '@/components/basic/textarea';
 
 interface TreatmentGoalsSectionProps {
   formData: TreatmentPlanFormData;

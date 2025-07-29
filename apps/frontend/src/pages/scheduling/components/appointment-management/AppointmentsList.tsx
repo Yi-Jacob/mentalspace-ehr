@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Calendar } from 'lucide-react';
 import AppointmentCard from './AppointmentCard';
 

@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { Button } from '@/components/basic/button';
 import { Download, RefreshCw } from 'lucide-react';
 
 interface DashboardHeaderProps {

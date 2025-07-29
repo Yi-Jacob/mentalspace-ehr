@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Badge } from '@/components/basic/badge';
 import { Plus, Clock, User, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';

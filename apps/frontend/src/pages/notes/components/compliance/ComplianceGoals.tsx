@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Progress } from '@/components/basic/progress';
 import { Target, Award, Calendar, FileText } from 'lucide-react';
 
 interface ComplianceGoalsProps {

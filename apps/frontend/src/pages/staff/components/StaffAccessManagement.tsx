@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
 import { Eye, Shield, Users, Settings, Lock, Unlock } from 'lucide-react';
 
 const StaffAccessManagement: React.FC = () => {

@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
 import { Plus, X } from 'lucide-react';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 import SearchableSelect from '../../components/shared/SearchableSelect';

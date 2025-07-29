@@ -1,10 +1,10 @@
 import React from 'react';
 import { UserPlus, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/basic/button';
 import { useAddStaffForm } from '@/hooks/useAddStaffForm';
 import { useAddStaffSubmit } from '@/hooks/useAddStaffSubmit';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 import UserCommentsSection from './components/UserCommentsSection';
 import RolesSection from './components/RolesSection';
 import UserInformationSection from './components/UserInformationSection';

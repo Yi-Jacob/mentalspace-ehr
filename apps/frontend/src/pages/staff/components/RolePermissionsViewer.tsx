@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tabs';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
 import { Eye, EyeOff } from 'lucide-react';
 import { UserRole } from '@/types/staff';
 

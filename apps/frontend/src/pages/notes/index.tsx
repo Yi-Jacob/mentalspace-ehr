@@ -2,8 +2,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 import NotesTabs from '@/pages/notes/components/NotesTabs';
 import CreateNoteModal from '@/pages/notes/components/CreateNoteModal';
 import { useNotes } from '@/hooks/useNotes';

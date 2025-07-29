@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/basic/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Checkbox } from '@/components/basic/checkbox';
+import { Label } from '@/components/basic/label';
+import { Input } from '@/components/basic/input';
+import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 

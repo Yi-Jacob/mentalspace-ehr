@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
 import { Plus, Search, Edit, Building2, FileText, DollarSign } from 'lucide-react';
 import { billingService } from '@/services/billingService';
 import PayerModal from './payer/PayerModal';

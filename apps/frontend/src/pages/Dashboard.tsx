@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { 
   LayoutDashboard,
   Users, 
@@ -12,8 +12,8 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 
 const Dashboard = () => {
   const stats = [

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/utils/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { CheckCircle, Circle } from 'lucide-react';
 
 interface Section {

@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/basic/label';
+import { Textarea } from '@/components/basic/textarea';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Plus, X } from 'lucide-react';
 import { IntakeFormData } from '../types/IntakeFormData';
 

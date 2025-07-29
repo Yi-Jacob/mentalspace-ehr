@@ -1,7 +1,7 @@
 import { MessageSquare, Send, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
+import { Button } from '@/components/basic/button';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 import ComposeMessageModal from './components/ComposeMessageModal';
 import NewConversationModal from './components/NewConversationModal';
 import { useMessageManagementState } from './components/message-management/MessageManagementState';

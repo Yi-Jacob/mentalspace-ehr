@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/basic/label';
+import { Checkbox } from '@/components/basic/checkbox';
 import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
 
 interface ComplianceSectionProps {

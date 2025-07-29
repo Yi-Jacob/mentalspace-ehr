@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Label } from '@/components/basic/label';
+import { Input } from '@/components/basic/input';
 
 interface DurationSectionProps {
   value: number;

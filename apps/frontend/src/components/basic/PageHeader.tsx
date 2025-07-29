@@ -1,7 +1,7 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/basic/button';
+import { Badge } from '@/components/basic/badge';
 import { cn } from '@/utils/utils';
 
 interface PageHeaderProps {

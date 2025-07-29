@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/basic/label';
+import { Input } from '@/components/basic/input';
+import { Textarea } from '@/components/basic/textarea';
+import { Checkbox } from '@/components/basic/checkbox';
 import { Clock } from 'lucide-react';
 import { ContactNoteFormData } from '../types/ContactNoteFormData';
 

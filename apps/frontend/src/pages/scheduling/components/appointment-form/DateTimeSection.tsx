@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Label } from '@/components/basic/label';
+import { Input } from '@/components/basic/input';
+import { Button } from '@/components/basic/button';
 import { Calendar, Clock, AlertCircle, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import TimePickerGrid from './TimePickerGrid';

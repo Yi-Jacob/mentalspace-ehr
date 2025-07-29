@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/basic/button';
 import { usePagination } from '@/hooks/usePagination';
-import { PaginationControls } from '@/components/ui/pagination-controls';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
+import { PaginationControls } from '@/components/basic/pagination-controls';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 import { useClients } from '@/hooks/useClients';
-import ClientSearch from '../components/ClientSearch';
-import ClientGrid from '../components/ClientGrid';
-import ClientEmptyState from '../components/ClientEmptyState';
-import ClientLoadingState from '../components/ClientLoadingState';
+import ClientSearch from './components/ClientSearch';
+import ClientGrid from './components/ClientGrid';
+import EmptyState from '@/components/EmptyState';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import ClientErrorState from '../components/ClientErrorState';
 
 const ClientsPage: React.FC = () => {
@@ -59,7 +59,7 @@ const ClientsPage: React.FC = () => {
   }
 
   if (isLoading) {
-    return <ClientLoadingState />;
+    return <LoadingSpinner message="Loading clients..." />;
   }
 
   return (
@@ -105,9 +105,13 @@ const ClientsPage: React.FC = () => {
       )}
 
       {filteredClients.length === 0 && !isLoading && (
-        <ClientEmptyState 
+        <EmptyState 
+          title="No clients found"
+          description="Get started by adding your first client to the system."
           searchTerm={searchTerm}
-          onAddClient={handleAddClient}
+          actionLabel="Add New Client"
+          onAction={handleAddClient}
+          icon={User}
         />
       )}
     </PageLayout>

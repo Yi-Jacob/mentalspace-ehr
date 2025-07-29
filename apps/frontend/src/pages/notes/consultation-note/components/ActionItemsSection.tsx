@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
 import { Plus, Trash2 } from 'lucide-react';
 import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
 

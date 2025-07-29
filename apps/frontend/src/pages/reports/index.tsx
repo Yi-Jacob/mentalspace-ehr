@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { FileText, Users, Shield, DollarSign, Calendar, Phone, TrendingUp, BarChart3 } from 'lucide-react';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import PageTabs from '@/components/ui/PageTabs';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import PageTabs from '@/components/basic/PageTabs';
 import ClinicalReports from './components/clinical/ClinicalReports';
 import StaffReports from './components/staff/StaffReports';
 import ComplianceReports from './components/compliance/ComplianceReports';

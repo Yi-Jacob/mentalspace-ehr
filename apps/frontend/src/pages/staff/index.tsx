@@ -1,10 +1,10 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/basic/button';
 import { Plus, Stethoscope, Shield, Settings, Eye, UserCog, BookOpen, Clock, TrendingUp, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import PageTabs from '@/components/ui/PageTabs';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import PageTabs from '@/components/basic/PageTabs';
 import StaffList from './components/StaffList';
 import RoleManagement from './components/RoleManagement';
 import StaffWorkflowView from './components/StaffWorkflowView';

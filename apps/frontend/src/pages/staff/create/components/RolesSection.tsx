@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Checkbox } from '@/components/basic/checkbox';
+import { Label } from '@/components/basic/label';
 import { UserRole } from '@/types/staff';
 import { HelpCircle } from 'lucide-react';
 

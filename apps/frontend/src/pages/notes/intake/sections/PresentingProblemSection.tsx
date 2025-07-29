@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/basic/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { Checkbox } from '@/components/basic/checkbox';
 import { IntakeFormData } from '../types/IntakeFormData';
 import ValidatedTextarea from '@/components/form/ValidatedTextarea';
 import FormErrorBoundary from '@/components/FormErrorBoundary';

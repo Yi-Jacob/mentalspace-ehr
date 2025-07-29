@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
+import { Input } from '@/components/basic/input';
+import { Badge } from '@/components/basic/badge';
 import { Search, Edit, UserMinus, Phone, Mail, Star, Users, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/basic/alert';
 import { useStaffManagement } from '@/hooks/useStaffManagement';
 import { useStaffRoles } from '@/hooks/useStaffRoles';
 import { StaffMember, UserRole } from '@/types/staff';

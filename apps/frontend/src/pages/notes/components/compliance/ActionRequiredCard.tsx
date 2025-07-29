@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/basic/card';
+import { Button } from '@/components/basic/button';
 import { AlertTriangle } from 'lucide-react';
 
 interface ActionRequiredCardProps {

@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/basic/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { Textarea } from '@/components/basic/textarea';
 import { FileText, MessageSquare } from 'lucide-react';
 
 interface AppointmentTypeSectionProps {

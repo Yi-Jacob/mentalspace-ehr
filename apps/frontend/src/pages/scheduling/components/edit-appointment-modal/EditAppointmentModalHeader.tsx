@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogHeader, DialogTitle } from '@/components/basic/dialog';
 
 const EditAppointmentModalHeader: React.FC = () => {
   return (

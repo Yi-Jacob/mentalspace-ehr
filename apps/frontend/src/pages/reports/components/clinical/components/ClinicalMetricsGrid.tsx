@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/basic/card';
 import { FileText, Users, Clock, TrendingUp } from 'lucide-react';
 import { ClinicalReportsData } from '@/hooks/useReportData';
 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { ClientFormData } from '@/types/client';
 import { PatientInfoFields } from './fields/PatientInfoFields';
 import { DateOfBirthField } from './fields/DateOfBirthField';

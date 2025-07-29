@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
+import { Progress } from '@/components/basic/progress';
 import { GraduationCap, Calendar, AlertTriangle, Plus, BookOpen, Award } from 'lucide-react';
 import { useTrainingRecords } from '@/hooks/useTrainingRecords';
 

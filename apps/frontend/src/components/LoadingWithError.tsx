@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/basic/alert';
+import { Button } from '@/components/basic/button';
+import { Skeleton } from '@/components/basic/skeleton';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface LoadingWithErrorProps {

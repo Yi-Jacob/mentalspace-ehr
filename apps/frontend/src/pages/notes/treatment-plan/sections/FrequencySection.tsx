@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Input } from '@/components/basic/input';
+import { Label } from '@/components/basic/label';
+import { Checkbox } from '@/components/basic/checkbox';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
 import FrequencySelect from '../../components/shared/FrequencySelect';
 

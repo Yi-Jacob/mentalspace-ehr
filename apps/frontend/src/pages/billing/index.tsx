@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/basic/card';
 import { CreditCard, Building2, Shield, FileText, CreditCard as PaymentIcon, TrendingUp, BarChart3, Receipt } from 'lucide-react';
-import PageLayout from '@/components/ui/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import PageTabs from '@/components/ui/PageTabs';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import PageTabs from '@/components/basic/PageTabs';
 import PayerManagement from '@/pages/billing/components/PayerManagement';
 import InsuranceVerification from '@/pages/billing/components/InsuranceVerification';
 import ClaimsSubmission from '@/pages/billing/components/ClaimsSubmission';

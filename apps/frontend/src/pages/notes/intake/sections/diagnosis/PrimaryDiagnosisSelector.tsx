@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Label } from '@/components/basic/label';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
 import { X } from 'lucide-react';
 import DiagnosisSearch, { DiagnosisOption } from './DiagnosisSearch';
 import DiagnosisSuggestions from './DiagnosisSuggestions';

@@ -8,7 +8,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
+} from '@/components/basic/pagination';
 
 interface PaginationControlsProps {
   currentPage: number;
