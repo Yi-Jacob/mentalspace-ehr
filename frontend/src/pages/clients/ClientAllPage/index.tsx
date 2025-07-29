@@ -7,16 +7,14 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 import PageLayout from '@/components/ui/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import { useClients } from '@/hooks/useClients';
-import ClientSearch from './components/ClientSearch';
-import ClientGrid from './components/ClientGrid';
-import ClientEmptyState from './components/ClientEmptyState';
-import ClientLoadingState from './components/ClientLoadingState';
-import ClientErrorState from './components/ClientErrorState';
-import AddClientModal from './components/AddClientModal';
+import ClientSearch from '../components/ClientSearch';
+import ClientGrid from '../components/ClientGrid';
+import ClientEmptyState from '../components/ClientEmptyState';
+import ClientLoadingState from '../components/ClientLoadingState';
+import ClientErrorState from '../components/ClientErrorState';
 
 const ClientsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
   const navigate = useNavigate();
 
   // Use the new useClients hook
@@ -48,12 +46,12 @@ const ClientsPage: React.FC = () => {
     totalItems,
   } = usePagination(filteredClients, { pageSize: 12 });
 
-  const handleClientAdded = () => {
-    setShowAddModal(false);
-  };
-
   const handleClientClick = (clientId: string) => {
     navigate(`/clients/${clientId}`);
+  };
+
+  const handleAddClient = () => {
+    navigate('/clients/add');
   };
 
   if (error) {
@@ -72,7 +70,7 @@ const ClientsPage: React.FC = () => {
         description="Manage your client records and information"
         action={
           <Button
-            onClick={() => setShowAddModal(true)}
+            onClick={handleAddClient}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -109,15 +107,9 @@ const ClientsPage: React.FC = () => {
       {filteredClients.length === 0 && !isLoading && (
         <ClientEmptyState 
           searchTerm={searchTerm}
-          onAddClient={() => setShowAddModal(true)}
+          onAddClient={handleAddClient}
         />
       )}
-
-      <AddClientModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onClientAdded={handleClientAdded}
-      />
     </PageLayout>
   );
 };

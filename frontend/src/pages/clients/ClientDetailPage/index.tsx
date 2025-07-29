@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { User, Mail, Calendar, MapPin, Edit, MessageSquare, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,10 +10,10 @@ import PageLayout from '@/components/ui/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import { ClientQuickInfo } from './components/ClientQuickInfo';
 import ClientDetailTabs from './components/ClientDetailTabs';
-import AddClientModal from '../components/AddClientModal';
 
 const ClientDetailView = () => {
   const { clientId } = useParams<{ clientId: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [client, setClient] = useState<ClientFormData | null>(null);
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
@@ -21,7 +21,6 @@ const ClientDetailView = () => {
   const [insuranceInfo, setInsuranceInfo] = useState<InsuranceInfo[]>([]);
   const [primaryCareProvider, setPrimaryCareProvider] = useState<PrimaryCareProvider | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   const fetchClientDetails = async () => {
     if (!clientId) return;
@@ -71,13 +70,8 @@ const ClientDetailView = () => {
     fetchClientDetails();
   }, [clientId]);
 
-  const handleClientUpdated = () => {
-    fetchClientDetails();
-    setShowEditModal(false);
-    toast({
-      title: "Success",
-      description: "Client updated successfully",
-    });
+  const handleEditClient = () => {
+    navigate(`/clients/${clientId}/edit`);
   };
 
   if (loading) {
@@ -142,7 +136,7 @@ const ClientDetailView = () => {
             <Button
               variant="default"
               size="sm"
-              onClick={() => setShowEditModal(true)}
+              onClick={handleEditClient}
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Edit className="h-4 w-4" />
@@ -182,12 +176,7 @@ const ClientDetailView = () => {
         primaryCareProvider={primaryCareProvider}
       />
 
-      <AddClientModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onClientAdded={handleClientUpdated}
-        editingClient={client}
-      />
+
     </PageLayout>
   );
 };
