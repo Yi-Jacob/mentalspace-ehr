@@ -1,61 +1,57 @@
-# Logs
-logs
-*.log
+# Dependencies
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-
-# Dependencies
-node_modules/
-**/node_modules/
 
 # Build outputs
 dist/
-dist-ssr/
 build/
-**/dist/
-**/build/
+*.tsbuildinfo
 
-# Environment files
-*.local
+# Environment variables
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# IDE
+.vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS generated files
-Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 ehthumbs.db
-Desktop.ini
+Thumbs.db
 
-# Temporary files
-*.tmp
-*.temp
-.cache/
-
-# Coverage reports
-coverage/
-*.lcov
+# Logs
+logs
+*.log
 
 # Runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
 
 # Optional npm cache directory
 .npm
@@ -79,6 +75,7 @@ pids
 .yarn-integrity
 
 # parcel-bundler cache (https://parceljs.org/)
+.cache
 .parcel-cache
 
 # Next.js build output
@@ -95,16 +92,38 @@ pids
 tmp/
 temp/
 
-# Database files
+# Prisma
+prisma/migrations/
+
+# Database
 *.db
 *.sqlite
 *.sqlite3
 
-# Backup files
-*.bak
-*.backup
+# Testing
+/coverage
 
-# IDE specific files
-.vscode/settings.json
-.vscode/launch.json
-.vscode/tasks.json
+# Production
+/build
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
