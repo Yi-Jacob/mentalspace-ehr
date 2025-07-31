@@ -1,5 +1,5 @@
 import * as React from "react"
-
+import { Label } from "@/components/basic/label"
 import { cn } from "@/utils/utils"
 
 export interface TextareaProps
@@ -21,4 +21,26 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 )
 Textarea.displayName = "Textarea"
 
-export { Textarea }
+interface TextareaFieldProps extends TextareaProps {
+  label?: string;
+  required?: boolean;
+  containerClassName?: string;
+}
+
+const TextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
+  ({ label, required, containerClassName, className, ...props }, ref) => {
+    return (
+      <div className={containerClassName}>
+        {label && (
+          <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block">
+            {label}{required && " *"}
+          </Label>
+        )}
+        <Textarea ref={ref} className={className} {...props} />
+      </div>
+    );
+  }
+);
+TextareaField.displayName = "TextareaField";
+
+export { Textarea, TextareaField }

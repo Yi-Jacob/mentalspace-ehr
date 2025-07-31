@@ -6,7 +6,7 @@ import { Badge } from '@/components/basic/badge';
 import { Avatar, AvatarFallback } from '@/components/basic/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/basic/alert-dialog';
 import { UserPlus, UserMinus, Shield, AlertTriangle } from 'lucide-react';
-import { StaffMember, UserRole } from '@/types/staff';
+import { StaffMember, UserRole } from '@/types/staffType';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
 
 interface UserRoleCardProps {

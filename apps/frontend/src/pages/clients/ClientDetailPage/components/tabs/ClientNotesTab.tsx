@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData } from '@/types/clientType';
 
 interface ClientNotesTabProps {
   client: ClientFormData;

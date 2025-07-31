@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PageTabs from '@/components/basic/PageTabs';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
 import { DemographicsTab } from './client-form/DemographicsTab';
 import { BillingTab } from './client-form/BillingTab';
 import { SettingsTab } from './client-form/SettingsTab';
-import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
+import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 
 interface ClientFormProps {
   formData: ClientFormData;
@@ -32,9 +32,38 @@ const ClientForm: React.FC<ClientFormProps> = ({
   primaryCareProvider,
   setPrimaryCareProvider,
 }) => {
+  const [currentTab, setCurrentTab] = useState('basic');
+  
+  const tabOrder = ['basic', 'contact', 'demographics', 'billing', 'settings'];
+  
+  const handleNext = () => {
+    const currentIndex = tabOrder.indexOf(currentTab);
+    if (currentIndex < tabOrder.length - 1) {
+      const nextTab = tabOrder[currentIndex + 1];
+      setCurrentTab(nextTab);
+    }
+  };
+  
+  const handlePrevious = () => {
+    const currentIndex = tabOrder.indexOf(currentTab);
+    if (currentIndex > 0) {
+      const previousTab = tabOrder[currentIndex - 1];
+      setCurrentTab(previousTab);
+    }
+  };
+  
+  const canGoNext = tabOrder.indexOf(currentTab) < tabOrder.length - 1;
+  const canGoPrevious = tabOrder.indexOf(currentTab) > 0;
   return (
     <PageTabs
       defaultValue="basic"
+      value={currentTab}
+      onValueChange={setCurrentTab}
+      showNavigation={true}
+      onNext={handleNext}
+      onPrevious={handlePrevious}
+      canGoNext={canGoNext}
+      canGoPrevious={canGoPrevious}
       items={[
         {
           id: 'basic',

@@ -8,7 +8,7 @@ import { ClientNotesTab } from './tabs/ClientNotesTab';
 import { ClientBillingTab } from './tabs/ClientBillingTab';
 import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import ClientMessagesTab from './tabs/ClientMessagesTab';
-import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
+import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 
 interface ClientDetailTabsProps {
   client: ClientFormData;

@@ -4,7 +4,7 @@ import { User, Mail, Calendar, MapPin, Edit, MessageSquare, Plus } from 'lucide-
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { useToast } from '@/hooks/use-toast';
-import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
+import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 import { clientService } from '@/services/clientService';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';

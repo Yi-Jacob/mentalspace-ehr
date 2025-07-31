@@ -6,7 +6,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/basic/pagination-controls';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import { useClients } from '@/hooks/useClients';
+import { useClients } from '@/pages/clients/hook/useClients';
 import ClientSearch from './components/ClientSearch';
 import ClientGrid from './components/ClientGrid';
 import EmptyState from '@/components/EmptyState';

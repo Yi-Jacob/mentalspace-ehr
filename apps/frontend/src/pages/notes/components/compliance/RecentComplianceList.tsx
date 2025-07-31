@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Badge } from '@/components/basic/badge';
 import { TrendingUp } from 'lucide-react';
 import { format, subDays, isAfter } from 'date-fns';
-import { Note } from '@/types/note';
+import { Note } from '@/types/noteType';
 
 interface RecentComplianceListProps {
   notes: Note[];

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Button } from '@/components/basic/button';
 import { Checkbox } from '@/components/basic/checkbox';
 import { Label } from '@/components/basic/label';
-import { UserRole } from '@/types/staff';
+import { UserRole } from '@/types/staffType';
 import { HelpCircle } from 'lucide-react';
 
 interface RolesSectionProps {

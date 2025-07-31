@@ -7,7 +7,7 @@ import {
   EmergencyContact, 
   InsuranceInfo, 
   PrimaryCareProvider 
-} from '@/types/client';
+} from '@/types/clientType';
 
 export const useClients = (options?: {
   onCreateSuccess?: () => void;

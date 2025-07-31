@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { staffService } from '@/services/staffService';
-import { StaffMember } from '@/types/staff';
+import { StaffMember } from '@/types/staffType';
 
 export const useStaffQueries = () => {
   // Fetch all staff members from backend API

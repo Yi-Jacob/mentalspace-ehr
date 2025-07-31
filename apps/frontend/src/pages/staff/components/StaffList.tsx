@@ -9,7 +9,7 @@ import { Search, Edit, UserMinus, Phone, Mail, Star, Users, AlertCircle } from '
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { useStaffManagement } from '@/hooks/useStaffManagement';
 import { useStaffRoles } from '@/hooks/useStaffRoles';
-import { StaffMember, UserRole } from '@/types/staff';
+import { StaffMember, UserRole } from '@/types/staffType';
 
 const StaffList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();

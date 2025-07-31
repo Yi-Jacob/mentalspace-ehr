@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ClientCard from './ClientCard';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData } from '@/types/clientType';
 
 interface ClientGridProps {
   clients: ClientFormData[];

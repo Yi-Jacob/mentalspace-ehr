@@ -8,7 +8,7 @@ import NotesDisplaySection from './notes/NotesDisplaySection';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';
 import { noteService } from '@/services/noteService';
-import { Note } from '@/types/note';
+import { Note } from '@/types/noteType';
 import { filterNotes, sortNotes } from './notes/utils/noteFilters';
 
 type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';

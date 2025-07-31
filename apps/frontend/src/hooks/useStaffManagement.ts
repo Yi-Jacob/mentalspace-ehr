@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { staffService, type CreateStaffInput, type UpdateStaffInput } from '@/services/staffService';
-import { StaffMember } from '@/types/staff';
+import { StaffMember } from '@/types/staffType';
 
 export const useStaffManagement = () => {
   const { toast } = useToast();

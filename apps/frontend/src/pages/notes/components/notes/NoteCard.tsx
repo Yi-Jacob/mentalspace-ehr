@@ -6,7 +6,7 @@ import { Button } from '@/components/basic/button';
 import { FileText, Calendar, User, Clock, AlertTriangle } from 'lucide-react';
 import { format, isAfter, subDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { Note } from '@/types/note';
+import { Note } from '@/types/noteType';
 
 interface NoteCardProps {
   note: Note;

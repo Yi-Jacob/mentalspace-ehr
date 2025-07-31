@@ -7,7 +7,7 @@ import { Label } from '@/components/basic/label';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { Badge } from '@/components/basic/badge';
 import { UserPlus, AlertTriangle, Info } from 'lucide-react';
-import { UserRole } from '@/types/staff';
+import { UserRole } from '@/types/staffType';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
 
 interface RoleAssignmentModalProps {

@@ -1,5 +1,5 @@
 import { apiClient } from './api-helper/client';
-import { UserStatus, StaffMember } from '@/types/staff';
+import { UserStatus, StaffMember } from '@/types/staffType';
 
 export interface CreateStaffInput {
   // Basic user information

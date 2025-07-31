@@ -1,5 +1,5 @@
 import { apiClient } from './api-helper/client';
-import { Note, CreateNoteRequest, UpdateNoteRequest, QueryNotesParams, NotesResponse } from '../types/note';
+import { Note, CreateNoteRequest, UpdateNoteRequest, QueryNotesParams, NotesResponse } from '../types/noteType';
 
 // Note Service
 export class NoteService {

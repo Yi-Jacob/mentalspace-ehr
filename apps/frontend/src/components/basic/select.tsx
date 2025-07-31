@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Label } from "@/components/basic/label"
 
 import { cn } from "@/utils/utils"
 
@@ -144,6 +145,56 @@ const SelectSeparator = React.forwardRef<
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
+// SelectField Component
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+interface SelectFieldProps {
+  label?: string;
+  required?: boolean;
+  containerClassName?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  options: SelectOption[];
+}
+
+const SelectField: React.FC<SelectFieldProps> = ({
+  label,
+  required = false,
+  containerClassName = "",
+  value,
+  onValueChange,
+  placeholder,
+  disabled = false,
+  options
+}) => {
+  return (
+    <div className={containerClassName}>
+      {label && (
+        <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block">
+          {label}{required && " *"}
+        </Label>
+      )}
+      <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+        <SelectTrigger>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
 export {
   Select,
   SelectGroup,
@@ -155,4 +206,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  SelectField,
 }

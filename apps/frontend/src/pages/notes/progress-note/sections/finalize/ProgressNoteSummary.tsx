@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ProgressNoteFormData } from '../../types/ProgressNoteFormData';
-import { ClientInfo } from '@/types/note';
+import { ClientInfo } from '@/types/noteType';
 
 interface ProgressNoteSummaryProps {
   formData: ProgressNoteFormData;

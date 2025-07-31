@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData } from '@/types/clientType';
 
 interface ClientCliniciansTabProps {
   client: ClientFormData;

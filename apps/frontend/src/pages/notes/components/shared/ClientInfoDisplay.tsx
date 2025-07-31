@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ClientInfo } from '@/types/note';
+import { ClientInfo } from '@/types/noteType';
 
 interface ClientInfoDisplayProps {
   clientData?: ClientInfo;

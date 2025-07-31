@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 
-import { useClientForm } from '@/hooks/useClientForm';
-import { useClients } from '@/hooks/useClients';
+import { useClientForm } from '@/pages/clients/hook/useClientForm';
+import { useClients } from '@/pages/clients/hook/useClients';
 import { useToast } from '@/hooks/use-toast';
 import ClientForm from '../components/ClientForm';
 

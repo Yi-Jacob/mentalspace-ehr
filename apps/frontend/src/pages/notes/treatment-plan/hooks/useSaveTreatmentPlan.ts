@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 import { noteService } from '@/services/noteService';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
-import { NoteStatus } from '@/types/note';
+import { NoteStatus } from '@/types/noteType';
 
 export const useSaveTreatmentPlan = (noteId: string | undefined, formData: TreatmentPlanFormData) => {
   const { toast } = useToast();

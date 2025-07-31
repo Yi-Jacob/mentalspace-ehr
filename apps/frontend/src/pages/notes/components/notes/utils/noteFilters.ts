@@ -1,4 +1,4 @@
-import { Note } from '@/types/note';
+import { Note } from '@/types/noteType';
 
 export interface FilterOptions {
   status?: string;

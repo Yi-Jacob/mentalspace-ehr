@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/basic/card';
 import { User, Mail, Calendar } from 'lucide-react';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData } from '@/types/clientType';
 import { format } from 'date-fns';
 
 interface ClientQuickInfoProps {
@@ -31,8 +31,8 @@ export const ClientQuickInfo: React.FC<ClientQuickInfoProps> = ({ client }) => {
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="mb-4">
+      <CardContent className="py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center space-x-2">
             <User className="w-4 h-4 text-gray-400" />

@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/client';
+import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 
 export const useClientForm = () => {
   const [formData, setFormData] = useState<ClientFormData>({

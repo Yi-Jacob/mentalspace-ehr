@@ -5,11 +5,11 @@ import { Button } from '@/components/basic/button';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 
-import { useClientForm } from '@/hooks/useClientForm';
-import { useClients } from '@/hooks/useClients';
+import { useClientForm } from '@/pages/clients/hook/useClientForm';
+import { useClients } from '@/pages/clients/hook/useClients';
 import { useToast } from '@/hooks/use-toast';
 import { clientService } from '@/services/clientService';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData } from '@/types/clientType';
 import ClientForm from '../components/ClientForm';
 
 const ClientEditPage: React.FC = () => {

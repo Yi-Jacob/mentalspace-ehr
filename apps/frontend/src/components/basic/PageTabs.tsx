@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tabs';
-import { LucideIcon } from 'lucide-react';
+import { Button } from '@/components/basic/button';
+import { LucideIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/utils/utils';
 
 interface TabItem {
@@ -20,6 +21,11 @@ interface PageTabsProps {
   tabsListClassName?: string;
   tabsTriggerClassName?: string;
   tabsContentClassName?: string;
+  showNavigation?: boolean;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  canGoNext?: boolean;
+  canGoPrevious?: boolean;
 }
 
 const PageTabs: React.FC<PageTabsProps> = ({
@@ -30,7 +36,12 @@ const PageTabs: React.FC<PageTabsProps> = ({
   className,
   tabsListClassName,
   tabsTriggerClassName,
-  tabsContentClassName
+  tabsContentClassName,
+  showNavigation = false,
+  onNext,
+  onPrevious,
+  canGoNext = true,
+  canGoPrevious = true
 }) => {
   const getGridCols = () => {
     const count = items.length;
@@ -51,39 +62,63 @@ const PageTabs: React.FC<PageTabsProps> = ({
   };
 
   return (
-    <Tabs 
-      defaultValue={defaultValue} 
-      value={value} 
-      onValueChange={onValueChange} 
-      className={cn('space-y-6', className)}
-    >
-      <TabsList className={cn(styles.tabsList, tabsListClassName)}>
-        {items.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <TabsTrigger 
-              key={item.id} 
-              value={item.id} 
-              className={cn(styles.tabsTrigger, tabsTriggerClassName)}
-            >
-              {IconComponent && <IconComponent className="h-4 w-4" />}
-              <span>{item.label}</span>
-              {item.badge && item.badge}
-            </TabsTrigger>
-          );
-        })}
-      </TabsList>
+    <div className={cn('space-y-6', className)}>
+      <Tabs 
+        defaultValue={defaultValue} 
+        value={value} 
+        onValueChange={onValueChange} 
+        className="space-y-6"
+      >
+        <TabsList className={cn(styles.tabsList, tabsListClassName)}>
+          {items.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <TabsTrigger 
+                key={item.id} 
+                value={item.id} 
+                className={cn(styles.tabsTrigger, tabsTriggerClassName)}
+              >
+                {IconComponent && <IconComponent className="h-4 w-4" />}
+                <span>{item.label}</span>
+                {item.badge && item.badge}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
 
-      {items.map((item) => (
-        <TabsContent 
-          key={item.id} 
-          value={item.id} 
-          className={cn(styles.tabsContent, tabsContentClassName)}
-        >
-          {item.content}
-        </TabsContent>
-      ))}
-    </Tabs>
+        {items.map((item) => (
+          <TabsContent 
+            key={item.id} 
+            value={item.id} 
+            className={cn(styles.tabsContent, tabsContentClassName)}
+          >
+            {item.content}
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      {showNavigation && (
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={onPrevious}
+            disabled={!canGoPrevious}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <Button
+            onClick={onNext}
+            disabled={!canGoNext}
+            className="flex items-center gap-2"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

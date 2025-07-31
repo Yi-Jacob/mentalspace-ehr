@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 import { noteService } from '@/services/noteService';
-import { NoteType } from '@/types/note';
+import { NoteType } from '@/types/noteType';
 
 export const useNoteCreation = () => {
   const navigate = useNavigate();

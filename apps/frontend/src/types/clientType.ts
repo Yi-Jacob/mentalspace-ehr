@@ -1,11 +1,13 @@
 
+import { PhoneType, MessagePreference, InsuranceType, SubscriberRelationship, AdministrativeSex, GenderIdentity, SexualOrientation, Race, Ethnicity, Language, MaritalStatus, EmploymentStatus, ReligiousAffiliation, SmokingStatus, AppointmentReminders, PcpRelease, UsState, Timezone } from './enums/clientEnum';
+
 // API Response Types (from backend)
 export interface PhoneNumberDto {
   id?: string;
   clientId: string;
-  phoneType: 'Mobile' | 'Home' | 'Work' | 'Other';
+  phoneType: PhoneType;
   phoneNumber: string;
-  messagePreference: 'No messages' | 'Voice messages OK' | 'Text messages OK' | 'Voice/Text messages OK';
+  messagePreference: MessagePreference;
   createdAt?: string;
 }
 
@@ -23,12 +25,12 @@ export interface EmergencyContactDto {
 export interface InsuranceInfoDto {
   id?: string;
   clientId: string;
-  insuranceType: 'Primary' | 'Secondary';
+  insuranceType: InsuranceType;
   insuranceCompany: string;
   policyNumber: string;
   groupNumber?: string;
   subscriberName: string;
-  subscriberRelationship: string;
+  subscriberRelationship: SubscriberRelationship;
   subscriberDob?: string;
   effectiveDate?: string;
   terminationDate?: string;
@@ -49,9 +51,9 @@ export interface PrimaryCareProviderDto {
 
 // Frontend Form Types
 export interface PhoneNumber {
-  type: 'Mobile' | 'Home' | 'Work' | 'Other';
+  type: PhoneType;
   number: string;
-  messagePreference: 'No messages' | 'Voice messages OK' | 'Text messages OK' | 'Voice/Text messages OK';
+  messagePreference: MessagePreference;
 }
 
 export interface EmergencyContact {
@@ -63,12 +65,12 @@ export interface EmergencyContact {
 }
 
 export interface InsuranceInfo {
-  insuranceType: 'Primary' | 'Secondary';
+  insuranceType: InsuranceType;
   insuranceCompany: string;
   policyNumber: string;
   groupNumber: string;
   subscriberName: string;
-  subscriberRelationship: string;
+  subscriberRelationship: SubscriberRelationship;
   subscriberDob: string;
   effectiveDate: string;
   terminationDate: string;
@@ -99,24 +101,24 @@ export interface ClientFormData {
   address1: string;
   address2: string;
   city: string;
-  state: string;
+  state: UsState;
   zipCode: string;
-  timezone: 'Not Set' | 'HAST' | 'HAT' | 'MART' | 'AKT' | 'GAMT' | 'PT' | 'PST' | 'MT' | 'ART' | 'CT' | 'CST' | 'ET' | 'EST' | 'AT' | 'AST' | 'NT' | 'EGT/EGST' | 'CVT';
+  timezone: Timezone;
   // Demographics
-  administrativeSex: string;
-  genderIdentity: string;
-  sexualOrientation: string;
-  race: string;
-  ethnicity: string;
-  languages: string;
-  maritalStatus: string;
-  employmentStatus: string;
-  religiousAffiliation: string;
-  smokingStatus: string;
+  administrativeSex: AdministrativeSex;
+  genderIdentity: GenderIdentity;
+  sexualOrientation: SexualOrientation;
+  race: Race;
+  ethnicity: Ethnicity;
+  languages: Language;
+  maritalStatus: MaritalStatus;
+  employmentStatus: EmploymentStatus;
+  religiousAffiliation: ReligiousAffiliation;
+  smokingStatus: SmokingStatus;
   // Settings
-  appointmentReminders: 'Default Practice Setting' | 'No reminders' | 'Email only' | 'Text (SMS) only' | 'Text (SMS) and Email' | 'Text or Call, and Email';
+  appointmentReminders: AppointmentReminders;
   hipaaSigned: boolean;
-  pcpRelease: 'Not set' | 'Patient consented to release information' | 'Patient declined to release information' | 'Not applicable';
+  pcpRelease: PcpRelease;
   patientComments: string;
   // Status
   isActive: boolean;

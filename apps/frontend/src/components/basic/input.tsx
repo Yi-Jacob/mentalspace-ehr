@@ -1,5 +1,5 @@
 import * as React from "react"
-
+import { Label } from "@/components/basic/label"
 import { cn } from "@/utils/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
@@ -19,4 +19,47 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 )
 Input.displayName = "Input"
 
-export { Input }
+// Form Field Components
+interface FormFieldProps {
+  label?: string;
+  required?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}
+
+const FormField: React.FC<FormFieldProps> = ({ 
+  label, 
+  required = false, 
+  className = "",
+  children 
+}) => {
+  return (
+    <div className={className}>
+      {label && (
+        <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block">
+          {label}{required && " *"}
+        </Label>
+      )}
+      {children}
+    </div>
+  );
+};
+
+interface InputFieldProps extends React.ComponentProps<"input"> {
+  label?: string;
+  required?: boolean;
+  containerClassName?: string;
+}
+
+const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
+  ({ label, required, containerClassName, className, ...props }, ref) => {
+    return (
+      <FormField label={label} required={required} className={containerClassName}>
+        <Input ref={ref} className={className} {...props} />
+      </FormField>
+    );
+  }
+);
+InputField.displayName = "InputField";
+
+export { Input, FormField, InputField }

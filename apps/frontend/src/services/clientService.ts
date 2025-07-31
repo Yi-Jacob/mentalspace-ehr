@@ -10,7 +10,7 @@ import {
   EmergencyContactDto,
   InsuranceInfoDto,
   PrimaryCareProviderDto
-} from '@/types/client';
+} from '@/types/clientType';
 
 // Client Service
 export class ClientService {

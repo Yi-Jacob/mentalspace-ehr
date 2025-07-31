@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Input } from '@/components/basic/input';
-import { Label } from '@/components/basic/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { InputField } from '@/components/basic/input';
+import { SelectField } from '@/components/basic/select';
+import { DateInput } from '@/components/basic/date-input';
 import { Button } from '@/components/basic/button';
 import { Trash2 } from 'lucide-react';
-import { InsuranceInfo } from '@/types/client';
+import { InsuranceInfo } from '@/types/clientType';
+import { SUBSCRIBER_RELATIONSHIP_OPTIONS } from '@/types/enums/clientEnum';
 
 interface BillingTabProps {
   insuranceInfo: InsuranceInfo[];
@@ -19,17 +20,17 @@ export const BillingTab: React.FC<BillingTabProps> = ({
 }) => {
   const addInsurance = (type: 'Primary' | 'Secondary') => {
     setInsuranceInfo([...insuranceInfo, {
-      insurance_type: type,
-      insurance_company: '',
-      policy_number: '',
-      group_number: '',
-      subscriber_name: '',
-      subscriber_relationship: '',
-      subscriber_dob: '',
-      effective_date: '',
-      termination_date: '',
-      copay_amount: 0,
-      deductible_amount: 0,
+      insuranceType: type,
+      insuranceCompany: '',
+      policyNumber: '',
+      groupNumber: '',
+      subscriberName: '',
+      subscriberRelationship: '',
+      subscriberDob: '',
+      effectiveDate: '',
+      terminationDate: '',
+      copayAmount: 0,
+      deductibleAmount: 0,
     }]);
   };
 
@@ -43,8 +44,8 @@ export const BillingTab: React.FC<BillingTabProps> = ({
     setInsuranceInfo(insuranceInfo.filter((_, i) => i !== index));
   };
 
-  const hasPrimary = insuranceInfo.some(ins => ins.insurance_type === 'Primary');
-  const hasSecondary = insuranceInfo.some(ins => ins.insurance_type === 'Secondary');
+  const hasPrimary = insuranceInfo.some(ins => ins.insuranceType === 'Primary');
+  const hasSecondary = insuranceInfo.some(ins => ins.insuranceType === 'Secondary');
 
   return (
     <div className="space-y-6">
@@ -78,7 +79,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
             <Card key={index} className="border-l-4 border-l-blue-500">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">
-                  {insurance.insurance_type} Insurance
+                  {insurance.insuranceType} Insurance
                 </CardTitle>
                 <Button
                   type="button"
@@ -91,104 +92,72 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 </Button>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Insurance Company *</Label>
-                  <Input
-                    value={insurance.insurance_company}
-                    onChange={(e) => updateInsurance(index, 'insurance_company', e.target.value)}
-                    required
-                  />
-                </div>
+                <InputField
+                  label="Insurance Company"
+                  value={insurance.insuranceCompany}
+                  onChange={(e) => updateInsurance(index, 'insuranceCompany', e.target.value)}
+                  required
+                />
 
-                <div>
-                  <Label>Policy Number</Label>
-                  <Input
-                    value={insurance.policy_number}
-                    onChange={(e) => updateInsurance(index, 'policy_number', e.target.value)}
-                  />
-                </div>
+                <InputField
+                  label="Policy Number"
+                  value={insurance.policyNumber}
+                  onChange={(e) => updateInsurance(index, 'policyNumber', e.target.value)}
+                />
 
-                <div>
-                  <Label>Group Number</Label>
-                  <Input
-                    value={insurance.group_number}
-                    onChange={(e) => updateInsurance(index, 'group_number', e.target.value)}
-                  />
-                </div>
+                <InputField
+                  label="Group Number"
+                  value={insurance.groupNumber}
+                  onChange={(e) => updateInsurance(index, 'groupNumber', e.target.value)}
+                />
 
-                <div>
-                  <Label>Subscriber Name</Label>
-                  <Input
-                    value={insurance.subscriber_name}
-                    onChange={(e) => updateInsurance(index, 'subscriber_name', e.target.value)}
-                  />
-                </div>
+                <InputField
+                  label="Subscriber Name"
+                  value={insurance.subscriberName}
+                  onChange={(e) => updateInsurance(index, 'subscriberName', e.target.value)}
+                />
 
-                <div>
-                  <Label>Subscriber Relationship</Label>
-                  <Select 
-                    value={insurance.subscriber_relationship} 
-                    onValueChange={(value) => updateInsurance(index, 'subscriber_relationship', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Relationship" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Self">Self</SelectItem>
-                      <SelectItem value="Spouse">Spouse</SelectItem>
-                      <SelectItem value="Child">Child</SelectItem>
-                      <SelectItem value="Parent">Parent</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <SelectField
+                  label="Subscriber Relationship"
+                  value={insurance.subscriberRelationship}
+                  onValueChange={(value) => updateInsurance(index, 'subscriberRelationship', value)}
+                  placeholder="Select Relationship"
+                  options={SUBSCRIBER_RELATIONSHIP_OPTIONS}
+                />
 
-                <div>
-                  <Label>Subscriber Date of Birth</Label>
-                  <Input
-                    type="date"
-                    value={insurance.subscriber_dob}
-                    onChange={(e) => updateInsurance(index, 'subscriber_dob', e.target.value)}
-                  />
-                </div>
+                <DateInput
+                  label="Subscriber Date of Birth"
+                  value={insurance.subscriberDob}
+                  onChange={(value) => updateInsurance(index, 'subscriberDob', value)}
+                />
 
-                <div>
-                  <Label>Effective Date</Label>
-                  <Input
-                    type="date"
-                    value={insurance.effective_date}
-                    onChange={(e) => updateInsurance(index, 'effective_date', e.target.value)}
-                  />
-                </div>
+                <DateInput
+                  label="Effective Date"
+                  value={insurance.effectiveDate}
+                  onChange={(value) => updateInsurance(index, 'effectiveDate', value)}
+                />
 
-                <div>
-                  <Label>Termination Date</Label>
-                  <Input
-                    type="date"
-                    value={insurance.termination_date}
-                    onChange={(e) => updateInsurance(index, 'termination_date', e.target.value)}
-                  />
-                </div>
+                <DateInput
+                  label="Termination Date"
+                  value={insurance.terminationDate}
+                  onChange={(value) => updateInsurance(index, 'terminationDate', value)}
+                />
 
-                <div>
-                  <Label>Copay Amount ($)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={insurance.copay_amount}
-                    onChange={(e) => updateInsurance(index, 'copay_amount', parseFloat(e.target.value) || 0)}
-                  />
-                </div>
+                <InputField
+                  label="Copay Amount ($)"
+                  type="number"
+                  step="0.01"
+                  value={insurance.copayAmount}
+                  onChange={(e) => updateInsurance(index, 'copayAmount', parseFloat(e.target.value) || 0)}
+                />
 
-                <div>
-                  <Label>Deductible Amount ($)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={insurance.deductible_amount}
-                    onChange={(e) => updateInsurance(index, 'deductible_amount', parseFloat(e.target.value) || 0)}
-                  />
-                </div>
+                <InputField
+                  label="Deductible Amount ($)"
+                  type="number"
+                  step="0.01"
+                  value={insurance.deductibleAmount}
+                  onChange={(e) => updateInsurance(index, 'deductibleAmount', parseFloat(e.target.value) || 0)}
+                />
               </CardContent>
             </Card>
           ))}

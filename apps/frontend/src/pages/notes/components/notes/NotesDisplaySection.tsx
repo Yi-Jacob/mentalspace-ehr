@@ -6,7 +6,7 @@ import EmptySearchResults from './EmptySearchResults';
 import PaginationInfo from './PaginationInfo';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import { PaginationControls } from '@/components/basic/pagination-controls';
-import { Note } from '@/types/note';
+import { Note } from '@/types/noteType';
 
 interface NotesDisplaySectionProps {
   notes: Note[];

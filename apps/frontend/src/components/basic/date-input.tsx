@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
@@ -7,14 +6,32 @@ import { Calendar } from '@/components/basic/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/basic/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
-import { ClientFormData } from '@/types/client';
 
-interface DateOfBirthFieldProps {
-  formData: ClientFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ClientFormData>>;
+interface DateInputProps {
+  id?: string;
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  minDate?: Date;
+  maxDate?: Date;
+  className?: string;
 }
 
-export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, setFormData }) => {
+export const DateInput: React.FC<DateInputProps> = ({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder = "MM/DD/YYYY",
+  required = false,
+  disabled = false,
+  minDate = new Date("1900-01-01"),
+  maxDate = new Date(),
+  className = ""
+}) => {
   // Convert database format (YYYY-MM-DD) to display format (M/D/YYYY) for initial value
   const getDisplayDate = (dbDate: string) => {
     if (!dbDate) return '';
@@ -48,15 +65,15 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
     return undefined;
   };
 
-  const [dateInputValue, setDateInputValue] = useState(getDisplayDate(formData.dateOfBirth));
+  const [dateInputValue, setDateInputValue] = useState(getDisplayDate(value));
   const [showCalendar, setShowCalendar] = useState(false);
 
-  // Update the display value when formData changes (e.g., when editing a client)
+  // Update the display value when value changes (e.g., when editing)
   useEffect(() => {
-    setDateInputValue(getDisplayDate(formData.dateOfBirth));
-  }, [formData.dateOfBirth]);
+    setDateInputValue(getDisplayDate(value));
+  }, [value]);
 
-  const handleDateOfBirthChange = (date: Date | undefined) => {
+  const handleDateChange = (date: Date | undefined) => {
     if (date) {
       // Create database format (YYYY-MM-DD) using local date components
       const year = date.getFullYear();
@@ -64,63 +81,61 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
       const day = String(date.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
       
-      console.log('Calendar date selected:', date);
-      console.log('Formatted for database:', formattedDate);
-      
-      setFormData(prev => ({...prev, dateOfBirth: formattedDate}));
+      onChange(formattedDate);
       // Display in M/D/YYYY format
       setDateInputValue(format(date, 'M/d/yyyy'));
       setShowCalendar(false);
     } else {
-      setFormData(prev => ({...prev, dateOfBirth: ''}));
+      onChange('');
       setDateInputValue('');
     }
   };
 
   const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setDateInputValue(value);
+    const inputValue = e.target.value;
+    setDateInputValue(inputValue);
     
     // Try to parse the date in M/D/Y format
     let parsedDate: Date | null = null;
     
     // Try M/D/YYYY format
-    if (value.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-      parsedDate = parse(value, 'M/d/yyyy', new Date());
+    if (inputValue.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+      parsedDate = parse(inputValue, 'M/d/yyyy', new Date());
     }
     // Try M/D/YY format
-    else if (value.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/)) {
-      parsedDate = parse(value, 'M/d/yy', new Date());
+    else if (inputValue.match(/^\d{1,2}\/\d{1,2}\/\d{2}$/)) {
+      parsedDate = parse(inputValue, 'M/d/yy', new Date());
     }
     
-    if (parsedDate && isValid(parsedDate) && parsedDate <= new Date() && parsedDate >= new Date("1900-01-01")) {
+    if (parsedDate && isValid(parsedDate) && parsedDate <= maxDate && parsedDate >= minDate) {
       // Create database format using local date components
       const year = parsedDate.getFullYear();
       const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
       const day = String(parsedDate.getDate()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}`;
       
-      console.log('Input date parsed:', parsedDate);
-      console.log('Formatted for database:', formattedDate);
-      
-      setFormData(prev => ({...prev, dateOfBirth: formattedDate}));
-    } else if (value === '') {
-      setFormData(prev => ({...prev, dateOfBirth: ''}));
+      onChange(formattedDate);
+    } else if (inputValue === '') {
+      onChange('');
     }
   };
 
-  const dateOfBirthValue = getCalendarDate(formData.dateOfBirth);
+  const dateValue = getCalendarDate(value);
 
   return (
-    <div>
-      <Label htmlFor="dateOfBirth">Date of Birth</Label>
+    <div className={className}>
+      {label && (
+        <Label htmlFor={id}>{label}{required && " *"}</Label>
+      )}
       <div className="flex gap-2">
         <Input
-          id="dateOfBirth"
+          id={id}
           type="text"
           value={dateInputValue}
           onChange={handleDateInputChange}
-          placeholder="M/D/YYYY"
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
           className="flex-1"
         />
         <Popover open={showCalendar} onOpenChange={setShowCalendar}>
@@ -129,6 +144,7 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
               variant="outline"
               size="icon"
               className="shrink-0"
+              disabled={disabled}
             >
               <CalendarIcon className="h-4 w-4" />
             </Button>
@@ -136,9 +152,9 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={dateOfBirthValue}
-              onSelect={handleDateOfBirthChange}
-              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+              selected={dateValue}
+              onSelect={handleDateChange}
+              disabled={(date) => date > maxDate || date < minDate}
               initialFocus
               className="pointer-events-auto"
             />
@@ -147,4 +163,4 @@ export const DateOfBirthField: React.FC<DateOfBirthFieldProps> = ({ formData, se
       </div>
     </div>
   );
-};
+}; 

@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { staffService } from '@/services/staffService';
 import { useToast } from '@/hooks/use-toast';
-import { UserRole } from '@/types/staff';
+import { UserRole } from '@/types/staffType';
 import { usePermissions } from './usePermissions';
 
 export const useEnhancedStaffRoles = () => {

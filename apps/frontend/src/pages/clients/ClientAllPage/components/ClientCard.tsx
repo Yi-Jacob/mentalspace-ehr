@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { Phone, Mail, Calendar } from 'lucide-react';
-import { ClientFormData } from '@/types/client';
+import { ClientFormData } from '@/types/clientType';
 
 interface ClientCardProps {
   client: ClientFormData;

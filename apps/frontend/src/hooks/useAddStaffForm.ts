@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { UserRole, UserStatus } from '@/types/staff';
+import { UserRole, UserStatus } from '@/types/staffType';
 
 export const useAddStaffForm = () => {
   const [formData, setFormData] = useState({

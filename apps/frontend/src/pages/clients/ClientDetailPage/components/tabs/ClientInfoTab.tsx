@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
-import { ClientFormData, PhoneNumber, EmergencyContact, PrimaryCareProvider } from '@/types/client';
+import { ClientFormData, PhoneNumber, EmergencyContact, PrimaryCareProvider } from '@/types/clientType';
 import { format } from 'date-fns';
 
 interface ClientInfoTabProps {

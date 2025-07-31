@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
-import { InsuranceInfo } from '@/types/client';
+import { InsuranceInfo } from '@/types/clientType';
 
 interface ClientBillingSettingsTabProps {
   insuranceInfo: InsuranceInfo[];

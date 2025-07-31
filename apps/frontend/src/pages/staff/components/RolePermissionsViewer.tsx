@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tab
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { Eye, EyeOff } from 'lucide-react';
-import { UserRole } from '@/types/staff';
+import { UserRole } from '@/types/staffType';
 
 const RolePermissionsViewer: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole>('Clinician');
