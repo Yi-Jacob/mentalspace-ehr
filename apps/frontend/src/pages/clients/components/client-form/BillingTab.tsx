@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { InputField } from '@/components/basic/input';
 import { SelectField } from '@/components/basic/select';
 import { DateInput } from '@/components/basic/date-input';
@@ -8,6 +7,7 @@ import { Button } from '@/components/basic/button';
 import { Trash2 } from 'lucide-react';
 import { InsuranceInfo } from '@/types/clientType';
 import { SUBSCRIBER_RELATIONSHIP_OPTIONS } from '@/types/enums/clientEnum';
+import CategorySection from '@/components/basic/CategorySection';
 
 interface BillingTabProps {
   insuranceInfo: InsuranceInfo[];
@@ -49,11 +49,11 @@ export const BillingTab: React.FC<BillingTabProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Insurance Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <CategorySection
+        title="Insurance Information"
+        description="Patient insurance details and billing information"
+      >
+        <div className="space-y-6">
           <div className="flex gap-3">
             {!hasPrimary && (
               <Button 
@@ -76,11 +76,11 @@ export const BillingTab: React.FC<BillingTabProps> = ({
           </div>
 
           {insuranceInfo.map((insurance, index) => (
-            <Card key={index} className="border-l-4 border-l-blue-500">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">
+            <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-lg font-medium text-gray-800">
                   {insurance.insuranceType} Insurance
-                </CardTitle>
+                </h4>
                 <Button
                   type="button"
                   variant="ghost"
@@ -90,8 +90,8 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
                   label="Insurance Company"
                   value={insurance.insuranceCompany}
@@ -158,11 +158,11 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                   value={insurance.deductibleAmount}
                   onChange={(e) => updateInsurance(index, 'deductibleAmount', parseFloat(e.target.value) || 0)}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </CategorySection>
     </div>
   );
 };

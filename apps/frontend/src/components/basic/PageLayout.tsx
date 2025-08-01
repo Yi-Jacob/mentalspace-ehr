@@ -21,7 +21,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       case 'gradient':
         return {
           background: 'min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50',
-          container: 'container mx-auto px-6 py-8'
+          container: 'container mx-auto px-6 py-6'
         };
       case 'simple':
         return {

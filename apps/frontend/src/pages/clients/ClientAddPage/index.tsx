@@ -58,7 +58,7 @@ const ClientAddPage: React.FC = () => {
   };
 
   return (
-    <PageLayout variant="simple">
+    <PageLayout variant="gradient">
       <PageHeader
         icon={ArrowLeft}
         title="Add New Client"

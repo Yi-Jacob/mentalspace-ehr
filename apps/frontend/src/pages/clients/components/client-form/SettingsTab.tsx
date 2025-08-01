@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { SelectField } from '@/components/basic/select';
 import { Checkbox } from '@/components/basic/checkbox';
 import { Label } from '@/components/basic/label';
 import { ClientFormData } from '@/types/clientType';
 import { APPOINTMENT_REMINDERS_OPTIONS, PCP_RELEASE_OPTIONS } from '@/types/enums/clientEnum';
+import CategorySection from '@/components/basic/CategorySection';
 
 interface SettingsTabProps {
   formData: ClientFormData;
@@ -14,11 +14,11 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ formData, setFormData }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Settings & Preferences</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CategorySection
+      title="Settings & Preferences"
+      description="Patient preferences and system settings"
+    >
+      <div className="space-y-4">
         <SelectField
           label="Appointment Reminders"
           value={formData.appointmentReminders}
@@ -43,7 +43,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ formData, setFormData 
           placeholder="Select PCP Release Status"
           options={PCP_RELEASE_OPTIONS}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </CategorySection>
   );
 };

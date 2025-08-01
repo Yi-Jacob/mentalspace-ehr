@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { ClientFormData } from '@/types/clientType';
 import { InputField } from '@/components/basic/input';
 import { DateInput } from '@/components/basic/date-input';
 import { TextareaField } from '@/components/basic/textarea';
 import { SelectField } from '@/components/basic/select';
+import CategorySection from '@/components/basic/CategorySection';
 
 interface BasicInfoTabProps {
   formData: ClientFormData;
@@ -15,11 +15,11 @@ interface BasicInfoTabProps {
 export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormData }) => {
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Patient Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <CategorySection
+        title="Patient Information"
+        description="Basic patient information and demographics"
+      >
+        <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
               id="firstName"
@@ -80,16 +80,22 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
               ]}
             />
           </div>
-        </CardContent>
-      </Card>
-      <TextareaField
-        id="patientComments"
-        label="Patient Comments"
-        value={formData.patientComments}
-        onChange={(e) => setFormData(prev => ({ ...prev, patientComments: e.target.value }))}
-        placeholder="Non-clinical information such as scheduling or billing comments..."
-        rows={3}
-      />
+        </div>
+      </CategorySection>
+
+      <CategorySection
+        title="Patient Comments"
+        description="Non-clinical information such as scheduling or billing comments"
+      >
+        <TextareaField
+          id="patientComments"
+          label="Comments"
+          value={formData.patientComments}
+          onChange={(e) => setFormData(prev => ({ ...prev, patientComments: e.target.value }))}
+          placeholder="Non-clinical information such as scheduling or billing comments..."
+          rows={3}
+        />
+      </CategorySection>
     </>
   );
 };

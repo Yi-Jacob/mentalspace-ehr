@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { InputField } from '@/components/basic/input';
 import { SelectField } from '@/components/basic/select';
 import { Button } from '@/components/basic/button';
@@ -12,6 +11,7 @@ import {
   US_STATES_OPTIONS, 
   TIMEZONE_OPTIONS 
 } from '@/types/enums/clientEnum';
+import CategorySection from '@/components/basic/CategorySection';
 
 interface ContactInfoTabProps {
   formData: ClientFormData;
@@ -23,8 +23,6 @@ interface ContactInfoTabProps {
   primaryCareProvider: PrimaryCareProvider;
   setPrimaryCareProvider: React.Dispatch<React.SetStateAction<PrimaryCareProvider>>;
 }
-
-
 
 export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({ 
   formData, 
@@ -76,11 +74,11 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <CategorySection
+        title="Contact Information"
+        description="Primary contact details and address information"
+      >
+        <div className="space-y-4">
           <InputField
             id="email"
             label="Email"
@@ -134,18 +132,20 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
               options={TIMEZONE_OPTIONS}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </CategorySection>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Phone Numbers</CardTitle>
+      <CategorySection
+        title="Phone Numbers"
+        description="Contact phone numbers and communication preferences"
+        headerAction={
           <Button type="button" variant="outline" size="sm" onClick={addPhoneNumber}>
             <Plus className="w-4 h-4 mr-2" />
             Add Phone
           </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        }
+      >
+        <div className="space-y-4">
           {phoneNumbers.map((phone, index) => (
             <div key={index} className="flex gap-2 items-end">
               <div className="flex-1">
@@ -187,18 +187,20 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
               )}
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </CategorySection>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Emergency Contacts</CardTitle>
+      <CategorySection
+        title="Emergency Contacts"
+        description="Emergency contact information for the patient"
+        headerAction={
           <Button type="button" variant="outline" size="sm" onClick={addEmergencyContact}>
             <Plus className="w-4 h-4 mr-2" />
             Add Contact
           </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        }
+      >
+        <div className="space-y-4">
           {emergencyContacts.map((contact, index) => (
             <div key={index} className="p-4 border rounded-lg space-y-3">
               <div className="flex justify-between items-center">
@@ -240,14 +242,14 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
               </div>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </CategorySection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Primary Care Provider</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CategorySection
+        title="Primary Care Provider"
+        description="Primary care provider information"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputField
             label="Provider Name"
             value={primaryCareProvider.providerName}
@@ -270,8 +272,8 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
               onChange={(e) => setPrimaryCareProvider({...primaryCareProvider, address: e.target.value})}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </CategorySection>
     </div>
   );
 };

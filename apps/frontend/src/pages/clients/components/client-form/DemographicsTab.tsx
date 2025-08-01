@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { SelectField } from '@/components/basic/select';
 import { ClientFormData } from '@/types/clientType';
 import {
@@ -15,6 +14,7 @@ import {
   RELIGIOUS_AFFILIATION_OPTIONS,
   SMOKING_STATUS_OPTIONS
 } from '@/types/enums/clientEnum';
+import CategorySection from '@/components/basic/CategorySection';
 
 interface DemographicsTabProps {
   formData: ClientFormData;
@@ -23,11 +23,11 @@ interface DemographicsTabProps {
 
 export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setFormData }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Demographics</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <CategorySection
+      title="Demographics"
+      description="Patient demographic information and background details"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SelectField
           label="Administrative Sex"
           value={formData.administrativeSex}
@@ -107,7 +107,7 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           placeholder="Select Smoking Status"
           options={SMOKING_STATUS_OPTIONS}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </CategorySection>
   );
 };
