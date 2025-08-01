@@ -167,6 +167,7 @@ export class ClientService {
     insuranceInfo: InsuranceInfo[],
     primaryCareProvider: PrimaryCareProvider
   ): Promise<ClientFormData> {
+    console.log('createClientWithFormData', formData);
     const data = {
       clientData: formData,
       phoneNumbers,
@@ -197,6 +198,7 @@ export class ClientService {
     };
 
     const response = await apiClient.put<ClientFormData>(`${this.baseUrl}/${clientId}/with-form-data`, data);
+    console.log('updateClientWithFormData', response.data);
     return response.data;
   }
 }

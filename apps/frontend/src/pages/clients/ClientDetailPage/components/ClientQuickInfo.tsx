@@ -20,11 +20,7 @@ export const ClientQuickInfo: React.FC<ClientQuickInfoProps> = ({ client }) => {
       const month = parseInt(parts[1]) - 1; // months are 0-indexed
       const day = parseInt(parts[2]);
       const date = new Date(year, month, day);
-      
-      console.log('ClientQuickInfo - Original date string:', dateOfBirth);
-      console.log('ClientQuickInfo - Parsed date object:', date);
-      console.log('ClientQuickInfo - Formatted date:', format(date, 'M/d/yyyy'));
-      
+
       return format(date, 'M/d/yyyy');
     }
     return dateOfBirth;

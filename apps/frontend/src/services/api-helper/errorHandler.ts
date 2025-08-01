@@ -16,12 +16,19 @@ class ErrorHandler {
 
     if (error.response) {
       // Server responded with error status
-      apiError.message = error.response.data?.message || error.message;
+      const data = error.response.data as { message?: string } | undefined;
+      apiError.message = data?.message || error.message || 'An unexpected error occurred';
       apiError.details = error.response.data;
     } else if (error.request) {
-      // Network error
-      apiError.message = 'Network error - please check your connection';
-      apiError.status = 0;
+      // Network error or timeout
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        apiError.message = 'Request timed out. The server is taking longer than expected to respond. Please try again.';
+        apiError.status = 408; // Request Timeout
+        apiError.code = 'TIMEOUT';
+      } else {
+        apiError.message = 'Network error - please check your connection';
+        apiError.status = 0;
+      }
     } else {
       // Other error
       apiError.message = error.message;

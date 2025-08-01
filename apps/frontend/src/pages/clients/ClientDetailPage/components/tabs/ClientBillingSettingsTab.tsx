@@ -25,19 +25,19 @@ export const ClientBillingSettingsTab: React.FC<ClientBillingSettingsTabProps> =
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Insurance Type</label>
-                        <div className="text-foreground">{insurance.insurance_type || 'Not provided'}</div>
+                        <div className="text-foreground">{insurance.insuranceType || 'Not provided'}</div>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Insurance Company</label>
-                        <div className="text-foreground">{insurance.insurance_company || 'Not provided'}</div>
+                        <div className="text-foreground">{insurance.insuranceCompany || 'Not provided'}</div>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Policy Number</label>
-                        <div className="text-foreground">{insurance.policy_number || 'Not provided'}</div>
+                        <div className="text-foreground">{insurance.policyNumber || 'Not provided'}</div>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Group Number</label>
-                        <div className="text-foreground">{insurance.group_number || 'Not provided'}</div>
+                        <div className="text-foreground">{insurance.groupNumber || 'Not provided'}</div>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Status</label>

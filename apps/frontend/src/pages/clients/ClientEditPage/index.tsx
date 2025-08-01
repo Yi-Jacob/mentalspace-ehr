@@ -60,7 +60,6 @@ const ClientEditPage: React.FC = () => {
           ...clientData,
           dateOfBirth: clientData.dateOfBirth || ''
         };
-        console.log('Date of birth loaded:', formattedClientData.dateOfBirth);
         setFormData(formattedClientData);
         
         // Load related data
@@ -133,8 +132,6 @@ const ClientEditPage: React.FC = () => {
     if (!clientId) return;
     
     console.log('Saving client data:', formData);
-    console.log('Date of birth being saved:', formData.dateOfBirth);
-    
     updateClient({
       clientId,
       data: {

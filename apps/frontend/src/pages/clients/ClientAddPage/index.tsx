@@ -39,9 +39,6 @@ const ClientAddPage: React.FC = () => {
   });
 
   const handleSave = (createAnother: boolean = false) => {
-    console.log('Saving client data:', formData);
-    console.log('Date of birth being saved:', formData.dateOfBirth);
-    
     createClient({
       formData,
       phoneNumbers,

@@ -8,7 +8,7 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
-      timeout: 10000,
+      timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'), // Configurable timeout
       headers: {
         'Content-Type': 'application/json',
       },
