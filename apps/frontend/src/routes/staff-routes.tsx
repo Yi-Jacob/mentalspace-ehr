@@ -1,5 +1,5 @@
-import StaffPage from '@/pages/staff';
-import AddStaffPage from '@/pages/staff/create';
+import StaffPage from '@/pages/staff/StaffAllPage';
+import CreateStaffPage from '@/pages/staff/StaffCreatePage';
 import { RouteObject } from 'react-router-dom';
 
 const staffRoutes: RouteObject[] = [
@@ -9,7 +9,7 @@ const staffRoutes: RouteObject[] = [
   },
   {
     path: 'create',
-    element: <AddStaffPage />,
+    element: <CreateStaffPage />,
   },
 ];
 

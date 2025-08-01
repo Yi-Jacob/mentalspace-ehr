@@ -34,7 +34,7 @@ const StaffPage: React.FC = () => {
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
           >
             <Plus className="h-5 w-5 mr-2" />
-            Add Staff
+            Create Staff
           </Button>
         }
       />

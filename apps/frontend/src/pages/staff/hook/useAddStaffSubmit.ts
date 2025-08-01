@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { useStaffManagement } from '@/hooks/useStaffManagement';
+import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
 import { UserStatus } from '@/types/staffType';
 
 export const useAddStaffSubmit = () => {

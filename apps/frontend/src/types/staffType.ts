@@ -1,17 +1,6 @@
+import { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState } from './enums/staffEnum';
 
-export type UserRole = 
-  | 'Practice Administrator'
-  | 'Clinician'
-  | 'Intern'
-  | 'Assistant' 
-  | 'Associate'
-  | 'Supervisor'
-  | 'Clinical Administrator'
-  | 'Practice Scheduler'
-  | 'Biller for Assigned Patients Only'
-  | 'Practice Biller';
-
-export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending';
+export type { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState };
 
 export interface StaffProfile {
   id: string;
@@ -19,10 +8,10 @@ export interface StaffProfile {
   employee_id?: string;
   npi_number?: string;
   license_number?: string;
-  license_state?: string;
+  license_state?: LicenseState;
   license_expiry_date?: string;
-  department?: string;
-  job_title?: string;
+  department?: Department;
+  job_title?: JobTitle;
   hire_date?: string;
   termination_date?: string;
   phone_number?: string;
@@ -65,7 +54,7 @@ export interface SupervisionRelationship {
   supervisee_id: string;
   start_date: string;
   end_date?: string;
-  supervision_type: 'clinical' | 'administrative';
+  supervision_type: SupervisionType;
   is_active: boolean;
   created_at: string;
 }

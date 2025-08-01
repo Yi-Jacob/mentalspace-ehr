@@ -7,8 +7,8 @@ import { Input } from '@/components/basic/input';
 import { Badge } from '@/components/basic/badge';
 import { Search, Edit, UserMinus, Phone, Mail, Star, Users, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
-import { useStaffManagement } from '@/hooks/useStaffManagement';
-import { useStaffRoles } from '@/hooks/useStaffRoles';
+import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
+import { useStaffRoles } from '@/pages/staff/hook/useStaffRoles';
 import { StaffMember, UserRole } from '@/types/staffType';
 
 const StaffList: React.FC = () => {

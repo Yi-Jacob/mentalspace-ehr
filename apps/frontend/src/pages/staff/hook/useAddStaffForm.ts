@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { UserRole, UserStatus } from '@/types/staffType';
 
 export const useAddStaffForm = () => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     // User Information
     first_name: '',
     middle_name: '',
@@ -47,7 +47,9 @@ export const useAddStaffForm = () => {
     
     // User Comments
     user_comments: ''
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -62,9 +64,14 @@ export const useAddStaffForm = () => {
     }));
   };
 
+  const resetForm = () => {
+    setFormData(initialFormData);
+  };
+
   return {
     formData,
     handleInputChange,
-    handleRoleToggle
+    handleRoleToggle,
+    resetForm
   };
 };

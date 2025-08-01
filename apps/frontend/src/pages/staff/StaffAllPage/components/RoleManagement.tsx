@@ -6,7 +6,7 @@ import { Input } from '@/components/basic/input';
 import { Button } from '@/components/basic/button';
 import { Search, Users, Shield, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
-import { useStaffManagement } from '@/hooks/useStaffManagement';
+import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
 import UserRoleCard from './UserRoleCard';
 import RoleAssignmentModal from './RoleAssignmentModal';

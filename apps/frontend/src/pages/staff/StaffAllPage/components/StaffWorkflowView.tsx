@@ -5,7 +5,7 @@ import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Badge } from '@/components/basic/badge';
 import { Users, Search, Plus, UserCog, Mail, Phone } from 'lucide-react';
-import { useStaffQueries } from '@/hooks/useStaffQueries';
+import { useStaffQueries } from '@/pages/staff/hook/useStaffQueries';
 import { useNavigate } from 'react-router-dom';
 
 const StaffWorkflowView: React.FC = () => {
@@ -13,7 +13,7 @@ const StaffWorkflowView: React.FC = () => {
   const navigate = useNavigate();
 
   const handleAddStaff = () => {
-    navigate('/staff/add');
+    navigate('/staff/create');
   };
 
   const handleViewProfile = (staffId: string) => {
