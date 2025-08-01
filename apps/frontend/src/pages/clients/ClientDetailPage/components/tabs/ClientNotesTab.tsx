@@ -9,6 +9,9 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
 import { ClientFormData } from '@/types/clientType';
+import { LoadingState } from '@/components/basic/loading-state';
+import { EmptyState } from '@/components/basic/empty-state';
+import { getStatusColor, formatStatus } from '../shared/StatusBadge';
 
 interface ClientNotesTabProps {
   client: ClientFormData;
@@ -25,18 +28,6 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   });
 
   const notes = notesResponse?.notes || [];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'signed': return 'bg-green-100 text-green-800';
-      case 'submitted_for_review': return 'bg-blue-100 text-blue-800';
-      case 'approved': return 'bg-emerald-100 text-emerald-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'locked': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const formatNoteType = (type: string) => {
     return type.split('_').map(word => 
@@ -61,26 +52,16 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
+    return <LoadingState count={2} />;
   }
 
   if (!notes || notes.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Clinical Notes</CardTitle>
-          <CardDescription>
-            No clinical notes found for this client.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <EmptyState
+        title="Clinical Notes"
+        description="No clinical notes found for this client."
+        icon={<FileText className="w-12 h-12 text-gray-400" />}
+      />
     );
   }
 
@@ -102,7 +83,7 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
                     <h4 className="font-semibold text-lg">{note.title}</h4>
                     <Badge variant="outline">{formatNoteType(note.noteType)}</Badge>
                     <Badge className={getStatusColor(note.status)}>
-                      {note.status.replace('_', ' ').toUpperCase()}
+                      {formatStatus(note.status)}
                     </Badge>
                   </div>
                   

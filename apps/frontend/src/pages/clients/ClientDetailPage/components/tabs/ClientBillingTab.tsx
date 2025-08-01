@@ -3,6 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { InsuranceInfo } from '@/types/clientType';
+import { InfoDisplay } from '../shared/InfoDisplay';
+import { formatDate, formatCurrency } from '@/utils/dateUtils';
+import { SimpleEmptyState } from '@/components/basic/empty-state';
 
 interface ClientBillingTabProps {
   insuranceInfo: InsuranceInfo[];
@@ -25,42 +28,15 @@ export const ClientBillingTab: React.FC<ClientBillingTabProps> = ({ insuranceInf
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Policy Number</label>
-                    <div className="text-foreground">{insurance.policyNumber || 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Group Number</label>
-                    <div className="text-foreground">{insurance.groupNumber || 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Subscriber Name</label>
-                    <div className="text-foreground">{insurance.subscriberName || 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Subscriber Relationship</label>
-                    <div className="text-foreground">{insurance.subscriberRelationship || 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Subscriber DOB</label>
-                    <div className="text-foreground">{insurance.subscriberDob ? new Date(insurance.subscriberDob).toLocaleDateString() : 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Effective Date</label>
-                    <div className="text-foreground">{insurance.effectiveDate ? new Date(insurance.effectiveDate).toLocaleDateString() : 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Termination Date</label>
-                    <div className="text-foreground">{insurance.terminationDate ? new Date(insurance.terminationDate).toLocaleDateString() : 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Copay Amount</label>
-                    <div className="text-foreground">{insurance.copayAmount ? `$${insurance.copayAmount}` : 'Not provided'}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Deductible Amount</label>
-                    <div className="text-foreground">{insurance.deductibleAmount ? `$${insurance.deductibleAmount}` : 'Not provided'}</div>
-                  </div>
+                  <InfoDisplay label="Policy Number" value={insurance.policyNumber} />
+                  <InfoDisplay label="Group Number" value={insurance.groupNumber} />
+                  <InfoDisplay label="Subscriber Name" value={insurance.subscriberName} />
+                  <InfoDisplay label="Subscriber Relationship" value={insurance.subscriberRelationship} />
+                  <InfoDisplay label="Subscriber DOB" value={formatDate(insurance.subscriberDob)} />
+                  <InfoDisplay label="Effective Date" value={formatDate(insurance.effectiveDate)} />
+                  <InfoDisplay label="Termination Date" value={formatDate(insurance.terminationDate)} />
+                  <InfoDisplay label="Copay Amount" value={formatCurrency(insurance.copayAmount)} />
+                  <InfoDisplay label="Deductible Amount" value={formatCurrency(insurance.deductibleAmount)} />
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Status</label>
                     <div className="text-foreground">
@@ -72,9 +48,7 @@ export const ClientBillingTab: React.FC<ClientBillingTabProps> = ({ insuranceInf
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            No insurance information found.
-          </div>
+          <SimpleEmptyState message="No insurance information found." />
         )}
       </CardContent>
     </Card>

@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { InsuranceInfo } from '@/types/clientType';
+import { InfoDisplay, InfoSection } from '../shared/InfoDisplay';
+import { SimpleEmptyState } from '@/components/basic/empty-state';
 
 interface ClientBillingSettingsTabProps {
   insuranceInfo: InsuranceInfo[];
@@ -16,29 +18,16 @@ export const ClientBillingSettingsTab: React.FC<ClientBillingSettingsTabProps> =
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div>
-            <h4 className="font-semibold mb-4">Insurance Information</h4>
+          <InfoSection title="Insurance Information">
             {insuranceInfo.length > 0 ? (
               <div className="space-y-4">
                 {insuranceInfo.map((insurance, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Insurance Type</label>
-                        <div className="text-foreground">{insurance.insuranceType || 'Not provided'}</div>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Insurance Company</label>
-                        <div className="text-foreground">{insurance.insuranceCompany || 'Not provided'}</div>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Policy Number</label>
-                        <div className="text-foreground">{insurance.policyNumber || 'Not provided'}</div>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-muted-foreground">Group Number</label>
-                        <div className="text-foreground">{insurance.groupNumber || 'Not provided'}</div>
-                      </div>
+                      <InfoDisplay label="Insurance Type" value={insurance.insuranceType} />
+                      <InfoDisplay label="Insurance Company" value={insurance.insuranceCompany} />
+                      <InfoDisplay label="Policy Number" value={insurance.policyNumber} />
+                      <InfoDisplay label="Group Number" value={insurance.groupNumber} />
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">Status</label>
                         <div className="text-foreground">
@@ -50,59 +39,31 @@ export const ClientBillingSettingsTab: React.FC<ClientBillingSettingsTabProps> =
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                No insurance information configured.
-              </div>
+              <SimpleEmptyState message="No insurance information configured." />
             )}
-          </div>
+          </InfoSection>
 
-          <div>
-            <h4 className="font-semibold mb-4">Payment Preferences</h4>
+          <InfoSection title="Payment Preferences">
             <div className="border rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Preferred Payment Method</label>
-                  <div className="text-foreground">Not configured</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Auto-Pay Enabled</label>
-                  <div className="text-foreground">Not configured</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Billing Address</label>
-                  <div className="text-foreground">Not provided</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Billing Contact</label>
-                  <div className="text-foreground">Not provided</div>
-                </div>
+                <InfoDisplay label="Preferred Payment Method" value="Not configured" />
+                <InfoDisplay label="Auto-Pay Enabled" value="Not configured" />
+                <InfoDisplay label="Billing Address" value="Not provided" />
+                <InfoDisplay label="Billing Contact" value="Not provided" />
               </div>
             </div>
-          </div>
+          </InfoSection>
 
-          <div>
-            <h4 className="font-semibold mb-4">Statement Preferences</h4>
+          <InfoSection title="Statement Preferences">
             <div className="border rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Statement Delivery</label>
-                  <div className="text-foreground">Not configured</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Statement Frequency</label>
-                  <div className="text-foreground">Not configured</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Email Notifications</label>
-                  <div className="text-foreground">Not configured</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Paper Statements</label>
-                  <div className="text-foreground">Not configured</div>
-                </div>
+                <InfoDisplay label="Statement Delivery" value="Not configured" />
+                <InfoDisplay label="Statement Frequency" value="Not configured" />
+                <InfoDisplay label="Email Notifications" value="Not configured" />
+                <InfoDisplay label="Paper Statements" value="Not configured" />
               </div>
             </div>
-          </div>
+          </InfoSection>
         </div>
       </CardContent>
     </Card>
