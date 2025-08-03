@@ -4,82 +4,114 @@ export type { UserStatus, UserRole, SupervisionType, ClinicianType, Department, 
 
 export interface StaffProfile {
   id: string;
-  user_id: string;
-  employee_id?: string;
-  npi_number?: string;
-  license_number?: string;
-  license_state?: LicenseState;
-  license_expiry_date?: string;
+  userId: string;
+  employeeId?: string;
+  npiNumber?: string;
+  licenseNumber?: string;
+  licenseState?: LicenseState;
+  licenseExpiryDate?: string;
   department?: Department;
-  job_title?: JobTitle;
-  hire_date?: string;
-  termination_date?: string;
-  phone_number?: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
-  supervisor_id?: string;
-  billing_rate?: number;
-  can_bill_insurance: boolean;
+  jobTitle?: JobTitle;
+  hireDate?: string;
+  terminationDate?: string;
+  phoneNumber?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  supervisorId?: string;
+  billingRate?: number;
+  canBillInsurance: boolean;
   status: UserStatus;
   notes?: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserRoleAssignment {
   id: string;
-  user_id: string;
+  userId: string;
   role: UserRole;
-  assigned_by?: string;
-  assigned_at: string;
-  is_active: boolean;
+  assignedBy?: string;
+  assignedAt: string;
+  isActive: boolean;
 }
 
 export interface PatientAccessPermission {
   id: string;
-  client_id: string;
-  user_id: string;
-  granted_by: string;
-  granted_at: string;
-  revoked_at?: string;
-  revoked_by?: string;
-  access_type: 'full' | 'read_only' | 'billing_only';
+  clientId: string;
+  userId: string;
+  grantedBy: string;
+  grantedAt: string;
+  revokedAt?: string;
+  revokedBy?: string;
+  accessType: 'full' | 'read_only' | 'billing_only';
   notes?: string;
-  is_active: boolean;
+  isActive: boolean;
 }
 
 export interface SupervisionRelationship {
   id: string;
-  supervisor_id: string;
-  supervisee_id: string;
-  start_date: string;
-  end_date?: string;
-  supervision_type: SupervisionType;
-  is_active: boolean;
-  created_at: string;
+  supervisorId: string;
+  superviseeId: string;
+  startDate: string;
+  endDate?: string;
+  supervisionType: SupervisionType;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface AuditLog {
   id: string;
-  user_id?: string;
+  userId?: string;
   action: string;
-  resource_type: string;
-  resource_id?: string;
+  resourceType: string;
+  resourceId?: string;
   details?: Record<string, any>;
-  ip_address?: string;
-  user_agent?: string;
-  created_at: string;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
 }
 
 export interface StaffMember {
+  employeeId: string;
+  jobTitle: string;
+  npiNumber: string;
+  department: string;
+  phoneNumber: string;
+  licenseNumber: string;
+  licenseState: string;
+  licenseExpiryDate: string;
+  hireDate: string;
+  billingRate: any;
+  canBillInsurance: boolean;
+  status: string;
+  notes: string;
+  supervisorId: string;
   id: string;
-  auth_user_id?: string;
-  first_name: string;
-  last_name: string;
+  authUserId?: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  suffix?: string;
   email: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  staff_profile?: StaffProfile;
-  // roles: UserRoleAssignment[];
+  userName?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  staffProfile?: StaffProfile;
+  roles?: string[];
+  
+  // Additional fields from staffProfile that are now directly on the user
+  userComments?: string;
+  mobilePhone?: string;
+  workPhone?: string;
+  homePhone?: string;
+  canReceiveText?: boolean;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  formalName?: string;
+  clinicianType?: string;
+  supervisionType?: string;
 }

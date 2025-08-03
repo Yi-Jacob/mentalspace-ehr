@@ -18,10 +18,10 @@ const UserCommentsSection: React.FC<UserCommentsSectionProps> = ({
       description="For info such as scheduling/billing comments. All users can see this. Conveniently visible in tooltips."
     >
       <TextareaField
-        id="user_comments"
+        id="userComments"
         label="Comments"
-        value={formData.user_comments}
-        onChange={(e) => onInputChange('user_comments', e.target.value)}
+        value={formData.userComments}
+        onChange={(e) => onInputChange('userComments', e.target.value)}
         placeholder="For info such as scheduling/billing comments. All users can see this. Conveniently visible in tooltips."
         rows={4}
       />

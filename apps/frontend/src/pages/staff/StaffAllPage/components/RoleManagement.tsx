@@ -21,17 +21,17 @@ const RoleManagement: React.FC = () => {
   const [selectedUserRoles, setSelectedUserRoles] = useState<string[]>([]);
 
   const filteredStaff = staffMembers?.filter(member =>
-    `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${member.firstName} ${member.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.roles.some(role => role.role.toLowerCase().includes(searchTerm.toLowerCase()))
+    member.roles.some(role => role.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleAssignRole = (userId: string) => {
     const user = staffMembers?.find(m => m.id === userId);
     if (user) {
       setSelectedUserId(userId);
-      setSelectedUserName(`${user.first_name} ${user.last_name}`);
-      setSelectedUserRoles(user.roles.filter(r => r.is_active).map(r => r.role));
+      setSelectedUserName(`${user.firstName} ${user.lastName}`);
+      setSelectedUserRoles(user.roles || []);
     }
   };
 
@@ -98,60 +98,50 @@ const RoleManagement: React.FC = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search by name, email, or role..."
+                    placeholder="Search staff members..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchTerm('')}
-                  disabled={!searchTerm}
-                >
-                  Clear
-                </Button>
               </div>
 
-              {filteredStaff && filteredStaff.length > 0 ? (
-                <div className="grid gap-4">
-                  {filteredStaff.map((staffMember) => (
-                    <UserRoleCard
-                      key={staffMember.id}
-                      staffMember={staffMember}
-                      onAssignRole={handleAssignRole}
-                    />
-                  ))}
-                </div>
-              ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredStaff?.map((member) => (
+                  <UserRoleCard
+                    key={member.id}
+                    user={member}
+                    onAssignRole={() => handleAssignRole(member.id)}
+                  />
+                ))}
+              </div>
+
+              {filteredStaff?.length === 0 && (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">
-                    {searchTerm ? 'No staff members match your search.' : 'No staff members found.'}
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">No staff members found</h3>
+                  <p className="text-gray-500">
+                    {searchTerm ? 'Try adjusting your search terms.' : 'No staff members have been added yet.'}
                   </p>
-                  {searchTerm && (
-                    <Button variant="outline" onClick={() => setSearchTerm('')} className="mt-2">
-                      Clear Search
-                    </Button>
-                  )}
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="permissions">
+        <TabsContent value="permissions" className="space-y-4">
           <RolePermissionsViewer />
         </TabsContent>
       </Tabs>
 
-      <RoleAssignmentModal
-        isOpen={!!selectedUserId}
-        onClose={handleCloseModal}
-        userId={selectedUserId || ''}
-        userName={selectedUserName}
-        currentRoles={selectedUserRoles as any[]}
-      />
+      {selectedUserId && (
+        <RoleAssignmentModal
+          userId={selectedUserId}
+          userName={selectedUserName}
+          currentRoles={selectedUserRoles}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 };

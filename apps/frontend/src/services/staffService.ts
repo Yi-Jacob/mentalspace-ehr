@@ -52,6 +52,10 @@ export interface CreateStaffInput {
   userComments?: string;
 }
 
+export interface UpdateStaffInput extends Partial<CreateStaffInput> {
+  // Additional update-specific fields can be added here
+}
+
 export interface UserRole {
   role: string;
   assignedAt: string;
@@ -60,17 +64,17 @@ export interface UserRole {
 
 export interface PerformanceMetric {
   id: string;
-  user_id: string;
-  metric_type: string;
-  metric_value: number;
-  target_value?: number;
-  measurement_period: string;
-  period_start: string;
-  period_end: string;
+  userId: string;
+  metricType: string;
+  metricValue: number;
+  targetValue?: number;
+  measurementPeriod: string;
+  periodStart: string;
+  periodEnd: string;
   notes?: string;
-  reviewed_by?: string;
-  reviewed_at?: string;
-  created_at: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  createdAt: string;
   user?: {
     firstName: string;
     lastName: string;
@@ -105,6 +109,46 @@ class StaffService {
       throw error;
     }
   }
+
+  async getStaff(id: string): Promise<StaffMember> {
+    try {
+      const response = await apiClient.get<StaffMember>(`/staff/${id}`);
+      console.log('getStaff - response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching staff member:', error);
+      throw error;
+    }
+  }
+
+  async updateStaff(id: string, input: UpdateStaffInput): Promise<StaffMember> {
+    try {
+      const response = await apiClient.put<StaffMember>(`/staff/${id}`, input);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating staff member:', error);
+      throw error;
+    }
+  }
+
+  async deleteStaff(id: string): Promise<void> {
+    try {
+      await apiClient.delete(`/staff/${id}`);
+    } catch (error) {
+      console.error('Error deleting staff member:', error);
+      throw error;
+    }
+  }
+
+  async deactivateStaff(id: string): Promise<StaffMember> {
+    try {
+      const response = await apiClient.patch<StaffMember>(`/staff/${id}/deactivate`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deactivating staff member:', error);
+      throw error;
+    }
+  }
   
   // User Roles
   async getCurrentUserRoles(): Promise<UserRole[]> {
@@ -135,7 +179,7 @@ class StaffService {
     return response.data;
   }
 
-  async createPerformanceMetric(metric: Omit<PerformanceMetric, 'id' | 'created_at'>): Promise<PerformanceMetric> {
+  async createPerformanceMetric(metric: Omit<PerformanceMetric, 'id' | 'createdAt'>): Promise<PerformanceMetric> {
     const response = await apiClient.post<PerformanceMetric>('/staff/performance-metrics', metric);
     return response.data;
   }

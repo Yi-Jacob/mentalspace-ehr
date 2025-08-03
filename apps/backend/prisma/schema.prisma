@@ -77,8 +77,11 @@ model User {
   password                 String?
   createdAt                DateTime                     @default(now()) @map("created_at")
   firstName                String                       @map("first_name")
-  isActive                 Boolean?                     @map("is_active")
   lastName                 String                       @map("last_name")
+  middleName               String?                      @map("middle_name")
+  suffix                   String?
+  userName                 String?                      @map("user_name")
+  isActive                 Boolean?                     @map("is_active")
   updatedAt                DateTime                     @default(now()) @map("updated_at")
   appointments             Appointment[]
   waitlistEntries          AppointmentWaitlist[]
@@ -494,6 +497,21 @@ model StaffProfile {
   notes                 String?
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @default(now()) @map("updated_at")
+  
+  // Additional fields for frontend forms
+  userComments          String?   @map("user_comments")
+  mobilePhone           String?   @map("mobile_phone")
+  workPhone             String?   @map("work_phone")
+  homePhone             String?   @map("home_phone")
+  canReceiveText        Boolean?  @map("can_receive_text")
+  address1              String?   @map("address_1")
+  address2              String?   @map("address_2")
+  city                  String?
+  state                 String?
+  zipCode               String?   @map("zip_code")
+  formalName            String?   @map("formal_name")
+  clinicianType         String?   @map("clinician_type")
+  supervisionType       String?   @map("supervision_type")
 
   @@map("staff_profiles")
 }

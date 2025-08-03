@@ -137,6 +137,15 @@ export const useStaffManagement = () => {
     }
   };
 
+  const getStaff = async (id: string) => {
+    try {
+      return await staffService.getStaff(id);
+    } catch (error) {
+      console.error('Error fetching staff member:', error);
+      throw error;
+    }
+  };
+
   return {
     // Data
     staffMembers,
@@ -149,6 +158,7 @@ export const useStaffManagement = () => {
     updateStaffMember,
     deleteStaffMember,
     deactivateStaffMember,
+    getStaff,
 
     // Loading states
     isCreating: createStaffMutation.isPending,

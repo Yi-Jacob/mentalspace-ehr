@@ -19,7 +19,7 @@ const StaffWorkflowView: React.FC = () => {
   const handleViewProfile = (staffId: string) => {
     // For now, we'll navigate to the staff page with the staff member selected
     // In the future, this could navigate to a dedicated profile page
-    navigate(`/staff?selected=${staffId}`);
+    navigate(`/staff/${staffId}`);
   };
 
   if (isLoading) {

@@ -19,10 +19,10 @@ const LicensesSection: React.FC<LicensesSectionProps> = ({
 }) => {
   const [licenses, setLicenses] = React.useState([
     {
-      state: formData.license_state || '',
-      number: formData.license_number || '',
+      state: formData.licenseState || '',
+      number: formData.licenseNumber || '',
       taxonomy: '',
-      expiration: formData.license_expiry_date || ''
+      expiration: formData.licenseExpiryDate || ''
     }
   ]);
 
@@ -44,9 +44,9 @@ const LicensesSection: React.FC<LicensesSectionProps> = ({
 
     // Update form data for the first license
     if (index === 0) {
-      if (field === 'state') onInputChange('license_state', value);
-      if (field === 'number') onInputChange('license_number', value);
-      if (field === 'expiration') onInputChange('license_expiry_date', value);
+      if (field === 'state') onInputChange('licenseState', value);
+      if (field === 'number') onInputChange('licenseNumber', value);
+      if (field === 'expiration') onInputChange('licenseExpiryDate', value);
     }
   };
 

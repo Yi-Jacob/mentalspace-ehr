@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Badge } from '@/components/basic/badge';
-import { Search, Edit, UserMinus, Phone, Mail, Star, Users, AlertCircle } from 'lucide-react';
+import { Search, Edit, UserMinus, Phone, Mail, Star, Users, AlertCircle, Eye } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
 import { useStaffRoles } from '@/pages/staff/hook/useStaffRoles';
@@ -13,6 +13,7 @@ import { StaffMember, UserRole } from '@/types/staffType';
 
 const StaffList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const { staffMembers, isLoading, error, deactivateStaff } = useStaffManagement();
@@ -53,7 +54,7 @@ const StaffList: React.FC = () => {
   }
 
   const filteredStaff = staffMembers?.filter(staff => {
-    const fullName = `${staff.first_name} ${staff.last_name}`.toLowerCase();
+    const fullName = `${staff.firstName} ${staff.lastName}`.toLowerCase();
     const search = searchTerm.toLowerCase();
     return fullName.includes(search) || 
            staff.email?.toLowerCase().includes(search);
@@ -82,24 +83,28 @@ const StaffList: React.FC = () => {
       {/* Staff Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredStaff.map((staff) => (
-          <Card key={staff.id} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={staff.id} 
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate(`/staff/${staff.id}`)}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    {staff.first_name?.[0]}{staff.last_name?.[0]}
+                    {staff.firstName?.[0]}{staff.lastName?.[0]}
                   </div>
                   <div>
                     <CardTitle className="text-lg">
-                      {staff.first_name} {staff.last_name}
+                      {staff.firstName} {staff.lastName}
                     </CardTitle>
                     <p className="text-sm text-gray-600">{staff.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-1">
-                  {staff.roles?.filter(r => r.is_active).map((role) => (
-                    <Badge key={role.id} variant="outline" className="text-xs">
-                      {role.role}
+                  {staff.roles?.map((role) => (
+                    <Badge key={role} variant="outline" className="text-xs">
+                      {role}
                     </Badge>
                   ))}
                 </div>
@@ -107,10 +112,10 @@ const StaffList: React.FC = () => {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-2">
-                {staff.phone && (
+                {staff.staffProfile?.phoneNumber && (
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Phone className="h-4 w-4" />
-                    <span>{staff.phone}</span>
+                    <span>{staff.staffProfile.phoneNumber}</span>
                   </div>
                 )}
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -121,14 +126,21 @@ const StaffList: React.FC = () => {
                   <div className="flex items-center space-x-1">
                     <Star className="h-4 w-4 text-yellow-500" />
                     <span className="text-sm text-gray-600">
-                      {staff.is_active ? 'Active' : 'Inactive'}
+                      {staff.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {/* Handle edit */}}
+                      onClick={() => navigate(`/staff/${staff.id}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/staff/${staff.id}/edit`)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>

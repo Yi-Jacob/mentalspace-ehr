@@ -19,26 +19,26 @@ const SupervisionSection: React.FC<SupervisionSectionProps> = ({
   // For now, show all active staff members as potential supervisors
   // In the future, this could be filtered by roles when the API supports it
   const availableSupervisors = staffMembers?.filter(staff => 
-    staff.is_active && staff.id !== formData.id // Exclude current staff member
+    staff.isActive && staff.id !== formData.id // Exclude current staff member
   ) || [];
 
-  const requiresSupervisor = formData.supervision_type !== 'Not Supervised';
+  const requiresSupervisor = formData.supervisionType !== 'Not Supervised';
 
   // Convert staff members to select options
   const supervisorOptions = availableSupervisors.length > 0 
     ? availableSupervisors.map((supervisor) => ({
         value: supervisor.id,
-        label: `${supervisor.first_name} ${supervisor.last_name}${
-          supervisor.staff_profile?.job_title ? ` - ${supervisor.staff_profile.job_title}` : ''
+        label: `${supervisor.firstName} ${supervisor.lastName}${
+          supervisor.staffProfile?.jobTitle ? ` - ${supervisor.staffProfile.jobTitle}` : ''
         }`
       }))
     : [{ value: 'no-supervisors', label: 'No supervisors available', disabled: true }];
 
   const handleSupervisionTypeChange = (value: string) => {
-    onInputChange('supervision_type', value);
+    onInputChange('supervisionType', value);
     // Clear supervisor selection if "Not Supervised" is selected
     if (value === 'Not Supervised') {
-      onInputChange('supervisor_id', '');
+      onInputChange('supervisorId', '');
     }
   };
 
@@ -51,7 +51,7 @@ const SupervisionSection: React.FC<SupervisionSectionProps> = ({
         {/* Supervision Type */}
         <SelectField
           label="Supervision Type"
-          value={formData.supervision_type}
+          value={formData.supervisionType}
           onValueChange={handleSupervisionTypeChange}
           placeholder="Select supervision type"
           options={SUPERVISION_TYPE_OPTIONS}
@@ -61,8 +61,8 @@ const SupervisionSection: React.FC<SupervisionSectionProps> = ({
         {requiresSupervisor && (
           <SelectField
             label="Select Supervisor"
-            value={formData.supervisor_id || ''}
-            onValueChange={(value) => onInputChange('supervisor_id', value)}
+            value={formData.supervisorId || ''}
+            onValueChange={(value) => onInputChange('supervisorId', value)}
             placeholder="Choose a supervisor"
             options={supervisorOptions}
             required
@@ -70,17 +70,17 @@ const SupervisionSection: React.FC<SupervisionSectionProps> = ({
         )}
 
         {/* Supervision Type Description */}
-        {formData.supervision_type && formData.supervision_type !== 'Not Supervised' && (
+        {formData.supervisionType && formData.supervisionType !== 'Not Supervised' && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-800 mb-2">Supervision Requirements:</h4>
             <p className="text-sm text-blue-700">
-              {SUPERVISION_TYPE_DESCRIPTIONS[formData.supervision_type as keyof typeof SUPERVISION_TYPE_DESCRIPTIONS]}
+              {SUPERVISION_TYPE_DESCRIPTIONS[formData.supervisionType as keyof typeof SUPERVISION_TYPE_DESCRIPTIONS]}
             </p>
           </div>
         )}
 
         {/* Validation Message */}
-        {requiresSupervisor && (!formData.supervisor_id || formData.supervisor_id === '') && (
+        {requiresSupervisor && (!formData.supervisorId || formData.supervisorId === '') && (
           <p className="text-sm text-red-500 mt-1">
             A supervisor must be selected for this supervision type
           </p>

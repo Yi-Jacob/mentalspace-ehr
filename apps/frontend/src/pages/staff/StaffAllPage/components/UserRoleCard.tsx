@@ -10,17 +10,17 @@ import { StaffMember, UserRole } from '@/types/staffType';
 import { useEnhancedStaffRoles } from '@/hooks/useEnhancedStaffRoles';
 
 interface UserRoleCardProps {
-  staffMember: StaffMember;
+  user: StaffMember;
   onAssignRole: (userId: string) => void;
 }
 
-const UserRoleCard: React.FC<UserRoleCardProps> = ({ staffMember, onAssignRole }) => {
+const UserRoleCard: React.FC<UserRoleCardProps> = ({ user, onAssignRole }) => {
   const { removeRole, isRemovingRole, canAssignRoles } = useEnhancedStaffRoles();
-  const [roleToRemove, setRoleToRemove] = useState<UserRole | null>(null);
+  const [roleToRemove, setRoleToRemove] = useState<string | null>(null);
 
-  const handleRemoveRole = (role: UserRole) => {
-    if (staffMember.id && role) {
-      removeRole({ userId: staffMember.id, role });
+  const handleRemoveRole = (role: string) => {
+    if (user.id && role) {
+      removeRole({ userId: user.id, role });
       setRoleToRemove(null);
     }
   };
@@ -29,7 +29,7 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({ staffMember, onAssignRole }
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  const getRoleBadgeVariant = (role: UserRole) => {
+  const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'Practice Administrator':
         return 'destructive';
@@ -44,10 +44,10 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({ staffMember, onAssignRole }
     }
   };
 
-  const isRoleRemovalRestricted = (role: UserRole) => {
+  const isRoleRemovalRestricted = (role: string) => {
     // Prevent removing Clinician role if Clinical Administrator role exists
     if (role === 'Clinician') {
-      return staffMember.roles.some(r => r.role === 'Clinical Administrator' && r.is_active);
+      return user.roles?.some(r => r === 'Clinical Administrator');
     }
     return false;
   };
@@ -59,21 +59,21 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({ staffMember, onAssignRole }
           <div className="flex items-center space-x-3">
             <Avatar>
               <AvatarFallback className="bg-blue-100 text-blue-700">
-                {getInitials(staffMember.first_name, staffMember.last_name)}
+                {getInitials(user.firstName, user.lastName)}
               </AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold">
-                {staffMember.first_name} {staffMember.last_name}
+                {user.firstName} {user.lastName}
               </p>
-              <p className="text-sm text-gray-600">{staffMember.email}</p>
+              <p className="text-sm text-gray-600">{user.email}</p>
             </div>
           </div>
           {canAssignRoles && (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onAssignRole(staffMember.id)}
+              onClick={() => onAssignRole(user.id)}
               className="shrink-0"
             >
               <UserPlus className="h-4 w-4 mr-1" />
@@ -89,91 +89,56 @@ const UserRoleCard: React.FC<UserRoleCardProps> = ({ staffMember, onAssignRole }
             <span className="text-sm font-medium text-gray-700">Current Roles:</span>
           </div>
           
-          {staffMember.roles && staffMember.roles.length > 0 ? (
+          {user.roles && user.roles.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {staffMember.roles
-                .filter(role => role.is_active)
-                .map((roleAssignment) => (
-                  <div key={roleAssignment.id} className="flex items-center space-x-1">
-                    <Badge variant={getRoleBadgeVariant(roleAssignment.role as UserRole)}>
-                      {roleAssignment.role}
-                    </Badge>
-                    {canAssignRoles && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0 hover:bg-red-100"
-                            disabled={isRoleRemovalRestricted(roleAssignment.role as UserRole)}
-                            onClick={() => setRoleToRemove(roleAssignment.role as UserRole)}
+              {user.roles.map((role) => (
+                <div key={role} className="flex items-center space-x-1">
+                  <Badge variant={getRoleBadgeVariant(role)}>
+                    {role}
+                  </Badge>
+                  {canAssignRoles && !isRoleRemovalRestricted(role) && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setRoleToRemove(role)}
+                          className="h-4 w-4 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          disabled={isRemovingRole}
+                        >
+                          <UserMinus className="h-3 w-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove Role</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to remove the "{role}" role from {user.firstName} {user.lastName}? 
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleRemoveRole(role)}
+                            className="bg-red-600 hover:bg-red-700"
                           >
-                            <UserMinus className="h-3 w-3 text-red-600" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="flex items-center space-x-2">
-                              <AlertTriangle className="h-5 w-5 text-orange-500" />
-                              <span>Remove Role</span>
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to remove the "{roleAssignment.role}" role from{' '}
-                              {staffMember.first_name} {staffMember.last_name}? This action cannot be undone.
-                              {isRoleRemovalRestricted(roleAssignment.role as UserRole) && (
-                                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                                  <p className="text-sm text-yellow-800">
-                                    Cannot remove Clinician role while Clinical Administrator role is active.
-                                  </p>
-                                </div>
-                              )}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleRemoveRole(roleAssignment.role as UserRole)}
-                              disabled={isRemovingRole || isRoleRemovalRestricted(roleAssignment.role as UserRole)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Remove Role
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                  </div>
-                ))}
+                            Remove Role
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  {isRoleRemovalRestricted(role) && (
+                    <AlertTriangle className="h-3 w-3 text-yellow-500" title="This role cannot be removed" />
+                  )}
+                </div>
+              ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 italic">No roles assigned</p>
-          )}
-          
-          {staffMember.staff_profile && (
-            <div className="pt-2 border-t">
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                {staffMember.staff_profile.job_title && (
-                  <div>
-                    <span className="font-medium">Title:</span> {staffMember.staff_profile.job_title}
-                  </div>
-                )}
-                {staffMember.staff_profile.department && (
-                  <div>
-                    <span className="font-medium">Department:</span> {staffMember.staff_profile.department}
-                  </div>
-                )}
-                {staffMember.staff_profile.npi_number && (
-                  <div>
-                    <span className="font-medium">NPI:</span> {staffMember.staff_profile.npi_number}
-                  </div>
-                )}
-                <div>
-                  <span className="font-medium">Status:</span>{' '}
-                  <Badge variant={staffMember.staff_profile.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                    {staffMember.staff_profile.status}
-                  </Badge>
-                </div>
-              </div>
+            <div className="text-center py-4">
+              <Shield className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">No roles assigned</p>
             </div>
           )}
         </div>

@@ -15,14 +15,26 @@ export class UsersService {
   // Helper function to safely parse dates
   private parseDate(dateString: string | undefined): Date | undefined {
     if (!dateString) return undefined;
+    
     try {
+      // Handle YYYY-MM-DD format (from frontend DateInput)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day); // month is 0-indexed
+        if (isNaN(date.getTime())) {
+          throw new Error('Invalid date');
+        }
+        return date;
+      }
+      
+      // Handle full ISO 8601 format
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         throw new Error('Invalid date');
       }
       return date;
     } catch (error) {
-      throw new BadRequestException(`Invalid date format: ${dateString}`);
+      throw new BadRequestException(`Invalid date format: ${dateString}. Expected YYYY-MM-DD or ISO 8601 format.`);
     }
   }
 
@@ -39,6 +51,9 @@ export class UsersService {
             password: null, // No password set initially
             firstName: createUserDto.firstName,
             lastName: createUserDto.lastName,
+            middleName: createUserDto.middleName,
+            suffix: createUserDto.suffix,
+            userName: createUserDto.userName,
             isActive: true,
           },
         });
@@ -60,6 +75,21 @@ export class UsersService {
             canBillInsurance: createUserDto.canBillInsurance || false,
             status: createUserDto.status || 'active',
             notes: createUserDto.notes,
+            
+            // Additional fields for frontend forms
+            userComments: createUserDto.userComments,
+            mobilePhone: createUserDto.mobilePhone,
+            workPhone: createUserDto.workPhone,
+            homePhone: createUserDto.homePhone,
+            canReceiveText: createUserDto.canReceiveText,
+            address1: createUserDto.address1,
+            address2: createUserDto.address2,
+            city: createUserDto.city,
+            state: createUserDto.state,
+            zipCode: createUserDto.zipCode,
+            formalName: createUserDto.formalName,
+            clinicianType: createUserDto.clinicianType,
+            supervisionType: createUserDto.supervisionType,
           },
         });
 
@@ -75,6 +105,20 @@ export class UsersService {
               startDate: new Date(),
               isActive: true,
             },
+          });
+        }
+
+        // 4. Create user roles if specified
+        if (createUserDto.roles && createUserDto.roles.length > 0) {
+          const roleRecords = createUserDto.roles.map(role => ({
+            userId: user.id,
+            role: role,
+            assignedAt: new Date(),
+            isActive: true,
+          }));
+          
+          await prisma.userRole.createMany({
+            data: roleRecords,
           });
         }
 
@@ -105,10 +149,6 @@ export class UsersService {
     // Get related data separately since relationships aren't defined
     const usersWithDetails = await Promise.all(
       users.map(async (user) => {
-        const staffProfile = await this.prisma.staffProfile.findFirst({ 
-          where: { userId: user.id } 
-        });
-        
         // Get user roles
         const userRoles = await this.prisma.userRole.findMany({
           where: { userId: user.id, isActive: true },
@@ -119,30 +159,14 @@ export class UsersService {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
+          middleName: user.middleName,
+          suffix: user.suffix,
           email: user.email,
+          userName: user.userName,
           isActive: user.isActive,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
-          roles: userRoles.map(role => role.role),
-          staffProfile: staffProfile ? {
-            id: staffProfile.id,
-            userId: staffProfile.userId,
-            employeeId: staffProfile.employeeId,
-            npiNumber: staffProfile.npiNumber,
-            licenseNumber: staffProfile.licenseNumber,
-            licenseState: staffProfile.licenseState,
-            licenseExpiryDate: staffProfile.licenseExpiryDate,
-            department: staffProfile.department,
-            jobTitle: staffProfile.jobTitle,
-            hireDate: staffProfile.hireDate,
-            phoneNumber: staffProfile.phoneNumber,
-            billingRate: staffProfile.billingRate,
-            canBillInsurance: staffProfile.canBillInsurance,
-            status: staffProfile.status,
-            notes: staffProfile.notes,
-            createdAt: staffProfile.createdAt,
-            updatedAt: staffProfile.updatedAt,
-          } : null,
+          roles: userRoles.map(role => role.role)
         };
       })
     );
@@ -175,40 +199,146 @@ export class UsersService {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
+      middleName: user.middleName,
+      suffix: user.suffix,
       email: user.email,
+      userName: user.userName,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       roles: userRoles.map(role => role.role),
-      staffProfile: staffProfile ? {
-        id: staffProfile.id,
-        userId: staffProfile.userId,
-        employeeId: staffProfile.employeeId,
-        npiNumber: staffProfile.npiNumber,
-        licenseNumber: staffProfile.licenseNumber,
-        licenseState: staffProfile.licenseState,
-        licenseExpiryDate: staffProfile.licenseExpiryDate,
-        department: staffProfile.department,
-        jobTitle: staffProfile.jobTitle,
-        hireDate: staffProfile.hireDate,
-        phoneNumber: staffProfile.phoneNumber,
-        billingRate: staffProfile.billingRate,
-        canBillInsurance: staffProfile.canBillInsurance,
-        status: staffProfile.status,
-        notes: staffProfile.notes,
-        createdAt: staffProfile.createdAt,
-        updatedAt: staffProfile.updatedAt,
-      } : null,
+      employeeId: staffProfile.employeeId,
+      npiNumber: staffProfile.npiNumber,
+      licenseNumber: staffProfile.licenseNumber,
+      licenseState: staffProfile.licenseState,
+      licenseExpiryDate: staffProfile.licenseExpiryDate,
+      department: staffProfile.department,
+      jobTitle: staffProfile.jobTitle,
+      hireDate: staffProfile.hireDate,
+      phoneNumber: staffProfile.phoneNumber,
+      billingRate: staffProfile.billingRate,
+      canBillInsurance: staffProfile.canBillInsurance,
+      status: staffProfile.status,
+      notes: staffProfile.notes,
+      userComments: staffProfile.userComments,
+      mobilePhone: staffProfile.mobilePhone,
+      workPhone: staffProfile.workPhone,
+      homePhone: staffProfile.homePhone,
+      canReceiveText: staffProfile.canReceiveText,
+      address1: staffProfile.address1,
+      address2: staffProfile.address2,
+      city: staffProfile.city,
+      state: staffProfile.state,
+      zipCode: staffProfile.zipCode,
+      formalName: staffProfile.formalName,
+      clinicianType: staffProfile.clinicianType,
+      supervisionType: staffProfile.supervisionType,
     };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     await this.findOne(id); // Check if user exists
 
-    return this.prisma.user.update({
+    // Separate user fields from staff profile fields
+    const userFields = {
+      firstName: updateUserDto.firstName,
+      lastName: updateUserDto.lastName,
+      middleName: updateUserDto.middleName,
+      suffix: updateUserDto.suffix,
+      email: updateUserDto.email,
+      userName: updateUserDto.userName,
+    };
+
+    const staffProfileFields = {
+      employeeId: updateUserDto.employeeId,
+      npiNumber: updateUserDto.npiNumber,
+      licenseNumber: updateUserDto.licenseNumber,
+      licenseState: updateUserDto.licenseState,
+      licenseExpiryDate: this.parseDate(updateUserDto.licenseExpiryDate),
+      department: updateUserDto.department,
+      jobTitle: updateUserDto.jobTitle,
+      hireDate: this.parseDate(updateUserDto.hireDate),
+      phoneNumber: updateUserDto.phoneNumber,
+      billingRate: updateUserDto.billingRate,
+      canBillInsurance: updateUserDto.canBillInsurance,
+      status: updateUserDto.status,
+      notes: updateUserDto.notes,
+      
+      // Additional fields for frontend forms
+      userComments: updateUserDto.userComments,
+      mobilePhone: updateUserDto.mobilePhone,
+      workPhone: updateUserDto.workPhone,
+      homePhone: updateUserDto.homePhone,
+      canReceiveText: updateUserDto.canReceiveText,
+      address1: updateUserDto.address1,
+      address2: updateUserDto.address2,
+      city: updateUserDto.city,
+      state: updateUserDto.state,
+      zipCode: updateUserDto.zipCode,
+      formalName: updateUserDto.formalName,
+      clinicianType: updateUserDto.clinicianType,
+      supervisionType: updateUserDto.supervisionType,
+    };
+
+    // Remove undefined values
+    const cleanUserFields = Object.fromEntries(
+      Object.entries(userFields).filter(([_, value]) => value !== undefined)
+    );
+
+    const cleanStaffProfileFields = Object.fromEntries(
+      Object.entries(staffProfileFields).filter(([_, value]) => value !== undefined)
+    );
+
+    // Update user
+    const updatedUser = await this.prisma.user.update({
       where: { id },
-      data: updateUserDto,
+      data: cleanUserFields,
     });
+
+    // Update or create staff profile
+    const existingStaffProfile = await this.prisma.staffProfile.findFirst({
+      where: { userId: id },
+    });
+
+    let updatedStaffProfile;
+    if (existingStaffProfile) {
+      updatedStaffProfile = await this.prisma.staffProfile.update({
+        where: { id: existingStaffProfile.id },
+        data: cleanStaffProfileFields,
+      });
+    } else {
+      updatedStaffProfile = await this.prisma.staffProfile.create({
+        data: {
+          userId: id,
+          ...cleanStaffProfileFields,
+        },
+      });
+    }
+
+    // Update roles if provided
+    if (updateUserDto.roles) {
+      // Remove existing roles
+      await this.prisma.userRole.deleteMany({
+        where: { userId: id },
+      });
+
+      // Add new roles
+      if (updateUserDto.roles.length > 0) {
+        const roleRecords = updateUserDto.roles.map(role => ({
+          userId: id,
+          role: role,
+          assignedAt: new Date(),
+          isActive: true,
+        }));
+        
+        await this.prisma.userRole.createMany({
+          data: roleRecords,
+        });
+      }
+    }
+
+    // Return updated user with profile
+    return this.findOne(id);
   }
 
   async remove(id: string) {
@@ -232,17 +362,17 @@ export class UsersService {
 
     return metrics.map(metric => ({
       id: metric.id,
-      user_id: metric.userId,
-      metric_type: metric.metricType,
-      metric_value: metric.metricValue,
-      target_value: metric.targetValue,
-      measurement_period: metric.measurementPeriod,
-      period_start: metric.periodStart,
-      period_end: metric.periodEnd,
+      userId: metric.userId,
+      metricType: metric.metricType,
+      metricValue: metric.metricValue,
+      targetValue: metric.targetValue,
+      measurementPeriod: metric.measurementPeriod,
+      periodStart: metric.periodStart,
+      periodEnd: metric.periodEnd,
       notes: metric.notes,
-      reviewed_by: metric.reviewedBy,
-      reviewed_at: metric.reviewedAt,
-      created_at: metric.createdAt,
+      reviewedBy: metric.reviewedBy,
+      reviewedAt: metric.reviewedAt,
+      createdAt: metric.createdAt,
     }));
   }
 
@@ -250,15 +380,15 @@ export class UsersService {
     const metric = await this.prisma.performanceMetric.create({
       data: {
         userId: metricData.userId || createdBy,
-        metricType: metricData.metric_type,
-        metricValue: metricData.metric_value,
-        targetValue: metricData.target_value,
-        measurementPeriod: metricData.measurement_period,
-        periodStart: new Date(metricData.period_start),
-        periodEnd: new Date(metricData.period_end),
+        metricType: metricData.metricType,
+        metricValue: metricData.metricValue,
+        targetValue: metricData.targetValue,
+        measurementPeriod: metricData.measurementPeriod,
+        periodStart: new Date(metricData.periodStart),
+        periodEnd: new Date(metricData.periodEnd),
         notes: metricData.notes,
-        reviewedBy: metricData.reviewed_by,
-        reviewedAt: metricData.reviewed_at ? new Date(metricData.reviewed_at) : null,
+        reviewedBy: metricData.reviewedBy,
+        reviewedAt: metricData.reviewedAt ? new Date(metricData.reviewedAt) : null,
       },
     });
 
@@ -268,15 +398,15 @@ export class UsersService {
   async updatePerformanceMetric(id: string, updates: any) {
     const updateData: any = {};
 
-    if (updates.metric_type) updateData.metricType = updates.metric_type;
-    if (updates.metric_value !== undefined) updateData.metricValue = updates.metric_value;
-    if (updates.target_value !== undefined) updateData.targetValue = updates.target_value;
-    if (updates.measurement_period) updateData.measurementPeriod = updates.measurement_period;
-    if (updates.period_start) updateData.periodStart = new Date(updates.period_start);
-    if (updates.period_end) updateData.periodEnd = new Date(updates.period_end);
+    if (updates.metricType) updateData.metricType = updates.metricType;
+    if (updates.metricValue !== undefined) updateData.metricValue = updates.metricValue;
+    if (updates.targetValue !== undefined) updateData.targetValue = updates.targetValue;
+    if (updates.measurementPeriod) updateData.measurementPeriod = updates.measurementPeriod;
+    if (updates.periodStart) updateData.periodStart = new Date(updates.periodStart);
+    if (updates.periodEnd) updateData.periodEnd = new Date(updates.periodEnd);
     if (updates.notes !== undefined) updateData.notes = updates.notes;
-    if (updates.reviewed_by) updateData.reviewedBy = updates.reviewed_by;
-    if (updates.reviewed_at) updateData.reviewedAt = new Date(updates.reviewed_at);
+    if (updates.reviewedBy) updateData.reviewedBy = updates.reviewedBy;
+    if (updates.reviewedAt) updateData.reviewedAt = new Date(updates.reviewedAt);
 
     const metric = await this.prisma.performanceMetric.update({
       where: { id },

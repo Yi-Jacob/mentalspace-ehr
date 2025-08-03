@@ -6,11 +6,11 @@ import { useAddStaffSubmit } from '@/pages/staff/hook/useAddStaffSubmit';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import PageTabs from '@/components/basic/PageTabs';
-import UserCommentsSection from './components/UserCommentsSection';
-import RolesSection from './components/RolesSection';
-import UserInformationSection from './components/UserInformationSection';
-import SupervisionSection from './components/SupervisionSection';
-import LicensesSection from './components/LicensesSection';
+import UserCommentsSection from '@/pages/staff/components/formSections/UserCommentsSection';
+import RolesSection from '@/pages/staff/components/formSections/RolesSection';
+import UserInformationSection from '@/pages/staff/components/formSections/UserInformationSection';
+import SupervisionSection from '@/pages/staff/components/formSections/SupervisionSection';
+import LicensesSection from '@/pages/staff/components/formSections/LicensesSection';
 
 const CreateStaffPage: React.FC = () => {
   const { formData, handleInputChange, handleRoleToggle, resetForm } = useAddStaffForm();
@@ -18,6 +18,17 @@ const CreateStaffPage: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('comments');
 
   const tabs = [
+    {
+      id: 'information',
+      label: 'Information',
+      icon: User,
+      content: (
+        <UserInformationSection 
+          formData={formData} 
+          onInputChange={handleInputChange} 
+        />
+      )
+    },
     {
       id: 'comments',
       label: 'Comments',
@@ -37,17 +48,6 @@ const CreateStaffPage: React.FC = () => {
         <RolesSection 
           formData={formData} 
           onRoleToggle={handleRoleToggle} 
-        />
-      )
-    },
-    {
-      id: 'information',
-      label: 'Information',
-      icon: User,
-      content: (
-        <UserInformationSection 
-          formData={formData} 
-          onInputChange={handleInputChange} 
         />
       )
     },
@@ -137,7 +137,7 @@ const CreateStaffPage: React.FC = () => {
         }
       />
 
-      <form onSubmit={(e) => { e.preventDefault(); handleSave(false); }} className="space-y-8">
+      <form className="space-y-8">
         <PageTabs
           items={tabs}
           value={currentTab}

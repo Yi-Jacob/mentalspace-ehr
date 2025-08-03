@@ -1,11 +1,46 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsDateString, IsEnum, ValidateIf } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsDateString, IsEnum, ValidateIf, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+
+// Custom validator for date format
+function IsDateStringOrEmpty(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'isDateStringOrEmpty',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          if (value === undefined || value === null || value === '') {
+            return true;
+          }
+          if (typeof value !== 'string') {
+            return false;
+          }
+          // Accept YYYY-MM-DD format
+          if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            const [year, month, day] = value.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            return !isNaN(date.getTime());
+          }
+          // Accept full ISO 8601 format
+          const date = new Date(value);
+          return !isNaN(date.getTime());
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `${args.property} must be a valid date in YYYY-MM-DD or ISO 8601 format`;
+        },
+      },
+    });
+  };
+}
 
 // Define UserStatus enum since it's not in the existing enum file
 export enum UserStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   SUSPENDED = 'suspended',
+  PENDING = 'pending',
 }
 
 export class CreateUserDto {
@@ -130,16 +165,16 @@ export class CreateUserDto {
   @IsString()
   licenseState?: string;
 
-  @ApiProperty({ description: 'License expiry date (ISO 8601 format)', required: false })
+  @ApiProperty({ description: 'License expiry date (YYYY-MM-DD format)', required: false })
   @IsOptional()
   @ValidateIf((o) => o.licenseExpiryDate !== undefined && o.licenseExpiryDate !== null)
-  @IsDateString({}, { message: 'licenseExpiryDate must be a valid ISO 8601 date string' })
+  @IsDateStringOrEmpty({ message: 'licenseExpiryDate must be a valid date in YYYY-MM-DD or ISO 8601 format' })
   licenseExpiryDate?: string;
 
-  @ApiProperty({ description: 'Hire date (ISO 8601 format)', required: false })
+  @ApiProperty({ description: 'Hire date (YYYY-MM-DD format)', required: false })
   @IsOptional()
   @ValidateIf((o) => o.hireDate !== undefined && o.hireDate !== null)
-  @IsDateString({}, { message: 'hireDate must be a valid ISO 8601 date string' })
+  @IsDateStringOrEmpty({ message: 'hireDate must be a valid date in YYYY-MM-DD or ISO 8601 format' })
   hireDate?: string;
 
   @ApiProperty({ description: 'Billing rate', required: false })
