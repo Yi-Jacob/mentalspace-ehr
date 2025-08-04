@@ -95,18 +95,23 @@ const StaffList: React.FC = () => {
       key: 'name',
       header: 'Full Name',
       accessor: (staff) => (
-        <div>
           <div className="font-medium text-gray-900">
             {staff.firstName} {staff.middleName ? `${staff.middleName} ` : ''}{staff.lastName}{staff.suffix ? ` ${staff.suffix}` : ''}
           </div>
-          {staff.middleName && (
-            <div className="text-sm text-gray-500">
-              Middle: {staff.middleName}
-            </div>
-          )}
-        </div>
       ),
       searchValue: (staff) => `${staff.firstName} ${staff.middleName || ''} ${staff.lastName} ${staff.suffix || ''}`.trim(),
+      sortable: true,
+      searchable: true
+    },
+    {
+      key: 'username',
+      header: 'Username',
+      accessor: (staff) => (
+        <div className="text-gray-900">
+          {staff.userName}
+        </div>
+      ),
+      searchValue: (staff) => staff.userName,
       sortable: true,
       searchable: true
     },
@@ -141,8 +146,8 @@ const StaffList: React.FC = () => {
       header: 'Roles',
       accessor: (staff) => {
         const roles = staff.roles || [];
-        const displayRoles = roles.slice(0, 3);
-        const hasMore = roles.length > 3;
+        const displayRoles = roles.slice(0, 2);
+        const hasMore = roles.length > 2;
         
         return (
           <div className="flex flex-wrap gap-1">
@@ -171,13 +176,13 @@ const StaffList: React.FC = () => {
   // Define table actions
   const actions = [
     {
-      label: 'View',
+      label: 'View Details',
       icon: <Eye className="h-4 w-4" />,
       onClick: (staff: StaffMember) => navigate(`/staff/${staff.id}`),
       variant: 'ghost' as const
     },
     {
-      label: 'Edit',
+      label: 'Edit Staff',
       icon: <Edit className="h-4 w-4" />,
       onClick: (staff: StaffMember) => navigate(`/staff/${staff.id}/edit`),
       variant: 'ghost' as const
@@ -212,7 +217,7 @@ const StaffList: React.FC = () => {
       variant: 'ghost' as const
     },
     {
-      label: staff => staff.isActive ? 'Deactivate' : 'Activate',
+      label: staff => staff.isActive ? 'Deactivate Staff' : 'Activate Staff',
       icon: staff => staff.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />,
       onClick: async (staff: StaffMember) => {
         try {
@@ -253,7 +258,6 @@ const StaffList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Staff Members</h2>

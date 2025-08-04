@@ -27,7 +27,19 @@ interface SidebarProps {
   onItemClick?: (item: string) => void;
 }
 
-const menuItems = [
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  path: string;
+  subItems?: {
+    id: string;
+    label: string;
+    path: string;
+  }[];
+}
+
+const menuItems: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
   { id: 'notes', label: 'Notes', icon: FileText, path: '/notes' },
@@ -36,7 +48,16 @@ const menuItems = [
   { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
   { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
   { id: 'crm', label: 'CRM', icon: UserPlus, path: '/crm' },
-  { id: 'staff', label: 'Staff', icon: Stethoscope, path: '/staff' },
+  { 
+    id: 'staff', 
+    label: 'Staff', 
+    icon: Stethoscope, 
+    path: '/staff',
+    subItems: [
+      { id: 'staff-list', label: 'All Staff', path: '/staff' },
+      { id: 'staff-supervision', label: 'Supervision', path: '/staff/supervision' },
+    ]
+  },
   { id: 'compliance', label: 'Compliance', icon: Shield, path: '/compliance' },
   { id: 'settings', label: 'Practice Settings', icon: Settings, path: '/settings' },
 ];
@@ -58,6 +79,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     if (currentPath.startsWith('/clients')) return 'clients';
     if (currentPath.startsWith('/reports')) return 'reports';
     
+    // Check for sub-items first
+    for (const item of menuItems) {
+      if (item.subItems) {
+        const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
+        if (matchedSubItem) {
+          return matchedSubItem.id;
+        }
+      }
+    }
+    
+    // Check for main items
     const matchedItem = menuItems.find(item => currentPath.startsWith(item.path) && item.path !== '/');
     return matchedItem?.id || 'dashboard';
   };
@@ -108,22 +140,46 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       <nav className="space-y-2 flex-1 px-4">
         {menuItems.map((item) => {
           const IconComponent = item.icon;
+          const isActive = activeItem === item.id || (item.subItems && item.subItems.some(subItem => activeItem === subItem.id));
+          
           return (
-            <button
-              key={item.id}
-              onClick={() => handleItemClick(item)}
-              className={cn(
-                "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
-                activeItem === item.id
-                  ? "bg-white text-blue-900 shadow-lg transform scale-105"
-                  : "text-blue-100 hover:bg-blue-700 hover:text-white hover:transform hover:scale-102",
-                isCollapsed && "justify-center space-x-0"
+            <div key={item.id} className="space-y-1">
+              <button
+                onClick={() => handleItemClick(item)}
+                className={cn(
+                  "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
+                  isActive
+                    ? "bg-white text-blue-900 shadow-lg transform scale-105"
+                    : "text-blue-100 hover:bg-blue-700 hover:text-white hover:transform hover:scale-102",
+                  isCollapsed && "justify-center space-x-0"
+                )}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <IconComponent size={20} className="text-blue-100" />
+                {!isCollapsed && <span className="font-medium">{item.label}</span>}
+              </button>
+              
+              {/* Render sub-items if they exist and sidebar is not collapsed */}
+              {item.subItems && !isCollapsed && (
+                <div className="ml-6 space-y-1">
+                  {item.subItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => handleItemClick(subItem)}
+                      className={cn(
+                        "w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 text-left text-sm",
+                        activeItem === subItem.id
+                          ? "bg-blue-700 text-white shadow-md"
+                          : "text-blue-200 hover:bg-blue-700 hover:text-white"
+                      )}
+                    >
+                      <span className="w-2 h-2 bg-blue-300 rounded-full"></span>
+                      <span className="font-medium">{subItem.label}</span>
+                    </button>
+                  ))}
+                </div>
               )}
-              title={isCollapsed ? item.label : undefined}
-            >
-              <IconComponent size={20} className="text-blue-100" />
-              {!isCollapsed && <span className="font-medium">{item.label}</span>}
-            </button>
+            </div>
           );
         })}
       </nav>

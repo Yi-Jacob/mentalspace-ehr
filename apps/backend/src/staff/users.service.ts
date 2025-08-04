@@ -103,9 +103,8 @@ export class UsersService {
             data: {
               supervisorId: createUserDto.supervisorId,
               superviseeId: user.id,
-              supervisionType: createUserDto.supervisionType,
               startDate: new Date(),
-              isActive: true,
+              status: 'active',
             },
           });
         }

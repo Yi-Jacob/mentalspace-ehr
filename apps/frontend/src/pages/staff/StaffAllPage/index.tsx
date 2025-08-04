@@ -8,7 +8,6 @@ import PageTabs from '@/components/basic/PageTabs';
 import StaffList from './components/StaffList';
 import RoleManagement from './components/RoleManagement';
 import StaffAccessManagement from './components/StaffAccessManagement';
-import StaffSupervisionView from './components/StaffSupervisionView';
 import StaffAuditLogs from './components/StaffAuditLogs';
 import TimeTrackingView from './components/TimeTrackingView';
 import PerformanceView from './components/PerformanceView';
@@ -58,12 +57,6 @@ const StaffPage: React.FC = () => {
             label: 'Access',
             icon: Eye,
             content: <StaffAccessManagement />
-          },
-          {
-            id: 'supervision',
-            label: 'Supervision',
-            icon: UserCog,
-            content: <StaffSupervisionView />
           },
           {
             id: 'time',

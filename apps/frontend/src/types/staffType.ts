@@ -1,6 +1,6 @@
-import { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState } from './enums/staffEnum';
+import { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus } from './enums/staffEnum';
 
-export type { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState };
+export type { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus };
 
 export interface StaffProfile {
   id: string;
@@ -54,9 +54,14 @@ export interface SupervisionRelationship {
   superviseeId: string;
   startDate: string;
   endDate?: string;
-  supervisionType: SupervisionType;
-  isActive: boolean;
+  notes?: string;
+  status: SupervisionStatus;
+  terminationNotes?: string;
   createdAt: string;
+  updatedAt: string;
+  // Joined data
+  supervisor?: StaffMember;
+  supervisee?: StaffMember;
 }
 
 export interface AuditLog {

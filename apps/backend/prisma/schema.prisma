@@ -104,6 +104,8 @@ model User {
   performanceMetricReviews PerformanceMetric[]          @relation("PerformanceMetricReviewer")
   trainingRecords          TrainingRecord[]             @relation("UserTrainingRecords")
   passwordResetTokens      PasswordResetToken[]
+  supervisionAsSupervisor  SupervisionRelationship[]    @relation("SupervisionSupervisor")
+  supervisionAsSupervisee  SupervisionRelationship[]    @relation("SupervisionSupervisee")
 
   @@map("users")
 }
@@ -938,9 +940,15 @@ model SupervisionRelationship {
   superviseeId    String    @map("supervisee_id")
   startDate       DateTime  @default(now()) @map("start_date")
   endDate         DateTime? @map("end_date")
-  supervisionType String?   @map("supervision_type")
-  isActive        Boolean?  @map("is_active")
+  notes           String?
+  status          String    @default("active")
+  terminationNotes String?  @map("termination_notes")
   createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @map("updated_at")
+
+  // Relations
+  supervisor User @relation("SupervisionSupervisor", fields: [supervisorId], references: [id])
+  supervisee User @relation("SupervisionSupervisee", fields: [superviseeId], references: [id])
 
   @@map("supervision_relationships")
 }

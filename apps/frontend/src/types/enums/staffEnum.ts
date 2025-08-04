@@ -220,6 +220,22 @@ export const BILLING_SETTINGS_OPTIONS = [
 
 export type BillingSetting = typeof BILLING_SETTINGS_OPTIONS[number]['id'];
 
+// Supervision Status Options
+export const SUPERVISION_STATUS_OPTIONS = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'completed', label: 'Completed' }
+];
+
+export type SupervisionStatus = typeof SUPERVISION_STATUS_OPTIONS[number]['value'];
+
+// Supervision Status Descriptions
+export const SUPERVISION_STATUS_DESCRIPTIONS = {
+  'active': 'The supervision relationship is currently active and ongoing.',
+  'inactive': 'The supervision relationship is temporarily suspended.',
+  'completed': 'The supervision relationship has been completed and terminated.'
+} as const;
+
 // Supervision Type Descriptions
 export const SUPERVISION_TYPE_DESCRIPTIONS = {
   'Not Supervised': 'This staff member does not require supervision.',

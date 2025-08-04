@@ -1,5 +1,5 @@
 import { apiClient } from './api-helper/client';
-import { UserStatus, StaffMember, UserRole } from '@/types/staffType';
+import { UserStatus, StaffMember, UserRole, SupervisionRelationship } from '@/types/staffType';
 
 export interface CreateStaffInput {
   // Basic user information
@@ -54,6 +54,23 @@ export interface CreateStaffInput {
 
 export interface UpdateStaffInput extends Partial<CreateStaffInput> {
   // Additional update-specific fields can be added here
+}
+
+// Supervision Relationship interfaces
+export interface CreateSupervisionRelationshipData {
+  supervisorId: string;
+  superviseeId: string;
+  startDate: string;
+  endDate?: string;
+  notes?: string;
+  status?: string;
+}
+
+export interface UpdateSupervisionRelationshipData {
+  status?: string;
+  endDate?: string;
+  notes?: string;
+  terminationNotes?: string;
 }
 
 export interface UserRoleAssignment {
@@ -204,6 +221,37 @@ class StaffService {
 
   async updatePerformanceMetric(id: string, updates: Partial<PerformanceMetric>): Promise<PerformanceMetric> {
     const response = await apiClient.put<PerformanceMetric>(`/staff/performance-metrics/${id}`, updates);
+    return response.data;
+  }
+
+  // Supervision Relationships
+  async getAllSupervisionRelationships(): Promise<SupervisionRelationship[]> {
+    const response = await apiClient.get<SupervisionRelationship[]>('/supervision-relationships');
+    return response.data;
+  }
+
+  async getSupervisionRelationship(id: string): Promise<SupervisionRelationship> {
+    const response = await apiClient.get<SupervisionRelationship>(`/supervision-relationships/${id}`);
+    return response.data;
+  }
+
+  async createSupervisionRelationship(data: CreateSupervisionRelationshipData): Promise<SupervisionRelationship> {
+    const response = await apiClient.post<SupervisionRelationship>('/supervision-relationships', data);
+    return response.data;
+  }
+
+  async updateSupervisionRelationship(id: string, data: UpdateSupervisionRelationshipData): Promise<SupervisionRelationship> {
+    const response = await apiClient.patch<SupervisionRelationship>(`/supervision-relationships/${id}`, data);
+    return response.data;
+  }
+
+  async getSupervisorCandidates(): Promise<StaffMember[]> {
+    const response = await apiClient.get<StaffMember[]>('/supervision-relationships/supervisor-candidates');
+    return response.data;
+  }
+
+  async getSuperviseeCandidates(): Promise<StaffMember[]> {
+    const response = await apiClient.get<StaffMember[]>('/supervision-relationships/supervisee-candidates');
     return response.data;
   }
 }

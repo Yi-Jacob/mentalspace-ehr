@@ -230,7 +230,6 @@ const TableRow = <T extends Record<string, any>>({
                         onClick={() => action.onClick(item)}
                         disabled={action.disabled?.(item)}
                         className="h-8 w-8 p-0"
-                        title={label}
                       >
                         {icon}
                       </Button>
