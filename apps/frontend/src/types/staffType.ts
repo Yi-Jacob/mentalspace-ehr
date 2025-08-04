@@ -1,4 +1,5 @@
 import { UserStatus, UserRole, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus } from './enums/staffEnum';
+import { License } from '@/services/licenseService';
 
 export type { UserStatus, UserRole, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus };
 
@@ -81,9 +82,6 @@ export interface StaffMember {
   npiNumber: string;
   department: string;
   phoneNumber: string;
-  licenseNumber: string;
-  licenseState: string;
-  licenseExpiryDate: string;
   hireDate: string;
   billingRate: any;
   canBillInsurance: boolean;
@@ -116,4 +114,5 @@ export interface StaffMember {
   zipCode?: string;
   formalName?: string;
   clinicianType?: string;
+  licenses?: License[];
 }

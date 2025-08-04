@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { InsuranceInfo } from '@/types/clientType';
-import { InfoDisplay, InfoSection } from '../shared/InfoDisplay';
+import { InfoDisplay, InfoSection } from '@/components/basic/InfoDisplay';
 import { SimpleEmptyState } from '@/components/basic/empty-state';
 
 interface ClientBillingSettingsTabProps {

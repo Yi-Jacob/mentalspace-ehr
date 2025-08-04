@@ -110,7 +110,35 @@ export class UsersService {
           });
         }
 
-        // 4. Generate password reset token for the new user
+        // 4. Create licenses if specified
+        if (createUserDto.licenses && createUserDto.licenses.length > 0) {
+          // Filter out licenses where all fields are empty
+          const validLicenses = createUserDto.licenses.filter(license => 
+            license.licenseType || 
+            license.licenseNumber || 
+            license.licenseState || 
+            license.licenseExpirationDate || 
+            license.issuedBy
+          );
+
+          if (validLicenses.length > 0) {
+            const licenseRecords = validLicenses.map(license => ({
+              staffId: user.id,
+              licenseType: license.licenseType || '',
+              licenseNumber: license.licenseNumber || '',
+              licenseExpirationDate: this.parseDate(license.licenseExpirationDate) || new Date(),
+              licenseStatus: license.licenseStatus || 'active',
+              licenseState: license.licenseState || '',
+              issuedBy: license.issuedBy || '',
+            }));
+            console.log('licenseRecords', licenseRecords);
+            await prisma.license.createMany({
+              data: licenseRecords,
+            });
+          }
+        }
+
+        // 5. Generate password reset token for the new user
         const passwordResetData = await this.authService.createPasswordResetToken(user.id);
 
         return {
@@ -180,6 +208,13 @@ export class UsersService {
       where: { userId: user.id, isActive: true },
     });
 
+    // Get licenses
+    const licenses = await this.prisma.license.findMany({
+      where: { staffId: user.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    console.log('licenses', licenses);
     // Transform data to use camelCase
     return {
       id: user.id,
@@ -219,6 +254,18 @@ export class UsersService {
       formalName: staffProfile.formalName,
       clinicianType: staffProfile.clinicianType,
       supervisionType: staffProfile.supervisionType,
+      licenses: licenses.map(license => ({
+        id: license.id,
+        staffId: license.staffId,
+        licenseType: license.licenseType,
+        licenseNumber: license.licenseNumber,
+        licenseExpirationDate: license.licenseExpirationDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        licenseStatus: license.licenseStatus,
+        licenseState: license.licenseState,
+        issuedBy: license.issuedBy,
+        createdAt: license.createdAt.toISOString(),
+        updatedAt: license.updatedAt.toISOString(),
+      })),
     };
   }
 
@@ -274,53 +321,94 @@ export class UsersService {
       Object.entries(staffProfileFields).filter(([_, value]) => value !== undefined)
     );
 
-    // Update user
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: cleanUserFields,
-    });
-
-    // Update or create staff profile
-    const existingStaffProfile = await this.prisma.staffProfile.findFirst({
-      where: { userId: id },
-    });
-
-    let updatedStaffProfile;
-    if (existingStaffProfile) {
-      updatedStaffProfile = await this.prisma.staffProfile.update({
-        where: { id: existingStaffProfile.id },
-        data: cleanStaffProfileFields,
+    // Use Prisma transaction to ensure data consistency
+    const result = await this.prisma.$transaction(async (prisma) => {
+      // Update user
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: cleanUserFields,
       });
-    } else {
-      updatedStaffProfile = await this.prisma.staffProfile.create({
-        data: {
-          userId: id,
-          ...cleanStaffProfileFields,
-        },
-      });
-    }
 
-    // Update roles if provided
-    if (updateUserDto.roles) {
-      // Remove existing roles
-      await this.prisma.userRole.deleteMany({
+      // Update or create staff profile
+      const existingStaffProfile = await prisma.staffProfile.findFirst({
         where: { userId: id },
       });
 
-      // Add new roles
-      if (updateUserDto.roles.length > 0) {
-        const roleRecords = updateUserDto.roles.map(role => ({
-          userId: id,
-          role: role,
-          assignedAt: new Date(),
-          isActive: true,
-        }));
-        
-        await this.prisma.userRole.createMany({
-          data: roleRecords,
+      let updatedStaffProfile;
+      if (existingStaffProfile) {
+        updatedStaffProfile = await prisma.staffProfile.update({
+          where: { id: existingStaffProfile.id },
+          data: cleanStaffProfileFields,
+        });
+      } else {
+        updatedStaffProfile = await prisma.staffProfile.create({
+          data: {
+            userId: id,
+            ...cleanStaffProfileFields,
+          },
         });
       }
-    }
+
+      // Update roles if provided
+      if (updateUserDto.roles) {
+        // Remove existing roles
+        await prisma.userRole.deleteMany({
+          where: { userId: id },
+        });
+
+        // Add new roles
+        if (updateUserDto.roles.length > 0) {
+          const roleRecords = updateUserDto.roles.map(role => ({
+            userId: id,
+            role: role,
+            assignedAt: new Date(),
+            isActive: true,
+          }));
+          
+          await prisma.userRole.createMany({
+            data: roleRecords,
+          });
+        }
+      }
+
+      // Update licenses if provided
+      if (updateUserDto.licenses) {
+        // Remove existing licenses
+        await prisma.license.deleteMany({
+          where: { staffId: id },
+        });
+
+        // Add new licenses if any are provided
+        if (updateUserDto.licenses.length > 0) {
+          // Filter out licenses where all fields are empty
+          const validLicenses = updateUserDto.licenses.filter(license => 
+            license.licenseType || 
+            license.licenseNumber || 
+            license.licenseState || 
+            license.licenseExpirationDate || 
+            license.issuedBy
+          );
+
+          if (validLicenses.length > 0) {
+            const licenseRecords = validLicenses.map(license => ({
+              staffId: id,
+              licenseType: license.licenseType || '',
+              licenseNumber: license.licenseNumber || '',
+              licenseExpirationDate: this.parseDate(license.licenseExpirationDate) || new Date(),
+              licenseStatus: license.licenseStatus || 'active',
+              licenseState: license.licenseState || '',
+              issuedBy: license.issuedBy || '',
+            }));
+            
+            await prisma.license.createMany({
+              data: licenseRecords,
+            });
+          }
+        }
+      }
+
+      return { updatedUser, updatedStaffProfile };
+    });
 
     // Return updated user with profile
     return this.findOne(id);

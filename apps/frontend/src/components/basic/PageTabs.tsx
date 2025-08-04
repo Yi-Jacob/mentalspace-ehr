@@ -100,6 +100,7 @@ const PageTabs: React.FC<PageTabsProps> = ({
       {showNavigation && (
         <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <Button
+            type="button"
             variant="outline"
             onClick={onPrevious}
             disabled={!canGoPrevious}
@@ -109,6 +110,7 @@ const PageTabs: React.FC<PageTabsProps> = ({
             Previous
           </Button>
           <Button
+            type="button"
             onClick={onNext}
             disabled={!canGoNext}
             className="flex items-center gap-2"

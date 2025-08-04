@@ -71,90 +71,87 @@ model DiagnosisCode {
 }
 
 model User {
-  id                       String                       @id @default(uuid())
-  email                    String                       @unique
-  authUserId               String?                      @map("auth_user_id")
-  password                 String?
-  createdAt                DateTime                     @default(now()) @map("created_at")
-  firstName                String                       @map("first_name")
-  lastName                 String                       @map("last_name")
-  middleName               String?                      @map("middle_name")
-  suffix                   String?
-  userName                 String?                      @map("user_name")
-  isActive                 Boolean?                     @map("is_active")
-  updatedAt                DateTime                     @default(now()) @map("updated_at")
-  appointments             Appointment[]
-  waitlistEntries          AppointmentWaitlist[]
-  userRoles                UserRole[]
-  claims                   Claim[]                      @relation("ClaimProvider")
-  complianceDeadlines      ComplianceDeadline[]         @relation("ComplianceDeadlineProvider")
-  clinicalNotes            ClinicalNote[]               @relation("ClinicalNoteProvider")
-  providerCompensations    ProviderCompensationConfig[] @relation("ProviderCompensationProvider")
-  conversations            Conversation[]               @relation("ConversationTherapist")
-  messages                 Message[]                    @relation("MessageSender")
-  timeTracking             TimeTracking[]               @relation("TimeTrackingUser")
-  sessionCompletions       SessionCompletion[]          @relation("SessionCompletionProvider")
-  deadlineExceptions       DeadlineExceptionRequest[]   @relation("DeadlineExceptionProvider")
-  deadlineExceptionReviews DeadlineExceptionRequest[]   @relation("DeadlineExceptionReviewer")
-  timeEntries              TimeEntry[]                  @relation("TimeEntryUser")
-  timeEntryApprovals       TimeEntry[]                  @relation("TimeEntryApprovedBy")
-  paymentCalculations      PaymentCalculation[]         @relation("PaymentCalculationUser")
-  paymentCalculationProcessings PaymentCalculation[]    @relation("PaymentCalculationProcessedBy")
-  performanceMetrics       PerformanceMetric[]          @relation("PerformanceMetricUser")
-  performanceMetricReviews PerformanceMetric[]          @relation("PerformanceMetricReviewer")
-  trainingRecords          TrainingRecord[]             @relation("UserTrainingRecords")
-  passwordResetTokens      PasswordResetToken[]
-  supervisionAsSupervisor  SupervisionRelationship[]    @relation("SupervisionSupervisor")
-  supervisionAsSupervisee  SupervisionRelationship[]    @relation("SupervisionSupervisee")
+  id                            String                       @id @default(uuid())
+  email                         String                       @unique
+  authUserId                    String?                      @map("auth_user_id")
+  password                      String?
+  createdAt                     DateTime                     @default(now()) @map("created_at")
+  firstName                     String                       @map("first_name")
+  isActive                      Boolean?                     @map("is_active")
+  lastName                      String                       @map("last_name")
+  updatedAt                     DateTime                     @default(now()) @map("updated_at")
+  middleName                    String?                      @map("middle_name")
+  suffix                        String?
+  userName                      String?                      @map("user_name")
+  appointments                  Appointment[]
+  waitlistEntries               AppointmentWaitlist[]
+  userRoles                     UserRole[]
+  claims                        Claim[]                      @relation("ClaimProvider")
+  complianceDeadlines           ComplianceDeadline[]         @relation("ComplianceDeadlineProvider")
+  clinicalNotes                 ClinicalNote[]               @relation("ClinicalNoteProvider")
+  providerCompensations         ProviderCompensationConfig[] @relation("ProviderCompensationProvider")
+  conversations                 Conversation[]               @relation("ConversationTherapist")
+  messages                      Message[]                    @relation("MessageSender")
+  timeTracking                  TimeTracking[]               @relation("TimeTrackingUser")
+  sessionCompletions            SessionCompletion[]          @relation("SessionCompletionProvider")
+  deadlineExceptions            DeadlineExceptionRequest[]   @relation("DeadlineExceptionProvider")
+  deadlineExceptionReviews      DeadlineExceptionRequest[]   @relation("DeadlineExceptionReviewer")
+  timeEntries                   TimeEntry[]                  @relation("TimeEntryUser")
+  timeEntryApprovals            TimeEntry[]                  @relation("TimeEntryApprovedBy")
+  paymentCalculations           PaymentCalculation[]         @relation("PaymentCalculationUser")
+  paymentCalculationProcessings PaymentCalculation[]         @relation("PaymentCalculationProcessedBy")
+  performanceMetrics            PerformanceMetric[]          @relation("PerformanceMetricUser")
+  performanceMetricReviews      PerformanceMetric[]          @relation("PerformanceMetricReviewer")
+  trainingRecords               TrainingRecord[]             @relation("UserTrainingRecords")
+  passwordResetTokens           PasswordResetToken[]
+  supervisionAsSupervisor       SupervisionRelationship[]    @relation("SupervisionSupervisor")
+  supervisionAsSupervisee       SupervisionRelationship[]    @relation("SupervisionSupervisee")
+  licenses                      License[]
 
   @@map("users")
 }
 
 model Payer {
-  id                    String   @id @default(uuid())
+  id                    String             @id @default(uuid())
   name                  String
-  payerType             String   @map("payer_type")
-  electronicPayerId     String?  @map("electronic_payer_id")
-  addressLine1          String?  @map("address_line_1")
-  addressLine2          String?  @map("address_line_2")
+  payerType             String             @map("payer_type")
+  electronicPayerId     String?            @map("electronic_payer_id")
+  addressLine1          String?            @map("address_line_1")
+  addressLine2          String?            @map("address_line_2")
   city                  String?
   state                 String?
-  zipCode               String?  @map("zip_code")
-  phoneNumber           String?  @map("phone_number")
-  faxNumber             String?  @map("fax_number")
-  contactPerson         String?  @map("contact_person")
-  contactEmail          String?  @map("contact_email")
+  zipCode               String?            @map("zip_code")
+  phoneNumber           String?            @map("phone_number")
+  faxNumber             String?            @map("fax_number")
+  contactPerson         String?            @map("contact_person")
+  contactEmail          String?            @map("contact_email")
   website               String?
-  requiresAuthorization  Boolean? @map("requires_authorization")
-  isActive              Boolean? @map("is_active")
+  requiresAuthorization Boolean?           @map("requires_authorization")
+  isActive              Boolean?           @map("is_active")
   notes                 String?
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @default(now()) @map("updated_at")
-
-  // Relations
-  claims Claim[]
-  payments Payment[]
-  payerContracts PayerContract[]
-  feeSchedules PayerFeeSchedule[]
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @default(now()) @map("updated_at")
+  claims                Claim[]
+  payments              Payment[]
+  payerContracts        PayerContract[]
+  feeSchedules          PayerFeeSchedule[]
 
   @@map("payers")
 }
 
 model PayerContract {
-  id                    String   @id @default(uuid())
-  payerId               String   @map("payer_id")
-  contractName          String   @map("contract_name")
-  contractNumber        String?  @map("contract_number")
-  effectiveDate         DateTime @default(now()) @map("effective_date")
-  expirationDate        DateTime? @map("expiration_date")
-  status                String?
-  reimbursementRate     Float?   @map("reimbursement_rate")
-  contractTerms         String?  @map("contract_terms")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @default(now()) @map("updated_at")
-
-  // Relations
-  payer Payer @relation(fields: [payerId], references: [id])
+  id                String    @id @default(uuid())
+  payerId           String    @map("payer_id")
+  contractName      String    @map("contract_name")
+  contractNumber    String?   @map("contract_number")
+  effectiveDate     DateTime  @default(now()) @map("effective_date")
+  expirationDate    DateTime? @map("expiration_date")
+  status            String?
+  reimbursementRate Float?    @map("reimbursement_rate")
+  contractTerms     String?   @map("contract_terms")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @map("updated_at")
+  payer             Payer     @relation(fields: [payerId], references: [id])
 
   @@map("payer_contracts")
 }
@@ -170,82 +167,74 @@ model CptCode {
 }
 
 model PayerFeeSchedule {
-  id                    String   @id @default(uuid())
-  payerId               String   @map("payer_id")
-  cptCode               String   @map("cpt_code")
-  feeAmount             Float    @map("fee_amount")
-  effectiveDate         DateTime @default(now()) @map("effective_date")
-  expirationDate        DateTime? @map("expiration_date")
-  isActive              Boolean? @map("is_active")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @default(now()) @map("updated_at")
-
-  // Relations
-  payer Payer @relation(fields: [payerId], references: [id])
+  id             String    @id @default(uuid())
+  payerId        String    @map("payer_id")
+  cptCode        String    @map("cpt_code")
+  feeAmount      Float     @map("fee_amount")
+  effectiveDate  DateTime  @default(now()) @map("effective_date")
+  expirationDate DateTime? @map("expiration_date")
+  isActive       Boolean?  @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+  payer          Payer     @relation(fields: [payerId], references: [id])
 
   @@map("payer_fee_schedules")
 }
 
 model TrainingRecord {
-  id                    String    @id @default(uuid())
-  userId                String    @map("user_id")
-  trainingTitle         String    @map("training_title")
-  trainingType          String    @map("training_type")
-  providerOrganization  String?   @map("provider_organization")
-  completionDate        DateTime? @map("completion_date")
-  expiryDate            DateTime? @map("expiry_date")
-  hoursCompleted        Float?
-  certificateNumber     String?   @map("certificate_number")
-  status                String?
-  notes                 String?
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @default(now()) @map("updated_at")
-
-  // Relations
-  user User @relation("UserTrainingRecords", fields: [userId], references: [id])
+  id                   String    @id @default(uuid())
+  userId               String    @map("user_id")
+  trainingTitle        String    @map("training_title")
+  trainingType         String    @map("training_type")
+  providerOrganization String?   @map("provider_organization")
+  completionDate       DateTime? @map("completion_date")
+  expiryDate           DateTime? @map("expiry_date")
+  hoursCompleted       Float?
+  certificateNumber    String?   @map("certificate_number")
+  status               String?
+  notes                String?
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @default(now()) @map("updated_at")
+  user                 User      @relation("UserTrainingRecords", fields: [userId], references: [id])
 
   @@map("training_records")
 }
 
 model PerformanceMetric {
-  id                String   @id @default(uuid())
-  userId            String   @map("user_id")
-  metricType        String   @map("metric_type")
-  metricValue       Float    @map("metric_value")
-  targetValue       Float?   @map("target_value")
-  measurementPeriod String   @map("measurement_period")
-  periodStart       DateTime @default(now()) @map("period_start")
-  periodEnd         DateTime @default(now()) @map("period_end")
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  metricType        String    @map("metric_type")
+  metricValue       Float     @map("metric_value")
+  targetValue       Float?    @map("target_value")
+  measurementPeriod String    @map("measurement_period")
+  periodStart       DateTime  @default(now()) @map("period_start")
+  periodEnd         DateTime  @default(now()) @map("period_end")
   notes             String?
-  reviewedBy        String?  @map("reviewed_by")
+  reviewedBy        String?   @map("reviewed_by")
   reviewedAt        DateTime? @map("reviewed_at")
-  createdAt         DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation("PerformanceMetricUser", fields: [userId], references: [id])
-  reviewer User? @relation("PerformanceMetricReviewer", fields: [reviewedBy], references: [id])
+  createdAt         DateTime  @default(now()) @map("created_at")
+  user              User      @relation("PerformanceMetricUser", fields: [userId], references: [id])
+  reviewer          User?     @relation("PerformanceMetricReviewer", fields: [reviewedBy], references: [id])
 
   @@map("performance_metrics")
 }
 
 model PaymentCalculation {
-  id                    String   @id @default(uuid())
-  userId                String   @map("user_id")
-  payPeriodStart        DateTime @default(now()) @map("pay_period_start")
-  payPeriodEnd          DateTime @default(now()) @map("pay_period_end")
-  totalHours            Float?   @map("total_hours")
-  totalAmount           Float?   @map("total_amount")
-  grossAmount           Float?   @map("gross_amount")
-  status                String?
-  processedBy           String?  @map("processed_by")
-  processedAt           DateTime @default(now()) @map("processed_at")
-  notes                 String?
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @default(now()) @map("updated_at")
-
-  // Relations
-  user User @relation("PaymentCalculationUser", fields: [userId], references: [id])
-  processedByUser User? @relation("PaymentCalculationProcessedBy", fields: [processedBy], references: [id])
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  payPeriodStart  DateTime @default(now()) @map("pay_period_start")
+  payPeriodEnd    DateTime @default(now()) @map("pay_period_end")
+  totalHours      Float?   @map("total_hours")
+  totalAmount     Float?   @map("total_amount")
+  grossAmount     Float?   @map("gross_amount")
+  status          String?
+  processedBy     String?  @map("processed_by")
+  processedAt     DateTime @default(now()) @map("processed_at")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+  user            User     @relation("PaymentCalculationUser", fields: [userId], references: [id])
+  processedByUser User?    @relation("PaymentCalculationProcessedBy", fields: [processedBy], references: [id])
 
   @@map("payment_calculations")
 }
@@ -499,21 +488,19 @@ model StaffProfile {
   notes                 String?
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @default(now()) @map("updated_at")
-  
-  // Additional fields for frontend forms
-  userComments          String?   @map("user_comments")
-  mobilePhone           String?   @map("mobile_phone")
-  workPhone             String?   @map("work_phone")
-  homePhone             String?   @map("home_phone")
-  canReceiveText        Boolean?  @map("can_receive_text")
   address1              String?   @map("address_1")
   address2              String?   @map("address_2")
+  canReceiveText        Boolean?  @map("can_receive_text")
   city                  String?
-  state                 String?
-  zipCode               String?   @map("zip_code")
-  formalName            String?   @map("formal_name")
   clinicianType         String?   @map("clinician_type")
+  formalName            String?   @map("formal_name")
+  homePhone             String?   @map("home_phone")
+  mobilePhone           String?   @map("mobile_phone")
+  state                 String?
   supervisionType       String?   @map("supervision_type")
+  userComments          String?   @map("user_comments")
+  workPhone             String?   @map("work_phone")
+  zipCode               String?   @map("zip_code")
 
   @@map("staff_profiles")
 }
@@ -935,20 +922,18 @@ model PaymentAllocation {
 }
 
 model SupervisionRelationship {
-  id              String    @id @default(uuid())
-  supervisorId    String    @map("supervisor_id")
-  superviseeId    String    @map("supervisee_id")
-  startDate       DateTime  @default(now()) @map("start_date")
-  endDate         DateTime? @map("end_date")
-  notes           String?
-  status          String    @default("active")
-  terminationNotes String?  @map("termination_notes")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @default(now()) @map("updated_at")
-
-  // Relations
-  supervisor User @relation("SupervisionSupervisor", fields: [supervisorId], references: [id])
-  supervisee User @relation("SupervisionSupervisee", fields: [superviseeId], references: [id])
+  id               String    @id @default(uuid())
+  supervisorId     String    @map("supervisor_id")
+  superviseeId     String    @map("supervisee_id")
+  startDate        DateTime  @default(now()) @map("start_date")
+  endDate          DateTime? @map("end_date")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  notes            String?
+  status           String    @default("active")
+  terminationNotes String?   @map("termination_notes")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+  supervisor       User      @relation("SupervisionSupervisor", fields: [supervisorId], references: [id])
+  supervisee       User      @relation("SupervisionSupervisee", fields: [superviseeId], references: [id])
 
   @@map("supervision_relationships")
 }
@@ -1205,14 +1190,30 @@ model ProviderSchedule {
   @@map("provider_schedules")
 }
 
+model License {
+  id                    String   @id @default(uuid())
+  staffId               String   @map("staff_id")
+  licenseType           String   @map("license_type")
+  licenseNumber         String   @map("license_number")
+  licenseExpirationDate DateTime @map("license_expiration_date")
+  licenseStatus         String   @map("license_status")
+  licenseState          String   @map("license_state")
+  issuedBy              String   @map("issued_by")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+  staff                 User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@map("licenses")
+}
+
 model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  token     String   @unique
-  expiresAt DateTime @map("expires_at")
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id])
 
   @@map("password_reset_tokens")
 }

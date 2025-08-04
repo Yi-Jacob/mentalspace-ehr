@@ -2,6 +2,41 @@
 
 A scalable, enterprise-grade backend system for mental health practice management built with NestJS, Prisma, and PostgreSQL.
 
+## 🚀 Quick Start
+
+### First Time Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Set up your environment:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database connection details
+   ```
+
+3. **Set up the database:**
+   ```bash
+   npm run db:setup
+   ```
+
+4. **Start the development server:**
+   ```bash
+   npm run start:dev
+   ```
+
+### Default Login Credentials
+
+After setup, you can log in with:
+- **Email**: example@gmail.com
+- **Password**: 0p;/)P:?
+
+⚠️ **Important**: Change the default password after your first login!
+
+For detailed setup instructions, see [DATABASE_SETUP.md](./DATABASE_SETUP.md).
+
 ## 🏗️ Architecture Overview
 
 This backend is designed with scalability in mind, following clean architecture principles and domain-driven design. The file system is organized to support both mid-sized and large-scale projects.

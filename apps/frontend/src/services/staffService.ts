@@ -50,6 +50,16 @@ export interface CreateStaffInput {
 
   // User comments
   userComments?: string;
+
+  // Licenses
+  licenses?: Array<{
+    licenseType: string;
+    licenseNumber: string;
+    licenseExpirationDate: string;
+    licenseStatus: string;
+    licenseState: string;
+    issuedBy: string;
+  }>;
 }
 
 export interface UpdateStaffInput extends Partial<CreateStaffInput> {

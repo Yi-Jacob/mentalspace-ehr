@@ -194,6 +194,53 @@ export const StaffInfoTab: React.FC<StaffInfoTabProps> = ({ staff }) => {
           </InfoSection>
         </div>
 
+        {/* Licenses */}
+        <InfoSection title="Licenses">
+          {staff.licenses && staff.licenses.length > 0 ? (
+            <div className="space-y-4">
+              {staff.licenses.map((license, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 block">License Type</label>
+                      <span className="text-sm text-gray-900">{license.licenseType}</span>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 block">License Number</label>
+                      <span className="text-sm text-gray-900">{license.licenseNumber}</span>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 block">Status</label>
+                      <Badge 
+                        variant={license.licenseStatus === 'active' ? 'default' : license.licenseStatus === 'pending' ? 'secondary' : 'destructive'} 
+                        className="text-xs"
+                      >
+                        {license.licenseStatus}
+                      </Badge>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 block">State</label>
+                      <span className="text-sm text-gray-900">{license.licenseState}</span>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 block">Issued By</label>
+                      <span className="text-sm text-gray-900">{license.issuedBy}</span>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 block">Expiration Date</label>
+                      <span className="text-sm text-gray-900">
+                        {license.licenseExpirationDate ? formatDateOfBirth(license.licenseExpirationDate) : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-400 italic text-sm">No licenses on file</div>
+          )}
+        </InfoSection>
+
         {/* Roles & Permissions */}
         <InfoSection title="Roles & Permissions">
           {staff.roles && staff.roles.length > 0 ? (

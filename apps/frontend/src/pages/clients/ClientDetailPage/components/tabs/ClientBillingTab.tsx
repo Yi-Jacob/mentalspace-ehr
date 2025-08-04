@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { InsuranceInfo } from '@/types/clientType';
-import { InfoDisplay } from '../shared/InfoDisplay';
+import { InfoDisplay } from '@/components/basic/InfoDisplay';
 import { formatDate, formatCurrency } from '@/utils/dateUtils';
 import { SimpleEmptyState } from '@/components/basic/empty-state';
 

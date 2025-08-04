@@ -231,4 +231,16 @@ export class CreateUserDto {
   @IsArray()
   @IsEnum(UserRole, { each: true })
   roles?: UserRole[];
+
+  @ApiProperty({ description: 'Licenses', required: false, type: 'array' })
+  @IsOptional()
+  @IsArray()
+  licenses?: Array<{
+    licenseType: string;
+    licenseNumber: string;
+    licenseExpirationDate: string;
+    licenseStatus: string;
+    licenseState: string;
+    issuedBy: string;
+  }>;
 } 

@@ -198,6 +198,51 @@ export const LICENSE_STATE_OPTIONS = [
 
 export type LicenseState = typeof LICENSE_STATE_OPTIONS[number]['value'];
 
+// License Type Options - Common license types with ability to add custom ones
+export const LICENSE_TYPE_OPTIONS = [
+  { value: 'LCSW', label: 'LCSW - Licensed Clinical Social Worker' },
+  { value: 'LMFT', label: 'LMFT - Licensed Marriage and Family Therapist' },
+  { value: 'LPC', label: 'LPC - Licensed Professional Counselor' },
+  { value: 'LCPC', label: 'LCPC - Licensed Clinical Professional Counselor' },
+  { value: 'PsyD', label: 'PsyD - Doctor of Psychology' },
+  { value: 'PhD', label: 'PhD - Doctor of Philosophy in Psychology' },
+  { value: 'MD', label: 'MD - Medical Doctor' },
+  { value: 'APRN', label: 'APRN - Advanced Practice Registered Nurse' },
+  { value: 'PA', label: 'PA - Physician Assistant' },
+  { value: 'RN', label: 'RN - Registered Nurse' },
+  { value: 'LPN', label: 'LPN - Licensed Practical Nurse' },
+  { value: 'MA', label: 'MA - Medical Assistant' },
+  { value: 'Other', label: 'Other' }
+];
+
+export type LicenseType = typeof LICENSE_TYPE_OPTIONS[number]['value'];
+
+// License Status Options
+export const LICENSE_STATUS_OPTIONS = [
+  { value: 'active', label: 'Active' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'expired', label: 'Expired' }
+];
+
+export type LicenseStatus = typeof LICENSE_STATUS_OPTIONS[number]['value'];
+
+// Issued By Options - Common licensing authorities with ability to add custom ones
+export const ISSUED_BY_OPTIONS = [
+  { value: 'California Board of Behavioral Sciences', label: 'California Board of Behavioral Sciences' },
+  { value: 'New York State Education Department', label: 'New York State Education Department' },
+  { value: 'Texas State Board of Examiners of Professional Counselors', label: 'Texas State Board of Examiners of Professional Counselors' },
+  { value: 'Florida Department of Health', label: 'Florida Department of Health' },
+  { value: 'Illinois Department of Financial and Professional Regulation', label: 'Illinois Department of Financial and Professional Regulation' },
+  { value: 'Pennsylvania State Board of Social Workers', label: 'Pennsylvania State Board of Social Workers' },
+  { value: 'Ohio Counselor, Social Worker and Marriage & Family Therapist Board', label: 'Ohio Counselor, Social Worker and Marriage & Family Therapist Board' },
+  { value: 'Michigan Department of Licensing and Regulatory Affairs', label: 'Michigan Department of Licensing and Regulatory Affairs' },
+  { value: 'Georgia Composite Board of Professional Counselors', label: 'Georgia Composite Board of Professional Counselors' },
+  { value: 'North Carolina Social Work Certification and Licensure Board', label: 'North Carolina Social Work Certification and Licensure Board' },
+  { value: 'Other', label: 'Other' }
+];
+
+export type IssuedBy = typeof ISSUED_BY_OPTIONS[number]['value'];
+
 // Communication Preference Options (for CheckboxGroup)
 export const COMMUNICATION_PREFERENCE_OPTIONS = [
   { 

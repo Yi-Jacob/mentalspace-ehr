@@ -28,9 +28,6 @@ export const useAddStaffForm = () => {
     npiNumber: '',
     department: '',
     phoneNumber: '',
-    licenseNumber: '',
-    licenseState: '',
-    licenseExpiryDate: '',
     hireDate: '',
     billingRate: '',
     canBillInsurance: false,
@@ -44,7 +41,17 @@ export const useAddStaffForm = () => {
     roles: [] as UserRole[],
     
     // User Comments
-    userComments: ''
+    userComments: '',
+    
+    // Licenses
+    licenses: [] as Array<{
+      licenseType: string;
+      licenseNumber: string;
+      licenseExpirationDate: string;
+      licenseStatus: string;
+      licenseState: string;
+      issuedBy: string;
+    }>
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -62,6 +69,17 @@ export const useAddStaffForm = () => {
     }));
   };
 
+  const handleLicensesChange = (licenses: Array<{
+    licenseType: string;
+    licenseNumber: string;
+    licenseExpirationDate: string;
+    licenseStatus: string;
+    licenseState: string;
+    issuedBy: string;
+  }>) => {
+    setFormData(prev => ({ ...prev, licenses }));
+  };
+
   const resetForm = () => {
     setFormData(initialFormData);
   };
@@ -70,6 +88,7 @@ export const useAddStaffForm = () => {
     formData,
     handleInputChange,
     handleRoleToggle,
+    handleLicensesChange,
     resetForm,
     setFormData
   };

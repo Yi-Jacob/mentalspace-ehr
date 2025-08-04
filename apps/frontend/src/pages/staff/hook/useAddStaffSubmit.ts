@@ -16,12 +16,6 @@ export const useAddStaffSubmit = () => {
       return;
     }
 
-    // Validate supervision requirements
-    if (formData.supervisionType !== 'Not Supervised' && !formData.supervisorId) {
-      console.error('Supervisor is required when supervision type is selected');
-      return;
-    }
-
     // Helper function to format date to ISO string
     const formatDateToISO = (dateString: string | undefined) => {
       if (!dateString) return undefined;
@@ -65,19 +59,15 @@ export const useAddStaffSubmit = () => {
       npiNumber: formData.npiNumber,
       department: formData.department,
       phoneNumber: formData.phoneNumber,
-      licenseNumber: formData.licenseNumber,
-      licenseState: formData.licenseState,
-      licenseExpiryDate: formatDateToISO(formData.licenseExpiryDate),
       hireDate: formatDateToISO(formData.hireDate),
       billingRate: formData.billingRate ? parseFloat(formData.billingRate) : undefined,
       canBillInsurance: formData.canBillInsurance,
       status: formData.status as UserStatus || 'active',
       notes: formData.notes,
+      licenses: formData.licenses,
 
       // Additional fields
       clinicianType: formData.clinicianType,
-      supervisionType: formData.supervisionType,
-      supervisorId: formData.supervisorId,
 
       // Roles
       roles: formData.roles || [],

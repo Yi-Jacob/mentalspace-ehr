@@ -12,9 +12,9 @@ import UserInformationSection from '@/pages/staff/components/formSections/UserIn
 import LicensesSection from '@/pages/staff/components/formSections/LicensesSection';
 
 const CreateStaffPage: React.FC = () => {
-  const { formData, handleInputChange, handleRoleToggle, resetForm } = useAddStaffForm();
+  const { formData, handleInputChange, handleRoleToggle, handleLicensesChange, resetForm } = useAddStaffForm();
   const { handleSubmit, handleCancel, isCreatingStaff } = useAddStaffSubmit();
-  const [currentTab, setCurrentTab] = useState('comments');
+  const [currentTab, setCurrentTab] = useState('information');
 
   const tabs = [
     {
@@ -57,7 +57,8 @@ const CreateStaffPage: React.FC = () => {
       content: (
         <LicensesSection 
           formData={formData} 
-          onInputChange={handleInputChange} 
+          onInputChange={handleInputChange}
+          onLicensesChange={handleLicensesChange}
         />
       )
     }
@@ -67,14 +68,16 @@ const CreateStaffPage: React.FC = () => {
   const isFirstTab = currentTabIndex === 0;
   const isLastTab = currentTabIndex === tabs.length - 1;
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (!isLastTab) {
       const nextTab = tabs[currentTabIndex + 1];
       setCurrentTab(nextTab.id);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = (e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (!isFirstTab) {
       const prevTab = tabs[currentTabIndex - 1];
       setCurrentTab(prevTab.id);
@@ -82,12 +85,13 @@ const CreateStaffPage: React.FC = () => {
   };
 
   const handleSave = (createAnother: boolean = false) => {
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent, formData);
+    const mockEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(mockEvent, formData);
     
     // If creating another, reset form after successful creation
     if (createAnother) {
       resetForm();
-      setCurrentTab('comments'); // Reset to first tab
+      setCurrentTab('information'); // Reset to first tab
     }
   };
 
@@ -100,6 +104,7 @@ const CreateStaffPage: React.FC = () => {
         action={
           <div className="flex space-x-2">
             <Button 
+              type="button"
               variant="outline" 
               onClick={handleCancel} 
               disabled={isCreatingStaff}
@@ -107,6 +112,7 @@ const CreateStaffPage: React.FC = () => {
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={() => handleSave(true)}
               variant="outline"
               className="bg-green-50 hover:bg-green-100 text-green-700 border-green-300"
@@ -115,6 +121,7 @@ const CreateStaffPage: React.FC = () => {
               Save and Create Another
             </Button>
             <Button 
+              type="button"
               onClick={() => handleSave(false)} 
               className="bg-blue-600 hover:bg-blue-700"
               disabled={isCreatingStaff}
@@ -125,7 +132,7 @@ const CreateStaffPage: React.FC = () => {
         }
       />
 
-      <form className="space-y-8">
+      <div className="space-y-8">
         <PageTabs
           items={tabs}
           value={currentTab}
@@ -136,7 +143,7 @@ const CreateStaffPage: React.FC = () => {
           canGoNext={!isLastTab}
           canGoPrevious={!isFirstTab}
         />
-      </form>
+      </div>
     </PageLayout>
   );
 };

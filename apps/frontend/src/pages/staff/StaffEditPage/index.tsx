@@ -21,7 +21,7 @@ const StaffEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { getStaff, updateStaffMember, isUpdating } = useStaffManagement();
-  const { formData, handleInputChange, handleRoleToggle, resetForm, setFormData } = useAddStaffForm();
+  const { formData, handleInputChange, handleRoleToggle, handleLicensesChange, resetForm, setFormData } = useAddStaffForm();
   const [currentTab, setCurrentTab] = useState('information');
   const [loading, setLoading] = useState(true);
 
@@ -58,9 +58,6 @@ const StaffEditPage: React.FC = () => {
           npiNumber: staff.npiNumber || '',
           department: staff.department || '',
           phoneNumber: staff.phoneNumber || '',
-          licenseNumber: staff.licenseNumber || '',
-          licenseState: staff.licenseState || '',
-          licenseExpiryDate: staff.licenseExpiryDate || '',
           hireDate: staff.hireDate || '',
           billingRate: staff.billingRate?.toString() || '',
           canBillInsurance: staff.canBillInsurance || false,
@@ -74,7 +71,10 @@ const StaffEditPage: React.FC = () => {
           roles: staff.roles || [],
           
           // User Comments
-          userComments: staff.userComments || ''
+          userComments: staff.userComments || '',
+          
+          // Licenses
+          licenses: staff.licenses || []
         };
         
         setFormData(transformedData);
@@ -136,7 +136,8 @@ const StaffEditPage: React.FC = () => {
       content: (
         <LicensesSection 
           formData={formData} 
-          onInputChange={handleInputChange} 
+          onInputChange={handleInputChange}
+          onLicensesChange={handleLicensesChange}
         />
       )
     }
@@ -146,14 +147,16 @@ const StaffEditPage: React.FC = () => {
   const isFirstTab = currentTabIndex === 0;
   const isLastTab = currentTabIndex === tabs.length - 1;
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (!isLastTab) {
       const nextTab = tabs[currentTabIndex + 1];
       setCurrentTab(nextTab.id);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = (e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (!isFirstTab) {
       const prevTab = tabs[currentTabIndex - 1];
       setCurrentTab(prevTab.id);
@@ -195,9 +198,6 @@ const StaffEditPage: React.FC = () => {
         npiNumber: formData.npiNumber,
         department: formData.department,
         phoneNumber: formData.phoneNumber,
-        licenseNumber: formData.licenseNumber,
-        licenseState: formData.licenseState,
-        licenseExpiryDate: formData.licenseExpiryDate,
         hireDate: formData.hireDate,
         billingRate: formData.billingRate ? parseFloat(formData.billingRate) : undefined,
         canBillInsurance: formData.canBillInsurance,
@@ -211,7 +211,10 @@ const StaffEditPage: React.FC = () => {
         roles: formData.roles,
 
         // User comments
-        userComments: formData.userComments
+        userComments: formData.userComments,
+        
+        // Licenses
+        licenses: formData.licenses
       };
 
       // Update staff member with proper roles
@@ -267,7 +270,7 @@ const StaffEditPage: React.FC = () => {
         }
       />
 
-      <form className="space-y-8">
+      <div className="space-y-8">
         <PageTabs
           items={tabs}
           value={currentTab}
@@ -278,7 +281,7 @@ const StaffEditPage: React.FC = () => {
           canGoNext={!isLastTab}
           canGoPrevious={!isFirstTab}
         />
-      </form>
+      </div>
     </PageLayout>
   );
 };
