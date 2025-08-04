@@ -98,7 +98,7 @@ export interface StaffMember {
   createdAt: string;
   updatedAt: string;
   staffProfile?: StaffProfile;
-  roles?: string[];
+  roles?: UserRole[];
   
   // Additional fields from staffProfile that are now directly on the user
   userComments?: string;

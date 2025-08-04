@@ -7,7 +7,6 @@ import PageHeader from '@/components/basic/PageHeader';
 import PageTabs from '@/components/basic/PageTabs';
 import StaffList from './components/StaffList';
 import RoleManagement from './components/RoleManagement';
-import StaffWorkflowView from './components/StaffWorkflowView';
 import StaffAccessManagement from './components/StaffAccessManagement';
 import StaffSupervisionView from './components/StaffSupervisionView';
 import StaffAuditLogs from './components/StaffAuditLogs';
@@ -40,14 +39,8 @@ const StaffPage: React.FC = () => {
       />
 
       <PageTabs
-        defaultValue="workflow"
+        defaultValue="staff"
         items={[
-          {
-            id: 'workflow',
-            label: 'Workflow',
-            icon: Settings,
-            content: <StaffWorkflowView />
-          },
           {
             id: 'staff',
             label: 'Staff',

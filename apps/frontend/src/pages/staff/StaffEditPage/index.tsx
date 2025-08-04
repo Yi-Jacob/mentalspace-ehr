@@ -228,11 +228,8 @@ const StaffEditPage: React.FC = () => {
         userComments: formData.userComments
       };
 
-      // Ensure roles are cast to UserRole[] as expected by the API
-      await updateStaffMember(staffId, {
-        ...updateData,
-        roles: [USER_ROLE_OPTIONS[0].value, USER_ROLE_OPTIONS[1].value] as any[]
-      });
+      // Update staff member with proper roles
+      await updateStaffMember(staffId, updateData);
 
       toast({
         title: 'Success',

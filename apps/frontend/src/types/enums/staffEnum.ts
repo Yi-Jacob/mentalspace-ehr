@@ -10,7 +10,7 @@ export const USER_STATUS_OPTIONS = [
 
 export type UserStatus = typeof USER_STATUS_OPTIONS[number]['value'];
 
-// User Role Options
+// User Role Options - Static list based on roleCategories
 export const USER_ROLE_OPTIONS = [
   { value: 'Practice Administrator', label: 'Practice Administrator' },
   { value: 'Practice Scheduler', label: 'Practice Scheduler' },
@@ -25,6 +25,85 @@ export const USER_ROLE_OPTIONS = [
 ];
 
 export type UserRole = typeof USER_ROLE_OPTIONS[number]['value'];
+
+// Role Descriptions (for tooltips and help text)
+export const ROLE_DESCRIPTIONS = {
+  'Practice Administrator': 'A TherapyNotes Practice Administrator can add and edit TherapyNotes users, change user roles, reset passwords, and set account access settings.',
+  'Practice Scheduler': 'A Scheduler can schedule, reschedule, and cancel appointments for any clinician. They can add, edit, or remove new patients.',
+  'Clinician': 'Clinicians provide services to a client. They can view and edit their own schedule, complete notes and manage records of patients assigned to them.',
+  'Intern': 'The Intern role is similar to a Clinician but with limitations. Interns do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
+  'Assistant': 'The Assistant role is similar to a Clinician but with limitations. Assistants do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
+  'Associate': 'The Associate role is similar to a Clinician but with limitations. Associates do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
+  'Supervisor': 'A Supervisor can be assigned to individual clinicians and interns, granting full access to their supervisees\' patient\'s notes.',
+  'Clinical Administrator': 'A Clinical Administrator must also have the Clinician role. They can access any patient\'s records and can give other clinicians access to any patient records.',
+  'Biller for Assigned Patients Only': 'Clinicians with this role can collect and enter copay information, including by processing patient credit cards.',
+  'Practice Biller': 'A Practice Biller has full billing access to all patients in the practice. They can verify patient insurance, generate and track claims, enter patient and insurance payments, and run billing reports.'
+} as const;
+
+// Static role categories for the RolesSection component
+export const ROLE_CATEGORIES = [
+  {
+    title: 'Practice Administration',
+    items: [
+      {
+        id: 'Practice Administrator',
+        label: 'Practice Administrator',
+        description: ROLE_DESCRIPTIONS['Practice Administrator']
+      }
+    ]
+  },
+  {
+    title: 'Scheduling Access',
+    items: [
+      {
+        id: 'Practice Scheduler',
+        label: 'Practice Scheduler',
+        description: ROLE_DESCRIPTIONS['Practice Scheduler']
+      }
+    ]
+  },
+  {
+    title: 'Clinical Access',
+    items: [
+      {
+        id: 'Clinician',
+        label: 'Clinician',
+        description: ROLE_DESCRIPTIONS['Clinician']
+      },
+      {
+        id: 'Intern',
+        label: 'Intern',
+        displayName: 'Intern / Assistant / Associate',
+        description: ROLE_DESCRIPTIONS['Intern']
+      },
+      {
+        id: 'Supervisor',
+        label: 'Supervisor',
+        description: ROLE_DESCRIPTIONS['Supervisor']
+      },
+      {
+        id: 'Clinical Administrator',
+        label: 'Clinical Administrator',
+        description: ROLE_DESCRIPTIONS['Clinical Administrator']
+      }
+    ]
+  },
+  {
+    title: 'Billing Access',
+    items: [
+      {
+        id: 'Biller for Assigned Patients Only',
+        label: 'Biller for Assigned Patients Only',
+        description: ROLE_DESCRIPTIONS['Biller for Assigned Patients Only']
+      },
+      {
+        id: 'Practice Biller',
+        label: 'Practice Biller',
+        description: ROLE_DESCRIPTIONS['Practice Biller']
+      }
+    ]
+  }
+];
 
 // Supervision Type Options
 export const SUPERVISION_TYPE_OPTIONS = [
@@ -140,20 +219,6 @@ export const BILLING_SETTINGS_OPTIONS = [
 ];
 
 export type BillingSetting = typeof BILLING_SETTINGS_OPTIONS[number]['id'];
-
-// Role Descriptions (for tooltips and help text)
-export const ROLE_DESCRIPTIONS = {
-  'Practice Administrator': 'A TherapyNotes Practice Administrator can add and edit TherapyNotes users, change user roles, reset passwords, and set account access settings.',
-  'Practice Scheduler': 'A Scheduler can schedule, reschedule, and cancel appointments for any clinician. They can add, edit, or remove new patients.',
-  'Clinician': 'Clinicians provide services to a client. They can view and edit their own schedule, complete notes and manage records of patients assigned to them.',
-  'Intern': 'The Intern role is similar to a Clinician but with limitations. Interns do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
-  'Assistant': 'The Assistant role is similar to a Clinician but with limitations. Assistants do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
-  'Associate': 'The Associate role is similar to a Clinician but with limitations. Associates do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
-  'Supervisor': 'A Supervisor can be assigned to individual clinicians and interns, granting full access to their supervisees\' patient\'s notes.',
-  'Clinical Administrator': 'A Clinical Administrator must also have the Clinician role. They can access any patient\'s records and can give other clinicians access to any patient records.',
-  'Biller for Assigned Patients Only': 'Clinicians with this role can collect and enter copay information, including by processing patient credit cards.',
-  'Practice Biller': 'A Practice Biller has full billing access to all patients in the practice. They can verify patient insurance, generate and track claims, enter patient and insurance payments, and run billing reports.'
-} as const;
 
 // Supervision Type Descriptions
 export const SUPERVISION_TYPE_DESCRIPTIONS = {

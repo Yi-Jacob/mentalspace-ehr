@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -44,6 +44,13 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Get('roles/available')
+  @ApiOperation({ summary: 'Get all available roles' })
+  @ApiResponse({ status: 200, description: 'Available roles retrieved' })
+  getAvailableRoles() {
+    return Object.values(UserRole);
   }
 
   // Performance Metrics endpoints

@@ -5,76 +5,12 @@ import { UserRole } from '@/types/staffType';
 import { HelpCircle } from 'lucide-react';
 import CheckboxGroup from '@/components/basic/CheckboxGroup';
 import CategorySection from '@/components/basic/CategorySection';
-import { ROLE_DESCRIPTIONS } from '@/types/enums/staffEnum';
+import { ROLE_CATEGORIES } from '@/types/enums/staffEnum';
 
 interface RolesSectionProps {
   formData: any;
   onRoleToggle: (role: UserRole) => void;
 }
-
-const roleCategories = [
-  {
-    title: 'Practice Administration',
-    items: [
-      {
-        id: 'Practice Administrator',
-        label: 'Practice Administrator',
-        description: ROLE_DESCRIPTIONS['Practice Administrator']
-      }
-    ]
-  },
-  {
-    title: 'Scheduling Access',
-    items: [
-      {
-        id: 'Practice Scheduler',
-        label: 'Practice Scheduler',
-        description: ROLE_DESCRIPTIONS['Practice Scheduler']
-      }
-    ]
-  },
-  {
-    title: 'Clinical Access',
-    items: [
-      {
-        id: 'Clinician',
-        label: 'Clinician',
-        description: ROLE_DESCRIPTIONS['Clinician']
-      },
-      {
-        id: 'Intern',
-        label: 'Intern',
-        displayName: 'Intern / Assistant / Associate',
-        description: ROLE_DESCRIPTIONS['Intern']
-      },
-      {
-        id: 'Supervisor',
-        label: 'Supervisor',
-        description: ROLE_DESCRIPTIONS['Supervisor']
-      },
-      {
-        id: 'Clinical Administrator',
-        label: 'Clinical Administrator',
-        description: ROLE_DESCRIPTIONS['Clinical Administrator']
-      }
-    ]
-  },
-  {
-    title: 'Billing Access',
-    items: [
-      {
-        id: 'Biller for Assigned Patients Only',
-        label: 'Biller for Assigned Patients Only',
-        description: ROLE_DESCRIPTIONS['Biller for Assigned Patients Only']
-      },
-      {
-        id: 'Practice Biller',
-        label: 'Practice Biller',
-        description: ROLE_DESCRIPTIONS['Practice Biller']
-      }
-    ]
-  }
-];
 
 const RolesSection: React.FC<RolesSectionProps> = ({
   formData,
@@ -100,7 +36,7 @@ const RolesSection: React.FC<RolesSectionProps> = ({
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {roleCategories.map((category) => (
+        {ROLE_CATEGORIES.map((category) => (
           <CheckboxGroup
             key={category.title}
             title={category.title}

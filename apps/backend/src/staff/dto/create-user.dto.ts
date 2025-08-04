@@ -43,6 +43,20 @@ export enum UserStatus {
   PENDING = 'pending',
 }
 
+// Define UserRole enum based on the static roles list
+export enum UserRole {
+  PRACTICE_ADMINISTRATOR = 'Practice Administrator',
+  PRACTICE_SCHEDULER = 'Practice Scheduler',
+  CLINICIAN = 'Clinician',
+  INTERN = 'Intern',
+  ASSISTANT = 'Assistant',
+  ASSOCIATE = 'Associate',
+  SUPERVISOR = 'Supervisor',
+  CLINICAL_ADMINISTRATOR = 'Clinical Administrator',
+  BILLER_ASSIGNED_PATIENTS = 'Biller for Assigned Patients Only',
+  PRACTICE_BILLER = 'Practice Biller'
+}
+
 export class CreateUserDto {
   // Basic user information
   @ApiProperty({ description: 'User email address' })
@@ -220,9 +234,9 @@ export class CreateUserDto {
   userComments?: string;
 
   // Roles
-  @ApiProperty({ description: 'User roles', required: false, type: [String] })
+  @ApiProperty({ description: 'User roles', required: false, type: [String], enum: Object.values(UserRole) })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  roles?: string[];
+  @IsEnum(UserRole, { each: true })
+  roles?: UserRole[];
 } 

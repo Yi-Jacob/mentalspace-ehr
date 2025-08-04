@@ -33,11 +33,16 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
       </h3>
       <div className="space-y-4">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+          <div 
+            key={item.id} 
+            className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+            onClick={() => onToggle(item.id)}
+          >
             <Checkbox
               id={item.id}
               checked={checkedItems.includes(item.id)}
               onCheckedChange={() => onToggle(item.id)}
+              onClick={(e) => e.stopPropagation()} // Prevent double triggering
             />
             <div className="flex-1">
               <Label htmlFor={item.id} className="font-medium text-gray-700 cursor-pointer">

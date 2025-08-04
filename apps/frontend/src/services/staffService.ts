@@ -1,5 +1,5 @@
 import { apiClient } from './api-helper/client';
-import { UserStatus, StaffMember } from '@/types/staffType';
+import { UserStatus, StaffMember, UserRole } from '@/types/staffType';
 
 export interface CreateStaffInput {
   // Basic user information
@@ -56,8 +56,8 @@ export interface UpdateStaffInput extends Partial<CreateStaffInput> {
   // Additional update-specific fields can be added here
 }
 
-export interface UserRole {
-  role: string;
+export interface UserRoleAssignment {
+  role: UserRole;
   assignedAt: string;
   assignedBy?: string;
 }
@@ -153,6 +153,11 @@ class StaffService {
   // User Roles
   async getCurrentUserRoles(): Promise<UserRole[]> {
     const response = await apiClient.get<UserRole[]>('/staff/roles/current');
+    return response.data;
+  }
+
+  async getAvailableRoles(): Promise<UserRole[]> {
+    const response = await apiClient.get<UserRole[]>('/staff/roles/available');
     return response.data;
   }
 
