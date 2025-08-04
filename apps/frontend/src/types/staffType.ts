@@ -1,6 +1,6 @@
-import { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus } from './enums/staffEnum';
+import { UserStatus, UserRole, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus } from './enums/staffEnum';
 
-export type { UserStatus, UserRole, SupervisionType, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus };
+export type { UserStatus, UserRole, ClinicianType, Department, JobTitle, LicenseState, SupervisionStatus };
 
 export interface StaffProfile {
   id: string;
@@ -17,7 +17,6 @@ export interface StaffProfile {
   phoneNumber?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
-  supervisorId?: string;
   billingRate?: number;
   canBillInsurance: boolean;
   status: UserStatus;
@@ -90,7 +89,6 @@ export interface StaffMember {
   canBillInsurance: boolean;
   status: string;
   notes: string;
-  supervisorId: string;
   id: string;
   authUserId?: string;
   firstName: string;
@@ -118,5 +116,4 @@ export interface StaffMember {
   zipCode?: string;
   formalName?: string;
   clinicianType?: string;
-  supervisionType?: string;
 }

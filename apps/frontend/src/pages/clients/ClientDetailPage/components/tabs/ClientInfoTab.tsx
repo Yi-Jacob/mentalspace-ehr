@@ -2,8 +2,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { ClientFormData, PhoneNumber, EmergencyContact, PrimaryCareProvider } from '@/types/clientType';
-import { InfoDisplay, InfoSection } from '../shared/InfoDisplay';
+import { InfoDisplay, InfoSection } from '@/components/basic/InfoDisplay';
 import { formatDateOfBirth, formatAge, formatDate } from '@/utils/dateUtils';
+import { Phone, MapPin } from 'lucide-react';
 
 interface ClientInfoTabProps {
   client: ClientFormData;
@@ -51,38 +52,47 @@ export const ClientInfoTab: React.FC<ClientInfoTabProps> = ({
           <InfoSection title="Contact Information">
             <InfoDisplay label="Email" value={client.email} />
             
-            <div>
-              <label className="text-sm font-medium text-gray-500">Phone Numbers</label>
-              {phoneNumbers.length > 0 ? (
-                <div className="space-y-1">
-                  {phoneNumbers.map((phone, index) => (
-                    <div key={index} className="text-sm">
-                      <span className="font-medium">{phone.type}:</span> {phone.number}
-                      {phone.messagePreference !== 'No messages' && (
-                        <span className="text-gray-500 ml-2">({phone.messagePreference})</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div>Not provided</div>
-              )}
-            </div>
+                         <div>
+               <label className="text-sm font-medium text-gray-500 block mb-2">Phone Numbers</label>
+               {phoneNumbers.length > 0 ? (
+                 <div className="space-y-2">
+                   {phoneNumbers.map((phone, index) => (
+                     <div key={index} className="flex items-center space-x-2 text-sm">
+                       <Phone className="h-4 w-4 text-gray-400" />
+                       <span className="font-medium text-gray-900">{phone.type}:</span>
+                       <span className="text-gray-700">{phone.number}</span>
+                       {phone.messagePreference !== 'No messages' && (
+                         <span className="text-gray-500 text-xs">({phone.messagePreference})</span>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="text-gray-400 italic text-sm">Not provided</div>
+               )}
+             </div>
             
-            <div>
-              <label className="text-sm font-medium text-gray-500">Address</label>
-              <div>
-                {client.address1 || client.city || client.state ? (
-                  <>
-                    {client.address1 || 'No street address'}<br />
-                    {client.address2 && <>{client.address2}<br /></>}
-                    {[client.city || 'No city', client.state || 'No state', client.zipCode || 'No zip'].join(', ')}
-                  </>
-                ) : (
-                  'Not provided'
-                )}
-              </div>
-            </div>
+                         <div>
+               <label className="text-sm font-medium text-gray-500 block mb-2">Address</label>
+               <div className="text-sm">
+                 {client.address1 || client.city || client.state ? (
+                   <div className="space-y-1">
+                     <div className="flex items-start space-x-2">
+                       <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                       <div>
+                         <div className="text-gray-900">{client.address1 || 'No street address'}</div>
+                         {client.address2 && <div className="text-gray-700">{client.address2}</div>}
+                         <div className="text-gray-700">
+                           {[client.city || 'No city', client.state || 'No state', client.zipCode || 'No zip'].join(', ')}
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 ) : (
+                   <div className="text-gray-400 italic">Not provided</div>
+                 )}
+               </div>
+             </div>
             
             <InfoDisplay 
               label="Timezone" 

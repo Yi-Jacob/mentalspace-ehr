@@ -10,7 +10,7 @@ import PageTabs from '@/components/basic/PageTabs';
 import UserCommentsSection from '@/pages/staff/components/formSections/UserCommentsSection';
 import RolesSection from '@/pages/staff/components/formSections/RolesSection';
 import UserInformationSection from '@/pages/staff/components/formSections/UserInformationSection';
-import SupervisionSection from '@/pages/staff/components/formSections/SupervisionSection';
+
 import LicensesSection from '@/pages/staff/components/formSections/LicensesSection';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
@@ -69,8 +69,6 @@ const StaffEditPage: React.FC = () => {
           
           // Additional fields
           clinicianType: staff.clinicianType || '',
-          supervisionType: staff.supervisionType || 'Not Supervised',
-          supervisorId: staff.supervisorId || '',
           
           // Roles
           roles: staff.roles || [],
@@ -130,17 +128,7 @@ const StaffEditPage: React.FC = () => {
         />
       )
     },
-    {
-      id: 'supervision',
-      label: 'Supervision',
-      icon: Users,
-      content: (
-        <SupervisionSection 
-          formData={formData} 
-          onInputChange={handleInputChange} 
-        />
-      )
-    },
+
     {
       id: 'licenses',
       label: 'Licenses',
@@ -218,8 +206,6 @@ const StaffEditPage: React.FC = () => {
 
         // Additional fields
         clinicianType: formData.clinicianType,
-        supervisionType: formData.supervisionType,
-        supervisorId: formData.supervisorId,
 
         // Roles
         roles: formData.roles,

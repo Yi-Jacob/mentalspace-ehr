@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Mail, Calendar, MapPin, Edit, Phone, Building, Award, Clock, DollarSign, Shield, FileText, Users } from 'lucide-react';
+import { User, Mail, Calendar, Edit, Award, Clock, Users } from 'lucide-react';
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { useToast } from '@/hooks/use-toast';
@@ -8,9 +8,9 @@ import { StaffMember } from '@/types/staffType';
 import { staffService } from '@/services/staffService';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import CategorySection from '@/components/basic/CategorySection';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
+import { StaffInfoTab } from './components/StaffInfoTab';
 
 const StaffDetailPage = () => {
   const { staffId } = useParams<{ staffId: string }>();
@@ -94,8 +94,7 @@ const StaffDetailPage = () => {
             
             {staff.staffProfile?.department && (
               <div className="flex items-center space-x-2">
-                <Building className="h-4 w-4" />
-                <span>{staff.staffProfile.department}</span>
+                <span className="font-medium">{staff.staffProfile.department}</span>
               </div>
             )}
           </div>
@@ -121,179 +120,16 @@ const StaffDetailPage = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Information */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Personal Information */}
-          <CategorySection
-            title="Personal Information"
-            description="Basic personal and contact details"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-500">Full Name</label>
-                <p className="text-gray-900">{staff.firstName} {staff.lastName}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-500">Email</label>
-                <p className="text-gray-900">{staff.email}</p>
-              </div>
-              
-              {staff.staffProfile?.phoneNumber && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p className="text-gray-900 flex items-center space-x-2">
-                    <Phone className="h-4 w-4" />
-                    <span>{staff.staffProfile.phoneNumber}</span>
-                  </p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.employeeId && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Employee ID</label>
-                  <p className="text-gray-900">{staff.staffProfile.employeeId}</p>
-                </div>
-              )}
-            </div>
-          </CategorySection>
-
-          {/* Professional Information */}
-          <CategorySection
-            title="Professional Information"
-            description="Job details and credentials"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {staff.staffProfile?.jobTitle && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Job Title</label>
-                  <p className="text-gray-900">{staff.staffProfile.jobTitle}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.department && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Department</label>
-                  <p className="text-gray-900">{staff.staffProfile.department}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.npiNumber && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">NPI Number</label>
-                  <p className="text-gray-900">{staff.staffProfile.npiNumber}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.licenseNumber && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">License Number</label>
-                  <p className="text-gray-900">{staff.staffProfile.licenseNumber}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.licenseState && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">License State</label>
-                  <p className="text-gray-900">{staff.staffProfile.licenseState}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.licenseExpiryDate && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">License Expiry</label>
-                  <p className="text-gray-900">{formatDate(staff.staffProfile.licenseExpiryDate)}</p>
-                </div>
-              )}
-            </div>
-          </CategorySection>
-
-          {/* Employment Details */}
-          <CategorySection
-            title="Employment Details"
-            description="Hire date, billing information, and status"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {staff.staffProfile?.hireDate && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Hire Date</label>
-                  <p className="text-gray-900">{formatDate(staff.staffProfile.hireDate)}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.terminationDate && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Termination Date</label>
-                  <p className="text-gray-900">{formatDate(staff.staffProfile.terminationDate)}</p>
-                </div>
-              )}
-              
-              {staff.staffProfile?.billingRate && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-500">Billing Rate</label>
-                  <p className="text-gray-900 flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span>${staff.staffProfile.billingRate}/hour</span>
-                  </p>
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-500">Can Bill Insurance</label>
-                <Badge variant={staff.staffProfile?.canBillInsurance ? "default" : "secondary"}>
-                  {staff.staffProfile?.canBillInsurance ? 'Yes' : 'No'}
-                </Badge>
-              </div>
-            </div>
-          </CategorySection>
-
-          {/* Emergency Contact */}
-          {(staff.staffProfile?.emergencyContactName || staff.staffProfile?.emergencyContactPhone) && (
-            <CategorySection
-              title="Emergency Contact"
-              description="Emergency contact information"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {staff.staffProfile?.emergencyContactName && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-500">Contact Name</label>
-                    <p className="text-gray-900">{staff.staffProfile.emergencyContactName}</p>
-                  </div>
-                )}
-                
-                {staff.staffProfile?.emergencyContactPhone && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-500">Contact Phone</label>
-                    <p className="text-gray-900 flex items-center space-x-2">
-                      <Phone className="h-4 w-4" />
-                      <span>{staff.staffProfile.emergencyContactPhone}</span>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CategorySection>
-          )}
-
-          {/* Notes */}
-          {staff.staffProfile?.notes && (
-            <CategorySection
-              title="Notes"
-              description="Additional notes and comments"
-            >
-              <div className="space-y-2">
-                <p className="text-gray-900 whitespace-pre-wrap">{staff.staffProfile.notes}</p>
-              </div>
-            </CategorySection>
-          )}
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          <StaffInfoTab staff={staff} />
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Quick Stats */}
-          <CategorySection
-            title="Quick Stats"
-            description="Key information at a glance"
-          >
+          <div className="bg-white rounded-lg border p-6">
+            <h3 className="font-semibold text-lg mb-4">Quick Stats</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">Status</span>
@@ -307,20 +143,16 @@ const StaffDetailPage = () => {
                 <span className="text-sm text-gray-900">{formatDate(staff.createdAt)}</span>
               </div>
               
-              {staff.staffProfile?.supervisorId && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Has Supervisor</span>
-                  <Badge variant="outline">Yes</Badge>
-                </div>
-              )}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Roles</span>
+                <span className="text-sm text-gray-900">{staff.roles?.length || 0}</span>
+              </div>
             </div>
-          </CategorySection>
+          </div>
 
-          {/* Actions */}
-          <CategorySection
-            title="Quick Actions"
-            description="Common actions for this staff member"
-          >
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg border p-6">
+            <h3 className="font-semibold text-lg mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Button
                 variant="outline"
@@ -362,7 +194,7 @@ const StaffDetailPage = () => {
                 View Clients
               </Button>
             </div>
-          </CategorySection>
+          </div>
         </div>
       </div>
     </PageLayout>

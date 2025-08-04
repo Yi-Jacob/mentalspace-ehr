@@ -217,15 +217,7 @@ export class CreateUserDto {
   @IsString()
   clinicianType?: string;
 
-  @ApiProperty({ description: 'Supervision type', required: false })
-  @IsOptional()
-  @IsString()
-  supervisionType?: string;
 
-  @ApiProperty({ description: 'Supervisor ID', required: false })
-  @IsOptional()
-  @IsString()
-  supervisorId?: string;
 
   // User comments
   @ApiProperty({ description: 'User comments', required: false })

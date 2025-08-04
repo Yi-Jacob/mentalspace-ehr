@@ -39,8 +39,6 @@ export const useAddStaffForm = () => {
     
     // Additional fields
     clinicianType: '',
-    supervisionType: 'Not Supervised',
-    supervisorId: '',
     
     // Roles
     roles: [] as UserRole[],

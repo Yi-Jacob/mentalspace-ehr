@@ -9,7 +9,6 @@ import PageTabs from '@/components/basic/PageTabs';
 import UserCommentsSection from '@/pages/staff/components/formSections/UserCommentsSection';
 import RolesSection from '@/pages/staff/components/formSections/RolesSection';
 import UserInformationSection from '@/pages/staff/components/formSections/UserInformationSection';
-import SupervisionSection from '@/pages/staff/components/formSections/SupervisionSection';
 import LicensesSection from '@/pages/staff/components/formSections/LicensesSection';
 
 const CreateStaffPage: React.FC = () => {
@@ -48,17 +47,6 @@ const CreateStaffPage: React.FC = () => {
         <RolesSection 
           formData={formData} 
           onRoleToggle={handleRoleToggle} 
-        />
-      )
-    },
-    {
-      id: 'supervision',
-      label: 'Supervision',
-      icon: Users,
-      content: (
-        <SupervisionSection 
-          formData={formData} 
-          onInputChange={handleInputChange} 
         />
       )
     },

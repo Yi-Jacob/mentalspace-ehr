@@ -91,25 +91,12 @@ export class UsersService {
             zipCode: createUserDto.zipCode,
             formalName: createUserDto.formalName,
             clinicianType: createUserDto.clinicianType,
-            supervisionType: createUserDto.supervisionType,
           },
         });
 
-        // 3. Create supervision relationship if supervisor is specified and supervision type is not 'Not Supervised'
-        if (createUserDto.supervisionType && 
-            createUserDto.supervisionType !== 'Not Supervised' && 
-            createUserDto.supervisorId) {
-          await prisma.supervisionRelationship.create({
-            data: {
-              supervisorId: createUserDto.supervisorId,
-              superviseeId: user.id,
-              startDate: new Date(),
-              status: 'active',
-            },
-          });
-        }
 
-        // 4. Create user roles if specified
+
+        // 3. Create user roles if specified
         if (createUserDto.roles && createUserDto.roles.length > 0) {
           const roleRecords = createUserDto.roles.map(role => ({
             userId: user.id,
@@ -123,7 +110,7 @@ export class UsersService {
           });
         }
 
-        // 5. Generate password reset token for the new user
+        // 4. Generate password reset token for the new user
         const passwordResetData = await this.authService.createPasswordResetToken(user.id);
 
         return {
@@ -276,7 +263,6 @@ export class UsersService {
       zipCode: updateUserDto.zipCode,
       formalName: updateUserDto.formalName,
       clinicianType: updateUserDto.clinicianType,
-      supervisionType: updateUserDto.supervisionType,
     };
 
     // Remove undefined values
