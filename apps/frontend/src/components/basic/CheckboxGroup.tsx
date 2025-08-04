@@ -26,6 +26,10 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
   showDescriptions = false,
   className = ""
 }) => {
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the div onClick from firing
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       <h3 className="font-semibold text-lg text-gray-700 border-b border-gray-200 pb-2">
@@ -38,12 +42,13 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
             className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
             onClick={() => onToggle(item.id)}
           >
-            <Checkbox
-              id={item.id}
-              checked={checkedItems.includes(item.id)}
-              onCheckedChange={() => onToggle(item.id)}
-              onClick={(e) => e.stopPropagation()} // Prevent double triggering
-            />
+            <div onClick={handleCheckboxClick}>
+              <Checkbox
+                id={item.id}
+                checked={checkedItems.includes(item.id)}
+                onCheckedChange={() => onToggle(item.id)}
+              />
+            </div>
             <div className="flex-1">
               <Label htmlFor={item.id} className="font-medium text-gray-700 cursor-pointer">
                 {item.displayName || item.label}

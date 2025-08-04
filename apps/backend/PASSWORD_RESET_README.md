@@ -1,99 +1,125 @@
-# Password Reset Functionality
-
-This document describes the new password reset workflow implemented in the MentalSpace EHR system.
+# Password Reset and Staff Management Features
 
 ## Overview
+This document describes the password reset functionality and staff management features in the MentalSpace EHR system.
 
-When an admin creates a new staff member, instead of setting a default password, the system now generates a password reset link that expires after 10 minutes (configurable).
+## Password Reset Flow
+
+### 1. User Creation
+When a new staff member is created:
+- A user account is created without a password
+- A password reset token is generated
+- A password reset URL is provided to the administrator
+
+### 2. Password Reset Process
+1. Administrator receives the password reset URL
+2. Administrator shares the URL with the new staff member
+3. Staff member clicks the URL and sets their password
+4. Password reset token is invalidated after use
+
+## Staff Management Features
+
+### Setting Default Password
+Administrators can set a default password for staff members using the "Set Default Password" action in the staff list.
+
+**Configuration:**
+Add the following to your `.env` file:
+```env
+DEFAULT_USER_PASSWORD="ChangeMe123!"
+```
+
+**API Endpoint:**
+```
+POST /staff/:id/set-default-password
+```
+
+### Activating/Deactivating Staff
+Administrators can activate or deactivate staff members using the toggle action in the staff list.
+
+**API Endpoints:**
+```
+POST /staff/:id/activate
+POST /staff/:id/deactivate
+```
 
 ## Environment Variables
 
-Add the following environment variables to your `.env` file:
+### Required Variables
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET`: Secret key for JWT token generation
+- `JWT_EXPIRES_IN`: JWT token expiration time (default: "24h")
 
-```env
-# Password Reset Configuration
-PASSWORD_RESET_EXPIRATION_MINUTES="10"
+### Optional Variables
+- `DEFAULT_USER_PASSWORD`: Default password for new staff members (default: "ChangeMe123!")
+- `PORT`: Server port (default: 3001)
+- `NODE_ENV`: Environment mode (development/production)
 
-# Frontend URL (for generating reset links)
-FRONTEND_URL="http://localhost:3000"
+### Email Configuration (for password reset)
+- `SMTP_HOST`: SMTP server host
+- `SMTP_PORT`: SMTP server port
+- `SMTP_USER`: SMTP username
+- `SMTP_PASS`: SMTP password
+- `SMTP_FROM`: From email address
+- `FRONTEND_URL`: Frontend application URL
+
+## Security Considerations
+
+1. **Default Passwords**: The default password should be changed immediately by the user
+2. **Password Reset Tokens**: Tokens expire after use and have a limited lifespan
+3. **JWT Tokens**: Use a strong, unique JWT secret in production
+4. **Environment Variables**: Never commit sensitive environment variables to version control
+
+## API Usage Examples
+
+### Setting Default Password
+```javascript
+const response = await fetch('/staff/123/set-default-password', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const result = await response.json();
+console.log(result.message); // "Default password set successfully"
 ```
 
-## Database Changes
+### Activating Staff Member
+```javascript
+const response = await fetch('/staff/123/activate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  }
+});
 
-A new `PasswordResetToken` model has been added to the Prisma schema:
-
-```prisma
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  token     String   @unique
-  expiresAt DateTime @map("expires_at")
-  usedAt    DateTime? @map("used_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@map("password_reset_tokens")
-}
+const result = await response.json();
+console.log(result.message); // "User activated successfully"
 ```
 
-## API Endpoints
+### Deactivating Staff Member
+```javascript
+const response = await fetch('/staff/123/deactivate', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  }
+});
 
-### Request Password Reset
-- **POST** `/auth/request-password-reset`
-- **Body**: `{ "email": "user@example.com" }`
-- **Response**: `{ "message": "If the email exists, a password reset link has been sent.", "resetUrl": "http://localhost:3000/reset-password?token=abc123" }`
+const result = await response.json();
+console.log(result.message); // "User deactivated successfully"
+```
 
-### Reset Password
-- **POST** `/auth/reset-password`
-- **Body**: `{ "token": "abc123", "password": "NewPassword123!", "confirmPassword": "NewPassword123!" }`
-- **Response**: `{ "message": "Password has been reset successfully" }`
+## Frontend Integration
 
-## Frontend Routes
+The frontend includes a comprehensive staff management interface with:
+- Staff list with search and pagination
+- Role management
+- Status management (active/inactive)
+- Default password setting
+- Bulk operations for administrators
 
-- **GET** `/reset-password?token=abc123` - Password reset page
-
-## Workflow
-
-1. **Admin creates staff member**: When an admin creates a new staff member, the system:
-   - Creates the user without a password
-   - Generates a secure reset token
-   - Returns a reset URL to the admin
-
-2. **Staff member receives link**: The admin can share the reset URL with the new staff member
-
-3. **Staff member resets password**: The staff member:
-   - Visits the reset URL
-   - Enters a new password (twice for confirmation)
-   - Password must meet security requirements
-   - Token expires after 10 minutes
-
-4. **Login**: The staff member can now log in with their new password
-
-## Security Features
-
-- Tokens expire after 10 minutes (configurable)
-- Tokens can only be used once
-- Secure random token generation
-- Password strength validation
-- Token validation on the backend
-
-## Password Requirements
-
-Passwords must contain:
-- At least 8 characters
-- At least one uppercase letter
-- At least one lowercase letter
-- At least one number
-- At least one special character (@$!%*?&)
-
-## Migration
-
-Run the following commands to apply the database changes:
-
-```bash
-# Generate Prisma client with new schema
-npm run prisma:generate
-
-# Run database migration
-npm run prisma:migrate
-``` 
+All actions are integrated with toast notifications and automatic data refresh. 

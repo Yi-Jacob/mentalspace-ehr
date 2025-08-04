@@ -4,12 +4,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private configService: ConfigService,
   ) {}
 
   // Helper function to safely parse dates
@@ -142,9 +144,7 @@ export class UsersService {
 
   async findAll() {
     console.log('findAll - fetching all staff members');
-    const users = await this.prisma.user.findMany({
-      where: { isActive: true },
-    });
+    const users = await this.prisma.user.findMany();
     
     // Get related data separately since relationships aren't defined
     const usersWithDetails = await Promise.all(
@@ -414,5 +414,59 @@ export class UsersService {
     });
 
     return metric;
+  }
+
+  // Set default password for a user
+  async setDefaultPassword(userId: string) {
+    const user = await this.findOne(userId);
+    
+    const defaultPassword = this.configService.get<string>('DEFAULT_USER_PASSWORD', 'ChangeMe123!');
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return {
+      message: 'Default password set successfully',
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      defaultPassword: defaultPassword // Only return in development
+    };
+  }
+
+  // Activate a user
+  async activateUser(userId: string) {
+    const user = await this.findOne(userId);
+    
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { isActive: true },
+    });
+
+    return {
+      message: 'User activated successfully',
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      isActive: updatedUser.isActive
+    };
+  }
+
+  // Deactivate a user
+  async deactivateUser(userId: string) {
+    const user = await this.findOne(userId);
+    
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { isActive: false },
+    });
+
+    return {
+      message: 'User deactivated successfully',
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      isActive: updatedUser.isActive
+    };
   }
 } 

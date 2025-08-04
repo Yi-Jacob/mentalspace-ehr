@@ -151,11 +151,6 @@ class StaffService {
   }
   
   // User Roles
-  async getCurrentUserRoles(): Promise<UserRole[]> {
-    const response = await apiClient.get<UserRole[]>('/staff/roles/current');
-    return response.data;
-  }
-
   async getAvailableRoles(): Promise<UserRole[]> {
     const response = await apiClient.get<UserRole[]>('/staff/roles/available');
     return response.data;
@@ -174,6 +169,24 @@ class StaffService {
       userId,
       role,
     });
+    return response.data;
+  }
+
+  // Set default password
+  async setDefaultPassword(userId: string): Promise<any> {
+    const response = await apiClient.post(`/staff/${userId}/set-default-password`);
+    return response.data;
+  }
+
+  // Activate user
+  async activateUser(userId: string): Promise<any> {
+    const response = await apiClient.post(`/staff/${userId}/activate`);
+    return response.data;
+  }
+
+  // Deactivate user
+  async deactivateUser(userId: string): Promise<any> {
+    const response = await apiClient.post(`/staff/${userId}/deactivate`);
     return response.data;
   }
 
