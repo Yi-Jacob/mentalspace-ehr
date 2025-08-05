@@ -383,9 +383,9 @@ export class UsersService {
           // Filter out licenses where all fields are empty
           const validLicenses = updateUserDto.licenses.filter(license => 
             license.licenseType || 
-            license.licenseNumber || 
-            license.licenseState || 
-            license.licenseExpirationDate || 
+             license.licenseNumber || 
+             license.licenseState || 
+             license.licenseExpirationDate || 
             license.issuedBy
           );
 

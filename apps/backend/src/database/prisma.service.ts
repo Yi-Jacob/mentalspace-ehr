@@ -9,7 +9,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   constructor() {
     super({
-      log: ['query', 'info', 'warn', 'error'],
+      log: process.env.PRISMA_LOG_LEVEL === 'debug' 
+        ? ['query', 'info', 'warn', 'error']
+        : ['warn', 'error'], // Only log warnings and errors by default
       datasources: {
         db: {
           url: process.env.DATABASE_URL,

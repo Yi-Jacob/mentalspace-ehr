@@ -45,18 +45,6 @@ export class SupervisionRelationshipsService {
       throw new BadRequestException('Supervisee must have Intern or Clinician role');
     }
 
-    // Check if there's already an active supervision relationship
-    const existingActive = await this.prisma.supervisionRelationship.findFirst({
-      where: {
-        superviseeId: createSupervisionRelationshipDto.superviseeId,
-        status: 'active'
-      }
-    });
-
-    if (existingActive) {
-      throw new BadRequestException('Supervisee already has an active supervision relationship');
-    }
-
     return this.prisma.supervisionRelationship.create({
       data: {
         supervisorId: createSupervisionRelationshipDto.supervisorId,
