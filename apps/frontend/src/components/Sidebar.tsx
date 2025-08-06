@@ -56,6 +56,8 @@ const menuItems: MenuItem[] = [
     subItems: [
       { id: 'staff-list', label: 'All Staff', path: '/staff' },
       { id: 'staff-supervision', label: 'Supervision', path: '/staff/supervision' },
+      { id: 'staff-roles', label: 'Roles', path: '/staff/roles' },
+      { id: 'staff-permissions', label: 'Permissions', path: '/staff/permissions' },
     ]
   },
   { id: 'compliance', label: 'Compliance', icon: Shield, path: '/compliance' },

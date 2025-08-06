@@ -542,4 +542,78 @@ export class UsersService {
       isActive: updatedUser.isActive
     };
   }
+
+  // Assign a role to a user
+  async assignRole(userId: string, role: string) {
+    // Check if user exists
+    const user = await this.findOne(userId);
+    
+    // Check if role already exists
+    const existingRole = await this.prisma.userRole.findFirst({
+      where: {
+        userId: userId,
+        role: role,
+        isActive: true
+      }
+    });
+
+    if (existingRole) {
+      return {
+        message: 'Role already assigned to user',
+        userId: userId,
+        role: role
+      };
+    }
+
+    // Create new role assignment
+    const roleAssignment = await this.prisma.userRole.create({
+      data: {
+        userId: userId,
+        role: role,
+        isActive: true
+      }
+    });
+
+    return {
+      message: 'Role assigned successfully',
+      userId: userId,
+      role: role,
+      roleAssignmentId: roleAssignment.id
+    };
+  }
+
+  // Remove a role from a user
+  async removeRole(userId: string, role: string) {
+    // Check if user exists
+    const user = await this.findOne(userId);
+    
+    // Find and deactivate the role assignment
+    const roleAssignment = await this.prisma.userRole.findFirst({
+      where: {
+        userId: userId,
+        role: role,
+        isActive: true
+      }
+    });
+
+    if (!roleAssignment) {
+      return {
+        message: 'Role not found for user',
+        userId: userId,
+        role: role
+      };
+    }
+
+    // Deactivate the role assignment
+    await this.prisma.userRole.update({
+      where: { id: roleAssignment.id },
+      data: { isActive: false }
+    });
+
+    return {
+      message: 'Role removed successfully',
+      userId: userId,
+      role: role
+    };
+  }
 } 

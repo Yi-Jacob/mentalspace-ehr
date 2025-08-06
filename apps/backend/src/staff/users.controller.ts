@@ -53,6 +53,20 @@ export class UsersController {
     return Object.values(UserRole);
   }
 
+  @Post('roles/assign')
+  @ApiOperation({ summary: 'Assign a role to a user' })
+  @ApiResponse({ status: 200, description: 'Role assigned successfully' })
+  assignRole(@Body() body: { userId: string; role: string }) {
+    return this.usersService.assignRole(body.userId, body.role);
+  }
+
+  @Post('roles/remove')
+  @ApiOperation({ summary: 'Remove a role from a user' })
+  @ApiResponse({ status: 200, description: 'Role removed successfully' })
+  removeRole(@Body() body: { userId: string; role: string }) {
+    return this.usersService.removeRole(body.userId, body.role);
+  }
+
   @Post(':id/set-default-password')
   @ApiOperation({ summary: 'Set default password for a user' })
   @ApiResponse({ status: 200, description: 'Default password set successfully' })

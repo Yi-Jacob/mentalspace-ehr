@@ -6,8 +6,6 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import PageTabs from '@/components/basic/PageTabs';
 import StaffList from './components/StaffList';
-import RoleManagement from './components/RoleManagement';
-import StaffAccessManagement from './components/StaffAccessManagement';
 import StaffAuditLogs from './components/StaffAuditLogs';
 import TimeTrackingView from './components/TimeTrackingView';
 import PerformanceView from './components/PerformanceView';
@@ -45,18 +43,6 @@ const StaffPage: React.FC = () => {
             label: 'Staff',
             icon: Stethoscope,
             content: <StaffList />
-          },
-          {
-            id: 'roles',
-            label: 'Roles',
-            icon: Shield,
-            content: <RoleManagement />
-          },
-          {
-            id: 'access',
-            label: 'Access',
-            icon: Eye,
-            content: <StaffAccessManagement />
           },
           {
             id: 'time',
