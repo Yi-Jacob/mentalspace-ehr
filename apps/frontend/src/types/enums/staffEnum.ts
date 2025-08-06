@@ -105,6 +105,173 @@ export const ROLE_CATEGORIES = [
   }
 ];
 
+// Permission Options
+export const PERMISSION_OPTIONS = [
+  { value: 'User Management', label: 'User Management' },
+  { value: 'Role Management', label: 'Role Management' },
+  { value: 'Password Reset', label: 'Password Reset' },
+  { value: 'Account Access Settings', label: 'Account Access Settings' },
+  { value: 'System Configuration Access', label: 'System Configuration Access' },
+  { value: 'Audit Logs', label: 'Audit Logs' },
+  { value: 'Security Policy Configuration', label: 'Security Policy Configuration' },
+  { value: 'Schedule Management', label: 'Schedule Management' },
+  { value: 'Clinical Documentation', label: 'Clinical Documentation' },
+  { value: 'Patient Record Management', label: 'Patient Record Management' },
+  { value: 'Access Sharing', label: 'Access Sharing' },
+  { value: 'Treatment Plan Management', label: 'Treatment Plan Management' },
+  { value: 'Session Documentation', label: 'Session Documentation' },
+  { value: 'Billing', label: 'Billing' },
+  { value: 'Note Reopening', label: 'Note Reopening' },
+  { value: 'Claims Management', label: 'Claims Management' },
+  { value: 'Payment Entry', label: 'Payment Entry' },
+  { value: 'Insurance Benefit Verification', label: 'Insurance Benefit Verification' },
+  { value: 'Claims Generation and Tracking', label: 'Claims Generation and Tracking' },
+  { value: 'Billing Reports', label: 'Billing Reports' },
+  { value: 'Create Contact/Miscellaneous Notes', label: 'Create Contact/Miscellaneous Notes' },
+  { value: 'Create Missed Appointment Notes', label: 'Create Missed Appointment Notes' },
+  { value: 'Create Contact Notes', label: 'Create Contact Notes' },
+  { value: 'Create Miscellaneous Notes', label: 'Create Miscellaneous Notes' },
+  { value: 'Supervision', label: 'Supervision' }
+];
+
+export type Permission = typeof PERMISSION_OPTIONS[number]['value'];
+
+// Permission Descriptions
+export const PERMISSION_DESCRIPTIONS = {
+  'User Management': 'Create, edit, and manage user accounts and profiles',
+  'Role Management': 'Assign and modify user roles and permissions',
+  'Password Reset': 'Reset user passwords and manage authentication',
+  'Account Access Settings': 'Configure account access and security settings',
+  'System Configuration Access': 'Access and modify system-wide configurations',
+  'Audit Logs': 'View and analyze system audit logs',
+  'Security Policy Configuration': 'Configure security policies and compliance settings',
+  'Schedule Management': 'Manage appointment scheduling and calendar access',
+  'Clinical Documentation': 'Create and manage clinical documentation and notes',
+  'Patient Record Management': 'Access and manage patient records and information',
+  'Access Sharing': 'Share patient access with other clinicians',
+  'Treatment Plan Management': 'Create and manage treatment plans',
+  'Session Documentation': 'Document therapy sessions and progress notes',
+  'Billing': 'Process billing and insurance claims',
+  'Note Reopening': 'Reopen and modify completed clinical notes',
+  'Claims Management': 'Manage insurance claims and billing processes',
+  'Payment Entry': 'Enter and process patient payments',
+  'Insurance Benefit Verification': 'Verify insurance benefits and coverage',
+  'Claims Generation and Tracking': 'Generate and track insurance claims',
+  'Billing Reports': 'Generate and view billing reports',
+  'Create Contact/Miscellaneous Notes': 'Create contact and miscellaneous clinical notes',
+  'Create Missed Appointment Notes': 'Document missed appointments and follow-ups',
+  'Create Contact Notes': 'Create contact notes for patient interactions',
+  'Create Miscellaneous Notes': 'Create miscellaneous clinical documentation',
+  'Supervision': 'Supervise other clinicians and review their work'
+} as const;
+
+// Role-Permission Mapping
+export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  'Practice Administrator': [
+    'User Management',
+    'Role Management',
+    'Password Reset',
+    'Account Access Settings',
+    'System Configuration Access',
+    'Audit Logs',
+    'Security Policy Configuration'
+  ],
+  'Practice Scheduler': [
+    'Schedule Management'
+  ],
+  'Clinician': [
+    'Schedule Management',
+    'Clinical Documentation',
+    'Patient Record Management',
+    'Access Sharing',
+    'Treatment Plan Management',
+    'Session Documentation',
+    'Billing',
+    'Note Reopening',
+    'Create Contact/Miscellaneous Notes',
+    'Create Missed Appointment Notes',
+    'Create Contact Notes',
+    'Create Miscellaneous Notes'
+  ],
+  'Intern': [
+    'Schedule Management',
+    'Clinical Documentation',
+    'Patient Record Management',
+    'Access Sharing',
+    'Treatment Plan Management',
+    'Session Documentation',
+    'Billing',
+    'Create Contact/Miscellaneous Notes',
+    'Create Missed Appointment Notes',
+    'Create Contact Notes',
+    'Create Miscellaneous Notes'
+  ],
+  'Assistant': [
+    'Schedule Management',
+    'Clinical Documentation',
+    'Patient Record Management',
+    'Access Sharing',
+    'Treatment Plan Management',
+    'Session Documentation',
+    'Billing',
+    'Create Contact/Miscellaneous Notes',
+    'Create Missed Appointment Notes',
+    'Create Contact Notes',
+    'Create Miscellaneous Notes'
+  ],
+  'Associate': [
+    'Schedule Management',
+    'Clinical Documentation',
+    'Patient Record Management',
+    'Access Sharing',
+    'Treatment Plan Management',
+    'Session Documentation',
+    'Billing',
+    'Create Contact/Miscellaneous Notes',
+    'Create Missed Appointment Notes',
+    'Create Contact Notes',
+    'Create Miscellaneous Notes'
+  ],
+  'Supervisor': [
+    'Clinical Documentation',
+    'Patient Record Management',
+    'Access Sharing',
+    'Treatment Plan Management',
+    'Session Documentation',
+    'Note Reopening',
+    'Supervision'
+  ],
+  'Clinical Administrator': [
+    'Schedule Management',
+    'Clinical Documentation',
+    'Patient Record Management',
+    'Access Sharing',
+    'Treatment Plan Management',
+    'Session Documentation',
+    'Note Reopening',
+    'Create Contact/Miscellaneous Notes',
+    'Create Missed Appointment Notes',
+    'Create Contact Notes',
+    'Create Miscellaneous Notes'
+  ],
+  'Biller for Assigned Patients Only': [
+    'Billing',
+    'Claims Management',
+    'Payment Entry',
+    'Insurance Benefit Verification',
+    'Claims Generation and Tracking',
+    'Billing Reports'
+  ],
+  'Practice Biller': [
+    'Billing',
+    'Claims Management',
+    'Payment Entry',
+    'Insurance Benefit Verification',
+    'Claims Generation and Tracking',
+    'Billing Reports'
+  ]
+};
+
 // Supervision Type Options
 export const SUPERVISION_TYPE_OPTIONS = [
   { value: 'Not Supervised', label: 'Not Supervised' },

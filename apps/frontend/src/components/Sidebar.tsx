@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -15,7 +15,9 @@ import {
   Stethoscope,
   LogOut,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,7 +32,7 @@ interface SidebarProps {
 interface MenuItem {
   id: string;
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number | string; className?: string }>;
   path: string;
   subItems?: {
     id: string;
@@ -69,6 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const navigate = useNavigate();
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff']));
 
   // Determine active item from props or current route
   const getActiveItem = () => {
@@ -104,6 +107,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     } else {
       navigate(item.path);
     }
+  };
+
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -143,11 +158,18 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
         {menuItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = activeItem === item.id || (item.subItems && item.subItems.some(subItem => activeItem === subItem.id));
+          const isExpanded = expandedItems.has(item.id);
           
           return (
             <div key={item.id} className="space-y-1">
               <button
-                onClick={() => handleItemClick(item)}
+                onClick={() => {
+                  if (item.subItems) {
+                    toggleExpanded(item.id);
+                  } else {
+                    handleItemClick(item);
+                  }
+                }}
                 className={cn(
                   "w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
                   isActive
@@ -157,12 +179,31 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
                 )}
                 title={isCollapsed ? item.label : undefined}
               >
-                <IconComponent size={20} className="text-blue-100" />
-                {!isCollapsed && <span className="font-medium">{item.label}</span>}
+                <IconComponent 
+                  size={20} 
+                  className={cn(
+                    isActive ? "text-blue-900" : "text-blue-100",
+                    "transition-colors duration-200"
+                  )} 
+                />
+                {!isCollapsed && (
+                  <>
+                    <span className="font-medium">{item.label}</span>
+                    {item.subItems && (
+                      <div className="ml-auto">
+                        {isExpanded ? (
+                          <ChevronDown size={16} className="text-blue-100" />
+                        ) : (
+                          <ChevronRight size={16} className="text-blue-100" />
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
               </button>
               
               {/* Render sub-items if they exist and sidebar is not collapsed */}
-              {item.subItems && !isCollapsed && (
+              {item.subItems && !isCollapsed && isExpanded && (
                 <div className="ml-6 space-y-1">
                   {item.subItems.map((subItem) => (
                     <button

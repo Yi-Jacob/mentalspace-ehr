@@ -1,285 +1,335 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tabs';
+import React, { useState, useMemo } from 'react';
+import { Shield, Search, ChevronUp, ChevronDown, Info } from 'lucide-react';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 import { Badge } from '@/components/basic/badge';
-import { Button } from '@/components/basic/button';
-import { Eye, EyeOff } from 'lucide-react';
-import { UserRole } from '@/types/staffType';
+import { Input } from '@/components/basic/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/basic/tooltip';
+import { 
+  USER_ROLE_OPTIONS, 
+  PERMISSION_OPTIONS, 
+  PERMISSION_DESCRIPTIONS, 
+  ROLE_PERMISSIONS 
+} from '@/types/enums/staffEnum';
 
-const RolePermissionsViewer: React.FC = () => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('Clinician');
-  const [showDetails, setShowDetails] = useState(false);
+interface PermissionData {
+  permission: string;
+  description: string;
+  roles: string[];
+}
 
-  const rolePermissions: Record<UserRole, {
-    description: string;
-    permissions: string[];
-    restrictions: string[];
-    accessLevel: 'Full' | 'Limited' | 'Restricted';
-  }> = {
-    'Practice Administrator': {
-      description: 'Complete system administration with full access to all features and data.',
-      permissions: [
-        'Add, edit, and deactivate user accounts',
-        'Assign and modify user roles',
-        'Access all patient records',
-        'Manage practice-wide settings',
-        'View audit logs and system reports',
-        'Manage billing for all patients',
-        'Schedule appointments for all providers',
-        'Access all clinical notes'
-      ],
-      restrictions: [],
-      accessLevel: 'Full'
-    },
-    'Clinical Administrator': {
-      description: 'Administrative access to clinical operations. Must also have Clinician role.',
-      permissions: [
-        'Access any patient records',
-        'Grant patient access to other clinicians',
-        'View all clinical notes',
-        'Manage clinical workflows',
-        'Oversee clinical compliance'
-      ],
-      restrictions: [
-        'Must have Clinician role assigned',
-        'Cannot modify system settings',
-        'Cannot manage user accounts'
-      ],
-      accessLevel: 'Full'
-    },
-    'Clinician': {
-      description: 'Licensed healthcare providers who deliver direct patient care.',
-      permissions: [
-        'Access assigned patient records',
-        'Create and edit clinical notes',
-        'Schedule own appointments',
-        'Bill insurance with own credentials',
-        'Manage treatment plans for assigned patients',
-        'View own schedule and patient list'
-      ],
-      restrictions: [
-        'Cannot access unassigned patient records',
-        'Cannot modify other clinicians\' notes',
-        'Cannot assign roles or manage users'
-      ],
-      accessLevel: 'Limited'
-    },
-    'Supervisor': {
-      description: 'Experienced clinicians who provide oversight to other clinical staff.',
-      permissions: [
-        'Access supervisee patient records',
-        'Co-sign supervisee notes',
-        'View supervisee schedules',
-        'Provide clinical oversight',
-        'All Clinician permissions for own patients'
-      ],
-      restrictions: [
-        'Access limited to assigned supervisees',
-        'Cannot supervise without assignment',
-        'Cannot access admin functions'
-      ],
-      accessLevel: 'Limited'
-    },
-    'Intern': {
-      description: 'Students or trainees providing services under supervision.',
-      permissions: [
-        'Access assigned patient records',
-        'Create clinical notes (requires co-signature)',
-        'View own schedule',
-        'Participate in assigned patient care'
-      ],
-      restrictions: [
-        'Cannot bill insurance independently',
-        'All notes require supervisor co-signature',
-        'Must have assigned supervisor',
-        'Limited administrative access'
-      ],
-      accessLevel: 'Restricted'
-    },
-    'Assistant': {
-      description: 'Clinical support staff with limited patient access.',
-      permissions: [
-        'Access assigned patient records',
-        'Create limited note types',
-        'Assist with patient care activities',
-        'View assigned schedules'
-      ],
-      restrictions: [
-        'Cannot bill insurance independently',
-        'Limited note creation capabilities',
-        'Cannot access admin functions',
-        'Requires supervision for billing'
-      ],
-      accessLevel: 'Restricted'
-    },
-    'Associate': {
-      description: 'Early-career clinicians with some practice limitations.',
-      permissions: [
-        'Access assigned patient records',
-        'Create clinical notes',
-        'Limited scheduling access',
-        'Provide clinical services'
-      ],
-      restrictions: [
-        'Cannot bill insurance independently',
-        'May require supervision for complex cases',
-        'Limited administrative access'
-      ],
-      accessLevel: 'Restricted'
-    },
-    'Practice Scheduler': {
-      description: 'Administrative staff responsible for appointment management.',
-      permissions: [
-        'Schedule appointments for all providers',
-        'Reschedule and cancel appointments',
-        'Add and edit patient demographics',
-        'Create scheduling-related notes',
-        'View provider schedules'
-      ],
-      restrictions: [
-        'Cannot access clinical notes',
-        'Cannot view detailed patient records',
-        'Cannot manage billing information',
-        'Limited to scheduling functions'
-      ],
-      accessLevel: 'Limited'
-    },
-    'Practice Biller': {
-      description: 'Dedicated billing staff with comprehensive financial access.',
-      permissions: [
-        'Access all patient billing information',
-        'Process insurance claims',
-        'Generate billing reports',
-        'Verify insurance benefits',
-        'Manage patient accounts',
-        'Process payments and adjustments'
-      ],
-      restrictions: [
-        'Cannot access clinical notes',
-        'Cannot schedule appointments',
-        'Cannot modify patient clinical data'
-      ],
-      accessLevel: 'Limited'
-    },
-    'Biller for Assigned Patients Only': {
-      description: 'Clinicians with billing responsibilities for their assigned patients.',
-      permissions: [
-        'Collect copays from assigned patients',
-        'Process credit card payments',
-        'Enter payment information',
-        'View billing status for assigned patients'
-      ],
-      restrictions: [
-        'Billing access limited to assigned patients only',
-        'Cannot access practice-wide billing',
-        'Cannot generate comprehensive billing reports'
-      ],
-      accessLevel: 'Restricted'
+interface PermissionColumn {
+  key: string;
+  header: React.ReactNode;
+  accessor: (item: PermissionData) => React.ReactNode;
+  sortable?: boolean;
+  width?: string;
+  className?: string;
+}
+
+const PermissionsPage: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Create permission data
+  const permissionData: PermissionData[] = useMemo(() => {
+    return PERMISSION_OPTIONS.map(permission => {
+      const roles = USER_ROLE_OPTIONS.filter(role => 
+        ROLE_PERMISSIONS[role.value as keyof typeof ROLE_PERMISSIONS]?.includes(permission.value)
+      ).map(role => role.value);
+
+      return {
+        permission: permission.value,
+        description: PERMISSION_DESCRIPTIONS[permission.value as keyof typeof PERMISSION_DESCRIPTIONS] || '',
+        roles
+      };
+    });
+  }, []);
+
+  // Create table columns
+  const columns: PermissionColumn[] = useMemo(() => {
+    const baseColumns: PermissionColumn[] = [
+      {
+        key: 'permission',
+        header: 'Permission',
+        accessor: (item) => (
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-900">{item.permission}</span>
+            <span className="text-sm text-gray-500 line-clamp-2">{item.description}</span>
+          </div>
+        ),
+        sortable: true,
+        width: '300px',
+      },
+    ];
+
+    // Add role columns
+    const roleColumns: PermissionColumn[] = USER_ROLE_OPTIONS.map((roleOption) => ({
+      key: `role_${roleOption.value}`,
+      header: (
+        <div className="flex flex-col items-center space-y-1">
+          <span className="text-xs font-medium text-gray-700 text-center">{roleOption.label}</span>
+          <Badge variant="secondary" className="text-xs">
+            {permissionData.filter(perm => perm.roles.includes(roleOption.value)).length}
+          </Badge>
+        </div>
+      ),
+      accessor: (item) => {
+        const hasPermission = item.roles.includes(roleOption.value);
+        
+        return (
+          <div className="flex justify-center">
+            {hasPermission ? (
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-green-600 font-medium">✓</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                <span className="text-xs text-gray-400">-</span>
+              </div>
+            )}
+          </div>
+        );
+      },
+      sortable: true,
+      width: '120px',
+      className: 'text-center',
+    }));
+
+    return [...baseColumns, ...roleColumns];
+  }, [permissionData]);
+
+  // Filter and sort data
+  const processedData = useMemo(() => {
+    let filtered = permissionData;
+
+    // Apply search
+    if (searchTerm) {
+      filtered = filtered.filter(item =>
+        item.permission.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
+
+    // Apply sorting
+    if (sortColumn) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        if (sortColumn === 'permission') {
+          aValue = a.permission;
+          bValue = b.permission;
+        } else if (sortColumn.startsWith('role_')) {
+          const role = sortColumn.replace('role_', '');
+          aValue = a.roles.includes(role) ? 1 : 0;
+          bValue = b.roles.includes(role) ? 1 : 0;
+        } else {
+          return 0;
+        }
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortDirection === 'asc' 
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+        
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+        
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [permissionData, searchTerm, sortColumn, sortDirection]);
+
+  // Handle sort
+  const handleSort = (columnKey: string) => {
+    setSortColumn(columnKey);
+    setSortDirection(prev => 
+      prev === 'asc' && sortColumn === columnKey ? 'desc' : 'asc'
+    );
   };
 
-  const getAccessLevelColor = (level: string) => {
-    switch (level) {
-      case 'Full': return 'bg-green-100 text-green-800';
-      case 'Limited': return 'bg-yellow-100 text-yellow-800';
-      case 'Restricted': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const allRoles: UserRole[] = [
-    'Practice Administrator',
-    'Clinical Administrator',
-    'Clinician',
-    'Supervisor',
-    'Intern',
-    'Assistant',
-    'Associate',
-    'Practice Scheduler',
-    'Practice Biller',
-    'Biller for Assigned Patients Only'
-  ];
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const totalPermissions = PERMISSION_OPTIONS.length;
+    const totalRoles = USER_ROLE_OPTIONS.length;
+    const totalAssignments = permissionData.reduce((sum, perm) => sum + perm.roles.length, 0);
+    
+    return {
+      totalPermissions,
+      totalRoles,
+      totalAssignments,
+      averagePermissionsPerRole: totalRoles > 0 ? (totalAssignments / totalRoles).toFixed(1) : '0'
+    };
+  }, [permissionData]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Role Permissions Reference</h2>
-          <p className="text-gray-600">Understanding what each role can access and do in the system</p>
+    <PageLayout>
+      <PageHeader
+        icon={Shield}
+        title="Permission Matrix"
+        description="View which permissions are granted to each role in the system"
+        action={
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-sm">
+              {stats.totalPermissions} Permissions
+            </Badge>
+            <Badge variant="outline" className="text-sm">
+              {stats.totalRoles} Roles
+            </Badge>
+            <Badge variant="outline" className="text-sm">
+              {stats.totalAssignments} Assignments
+            </Badge>
+          </div>
+        }
+      />
+
+      {/* Statistics */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Permission Overview</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Total Permissions</span>
+              <Badge variant="default">{stats.totalPermissions}</Badge>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Total Roles</span>
+              <Badge variant="default">{stats.totalRoles}</Badge>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Total Assignments</span>
+              <Badge variant="default">{stats.totalAssignments}</Badge>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Avg. Permissions/Role</span>
+              <Badge variant="secondary">{stats.averagePermissionsPerRole}</Badge>
+            </div>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setShowDetails(!showDetails)}
-          className="flex items-center space-x-2"
-        >
-          {showDetails ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          <span>{showDetails ? 'Hide' : 'Show'} Details</span>
-        </Button>
       </div>
 
-      <Tabs value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
-        <TabsList className="grid grid-cols-5 lg:grid-cols-10 gap-1">
-          {allRoles.map(role => (
-            <TabsTrigger
-              key={role}
-              value={role}
-              className="text-xs px-2 py-1"
-              title={role}
-            >
-              {role.split(' ')[0]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {allRoles.map(role => (
-          <TabsContent key={role} value={role}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{role}</span>
-                  <Badge className={getAccessLevelColor(rolePermissions[role].accessLevel)}>
-                    {rolePermissions[role].accessLevel} Access
-                  </Badge>
-                </CardTitle>
-                <p className="text-gray-600">{rolePermissions[role].description}</p>
-              </CardHeader>
-              
-              {showDetails && (
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-green-700 mb-2">Permissions:</h4>
-                    <ul className="space-y-1">
-                      {rolePermissions[role].permissions.map((permission, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <span className="text-green-600 mt-1">•</span>
-                          <span className="text-sm">{permission}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {rolePermissions[role].restrictions.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-red-700 mb-2">Restrictions:</h4>
-                      <ul className="space-y-1">
-                        {rolePermissions[role].restrictions.map((restriction, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <span className="text-red-600 mt-1">•</span>
-                            <span className="text-sm">{restriction}</span>
-                          </li>
-                        ))}
-                      </ul>
+      {/* Permission Matrix Table */}
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Permission Matrix</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                View which permissions are granted to each role. Green dots indicate granted permissions.
+              </p>
+            </div>
+            <div className="relative w-80">
+              <Input
+                placeholder="Search permissions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                      column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
+                    } ${column.className || ''}`}
+                    style={{ width: column.width }}
+                    onClick={() => {
+                      if (column.sortable) {
+                        handleSort(column.key);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>{column.header}</span>
+                      {column.sortable && (
+                        <div className="flex flex-col">
+                          {sortColumn === column.key ? (
+                            sortDirection === 'asc' ? (
+                              <ChevronUp className="h-3 w-3" />
+                            ) : (
+                              <ChevronDown className="h-3 w-3" />
+                            )
+                          ) : (
+                            <div className="flex flex-col">
+                              <ChevronUp className="h-3 w-3 text-gray-300" />
+                              <ChevronDown className="h-3 w-3 text-gray-300" />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </CardContent>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {processedData.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                    {searchTerm ? 'No permissions found matching your search' : 'No permissions found'}
+                  </td>
+                </tr>
+              ) : (
+                processedData.map((item) => (
+                  <tr
+                    key={item.permission}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    {columns.map((column) => (
+                      <td
+                        key={column.key}
+                        className={`px-4 py-3 text-sm text-gray-900 ${column.className || ''}`}
+                      >
+                        {column.accessor(item)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
               )}
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
-    </div>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="mt-6 bg-white rounded-lg border border-gray-200 p-4">
+        <h4 className="text-sm font-semibold text-gray-900 mb-3">Legend</h4>
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-gray-600">Permission Granted</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+            <span className="text-sm text-gray-600">Permission Not Granted</span>
+          </div>
+        </div>
+      </div>
+    </PageLayout>
   );
 };
 
-export default RolePermissionsViewer;
+export default PermissionsPage;
