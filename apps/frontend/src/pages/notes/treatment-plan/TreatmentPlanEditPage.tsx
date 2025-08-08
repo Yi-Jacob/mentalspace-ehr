@@ -8,6 +8,9 @@ import { TreatmentPlanLoadingState, TreatmentPlanNotFoundState } from './compone
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useTreatmentPlanForm } from './hooks/useTreatmentPlanForm';
 import { SECTIONS } from './constants/sections';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import { Target } from 'lucide-react';
 
 const TreatmentPlanForm = () => {
   const { noteId } = useParams();
@@ -46,12 +49,19 @@ const TreatmentPlanForm = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
-        <TreatmentPlanNavigationHeader
-          clientName={clientName}
-          progress={progress}
-          currentSection={currentSection}
-          totalSections={SECTIONS.length}
+      <PageLayout variant="gradient">
+        <PageHeader
+          icon={Target}
+          title="Treatment Plan"
+          description={`Client: ${clientName || 'Unknown Client'}`}
+          action={
+            <TreatmentPlanNavigationHeader
+              clientName={clientName}
+              progress={progress}
+              currentSection={currentSection}
+              totalSections={SECTIONS.length}
+            />
+          }
         />
         
         <TreatmentPlanLayout
@@ -67,7 +77,7 @@ const TreatmentPlanForm = () => {
             currentSection={currentSection}
             formData={formData}
             updateFormData={updateFormData}
-            clientData={note.clients}
+            clientData={note.client}
             onSave={handleSave}
             isLoading={saveNoteMutation.isPending}
             onPrevious={handlePrevious}
@@ -75,7 +85,7 @@ const TreatmentPlanForm = () => {
             onSaveDraft={handleSaveDraft}
           />
         </TreatmentPlanLayout>
-      </div>
+      </PageLayout>
     </ErrorBoundary>
   );
 };

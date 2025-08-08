@@ -4,16 +4,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Plus, Clock, Zap } from 'lucide-react';
-import { noteTypes } from './config/noteTypes';
+import { noteTypes } from '../components/config/noteTypes';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import CreateNoteModal from '../components/CreateNoteModal';
+import { useNoteCreation } from '../hooks/useNoteCreation';
+import { useNotesModal } from '../hooks/useNotesModal';
 
 interface CreateNoteGridProps {
   onCreateNote: (noteType: string) => void;
-  isCreatingIntake: boolean;
+  isCreatingIntake?: boolean;
+  createNoteMutation?: any;
 }
 
 const CreateNoteGrid: React.FC<CreateNoteGridProps> = ({
   onCreateNote,
   isCreatingIntake,
+  createNoteMutation,
 }) => {
   const getCardGradient = (index: number) => {
     const gradients = [
@@ -97,10 +104,10 @@ const CreateNoteGrid: React.FC<CreateNoteGridProps> = ({
                 <Button 
                   onClick={() => onCreateNote(noteType.type)}
                   className={`w-full bg-gradient-to-r ${gradient} hover:shadow-lg transition-all duration-300 group-hover:shadow-xl border-0`}
-                  disabled={noteType.type === 'intake' && isCreatingIntake}
+                  disabled={createNoteMutation?.isPending}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  {noteType.type === 'intake' && isCreatingIntake 
+                  {createNoteMutation?.isPending 
                     ? 'Creating...' 
                     : `Create ${noteType.title}`
                   }
@@ -123,10 +130,10 @@ const CreateNoteGrid: React.FC<CreateNoteGridProps> = ({
           <Button 
             onClick={() => onCreateNote('progress_note')}
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-            disabled={isCreatingIntake}
+            disabled={createNoteMutation?.isPending}
           >
             <Zap className="w-4 h-4 mr-2" />
-            Quick Progress Note
+            {createNoteMutation?.isPending ? 'Creating...' : 'Quick Progress Note'}
           </Button>
         </div>
       </div>
@@ -134,4 +141,40 @@ const CreateNoteGrid: React.FC<CreateNoteGridProps> = ({
   );
 };
 
-export default CreateNoteGrid;
+// Wrapper component for the route
+const CreateNotePage: React.FC = () => {
+  const { showCreateModal, selectedNoteType, handleCreateNote, handleCloseModal } = useNotesModal();
+  const { createNoteMutation } = useNoteCreation();
+
+  const handleCreateNoteClick = (noteType: string) => {
+    handleCreateNote(noteType);
+  };
+
+  const handleCloseModalWithReset = () => {
+    handleCloseModal();
+  };
+
+  return (
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={Plus}
+        title="Create New Note"
+        description="Choose the type of clinical note you'd like to create"
+      />
+      <CreateNoteGrid 
+        onCreateNote={handleCreateNoteClick}
+        isCreatingIntake={false}
+        createNoteMutation={createNoteMutation}
+      />
+      
+      <CreateNoteModal
+        isOpen={showCreateModal}
+        onClose={handleCloseModalWithReset}
+        noteType={selectedNoteType}
+        createNoteMutation={createNoteMutation}
+      />
+    </PageLayout>
+  );
+};
+
+export default CreateNotePage;

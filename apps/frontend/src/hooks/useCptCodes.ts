@@ -1,18 +1,15 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { billingService } from '@/services/billingService';
+import { CPT_CODES, CptCodeOption } from '@/types/enums/notesEnum';
 
 export const useCptCodes = () => {
   return useQuery({
     queryKey: ['cpt-codes'],
-    queryFn: async () => {
-      const data = await billingService.getCptCodes();
-      
-      return data.map(cpt => ({
-        value: cpt.code,
-        label: cpt.description,
-        description: cpt.description, // Using description as category since backend doesn't have category field
-      }));
+    queryFn: async (): Promise<CptCodeOption[]> => {
+      // Return static CPT codes from enum
+      return CPT_CODES;
     },
+    staleTime: Infinity, // Never refetch since this is static data
+    gcTime: Infinity, // Keep in cache indefinitely
   });
 };

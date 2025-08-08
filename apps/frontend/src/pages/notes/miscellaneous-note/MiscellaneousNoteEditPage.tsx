@@ -14,6 +14,9 @@ import FinalizationSection from './components/FinalizationSection';
 import { useMiscellaneousNoteData } from './hooks/useMiscellaneousNoteData';
 import { useMiscellaneousNoteForm } from './hooks/useMiscellaneousNoteForm';
 import { useMiscellaneousNoteSave } from './hooks/useMiscellaneousNoteSave';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import { FileText } from 'lucide-react';
 
 const MiscellaneousNoteForm = () => {
   const { noteId } = useParams();
@@ -32,58 +35,65 @@ const MiscellaneousNoteForm = () => {
   const handleFinalize = () => handleSave(formData, false, validateForm);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <MiscellaneousNoteHeader
-          clientName={clientName}
-          onSaveDraft={handleSaveDraft}
-          onFinalize={handleFinalize}
-          isLoading={isLoading}
-          canFinalize={canFinalize}
-        />
-
-        <ClientInfoDisplay clientData={noteData?.clients} />
-
-        <Card>
-          <CardContent className="p-6 space-y-8">
-            <BasicInfoSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <ContentSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <RelatedPersonsSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <LegalComplianceSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <OutcomesSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <FinalizationSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <MiscellaneousNoteNavigationButtons
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={FileText}
+        title="Miscellaneous Note"
+        description={`Client: ${clientName}`}
+        action={
+          <div className="flex space-x-2">
+            <MiscellaneousNoteHeader
+              clientName={clientName}
               onSaveDraft={handleSaveDraft}
+              onFinalize={handleFinalize}
               isLoading={isLoading}
+              canFinalize={canFinalize}
             />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+        }
+      />
+
+      <ClientInfoDisplay clientData={noteData?.client} />
+
+      <Card>
+        <CardContent className="p-6 space-y-8">
+          <BasicInfoSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <ContentSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <RelatedPersonsSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <LegalComplianceSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <OutcomesSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <FinalizationSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <MiscellaneousNoteNavigationButtons
+            onSaveDraft={handleSaveDraft}
+            isLoading={isLoading}
+          />
+        </CardContent>
+      </Card>
+    </PageLayout>
   );
 };
 

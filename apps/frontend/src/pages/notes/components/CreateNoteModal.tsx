@@ -89,6 +89,13 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
     }
   }, [isOpen]);
 
+  // Close modal on successful creation
+  React.useEffect(() => {
+    if (createNoteMutation?.isSuccess) {
+      onClose();
+    }
+  }, [createNoteMutation?.isSuccess, onClose]);
+
   // Set default title for structured notes
   React.useEffect(() => {
     if (noteType === 'intake') {

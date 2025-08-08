@@ -1,6 +1,6 @@
-import { useNotesTabs } from '@/hooks/useNotesTabs';
-import { useNotesModal } from '@/hooks/useNotesModal';
-import { useNoteCreation } from '@/hooks/useNoteCreation';
+import { useNotesTabs } from '@/pages/notes/hooks/useNotesTabs';
+import { useNotesModal } from '@/pages/notes/hooks/useNotesModal';
+import { useNoteCreation } from '@/pages/notes/hooks/useNoteCreation';
 
 export const useNotes = () => {
   const { activeTab, setActiveTab } = useNotesTabs();

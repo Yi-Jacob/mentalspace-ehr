@@ -15,6 +15,9 @@ import NavigationButtons from '../progress-note/components/NavigationButtons';
 import { useConsultationNoteData } from './hooks/useConsultationNoteData';
 import { useConsultationNoteForm } from './hooks/useConsultationNoteForm';
 import { useConsultationNoteSave } from './hooks/useConsultationNoteSave';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import { Users } from 'lucide-react';
 
 const ConsultationNoteForm = () => {
   const { noteId } = useParams();
@@ -23,8 +26,8 @@ const ConsultationNoteForm = () => {
   const { formData, updateFormData, validateForm } = useConsultationNoteForm(noteData);
   const { isLoading, handleSave } = useConsultationNoteSave(noteId);
 
-  const clientName = noteData?.clients 
-    ? `${noteData.clients.first_name} ${noteData.clients.last_name}`
+  const clientName = noteData?.client 
+    ? `${noteData.client.firstName} ${noteData.client.lastName}`
     : 'Unknown Client';
 
   const canFinalize = validateForm() && !!formData.signature;
@@ -82,71 +85,78 @@ const ConsultationNoteForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <ConsultationNoteHeader
-          clientName={clientName}
-          onSaveDraft={handleSaveDraft}
-          onFinalize={handleFinalize}
-          isLoading={isLoading}
-          canFinalize={canFinalize}
-        />
-
-        <ClientInfoDisplay clientData={noteData?.clients} />
-
-        <Card>
-          <CardContent className="p-6 space-y-8">
-            <ConsultationInfoSection 
-              formData={formData} 
-              updateFormData={updateFormData} 
-            />
-
-            <ParticipantsSection
-              participants={formData.participants}
-              onAddParticipant={addParticipant}
-              onUpdateParticipant={updateParticipant}
-              onRemoveParticipant={removeParticipant}
-            />
-
-            <ClinicalDiscussionSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <RecommendationsSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <ActionItemsSection
-              actionItems={formData.actionItemOwners}
-              onAddActionItem={addActionItem}
-              onUpdateActionItem={updateActionItem}
-              onRemoveActionItem={removeActionItem}
-            />
-
-            <ComplianceSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <FinalizationSection
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-
-            <NavigationButtons
-              currentSection={0}
-              totalSections={1}
-              onPrevious={() => {}}
-              onNext={() => {}}
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={Users}
+        title="Consultation Note"
+        description={`Client: ${clientName}`}
+        action={
+          <div className="flex space-x-2">
+            <ConsultationNoteHeader
+              clientName={clientName}
               onSaveDraft={handleSaveDraft}
+              onFinalize={handleFinalize}
               isLoading={isLoading}
+              canFinalize={canFinalize}
             />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+        }
+      />
+
+      <ClientInfoDisplay clientData={noteData?.client} />
+
+      <Card>
+        <CardContent className="p-6 space-y-8">
+          <ConsultationInfoSection 
+            formData={formData} 
+            updateFormData={updateFormData} 
+          />
+
+          <ParticipantsSection
+            participants={formData.participants}
+            onAddParticipant={addParticipant}
+            onUpdateParticipant={updateParticipant}
+            onRemoveParticipant={removeParticipant}
+          />
+
+          <ClinicalDiscussionSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <RecommendationsSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <ActionItemsSection
+            actionItems={formData.actionItemOwners}
+            onAddActionItem={addActionItem}
+            onUpdateActionItem={updateActionItem}
+            onRemoveActionItem={removeActionItem}
+          />
+
+          <ComplianceSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <FinalizationSection
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+
+          <NavigationButtons
+            currentSection={0}
+            totalSections={1}
+            onPrevious={() => {}}
+            onNext={() => {}}
+            onSaveDraft={handleSaveDraft}
+            isLoading={isLoading}
+          />
+        </CardContent>
+      </Card>
+    </PageLayout>
   );
 };
 

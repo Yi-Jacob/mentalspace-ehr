@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Plus, Edit, Trash2, DollarSign } from 'lucide-react';
 import { billingService, FeeSchedule, CptCode } from '@/services/billingService';
 import { useToast } from '@/hooks/use-toast';
+import { CPT_CODES, CptCodeOption } from '@/types/enums/notesEnum';
 
 interface FeeScheduleModalProps {
   isOpen: boolean;
@@ -41,9 +42,12 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
 
   const { data: cptCodes } = useQuery({
     queryKey: ['cpt-codes'],
-    queryFn: async () => {
-      return billingService.getCptCodes();
+    queryFn: async (): Promise<CptCodeOption[]> => {
+      // Return static CPT codes from enum
+      return CPT_CODES;
     },
+    staleTime: Infinity, // Never refetch since this is static data
+    gcTime: Infinity, // Keep in cache indefinitely
   });
 
   const saveMutation = useMutation({
@@ -125,7 +129,7 @@ const FeeScheduleModal: React.FC<FeeScheduleModalProps> = ({ isOpen, onClose, pa
   };
 
   const getCptDescription = (code: string) => {
-    const cpt = cptCodes?.find(c => c.code === code);
+    const cpt = cptCodes?.find(c => c.value === code);
     return cpt?.description || '';
   };
 

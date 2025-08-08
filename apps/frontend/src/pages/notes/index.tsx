@@ -6,7 +6,7 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import NotesTabs from '@/pages/notes/components/NotesTabs';
 import CreateNoteModal from '@/pages/notes/components/CreateNoteModal';
-import { useNotes } from '@/hooks/useNotes';
+import { useNotes } from '@/pages/notes/hooks/useNotes';
 import { FileText, TrendingUp, Users, Clock } from 'lucide-react';
 
 const Notes = () => {

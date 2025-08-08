@@ -8,6 +8,9 @@ import { ProgressNoteLoadingState, ProgressNoteNotFoundState } from './component
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useProgressNoteForm } from './hooks/useProgressNoteForm';
 import { SECTIONS } from './constants/sections';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import { FileText } from 'lucide-react';
 
 const ProgressNoteForm = () => {
   const { noteId } = useParams();
@@ -46,12 +49,19 @@ const ProgressNoteForm = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-        <ProgressNoteNavigationHeader
-          clientName={clientName}
-          progress={progress}
-          currentSection={currentSection}
-          totalSections={SECTIONS.length}
+      <PageLayout variant="gradient">
+        <PageHeader
+          icon={FileText}
+          title="Progress Note"
+          description={`Client: ${clientName || 'Unknown Client'}`}
+          action={
+            <ProgressNoteNavigationHeader
+              clientName={clientName}
+              progress={progress}
+              currentSection={currentSection}
+              totalSections={SECTIONS.length}
+            />
+          }
         />
         
         <ProgressNoteLayout
@@ -75,7 +85,7 @@ const ProgressNoteForm = () => {
             onSaveDraft={handleSaveDraft}
           />
         </ProgressNoteLayout>
-      </div>
+      </PageLayout>
     </ErrorBoundary>
   );
 };

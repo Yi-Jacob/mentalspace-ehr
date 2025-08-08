@@ -45,7 +45,18 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
-  { id: 'notes', label: 'Notes', icon: FileText, path: '/notes' },
+  { 
+    id: 'notes', 
+    label: 'Notes', 
+    icon: FileText, 
+    path: '/notes',
+    subItems: [
+      { id: 'all-notes', label: 'All Notes', path: '/notes/all-notes' },
+      { id: 'create-note', label: 'Create Note', path: '/notes/create-note' },
+      { id: 'pending-approvals', label: 'Pending Approvals', path: '/notes/pending-approvals' },
+      { id: 'note-compliance', label: 'Compliance', path: '/notes/note-compliance' },
+    ]
+  },
   { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling' },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
@@ -72,17 +83,30 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const navigate = useNavigate();
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes']));
 
   const getActiveItem = () => {
     if (propActiveItem) return propActiveItem;
 
     const currentPath = location.pathname;
     if (currentPath === '/') return 'dashboard';
-    if (currentPath.startsWith('/notes')) return 'notes';
     if (currentPath.startsWith('/scheduling')) return 'scheduling';
     if (currentPath.startsWith('/clients')) return 'clients';
     if (currentPath.startsWith('/reports')) return 'reports';
+
+    // Handle notes sub-items
+    if (currentPath.startsWith('/notes')) {
+      for (const item of menuItems) {
+        if (item.id === 'notes' && item.subItems) {
+          const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
+          if (matchedSubItem) {
+            return matchedSubItem.id;
+          }
+        }
+      }
+      // If no specific sub-item matches, return 'notes' for the main notes page
+      return 'notes';
+    }
 
     for (const item of menuItems) {
       if (item.subItems) {

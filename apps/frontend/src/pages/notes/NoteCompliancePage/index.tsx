@@ -6,11 +6,11 @@ import { subDays, isAfter } from 'date-fns';
 import { useComplianceMetrics } from '@/hooks/useComplianceMetrics';
 import { useProductivityGoals } from '@/hooks/useProductivityGoals';
 import { useQuickActions } from '@/hooks/useQuickActions';
-import ComplianceStatsGrid from './compliance/ComplianceStatsGrid';
-import RecentComplianceList from './compliance/RecentComplianceList';
-import ComplianceGoals from './compliance/ComplianceGoals';
-import ActionRequiredCard from './compliance/ActionRequiredCard';
-import ActiveActionsCard from './compliance/ActiveActionsCard';
+import ComplianceStatsGrid from '../components/compliance/ComplianceStatsGrid';
+import RecentComplianceList from '../components/compliance/RecentComplianceList';
+import ComplianceGoals from '../components/compliance/ComplianceGoals';
+import ActionRequiredCard from '../components/compliance/ActionRequiredCard';
+import ActiveActionsCard from '../components/compliance/ActiveActionsCard';
 
 const ComplianceTracker = () => {
   const { metrics, isLoading: metricsLoading } = useComplianceMetrics();

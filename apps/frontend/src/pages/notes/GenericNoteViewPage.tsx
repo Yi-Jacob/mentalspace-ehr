@@ -7,6 +7,8 @@ import { ArrowLeft, Edit, User, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 
 const GenericNoteView = () => {
   const { noteId } = useParams();
@@ -23,26 +25,30 @@ const GenericNoteView = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
+      <PageLayout>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </PageLayout>
     );
   }
 
   if (!note) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-center">
-          <FileText className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Note not found</h3>
-          <p className="mt-1 text-sm text-gray-500">The requested note could not be found.</p>
-          <div className="mt-6">
-            <Button onClick={() => navigate('/notes')}>
-              Return to Notes
-            </Button>
+      <PageLayout>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Note not found</h3>
+            <p className="mt-1 text-sm text-gray-500">The requested note could not be found.</p>
+            <div className="mt-6">
+              <Button onClick={() => navigate('/notes')}>
+                Return to Notes
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
@@ -62,17 +68,28 @@ const GenericNoteView = () => {
     ).join(' ');
   };
 
+  const clientName = note.client 
+    ? `${note.client.firstName} ${note.client.lastName}`
+    : `Client ID: ${note.clientId}`;
+
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/notes')}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Notes
-          </Button>
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={FileText}
+        title={note.title}
+        description={
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-1">
+              <User className="w-4 h-4" />
+              <span>{clientName}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              <span>{format(new Date(note.createdAt), 'PPP')}</span>
+            </div>
+          </div>
+        }
+        badge={
           <div className="flex items-center gap-2">
             <Badge className={getStatusColor(note.status)}>
               {note.status.replace('_', ' ').toUpperCase()}
@@ -81,27 +98,16 @@ const GenericNoteView = () => {
               {formatNoteType(note.noteType)}
             </Badge>
           </div>
-        </div>
-
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{note.title}</h1>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <User className="w-4 h-4" />
-                <span>Client ID: {note.clientId}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{format(new Date(note.createdAt), 'PPP')}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FileText className="w-4 h-4" />
-                <span>Provider ID: {note.providerId}</span>
-              </div>
-            </div>
-          </div>
+        }
+        action={
           <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/notes')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Notes
+            </Button>
             <Button 
               variant="outline"
               onClick={() => navigate(`/client/${note.clientId}`)}
@@ -118,8 +124,8 @@ const GenericNoteView = () => {
               </Button>
             )}
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Note Content */}
       <div className="space-y-6">
@@ -188,7 +194,7 @@ const GenericNoteView = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

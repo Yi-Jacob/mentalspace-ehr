@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { IntakeFormData } from '../types/IntakeFormData';
 import ValidatedInput from '@/components/form/ValidatedInput';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
@@ -21,9 +21,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
 }) => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { data: cptCodes = [] } = useCptCodes();
-
-  console.log('ClientOverviewSection - clientData:', clientData);
-
+  
   // Get primary phone number
   const primaryPhone = clientData?.phone_numbers?.find(
     (phone: any) => phone.phone_type === 'Mobile' || phone.phone_type === 'Home' || phone.phone_type === 'Work' || phone.phone_type === 'Other'
@@ -35,7 +33,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   )?.insurance_company || '';
 
   // Set initial values if not already set
-  React.useEffect(() => {
+  useEffect(() => {
     if (clientData && !formData.primaryPhone && !formData.primaryInsurance) {
       updateFormData({
         primaryPhone: primaryPhone,
@@ -45,12 +43,21 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
     }
   }, [clientData, formData.primaryPhone, formData.primaryInsurance, primaryPhone, primaryInsurance, updateFormData]);
 
-  const handleValidationChange = (field: string) => (isValid: boolean, error?: string) => {
-    setValidationErrors(prev => ({
-      ...prev,
-      [field]: error || ''
-    }));
-  };
+  // Create stable validation handlers for each field
+  const validationHandlers = useMemo(() => ({
+    intakeDate: (isValid: boolean, error?: string) => {
+      setValidationErrors(prev => ({ ...prev, intakeDate: error || '' }));
+    },
+    primaryPhone: (isValid: boolean, error?: string) => {
+      setValidationErrors(prev => ({ ...prev, primaryPhone: error || '' }));
+    },
+    primaryEmail: (isValid: boolean, error?: string) => {
+      setValidationErrors(prev => ({ ...prev, primaryEmail: error || '' }));
+    },
+    primaryInsurance: (isValid: boolean, error?: string) => {
+      setValidationErrors(prev => ({ ...prev, primaryInsurance: error || '' }));
+    },
+  }), []);
 
   return (
     <FormErrorBoundary formName="Client Overview">
@@ -71,7 +78,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             type="date"
             value={formData.intakeDate}
             onChange={(value) => updateFormData({ intakeDate: value })}
-            onValidationChange={handleValidationChange('intakeDate')}
+            onValidationChange={validationHandlers.intakeDate}
             validation={validationSchemas.date}
             required
           />
@@ -82,7 +89,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             type="tel"
             value={formData.primaryPhone}
             onChange={(value) => updateFormData({ primaryPhone: value })}
-            onValidationChange={handleValidationChange('primaryPhone')}
+            onValidationChange={validationHandlers.primaryPhone}
             validation={validationSchemas.phone}
             sanitizer={sanitizeInput.phone}
             placeholder="Enter primary phone number"
@@ -94,7 +101,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             type="email"
             value={formData.primaryEmail}
             onChange={(value) => updateFormData({ primaryEmail: value })}
-            onValidationChange={handleValidationChange('primaryEmail')}
+            onValidationChange={validationHandlers.primaryEmail}
             validation={validationSchemas.email}
             sanitizer={sanitizeInput.email}
             placeholder="Enter primary email address"
@@ -105,7 +112,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             label="Primary Insurance"
             value={formData.primaryInsurance}
             onChange={(value) => updateFormData({ primaryInsurance: value })}
-            onValidationChange={handleValidationChange('primaryInsurance')}
+            onValidationChange={validationHandlers.primaryInsurance}
             validation={validationSchemas.textArea}
             sanitizer={sanitizeInput.text}
             placeholder="Enter primary insurance"

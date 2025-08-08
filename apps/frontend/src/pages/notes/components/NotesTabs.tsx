@@ -3,10 +3,10 @@ import React from 'react';
 import { FileText, Plus, Clock, Shield } from 'lucide-react';
 import { Badge } from '@/components/basic/badge';
 import PageTabs from '@/components/basic/PageTabs';
-import NotesList from './NotesList';
-import CreateNoteGrid from './CreateNoteGrid';
-import PendingApprovals from './PendingApprovals';
-import ComplianceTracker from './ComplianceTracker';
+import NotesList from '../AllNotesPage';
+import CreateNoteGrid from '../CreateNotePage';
+import PendingApprovals from '../PendingApprovalPage';
+import ComplianceTracker from '../NoteCompliancePage';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 
 interface NotesTabsProps {

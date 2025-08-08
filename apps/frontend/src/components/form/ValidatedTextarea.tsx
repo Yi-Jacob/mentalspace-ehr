@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/basic/textarea';
 import { Label } from '@/components/basic/label';
 import { Alert, AlertDescription } from '@/components/basic/alert';
@@ -42,15 +42,43 @@ const ValidatedTextarea: React.FC<ValidatedTextareaProps> = ({
   const [error, setError] = useState<string>('');
   const [touched, setTouched] = useState(false);
   const [isValid, setIsValid] = useState(true);
+  const prevValidationRef = useRef<{ value: string; isValid: boolean; error: string }>({
+    value: '',
+    isValid: true,
+    error: ''
+  });
+  const onValidationChangeRef = useRef(onValidationChange);
+
+  // Update the ref when onValidationChange changes
+  useEffect(() => {
+    onValidationChangeRef.current = onValidationChange;
+  }, [onValidationChange]);
 
   useEffect(() => {
     if (touched || value) {
       const result = validateField(value, validation);
-      setIsValid(result.isValid);
-      setError(result.error || '');
-      onValidationChange?.(result.isValid, result.error);
+      const newIsValid = result.isValid;
+      const newError = result.error || '';
+      
+      // Only update state if values have actually changed
+      if (
+        prevValidationRef.current.value !== value ||
+        prevValidationRef.current.isValid !== newIsValid ||
+        prevValidationRef.current.error !== newError
+      ) {
+        setIsValid(newIsValid);
+        setError(newError);
+        onValidationChangeRef.current?.(newIsValid, newError);
+        
+        // Update the ref with current values
+        prevValidationRef.current = {
+          value,
+          isValid: newIsValid,
+          error: newError
+        };
+      }
     }
-  }, [value, validation, touched, onValidationChange]);
+  }, [value, validation, touched]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const sanitizedValue = sanitizer(e.target.value);
