@@ -165,7 +165,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
               {isLoading ? 'Finalizing...' : 'Finalize & Sign'}
             </Button>
           </div>
-          
+
           {!isReadyToSign && (
             <p className="text-sm text-gray-600 text-center">
               Complete the review checklist and ensure 80% completion to finalize

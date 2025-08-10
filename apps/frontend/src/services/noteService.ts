@@ -43,6 +43,24 @@ export class NoteService {
     return response.data;
   }
 
+  // Save note as draft
+  async saveDraft(id: string, data: UpdateNoteRequest): Promise<Note> {
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/save-draft`, data);
+    return response.data;
+  }
+
+  // Sign note
+  async signNote(id: string): Promise<Note> {
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/sign`, {});
+    return response.data;
+  }
+
+  // Lock note
+  async lockNote(id: string): Promise<Note> {
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/lock`, {});
+    return response.data;
+  }
+
   // Delete note
   async deleteNote(id: string): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/${id}`);
@@ -67,18 +85,6 @@ export class NoteService {
   // Submit note for review
   async submitForReview(id: string): Promise<Note> {
     const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/submit`, {});
-    return response.data;
-  }
-
-  // Sign note
-  async signNote(id: string, signature: string): Promise<Note> {
-    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/sign`, { signature });
-    return response.data;
-  }
-
-  // Lock note
-  async lockNote(id: string): Promise<Note> {
-    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/lock`, {});
     return response.data;
   }
 }

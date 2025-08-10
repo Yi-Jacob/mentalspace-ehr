@@ -78,15 +78,15 @@ const IntakeAssessmentForm = () => {
   }, [note]);
 
   // Auto-save every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (noteId && !note?.status?.includes('signed')) {
-        saveNoteMutation.mutate({ data: formData, isDraft: true });
-      }
-    }, 30000);
+  // useEffect(() => {
+    // const interval = setInterval(() => {
+    //   if (noteId && !note?.status?.includes('signed')) {
+    //     saveNoteMutation.mutate({ data: formData, isDraft: true });
+    //   }
+    // }, 30000);
 
-    return () => clearInterval(interval);
-  }, [formData, noteId, note?.status]);
+  //   return () => clearInterval(interval);
+  // }, [formData, noteId, note?.status]);
 
   const updateFormData = useCallback((updates: Partial<IntakeFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -118,7 +118,6 @@ const IntakeAssessmentForm = () => {
   };
 
   const CurrentSectionComponent = SECTIONS[currentSection].component;
-  const progress = ((currentSection + 1) / SECTIONS.length) * 100;
 
   if (isLoading) {
     return (

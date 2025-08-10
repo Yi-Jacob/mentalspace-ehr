@@ -11,7 +11,7 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
   const { executeWithRetry, handleAPIError } = useEnhancedErrorHandler({
     component: 'SaveNote',
@@ -26,23 +26,52 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
     mutationFn: async ({ data, isDraft }: { data: Partial<IntakeFormData>; isDraft: boolean }) => {
       if (!noteId) throw new Error('No note ID');
       
+      // Wait for auth to finish loading
+      if (authLoading) {
+        throw new Error('Authentication is still loading, please wait');
+      }
+      
+      // Debug logging
+      console.log('useSaveNote - Auth loading:', authLoading);
+      console.log('useSaveNote - User object:', user);
+      console.log('useSaveNote - User email:', user?.email);
+      
+      // Validate user is authenticated
+      if (!user) {
+        throw new Error('User not authenticated - please log in again');
+      }
+      
       return await executeWithRetry(async () => {
         const finalData = { ...formData, ...data };
-        const status = isDraft ? 'draft' : finalData.isFinalized ? 'signed' : 'draft';
         
-        console.log('Saving note with status:', status, 'isDraft:', isDraft, 'data:', finalData);
-        
-        const updateData = {
-          content: finalData,
-          status: status,
-          ...(finalData.isFinalized && {
-            signedBy: user?.id,
-          }),
-        };
-        
-        const updatedNote = await noteService.updateNote(noteId, updateData);
-        
-        return { isDraft, isFinalized: finalData.isFinalized, note: updatedNote };
+        if (finalData.isFinalized && !isDraft) {
+          // If finalizing, first save the content, then sign the note
+          console.log('Finalizing note - saving content first');
+          
+          // First save the content as draft
+          const updateData = {
+            content: finalData,
+          };
+          
+          await noteService.saveDraft(noteId, updateData);
+          
+          // Then sign the note using the signNote method
+          console.log('Signing note - backend will use JWT token for user ID');
+          const signedNote = await noteService.signNote(noteId);
+          
+          return { isDraft: false, isFinalized: true, note: signedNote };
+        } else {
+          // Regular save (draft or content update)
+          console.log('Saving note as draft, isDraft:', isDraft, 'data:', finalData);
+          
+          const updateData = {
+            content: finalData,
+          };
+          
+          const updatedNote = await noteService.saveDraft(noteId, updateData);
+          
+          return { isDraft, isFinalized: false, note: updatedNote };
+        }
       }, 'Save Note');
     },
     onSuccess: ({ isDraft, isFinalized, note }) => {
@@ -69,7 +98,7 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
     },
     onError: (error) => {
       console.error('Error saving note:', error);
-      handleAPIError(error, `/notes/${noteId}`, 'PATCH');
+      handleAPIError(error, `/notes/${noteId}/save-draft`, 'PATCH');
     },
   });
 };

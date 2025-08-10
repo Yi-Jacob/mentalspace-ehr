@@ -223,15 +223,72 @@ export class NotesService {
       throw new NotFoundException(`Note with ID ${id} not found`);
     }
 
-    // Prevent updates to locked notes
     if (existingNote.status === NoteStatus.LOCKED) {
       throw new BadRequestException('Cannot update a locked note');
+    }
+
+    if (existingNote.status === NoteStatus.SIGNED) {
+      throw new BadRequestException('Cannot update a signed note. Create an addendum instead.');
     }
 
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {
         ...updateNoteDto,
+        updatedAt: new Date(),
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
+    });
+
+    return this.mapToEntity(note);
+  }
+
+  async saveDraft(id: string, updateNoteDto: UpdateNoteDto, providerId: string): Promise<NoteEntity> {
+    const existingNote = await this.prisma.clinicalNote.findUnique({
+      where: { id },
+    });
+
+    if (!existingNote) {
+      throw new NotFoundException(`Note with ID ${id} not found`);
+    }
+
+    if (existingNote.status === NoteStatus.LOCKED) {
+      throw new BadRequestException('Cannot update a locked note');
+    }
+
+    if (existingNote.status === NoteStatus.SIGNED) {
+      throw new BadRequestException('Cannot update a signed note. Create an addendum instead.');
+    }
+
+    const note = await this.prisma.clinicalNote.update({
+      where: { id },
+      data: {
+        ...updateNoteDto,
+        status: NoteStatus.DRAFT,
+        providerId,
         updatedAt: new Date(),
       },
       include: {
