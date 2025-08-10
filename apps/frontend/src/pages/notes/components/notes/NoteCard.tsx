@@ -141,7 +141,6 @@ const NoteCard: React.FC<NoteCardProps> = ({
             View
           </Button>
           
-          {note.status === 'draft' && onEdit && (
             <Button
               variant="outline"
               size="sm"
@@ -150,7 +149,6 @@ const NoteCard: React.FC<NoteCardProps> = ({
             >
               Edit
             </Button>
-          )}
           
           {note.status === 'signed' && onCoSign && note.signedBy && user && (
             <Button
