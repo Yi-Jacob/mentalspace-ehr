@@ -15,6 +15,7 @@ import { Button } from '@/components/basic/button';
 import { noteService } from '@/services/noteService';
 import { Note } from '@/types/noteType';
 import { filterNotes, sortNotes } from '../components/notes/utils/noteFilters';
+import { getNoteRoute } from '@/utils/routingUtils';
 
 type FilterNoteStatus = 'all' | Note['status'];
 type FilterNoteType = 'all' | Note['noteType'];
@@ -49,31 +50,7 @@ const NotesList = () => {
     },
   });
 
-  // Helper function to get the correct route based on note type
-  const getNoteRoute = (note: Note, isEdit: boolean = false) => {
-    const baseRoute = isEdit ? 'edit' : '';
-    const separator = isEdit ? '/edit' : '';
-    
-    switch (note.noteType) {
-      case 'progress_note':
-        return `/notes/progress-note/${note.id}${separator}`;
-      case 'intake':
-        return `/notes/intake/${note.id}${separator}`;
-      case 'treatment_plan':
-        return `/notes/treatment-plan/${note.id}${separator}`;
-      case 'cancellation_note':
-        return `/notes/cancellation-note/${note.id}${separator}`;
-      case 'contact_note':
-        return `/notes/contact-note/${note.id}${separator}`;
-      case 'consultation_note':
-        return `/notes/consultation-note/${note.id}${separator}`;
-      case 'miscellaneous_note':
-        return `/notes/miscellaneous-note/${note.id}${separator}`;
-      default:
-        // Fallback to generic route
-        return `/notes/note/${note.id}${separator}`;
-    }
-  };
+
 
   // Apply search filter and sorting
   const filteredNotes = React.useMemo(() => {

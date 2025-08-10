@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
+import { getNoteRoute } from '@/utils/routingUtils';
 import { ClientFormData } from '@/types/clientType';
 import { LoadingState } from '@/components/basic/loading-state';
 import { EmptyState } from '@/components/basic/empty-state';
@@ -36,19 +37,13 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   };
 
   const handleViewNote = (note: any) => {
-    if (note.noteType === 'progress_note') {
-      navigate(`/notes/progress-note/${note.id}`);
-    } else {
-      navigate(`/notes/note/${note.id}`);
-    }
+    const viewRoute = getNoteRoute(note, false);
+    navigate(viewRoute);
   };
 
   const handleEditNote = (note: any) => {
-    if (note.noteType === 'progress_note') {
-      navigate(`/notes/progress-note/${note.id}/edit`);
-    } else {
-      navigate(`/notes/note/${note.id}/edit`);
-    }
+    const editRoute = getNoteRoute(note, true);
+    navigate(editRoute);
   };
 
   if (isLoading) {

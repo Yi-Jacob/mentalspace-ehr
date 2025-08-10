@@ -3,6 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { noteService } from '@/services/noteService';
+import { getNoteRoute } from '@/utils/routingUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
@@ -22,12 +23,20 @@ const PendingApprovals = () => {
   });
 
   const handleReview = (noteId: string) => {
-    navigate(`/notes/note/${noteId}`);
+    // Find the note by ID to get the note type
+    const note = pendingNotes?.find(n => n.id === noteId);
+    if (note) {
+      const viewRoute = getNoteRoute(note, false);
+      navigate(viewRoute);
+    } else {
+      // Fallback to generic route if note not found
+      navigate(`/notes/note/${noteId}`);
+    }
   };
 
   const handleApprove = async (noteId: string) => {
     try {
-      await noteService.updateNote(noteId, { status: 'signed' });
+      await noteService.updateNote(noteId, { status: 'accepted' });
       // Refetch the data
       window.location.reload();
     } catch (error) {
@@ -37,7 +46,7 @@ const PendingApprovals = () => {
 
   const handleReject = async (noteId: string) => {
     try {
-      await noteService.updateNote(noteId, { status: 'draft' });
+      await noteService.updateNote(noteId, { status: 'rejected' });
       // Refetch the data
       window.location.reload();
     } catch (error) {
