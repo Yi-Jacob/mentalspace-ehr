@@ -1,12 +1,13 @@
-
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { IntakeFormData } from '../types/IntakeFormData';
 import ValidatedInput from '@/components/form/ValidatedInput';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
 import { validationSchemas, sanitizeInput } from '@/utils/validation';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
-import SearchableSelect from '../../components/shared/SearchableSelect';
+import { SelectField } from '@/components/basic/select';
 import { useCptCodes } from '@/hooks/useCptCodes';
+import { useClientPhoneNumbers } from '@/hooks/useClientPhoneNumbers';
+import { useClientInsurance } from '@/hooks/useClientInsurance';
 
 interface ClientOverviewSectionProps {
   formData: IntakeFormData;
@@ -21,43 +22,40 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
 }) => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { data: cptCodes = [] } = useCptCodes();
+  const { data: phoneNumbers = [], isLoading: isLoadingPhones } = useClientPhoneNumbers(clientData?.id);
+  const { data: insuranceOptions = [], isLoading: isLoadingInsurance } = useClientInsurance(clientData?.id);
   
-  // Get primary phone number
-  const primaryPhone = clientData?.phone_numbers?.find(
-    (phone: any) => phone.phone_type === 'Mobile' || phone.phone_type === 'Home' || phone.phone_type === 'Work' || phone.phone_type === 'Other'
-  )?.phone_number || '';
-
-  // Get primary insurance
-  const primaryInsurance = clientData?.insurance_info?.find(
-    (insurance: any) => insurance.is_active
-  )?.insurance_company || '';
-
+  
   // Set initial values if not already set
   useEffect(() => {
     if (clientData && !formData.primaryPhone && !formData.primaryInsurance) {
       updateFormData({
-        primaryPhone: primaryPhone,
+        primaryPhone: '',
         primaryEmail: clientData.email || '',
-        primaryInsurance: primaryInsurance,
+        primaryInsurance: '',
       });
     }
-  }, [clientData, formData.primaryPhone, formData.primaryInsurance, primaryPhone, primaryInsurance, updateFormData]);
-
-  // Create stable validation handlers for each field
+  }, [clientData, formData.primaryPhone, formData.primaryInsurance, '', '', updateFormData]);  // Create stable validation handlers for each field
+  
+  
   const validationHandlers = useMemo(() => ({
+
     intakeDate: (isValid: boolean, error?: string) => {
       setValidationErrors(prev => ({ ...prev, intakeDate: error || '' }));
-    },
-    primaryPhone: (isValid: boolean, error?: string) => {
-      setValidationErrors(prev => ({ ...prev, primaryPhone: error || '' }));
     },
     primaryEmail: (isValid: boolean, error?: string) => {
       setValidationErrors(prev => ({ ...prev, primaryEmail: error || '' }));
     },
-    primaryInsurance: (isValid: boolean, error?: string) => {
-      setValidationErrors(prev => ({ ...prev, primaryInsurance: error || '' }));
-    },
   }), []);
+
+  // Set initial values if not already set
+  useEffect(() => {
+    if (clientData && !formData.primaryEmail) {
+      updateFormData({
+        primaryEmail: clientData.email || '',
+      });
+    }
+  }, [clientData, formData.primaryEmail, updateFormData]);
 
   return (
     <FormErrorBoundary formName="Client Overview">
@@ -83,16 +81,14 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             required
           />
 
-          <ValidatedInput
-            id="primaryPhone"
+          <SelectField
             label="Primary Phone"
-            type="tel"
             value={formData.primaryPhone}
-            onChange={(value) => updateFormData({ primaryPhone: value })}
-            onValidationChange={validationHandlers.primaryPhone}
-            validation={validationSchemas.phone}
-            sanitizer={sanitizeInput.phone}
-            placeholder="Enter primary phone number"
+            onValueChange={(value) => updateFormData({ primaryPhone: value })}
+            options={phoneNumbers}
+            placeholder={isLoadingPhones ? "Loading phone numbers..." : "Select primary phone"}
+            disabled={isLoadingPhones}
+            required
           />
 
           <ValidatedInput
@@ -107,24 +103,23 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             placeholder="Enter primary email address"
           />
 
-          <ValidatedInput
-            id="primaryInsurance"
+          <SelectField
             label="Primary Insurance"
             value={formData.primaryInsurance}
-            onChange={(value) => updateFormData({ primaryInsurance: value })}
-            onValidationChange={validationHandlers.primaryInsurance}
-            validation={validationSchemas.textArea}
-            sanitizer={sanitizeInput.text}
-            placeholder="Enter primary insurance"
+            onValueChange={(value) => updateFormData({ primaryInsurance: value })}
+            options={insuranceOptions}
+            placeholder={isLoadingInsurance ? "Loading insurance..." : "Select primary insurance"}
+            disabled={isLoadingInsurance}
+            required
           />
 
           <div className="md:col-span-2">
-            <SearchableSelect
+            <SelectField
               label="CPT Code"
               value={formData.cptCode}
-              onChange={(value) => updateFormData({ cptCode: value })}
+              onValueChange={(value) => updateFormData({ cptCode: value })}
               options={cptCodes}
-              placeholder="Search CPT codes..."
+              placeholder="Select CPT code"
               required
             />
           </div>

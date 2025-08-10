@@ -1,4 +1,3 @@
-
 import { apiClient } from './api-helper/client';
 import { 
   ClientFormData, 
@@ -108,10 +107,9 @@ export class ClientService {
   }
 
   // Phone numbers
-  async getClientPhoneNumbers(clientId: string): Promise<PhoneNumber[]> {
+  async getClientPhoneNumbers(clientId: string): Promise<PhoneNumberDto[]> {
     const response = await apiClient.get<PhoneNumberDto[]>(`${this.baseUrl}/${clientId}/phone-numbers`);
-    const dtos = response.data;
-    return dtos.map(dto => this.convertPhoneDtoToForm(dto));
+    return response.data as PhoneNumberDto[];
   }
 
   async updateClientPhoneNumbers(clientId: string, phoneNumbers: PhoneNumber[]): Promise<PhoneNumber[]> {
@@ -134,10 +132,9 @@ export class ClientService {
   }
 
   // Insurance
-  async getClientInsurance(clientId: string): Promise<InsuranceInfo[]> {
+  async getClientInsurance(clientId: string): Promise<InsuranceInfoDto[]> {
     const response = await apiClient.get<InsuranceInfoDto[]>(`${this.baseUrl}/${clientId}/insurance`);
-    const dtos = response.data;
-    return dtos.map(dto => this.convertInsuranceDtoToForm(dto));
+    return response.data as InsuranceInfoDto[];
   }
 
   async updateClientInsurance(clientId: string, insurance: InsuranceInfo[]): Promise<InsuranceInfo[]> {
@@ -199,6 +196,18 @@ export class ClientService {
 
     const response = await apiClient.put<ClientFormData>(`${this.baseUrl}/${clientId}/with-form-data`, data);
     console.log('updateClientWithFormData', response.data);
+    return response.data;
+  }
+
+  // Get client phone numbers for notes
+  async getClientPhoneNumbersForNotes(clientId: string) {
+    const response = await apiClient.get(`${this.baseUrl}/${clientId}/phone-numbers-for-notes`);
+    return response.data;
+  }
+
+  // Get client insurance for notes
+  async getClientInsuranceForNotes(clientId: string) {
+    const response = await apiClient.get(`${this.baseUrl}/${clientId}/insurance-for-notes`);
     return response.data;
   }
 }

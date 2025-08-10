@@ -4,7 +4,7 @@ import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
 import { useCptCodes } from '@/hooks/useCptCodes';
-import SearchableSelect from '../../components/shared/SearchableSelect';
+import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
 
 interface ClientOverviewSectionProps {

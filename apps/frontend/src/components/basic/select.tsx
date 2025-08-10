@@ -146,7 +146,7 @@ const SelectSeparator = React.forwardRef<
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
 // SelectField Component
-interface SelectOption {
+export interface SelectOption {
   value: string;
   label: string;
 }

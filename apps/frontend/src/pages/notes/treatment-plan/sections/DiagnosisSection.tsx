@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Button } from '@/components/basic/button';
 import { Plus, X } from 'lucide-react';
 import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
-import SearchableSelect from '../../components/shared/SearchableSelect';
+import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import { useDiagnosisCodes } from '@/hooks/useDiagnosisCodes';
 
 interface DiagnosisSectionProps {

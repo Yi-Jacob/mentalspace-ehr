@@ -4,7 +4,7 @@ import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Search, ChevronDown } from 'lucide-react';
 
-interface Option {
+export interface Option {
   value: string;
   label: string;
   description?: string;

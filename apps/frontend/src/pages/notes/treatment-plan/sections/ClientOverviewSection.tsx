@@ -5,7 +5,7 @@ import ValidatedInput from '@/components/form/ValidatedInput';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
 import { validationSchemas, sanitizeInput } from '@/utils/validation';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
-import SearchableSelect from '../../components/shared/SearchableSelect';
+import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import { useCptCodes } from '@/hooks/useCptCodes';
 
 interface ClientOverviewSectionProps {
