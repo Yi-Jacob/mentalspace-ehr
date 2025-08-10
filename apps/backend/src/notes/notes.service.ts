@@ -527,6 +527,50 @@ export class NotesService {
     return this.mapToEntity(note);
   }
 
+  async unlockNote(id: string): Promise<NoteEntity> {
+    const existingNote = await this.prisma.clinicalNote.findUnique({
+      where: { id },
+    });
+
+    if (!existingNote) {
+      throw new NotFoundException(`Note with ID ${id} not found`);
+    }
+
+    const note = await this.prisma.clinicalNote.update({
+      where: { id },
+      data: {
+        status: NoteStatus.DRAFT,
+        updatedAt: new Date(),
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
+    });
+
+    return this.mapToEntity(note);
+  }
+
   private mapToEntity(note: any): NoteEntity {
     return {
       id: note.id,

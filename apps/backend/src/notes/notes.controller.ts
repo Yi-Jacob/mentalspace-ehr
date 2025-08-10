@@ -108,4 +108,11 @@ export class NotesController {
   async lockNote(@Param('id') id: string): Promise<NoteEntity> {
     return this.notesService.lockNote(id);
   }
+
+  @Patch(':id/unlock')
+  @ApiOperation({ summary: 'Unlock a note' })
+  @ApiResponse({ status: 200, description: 'Note unlocked successfully', type: NoteEntity })
+  async unlockNote(@Param('id') id: string): Promise<NoteEntity> {
+    return this.notesService.unlockNote(id);
+  }
 } 

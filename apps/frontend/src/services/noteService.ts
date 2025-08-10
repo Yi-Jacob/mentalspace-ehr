@@ -67,6 +67,12 @@ export class NoteService {
     return response.data;
   }
 
+  // Unlock note
+  async unlockNote(id: string): Promise<Note> {
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/unlock`, {});
+    return response.data;
+  }
+
   // Delete note
   async deleteNote(id: string): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/${id}`);

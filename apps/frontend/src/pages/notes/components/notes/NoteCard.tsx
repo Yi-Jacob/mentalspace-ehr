@@ -15,6 +15,8 @@ interface NoteCardProps {
   onDelete?: (id: string) => void;
   onView?: (id: string) => void;
   onCoSign?: (id: string) => void;
+  onLock?: (id: string) => void;
+  onUnlock?: (id: string) => void;
 }
 
 const NoteCard: React.FC<NoteCardProps> = ({
@@ -23,6 +25,8 @@ const NoteCard: React.FC<NoteCardProps> = ({
   onDelete,
   onView,
   onCoSign,
+  onLock,
+  onUnlock,
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -141,6 +145,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
             View
           </Button>
           
+          {onEdit && (
             <Button
               variant="outline"
               size="sm"
@@ -149,6 +154,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
             >
               Edit
             </Button>
+          )}
           
           {note.status === 'signed' && onCoSign && note.signedBy && user && (
             <Button
@@ -158,6 +164,28 @@ const NoteCard: React.FC<NoteCardProps> = ({
               className="text-purple-600 border-purple-200 hover:bg-purple-50"
             >
               Co-sign
+            </Button>
+          )}
+
+          {note.status !== 'locked' && onLock && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onLock(note.id)}
+              className="text-orange-600 border-orange-200 hover:bg-orange-50"
+            >
+              Lock
+            </Button>
+          )}
+
+          {note.status === 'locked' && onUnlock && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onUnlock(note.id)}
+              className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+            >
+              Unlock
             </Button>
           )}
           

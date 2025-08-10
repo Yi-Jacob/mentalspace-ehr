@@ -128,6 +128,24 @@ const NotesList = () => {
     }
   };
 
+  const handleLock = async (id: string) => {
+    try {
+      await noteService.lockNote(id);
+      refetch(); // Refresh the notes list
+    } catch (error) {
+      console.error('Error locking note:', error);
+    }
+  };
+
+  const handleUnlock = async (id: string) => {
+    try {
+      await noteService.unlockNote(id);
+      refetch(); // Refresh the notes list
+    } catch (error) {
+      console.error('Error unlocking note:', error);
+    }
+  };
+
   const handleCreateNote = () => {
     navigate('/notes/create-note');
   };
@@ -183,6 +201,8 @@ const NotesList = () => {
               onDelete={handleDelete}
               onView={handleView}
               onCoSign={handleCoSign}
+              onLock={handleLock}
+              onUnlock={handleUnlock}
               searchQuery={searchTerm}
             />
           </LoadingWithError>
