@@ -94,6 +94,14 @@ export class NotesController {
     return this.notesService.signNote(id, req.user.id);
   }
 
+  @Patch(':id/co-sign')
+  @ApiOperation({ summary: 'Request co-signature for a note' })
+  @ApiResponse({ status: 200, description: 'Note marked for co-signature successfully', type: NoteEntity })
+  async coSign(@Param('id') id: string, @Request() req): Promise<NoteEntity> {
+    // Use the authenticated user's ID from the JWT token
+    return this.notesService.coSign(id, req.user.id);
+  }
+
   @Patch(':id/lock')
   @ApiOperation({ summary: 'Lock a note' })
   @ApiResponse({ status: 200, description: 'Note locked successfully', type: NoteEntity })

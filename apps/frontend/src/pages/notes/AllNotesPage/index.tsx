@@ -16,14 +16,14 @@ import { noteService } from '@/services/noteService';
 import { Note } from '@/types/noteType';
 import { filterNotes, sortNotes } from '../components/notes/utils/noteFilters';
 
-type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
-type NoteType = 'all' | 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
+type FilterNoteStatus = 'all' | Note['status'];
+type FilterNoteType = 'all' | Note['noteType'];
 
 const NotesList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<NoteStatus>('all');
-  const [typeFilter, setTypeFilter] = useState<NoteType>('all');
+  const [statusFilter, setStatusFilter] = useState<FilterNoteStatus>('all');
+  const [typeFilter, setTypeFilter] = useState<FilterNoteType>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('updatedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -142,6 +142,15 @@ const NotesList = () => {
     }
   };
 
+  const handleCoSign = async (id: string) => {
+    try {
+      await noteService.coSign(id);
+      refetch(); // Refresh the notes list
+    } catch (error) {
+      console.error('Error co-signing note:', error);
+    }
+  };
+
   const handleCreateNote = () => {
     navigate('/notes/create-note');
   };
@@ -196,6 +205,7 @@ const NotesList = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onView={handleView}
+              onCoSign={handleCoSign}
               searchQuery={searchTerm}
             />
           </LoadingWithError>

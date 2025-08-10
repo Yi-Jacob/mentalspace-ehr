@@ -182,7 +182,7 @@ export class NotesService {
   async findPendingApprovals(): Promise<NoteEntity[]> {
     const notes = await this.prisma.clinicalNote.findMany({
       where: {
-        status: NoteStatus.SUBMITTED_FOR_REVIEW
+        status: NoteStatus.PENDING_REVIEW
       },
       orderBy: { updatedAt: 'asc' },
       include: {
@@ -350,7 +350,7 @@ export class NotesService {
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {
-        status: NoteStatus.SUBMITTED_FOR_REVIEW,
+        status: NoteStatus.PENDING_REVIEW,
         updatedAt: new Date(),
       },
       include: {
@@ -401,6 +401,56 @@ export class NotesService {
         status: NoteStatus.SIGNED,
         signedBy,
         signedAt: new Date(),
+        updatedAt: new Date(),
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            email: true,
+            address1: true,
+            address2: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            genderIdentity: true,
+          }
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
+    });
+
+    return this.mapToEntity(note);
+  }
+
+  async coSign(id: string, coSignedBy: string): Promise<NoteEntity> {
+    const existingNote = await this.prisma.clinicalNote.findUnique({
+      where: { id },
+    });
+
+    if (!existingNote) {
+      throw new NotFoundException(`Note with ID ${id} not found`);
+    }
+
+    if (existingNote.status !== NoteStatus.SIGNED) {
+      throw new BadRequestException('Only signed notes can be marked for co-signature');
+    }
+
+    const note = await this.prisma.clinicalNote.update({
+      where: { id },
+      data: {
+        status: NoteStatus.PENDING_REVIEW,
+        coSignedBy,
+        coSignedAt: new Date(),
         updatedAt: new Date(),
       },
       include: {

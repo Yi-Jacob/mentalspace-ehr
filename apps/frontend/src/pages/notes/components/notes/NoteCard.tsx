@@ -7,12 +7,14 @@ import { FileText, Calendar, User, Clock, AlertTriangle } from 'lucide-react';
 import { format, isAfter, subDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Note } from '@/types/noteType';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NoteCardProps {
   note: Note;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onView?: (id: string) => void;
+  onCoSign?: (id: string) => void;
 }
 
 const NoteCard: React.FC<NoteCardProps> = ({
@@ -20,15 +22,17 @@ const NoteCard: React.FC<NoteCardProps> = ({
   onEdit,
   onDelete,
   onView,
+  onCoSign,
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft': return 'bg-gray-100 text-gray-800';
       case 'signed': return 'bg-green-100 text-green-800';
-      case 'submitted_for_review': return 'bg-blue-100 text-blue-800';
-      case 'approved': return 'bg-emerald-100 text-emerald-800';
+      case 'pending_review': return 'bg-yellow-100 text-yellow-800';
+      case 'accepted': return 'bg-emerald-100 text-emerald-800';
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'locked': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -145,6 +149,17 @@ const NoteCard: React.FC<NoteCardProps> = ({
               className="text-green-600 border-green-200 hover:bg-green-50"
             >
               Edit
+            </Button>
+          )}
+          
+          {note.status === 'signed' && onCoSign && note.signedBy && user && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onCoSign(note.id)}
+              className="text-purple-600 border-purple-200 hover:bg-purple-50"
+            >
+              Co-sign
             </Button>
           )}
           

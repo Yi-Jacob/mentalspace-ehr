@@ -12,8 +12,10 @@ export enum NoteType {
 
 export enum NoteStatus {
   DRAFT = 'draft',
-  SUBMITTED_FOR_REVIEW = 'submitted_for_review',
+  PENDING_REVIEW = 'pending_review',
   SIGNED = 'signed',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
   LOCKED = 'locked',
 }
 

@@ -55,6 +55,12 @@ export class NoteService {
     return response.data;
   }
 
+  // Co-sign note
+  async coSign(id: string): Promise<Note> {
+    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/co-sign`, {});
+    return response.data;
+  }
+
   // Lock note
   async lockNote(id: string): Promise<Note> {
     const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/lock`, {});

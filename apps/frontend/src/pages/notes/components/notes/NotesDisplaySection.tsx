@@ -18,6 +18,7 @@ interface NotesDisplaySectionProps {
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onView?: (id: string) => void;
+  onCoSign?: (id: string) => void;
   searchQuery?: string;
 }
 
@@ -31,6 +32,7 @@ const NotesDisplaySection: React.FC<NotesDisplaySectionProps> = ({
   onEdit,
   onDelete,
   onView,
+  onCoSign,
   searchQuery,
 }) => {
   if (isLoading) {
@@ -62,6 +64,7 @@ const NotesDisplaySection: React.FC<NotesDisplaySectionProps> = ({
               onEdit={onEdit}
               onDelete={onDelete}
               onView={onView}
+              onCoSign={onCoSign}
             />
           ))}
         </div>

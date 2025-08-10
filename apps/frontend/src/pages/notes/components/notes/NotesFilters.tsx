@@ -4,17 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Search, Filter } from 'lucide-react';
+import { Note } from '@/types/noteType';
 
-type NoteStatus = 'all' | 'draft' | 'signed' | 'submitted_for_review' | 'approved' | 'rejected' | 'locked';
-type NoteType = 'all' | 'intake' | 'progress_note' | 'treatment_plan' | 'cancellation_note' | 'contact_note' | 'consultation_note' | 'miscellaneous_note';
+type FilterNoteStatus = 'all' | Note['status'];
+type FilterNoteType = 'all' | Note['noteType'];
 
 interface NotesFiltersProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  statusFilter: NoteStatus;
-  setStatusFilter: (status: NoteStatus) => void;
-  typeFilter: NoteType;
-  setTypeFilter: (type: NoteType) => void;
+  statusFilter: FilterNoteStatus;
+  setStatusFilter: (status: FilterNoteStatus) => void;
+  typeFilter: FilterNoteType;
+  setTypeFilter: (type: FilterNoteType) => void;
 }
 
 const NotesFilters: React.FC<NotesFiltersProps> = ({
@@ -26,11 +27,11 @@ const NotesFilters: React.FC<NotesFiltersProps> = ({
   setTypeFilter,
 }) => {
   const handleStatusChange = (value: string) => {
-    setStatusFilter(value as NoteStatus);
+    setStatusFilter(value as FilterNoteStatus);
   };
 
   const handleTypeChange = (value: string) => {
-    setTypeFilter(value as NoteType);
+    setTypeFilter(value as FilterNoteType);
   };
 
   return (
@@ -65,8 +66,8 @@ const NotesFilters: React.FC<NotesFiltersProps> = ({
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="signed">Signed</SelectItem>
-                <SelectItem value="submitted_for_review">Pending Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="pending_review">Pending Review</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
                 <SelectItem value="locked">Locked</SelectItem>
               </SelectContent>

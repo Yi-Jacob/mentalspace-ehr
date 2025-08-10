@@ -51,8 +51,10 @@ export type NoteType =
 
 export type NoteStatus = 
   | 'draft'
-  | 'submitted_for_review'
+  | 'pending_review'
   | 'signed'
+  | 'accepted'
+  | 'rejected'
   | 'locked';
 
 export interface CreateNoteRequest {
