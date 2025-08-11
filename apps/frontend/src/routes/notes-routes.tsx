@@ -15,6 +15,8 @@ import PendingApprovals from '@/pages/notes/PendingApprovalPage';
 import AllNotes from '@/pages/notes/AllNotesPage';
 import CreateNotePage from '@/pages/notes/CreateNotePage/index';
 import NoteCompliance from '@/pages/notes/NoteCompliancePage/index';
+import NoteHistory from '@/pages/notes/NoteHistoryPage';
+import NoteHistoryView from '@/pages/notes/NoteHistoryViewPage';
 
 const notesRoutes: RouteObject[] = [
   {
@@ -98,6 +100,15 @@ const notesRoutes: RouteObject[] = [
   {
     path: 'miscellaneous-note/:noteId',
     element: <GenericNoteView />,
+  },
+  // Note History
+  {
+    path: ':noteId/history',
+    element: <NoteHistory />,
+  },
+  {
+    path: ':noteId/history/:versionId',
+    element: <NoteHistoryView />,
   }
 ];
 

@@ -1,20 +1,61 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
-import { ArrowLeft, Edit, User, Calendar, FileText, History } from 'lucide-react';
+import { ArrowLeft, History, User, Calendar, FileText, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { useNoteData } from './hooks/useNoteData';
-import { IntakeFormData } from './types/IntakeFormData';
+import { noteService } from '@/services/noteService';
+import { NoteHistoryVersion } from '@/types/noteHistoryType';
+import { IntakeFormData } from '../intake/types/IntakeFormData';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 
-const IntakeAssessmentView = () => {
-  const { noteId } = useParams();
+const NoteHistoryViewPage = () => {
+  const { noteId, versionId } = useParams();
   const navigate = useNavigate();
-  const { data: note, isLoading } = useNoteData(noteId);
+  const [historyEntry, setHistoryEntry] = useState<NoteHistoryVersion | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (noteId && versionId) {
+      loadHistoryVersion();
+    }
+  }, [noteId, versionId]);
+
+  const loadHistoryVersion = async () => {
+    try {
+      setIsLoading(true);
+      const versionData = await noteService.getNoteHistoryVersion(noteId!, versionId!);
+      setHistoryEntry(versionData);
+    } catch (err) {
+      setError('Failed to load note version');
+      console.error('Error loading note version:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()??'draft') {
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'signed': return 'bg-green-100 text-green-800';
+      case 'pending_review': return 'bg-yellow-100 text-yellow-800';
+      case 'accepted': return 'bg-emerald-100 text-emerald-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'locked': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getChangeIndicator = (entry: NoteHistoryVersion) => {
+    const changes = [];
+    if (entry.updatedTitle) changes.push('Title');
+    if (entry.updatedContent) changes.push('Content');
+    if (entry.updatedStatus) changes.push('Status');
+    return changes.length > 0 ? changes.join(', ') : 'No changes';
+  };
 
   if (isLoading) {
     return (
@@ -26,41 +67,27 @@ const IntakeAssessmentView = () => {
     );
   }
 
-  if (!note) {
+  if (error || !historyEntry) {
     return (
       <PageLayout>
         <div className="text-center py-8">
-          <p className="text-gray-600">Assessment not found</p>
-          <Button onClick={() => navigate('/notes')} className="mt-4">
-            Back to Notes
-          </Button>
+          <p className="text-red-600 mb-4">{error || 'Note version not found'}</p>
+          <Button onClick={loadHistoryVersion}>Retry</Button>
         </div>
       </PageLayout>
     );
   }
 
-  const formData = note.content as unknown as IntakeFormData;
-  const clientName = note.client 
-    ? `${note.client.firstName} ${note.client.lastName}`
+  const formData = historyEntry.content as unknown as IntakeFormData;
+  const clientName = historyEntry.clientFirstName 
+    ? `${historyEntry.clientFirstName} ${historyEntry.clientLastName}`
     : 'Unknown Client';
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'signed': return 'bg-green-100 text-green-800';
-      case 'pending_review': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-emerald-100 text-emerald-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'locked': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <PageLayout variant="gradient">
       <PageHeader
-        icon={User}
-        title="Intake Assessment"
+        icon={History}
+        title={`Note History - Version ${historyEntry.version}`}
         description={
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -68,52 +95,65 @@ const IntakeAssessmentView = () => {
               <span className="text-gray-700">{clientName}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
+              <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-gray-700">
-                {format(new Date(note.createdAt), 'MMM d, yyyy')}
+                {format(new Date(historyEntry.createdAt), 'MMM d, yyyy \'at\' h:mm a')}
               </span>
             </div>
           </div>
         }
         badge={
-          <Badge className={getStatusColor(note.status)}>
-            {note.status.replace('_', ' ').toUpperCase()}
+          <Badge className={getStatusColor(historyEntry.status)}>
+            {historyEntry.status?.replace('_', ' ').toUpperCase()}
           </Badge>
         }
         action={
           <div className="flex space-x-2">
             <Button 
               variant="outline"
-              onClick={() => navigate('/notes')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Notes
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => navigate(`/clients/${note.clientId}`)}
-            >
-              <User className="w-4 h-4 mr-2" />
-              View Client Chart
-            </Button>
-            {note.status === 'draft' && (
-              <Button 
-                onClick={() => navigate(`/notes/intake/${noteId}/edit`)}
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Note
-              </Button>
-            )}
-            <Button 
-              variant="outline"
               onClick={() => navigate(`/notes/${noteId}/history`)}
             >
-              <History className="w-4 h-4 mr-2" />
-              View History
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to History
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate(`/notes/${noteId}`)}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Current Version
             </Button>
           </div>
         }
       />
+
+      {/* Version Info */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <History className="w-5 h-5 mr-2" />
+            Version Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-500">Version Number</label>
+              <p className="text-gray-900 font-semibold">{historyEntry.version}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Changes Made</label>
+              <p className="text-gray-900">{getChangeIndicator(historyEntry)}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Created At</label>
+              <p className="text-gray-900">
+                {format(new Date(historyEntry.createdAt), 'MMM d, yyyy \'at\' h:mm a')}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Assessment Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -130,18 +170,13 @@ const IntakeAssessmentView = () => {
               <label className="text-sm font-medium text-gray-500">Intake Date</label>
               <p className="text-gray-900">{formData.intakeDate || 'Not specified'}</p>
             </div>
-            {note.client && (
-              <>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                  <p className="text-gray-900">
-                    {note.client.dateOfBirth 
-                      ? format(new Date(note.client.dateOfBirth), 'MMM d, yyyy')
-                      : 'Not specified'
-                    }
-                  </p>
-                </div>
-              </>
+            {historyEntry.clientDateOfBirth && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Date of Birth</label>
+                <p className="text-gray-900">
+                  {format(new Date(historyEntry.clientDateOfBirth), 'MMM d, yyyy')}
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -321,4 +356,4 @@ const IntakeAssessmentView = () => {
   );
 };
 
-export default IntakeAssessmentView;
+export default NoteHistoryViewPage;

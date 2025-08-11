@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
-import { ArrowLeft, Edit, User, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, User, Calendar, FileText, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
@@ -125,6 +125,13 @@ const GenericNoteView = () => {
                 Edit Note
               </Button>
             )}
+            <Button 
+              variant="outline"
+              onClick={() => navigate(`/notes/${noteId}/history`)}
+            >
+              <History className="w-4 h-4 mr-2" />
+              View History
+            </Button>
           </div>
         }
       />

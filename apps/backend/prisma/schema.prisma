@@ -731,25 +731,26 @@ model ScheduleException {
 }
 
 model ClinicalNote {
-  id         String   @id @default(uuid())
-  clientId   String   @map("client_id")
-  providerId String   @map("provider_id")
-  noteType   String   @map("note_type")
-  title      String
-  content    Json
-  status     String?  @map("status")
-  signedAt   DateTime @default(now()) @map("signed_at")
-  signedBy   String?  @map("signed_by")
-  approvedAt DateTime @default(now()) @map("approved_at")
-  approvedBy String?  @map("approved_by")
-  coSignedAt DateTime @default(now()) @map("co_signed_at")
-  coSignedBy String?  @map("co_signed_by")
-  lockedAt   DateTime @default(now()) @map("locked_at")
-  version    Int?
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @map("updated_at")
-  client     Client   @relation(fields: [clientId], references: [id])
-  provider   User     @relation("ClinicalNoteProvider", fields: [providerId], references: [id])
+  id          String        @id @default(uuid())
+  clientId    String        @map("client_id")
+  providerId  String        @map("provider_id")
+  noteType    String        @map("note_type")
+  title       String
+  content     Json
+  status      String?       @map("status")
+  signedAt    DateTime      @default(now()) @map("signed_at")
+  signedBy    String?       @map("signed_by")
+  approvedAt  DateTime      @default(now()) @map("approved_at")
+  approvedBy  String?       @map("approved_by")
+  coSignedAt  DateTime      @default(now()) @map("co_signed_at")
+  coSignedBy  String?       @map("co_signed_by")
+  lockedAt    DateTime      @default(now()) @map("locked_at")
+  version     Int?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @map("updated_at")
+  client      Client        @relation(fields: [clientId], references: [id])
+  provider    User          @relation("ClinicalNoteProvider", fields: [providerId], references: [id])
+  noteHistory NoteHistory[]
 
   @@map("clinical_notes")
 }
@@ -1062,17 +1063,6 @@ model TimeTracking {
   @@map("time_tracking")
 }
 
-model NoteVersion {
-  id        String   @id @default(uuid())
-  noteId    String   @map("note_id")
-  version   Int
-  content   Json
-  createdBy String?  @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("note_versions")
-}
-
 model MessageRecipient {
   id          String   @id @default(uuid())
   messageId   String   @map("message_id")
@@ -1216,4 +1206,22 @@ model PasswordResetToken {
   user      User      @relation(fields: [userId], references: [id])
 
   @@map("password_reset_tokens")
+}
+
+model NoteHistory {
+  id             String       @id(map: "note_versions_pkey") @default(dbgenerated("gen_random_uuid()"))
+  noteId         String       @map("note_id")
+  version        Int
+  content        Json
+  createdAt      DateTime     @default(now()) @map("created_at")
+  status         String?
+  title          String?
+  updatedContent Boolean?     @default(false) @map("updated_content")
+  updatedStatus  Boolean?     @default(false) @map("updated_status")
+  updatedTitle   Boolean?     @default(false) @map("updated_title")
+  note           ClinicalNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([noteId], map: "idx_note_history_note_id")
+  @@index([version], map: "idx_note_history_version")
+  @@map("note_history")
 }

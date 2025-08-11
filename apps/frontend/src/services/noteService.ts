@@ -1,5 +1,6 @@
 import { apiClient } from './api-helper/client';
 import { Note, CreateNoteRequest, UpdateNoteRequest, QueryNotesParams, NotesResponse } from '../types/noteType';
+import { NoteHistoryEntry, NoteHistoryVersion } from '../types/noteHistoryType';
 
 // Note Service
 export class NoteService {
@@ -97,6 +98,18 @@ export class NoteService {
   // Submit note for review
   async submitForReview(id: string): Promise<Note> {
     const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/submit`, {});
+    return response.data;
+  }
+
+  // Get note history
+  async getNoteHistory(noteId: string): Promise<NoteHistoryEntry[]> {
+    const response = await apiClient.get<NoteHistoryEntry[]>(`${this.baseUrl}/${noteId}/history`);
+    return response.data;
+  }
+
+  // Get specific note history version
+  async getNoteHistoryVersion(noteId: string, versionId: string): Promise<NoteHistoryVersion> {
+    const response = await apiClient.get<NoteHistoryVersion>(`${this.baseUrl}/${noteId}/history/${versionId}`);
     return response.data;
   }
 }

@@ -115,4 +115,18 @@ export class NotesController {
   async unlockNote(@Param('id') id: string): Promise<NoteEntity> {
     return this.notesService.unlockNote(id);
   }
+
+  @Get(':id/history')
+  @ApiOperation({ summary: 'Get note history' })
+  @ApiResponse({ status: 200, description: 'Note history retrieved successfully' })
+  async getNoteHistory(@Param('id') id: string) {
+    return this.notesService.getNoteHistory(id);
+  }
+
+  @Get(':id/history/:versionId')
+  @ApiOperation({ summary: 'Get specific note history version' })
+  @ApiResponse({ status: 200, description: 'Note history version retrieved successfully' })
+  async getNoteHistoryVersion(@Param('id') id: string, @Param('versionId') versionId: string) {
+    return this.notesService.getNoteHistoryVersion(id, versionId);
+  }
 } 

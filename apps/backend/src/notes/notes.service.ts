@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service';
 import { CreateNoteDto, UpdateNoteDto, QueryNotesDto, NoteStatus } from './dto';
 import { NoteEntity } from './entities/note.entity';
+import { NoteHistoryService } from './note-history.service';
 
 @Injectable()
 export class NotesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private noteHistoryService: NoteHistoryService
+  ) {}
 
   async createNote(createNoteDto: CreateNoteDto, providerId: string): Promise<NoteEntity> {
     const note = await this.prisma.clinicalNote.create({
@@ -16,6 +20,7 @@ export class NotesService {
         providerId,
         noteType: createNoteDto.noteType,
         status: createNoteDto.status || NoteStatus.DRAFT,
+        version: 1,
       },
       include: {
         client: {
@@ -41,6 +46,18 @@ export class NotesService {
           }
         }
       }
+    });
+
+    // Create initial history entry
+    await this.noteHistoryService.createInitialHistory({
+      noteId: note.id,
+      version: 1,
+      content: createNoteDto.content,
+      status: createNoteDto.status || NoteStatus.DRAFT,
+      title: createNoteDto.title,
+      updatedContent: false,
+      updatedStatus: false,
+      updatedTitle: false,
     });
 
     return this.mapToEntity(note);
@@ -231,10 +248,14 @@ export class NotesService {
       throw new BadRequestException('Cannot update a signed note. Create an addendum instead.');
     }
 
+    // Get the next version number
+    const nextVersion = (existingNote.version || 1) + 1;
+
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {
         ...updateNoteDto,
+        version: nextVersion,
         updatedAt: new Date(),
       },
       include: {
@@ -261,6 +282,22 @@ export class NotesService {
           }
         }
       }
+    });
+
+    // Determine what fields have changed
+    const fieldChanges = this.noteHistoryService.determineFieldChanges(
+      { content: existingNote.content, status: existingNote.status, title: existingNote.title },
+      { content: updateNoteDto.content, status: updateNoteDto.status, title: updateNoteDto.title }
+    );
+
+    // Create version history entry
+    await this.noteHistoryService.createHistoryEntry({
+      noteId: note.id,
+      version: nextVersion,
+      content: updateNoteDto.content || existingNote.content,
+      status: updateNoteDto.status || existingNote.status,
+      title: updateNoteDto.title || existingNote.title,
+      ...fieldChanges,
     });
 
     return this.mapToEntity(note);
@@ -283,12 +320,16 @@ export class NotesService {
       throw new BadRequestException('Cannot update a signed note. Create an addendum instead.');
     }
 
+    // Get the next version number
+    const nextVersion = (existingNote.version || 1) + 1;
+
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {
         ...updateNoteDto,
         status: NoteStatus.DRAFT,
         providerId,
+        version: nextVersion,
         updatedAt: new Date(),
       },
       include: {
@@ -315,6 +356,22 @@ export class NotesService {
           }
         }
       }
+    });
+
+    // Determine what fields have changed
+    const fieldChanges = this.noteHistoryService.determineFieldChanges(
+      { content: existingNote.content, status: existingNote.status, title: existingNote.title },
+      { content: updateNoteDto.content, status: updateNoteDto.status, title: updateNoteDto.title }
+    );
+
+    // Create version history entry
+    await this.noteHistoryService.createHistoryEntry({
+      noteId: note.id,
+      version: nextVersion,
+      content: updateNoteDto.content || existingNote.content,
+      status: updateNoteDto.status || existingNote.status,
+      title: updateNoteDto.title || existingNote.title,
+      ...fieldChanges,
     });
 
     return this.mapToEntity(note);
@@ -569,6 +626,44 @@ export class NotesService {
     });
 
     return this.mapToEntity(note);
+  }
+
+  async getNoteHistory(noteId: string): Promise<any[]> {
+    const history = await this.noteHistoryService.getNoteHistory(noteId);
+
+    return history.map(entry => ({
+      ...entry,
+      note_title: entry.note.title,
+      note_type: entry.note.noteType,
+      first_name: entry.note.client.firstName,
+      last_name: entry.note.client.lastName,
+    }));
+  }
+
+  async getNoteHistoryVersion(noteId: string, versionId: string): Promise<any> {
+    const historyEntry = await this.noteHistoryService.getHistoryEntry(versionId);
+
+    if (!historyEntry) {
+      throw new NotFoundException(`History entry with ID ${versionId} not found`);
+    }
+
+    return {
+      ...historyEntry,
+      note_title: historyEntry.note.title,
+      note_type: historyEntry.note.noteType,
+      first_name: historyEntry.note.client.firstName,
+      last_name: historyEntry.note.client.lastName,
+      date_of_birth: historyEntry.note.client.dateOfBirth,
+      email: historyEntry.note.client.email,
+      address1: historyEntry.note.client.address1,
+      address2: historyEntry.note.client.address2,
+      city: historyEntry.note.client.city,
+      state: historyEntry.note.client.state,
+      zip_code: historyEntry.note.client.zipCode,
+      gender_identity: historyEntry.note.client.genderIdentity,
+      provider_first_name: historyEntry.note.provider.firstName,
+      provider_last_name: historyEntry.note.provider.lastName,
+    };
   }
 
   private mapToEntity(note: any): NoteEntity {
