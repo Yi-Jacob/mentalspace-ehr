@@ -23,6 +23,7 @@ import {
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarContext } from '@/hooks/useSidebarContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/basic/button';
 
 interface SidebarProps {
@@ -83,6 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const navigate = useNavigate();
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
+  const isMobile = useIsMobile();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes']));
 
   const getActiveItem = () => {
@@ -144,12 +146,24 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   };
 
   return (
-    <div
-      className={cn(
-        "bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 min-h-screen shadow-xl flex flex-col fixed left-0 top-0 z-50 transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64"
+    <>
+      {/* Mobile Overlay */}
+      {isMobile && !isCollapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={toggleSidebar}
+        />
       )}
-    >
+      
+      <div
+        className={cn(
+          "bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 h-screen shadow-xl flex flex-col fixed left-0 top-0 z-50 transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64",
+          "max-h-screen overflow-hidden",
+          isMobile && isCollapsed && "-translate-x-full",
+          isMobile && "backdrop-blur-md"
+        )}
+      >
       {/* Header */}
       <div className="p-4 border-b border-blue-700 flex-shrink-0">
         <div className="flex items-center justify-center">
@@ -177,16 +191,34 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       <div className="px-3 py-4 flex-shrink-0">
         <Button
           variant="ghost"
-          size="icon"
           onClick={toggleSidebar}
-          className="w-full bg-blue-700/50 text-blue-200 hover:bg-blue-600 hover:text-white rounded-xl transition-all duration-200"
+          className={cn(
+            "w-full bg-blue-700/50 text-blue-200 hover:bg-blue-600 hover:text-white rounded-xl transition-all duration-200 group",
+            "border border-blue-600/30 shadow-sm hover:shadow-md",
+            "focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-blue-900",
+            "focus:outline-none focus:bg-blue-600 focus:text-white",
+            isCollapsed ? "justify-center" : "justify-between",
+            isCollapsed ? "hover:border-blue-500/50" : "hover:border-blue-500/50"
+          )}
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
-          {isCollapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
+          {isCollapsed ? (
+            <>
+              <Menu size={18} className="group-hover:scale-110 transition-transform duration-200" />
+              <span className="sr-only">Expand Sidebar</span>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-medium">Collapse</span>
+              <ChevronLeft size={18} className="group-hover:scale-110 transition-transform duration-200" />
+            </>
+          )}
         </Button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto scrollbar-thin min-h-0">
+      {/* Navigation - Scrollable */}
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto overflow-x-hidden min-h-0 sidebar-scrollbar">
         {menuItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = activeItem === item.id || (item.subItems && item.subItems.some(subItem => activeItem === subItem.id));
@@ -227,9 +259,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
                 {!isCollapsed && (
                   <>
-                    <span className="font-medium text-sm">{item.label}</span>
+                    <span className="font-medium text-sm flex-1">{item.label}</span>
                     {item.subItems && (
-                      <div className="ml-auto">
+                      <div className="ml-auto flex-shrink-0">
                         {isExpanded ? (
                           <ChevronDown size={14} className="text-blue-300" />
                         ) : (
@@ -256,7 +288,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
                       )}
                     >
                       <div className={cn(
-                        "w-2 h-2 rounded-full",
+                        "w-2 h-2 rounded-full flex-shrink-0",
                         activeItem === subItem.id ? "bg-blue-300" : "bg-blue-500"
                       )}></div>
                       <span className="font-medium">{subItem.label}</span>
@@ -291,6 +323,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
         </Button>
       </div>
     </div>
+    </>
   );
 };
 
