@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { useProgressNoteForm } from './hooks/useProgressNoteForm';
 import { SECTIONS } from './constants/sections';
-import { NoteEditLayout } from '../components/layout';
+import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 
 const ProgressNoteForm = () => {
   const { noteId } = useParams();
@@ -26,7 +26,7 @@ const ProgressNoteForm = () => {
   } = useProgressNoteForm(noteId);
 
   return (
-    <NoteEditLayout
+    <SectionStyleNoteEditLayout
       title="Progress Note"
       description="Complete progress note for client"
       icon={FileText}
@@ -42,7 +42,6 @@ const ProgressNoteForm = () => {
       onPrevious={handlePrevious}
       onSectionClick={handleSectionClick}
       onSaveDraft={handleSaveDraft}
-      showNavigationButtons={false} // Navigation is handled by CurrentSectionCard
     />
   );
 };

@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Target } from 'lucide-react';
 import { useTreatmentPlanForm } from './hooks/useTreatmentPlanForm';
 import { SECTIONS } from './constants/sections';
-import { NoteEditLayout } from '../components/layout';
+import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 
 const TreatmentPlanForm = () => {
   const { noteId } = useParams();
@@ -27,7 +27,7 @@ const TreatmentPlanForm = () => {
   } = useTreatmentPlanForm(noteId);
 
   return (
-    <NoteEditLayout
+    <SectionStyleNoteEditLayout
       title="Treatment Plan"
       description="Complete treatment plan for client"
       icon={Target}
@@ -43,7 +43,6 @@ const TreatmentPlanForm = () => {
       onPrevious={handlePrevious}
       onSectionClick={handleSectionClick}
       onSaveDraft={handleSaveDraft}
-      showNavigationButtons={false} // Navigation is handled by CurrentSectionCard
     />
   );
 };

@@ -11,7 +11,6 @@ import RecommendationsSection from './components/RecommendationsSection';
 import ActionItemsSection from './components/ActionItemsSection';
 import ComplianceSection from './components/ComplianceSection';
 import FinalizationSection from './components/FinalizationSection';
-import NavigationButtons from '../progress-note/components/NavigationButtons';
 import { useConsultationNoteData } from './hooks/useConsultationNoteData';
 import { useConsultationNoteForm } from './hooks/useConsultationNoteForm';
 import { useConsultationNoteSave } from './hooks/useConsultationNoteSave';
@@ -144,15 +143,6 @@ const ConsultationNoteForm = () => {
           <FinalizationSection
             formData={formData}
             updateFormData={updateFormData}
-          />
-
-          <NavigationButtons
-            currentSection={0}
-            totalSections={1}
-            onPrevious={() => {}}
-            onNext={() => {}}
-            onSaveDraft={handleSaveDraft}
-            isLoading={isLoading}
           />
         </CardContent>
       </Card>

@@ -19,7 +19,6 @@ interface CurrentSectionCardProps<T = any> {
   onPrevious: () => void;
   onNext: () => void;
   onSaveDraft: () => void;
-  showNavigationButtons?: boolean;
 }
 
 const CurrentSectionCard = <T extends Record<string, any>>({
@@ -33,7 +32,6 @@ const CurrentSectionCard = <T extends Record<string, any>>({
   onPrevious,
   onNext,
   onSaveDraft,
-  showNavigationButtons = true,
 }: CurrentSectionCardProps<T>) => {
   const CurrentSectionComponent = sections[currentSection].component;
 
@@ -76,7 +74,6 @@ const CurrentSectionCard = <T extends Record<string, any>>({
           />
         </ErrorBoundary>
         
-        {showNavigationButtons && (
           <div className="flex justify-between mt-8 pt-6 border-t">
             <div className="flex space-x-2">
               <button
@@ -105,7 +102,6 @@ const CurrentSectionCard = <T extends Record<string, any>>({
               </button>
             </div>
           </div>
-        )}
       </CardContent>
     </Card>
   );

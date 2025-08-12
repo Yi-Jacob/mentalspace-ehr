@@ -6,7 +6,7 @@ import { IntakeFormData } from './types/IntakeFormData';
 import { SECTIONS } from './constants/sections';
 import { useNoteData } from './hooks/useNoteData';
 import { useSaveNote } from './hooks/useSaveNote';
-import { NoteEditLayout } from '../components/layout';
+import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 
 const IntakeAssessmentForm = () => {
   const { noteId } = useParams();
@@ -98,7 +98,7 @@ const IntakeAssessmentForm = () => {
   };
 
   return (
-    <NoteEditLayout
+    <SectionStyleNoteEditLayout
       title="Intake Assessment"
       description="Complete intake assessment for client"
       icon={UserPlus}
@@ -114,7 +114,6 @@ const IntakeAssessmentForm = () => {
       onPrevious={handlePrevious}
       onSectionClick={handleSectionClick}
       onSaveDraft={handleSaveDraft}
-      showNavigationButtons={false} // Navigation is handled by CurrentSectionCard
     />
   );
 };

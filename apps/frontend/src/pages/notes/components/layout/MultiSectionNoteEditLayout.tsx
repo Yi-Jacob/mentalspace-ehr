@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
-import { ArrowLeft, Save, LucideIcon } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -20,7 +20,7 @@ interface NoteEditLayoutProps<T = any> {
   // Page configuration
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<any>;
   
   // Data and state
   sections: Section[];
@@ -39,11 +39,10 @@ interface NoteEditLayoutProps<T = any> {
   onSaveDraft: () => void;
   
   // Optional customization
-  showNavigationButtons?: boolean;
   customHeaderAction?: React.ReactNode;
 }
 
-const NoteEditLayout = <T extends Record<string, any>>({
+const SectionStyleNoteEditLayout = <T extends Record<string, any>>({
   title,
   description,
   icon: Icon,
@@ -59,7 +58,6 @@ const NoteEditLayout = <T extends Record<string, any>>({
   onPrevious,
   onSectionClick,
   onSaveDraft,
-  showNavigationButtons = true,
   customHeaderAction,
 }: NoteEditLayoutProps<T>) => {
   const navigate = useNavigate();
@@ -142,7 +140,6 @@ const NoteEditLayout = <T extends Record<string, any>>({
               onPrevious={onPrevious}
               onNext={onNext}
               onSaveDraft={onSaveDraft}
-              showNavigationButtons={showNavigationButtons}
             />
           </div>
         </div>
@@ -151,4 +148,4 @@ const NoteEditLayout = <T extends Record<string, any>>({
   );
 };
 
-export default NoteEditLayout;
+export default SectionStyleNoteEditLayout;
