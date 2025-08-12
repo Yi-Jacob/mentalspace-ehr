@@ -5,7 +5,7 @@ import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Plus, Trash2 } from 'lucide-react';
-import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
+import { ConsultationNoteFormData } from '@/types/noteType';
 
 interface ActionItemsSectionProps {
   actionItems: ConsultationNoteFormData['actionItemOwners'];

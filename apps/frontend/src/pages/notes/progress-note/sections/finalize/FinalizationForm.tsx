@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/basic/checkbox';
 import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { AlertTriangle } from 'lucide-react';
-import { ProgressNoteFormData } from '../../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 
 interface FinalizationFormProps {
   formData: ProgressNoteFormData;

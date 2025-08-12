@@ -7,7 +7,7 @@ import { Badge } from '@/components/basic/badge';
 import { ArrowLeft, Edit, User, Calendar, FileText, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNoteData } from './hooks/useNoteData';
-import { IntakeFormData } from './types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 

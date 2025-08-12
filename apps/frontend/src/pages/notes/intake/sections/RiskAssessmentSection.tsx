@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/basic/checkbox';
 import { Textarea } from '@/components/basic/textarea';
 import { Card, CardContent } from '@/components/basic/card';
 import { AlertTriangle } from 'lucide-react';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 
 const RISK_FACTORS = [
   'Current Suicidal Ideation',

@@ -1,4 +1,4 @@
-import { apiRequest } from './api-helper/apiRequest';
+import { apiClient } from './api-helper/client';
 
 export interface License {
   id: string;
@@ -42,47 +42,32 @@ class LicenseService {
   private baseUrl = '/licenses';
 
   async getAllLicenses(): Promise<License[]> {
-    return apiRequest<License[]>({
-      url: this.baseUrl,
-      method: 'GET',
-    });
+    const response = await apiClient.get<License[]>(this.baseUrl);
+    return response.data;
   }
 
   async getLicenseById(id: string): Promise<License> {
-    return apiRequest<License>({
-      url: `${this.baseUrl}/${id}`,
-      method: 'GET',
-    });
+    const response = await apiClient.get<License>(`${this.baseUrl}/${id}`);
+    return response.data;
   }
 
   async getLicensesByStaffId(staffId: string): Promise<License[]> {
-    return apiRequest<License[]>({
-      url: `${this.baseUrl}/staff/${staffId}`,
-      method: 'GET',
-    });
+    const response = await apiClient.get<License[]>(`${this.baseUrl}/staff/${staffId}`);
+    return response.data;
   }
 
   async createLicense(data: CreateLicenseData): Promise<License> {
-    return apiRequest<License>({
-      url: this.baseUrl,
-      method: 'POST',
-      data,
-    });
+    const response = await apiClient.post<License>(this.baseUrl, data);
+    return response.data;
   }
 
   async updateLicense(id: string, data: UpdateLicenseData): Promise<License> {
-    return apiRequest<License>({
-      url: `${this.baseUrl}/${id}`,
-      method: 'PATCH',
-      data,
-    });
+    const response = await apiClient.patch<License>(`${this.baseUrl}/${id}`, data);
+    return response.data;
   }
 
   async deleteLicense(id: string): Promise<void> {
-    return apiRequest<void>({
-      url: `${this.baseUrl}/${id}`,
-      method: 'DELETE',
-    });
+    await apiClient.delete(`${this.baseUrl}/${id}`);
   }
 }
 

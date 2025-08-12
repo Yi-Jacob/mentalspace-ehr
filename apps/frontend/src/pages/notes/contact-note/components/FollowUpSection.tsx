@@ -5,7 +5,7 @@ import { Input } from '@/components/basic/input';
 import { Textarea } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
 import { Clock } from 'lucide-react';
-import { ContactNoteFormData } from '../types/ContactNoteFormData';
+import { ContactNoteFormData } from '@/types/noteType';
 
 interface FollowUpSectionProps {
   formData: ContactNoteFormData;

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
 import { Plus } from 'lucide-react';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 import { RiskAreaCard } from './risk-assessment/RiskAreaCard';
 import { NoRiskCheckbox } from './risk-assessment/NoRiskCheckbox';
 

@@ -4,7 +4,7 @@ import { Label } from '@/components/basic/label';
 import { Textarea } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
 import { AlertTriangle } from 'lucide-react';
-import { ContactNoteFormData } from '../types/ContactNoteFormData';
+import { ContactNoteFormData } from '@/types/noteType';
 
 interface RiskAssessmentSectionProps {
   formData: ContactNoteFormData;

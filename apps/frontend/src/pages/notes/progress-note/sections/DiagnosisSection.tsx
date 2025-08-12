@@ -7,7 +7,7 @@ import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Textarea } from '@/components/basic/textarea';
 import { Plus, X, History } from 'lucide-react';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 import { useDiagnosesData } from '../../intake/hooks/useDiagnosesData';
 import DiagnosisSearch, { DiagnosisOption } from '../../intake/sections/diagnosis/DiagnosisSearch';
 import DiagnosisSuggestions from '../../intake/sections/diagnosis/DiagnosisSuggestions';

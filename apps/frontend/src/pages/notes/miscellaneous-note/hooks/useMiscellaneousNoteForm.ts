@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 export const useMiscellaneousNoteForm = (noteData?: any) => {
   const [formData, setFormData] = useState<MiscellaneousNoteFormData>({

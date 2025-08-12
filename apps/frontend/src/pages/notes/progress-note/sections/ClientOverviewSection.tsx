@@ -2,7 +2,7 @@
 import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 import { useCptCodes } from '@/hooks/useCptCodes';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';

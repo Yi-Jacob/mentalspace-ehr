@@ -4,7 +4,7 @@ import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 interface FinalizationSectionProps {
   formData: Pick<MiscellaneousNoteFormData, 'signature' | 'isFinalized' | 'signedBy' | 'signedAt'>;

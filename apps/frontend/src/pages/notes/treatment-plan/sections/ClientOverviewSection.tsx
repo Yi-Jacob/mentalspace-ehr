@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 import ValidatedInput from '@/components/form/ValidatedInput';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
 import { validationSchemas, sanitizeInput } from '@/utils/validation';

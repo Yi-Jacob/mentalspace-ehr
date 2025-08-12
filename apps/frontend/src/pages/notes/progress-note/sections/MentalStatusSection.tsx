@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 
 interface MentalStatusSectionProps {
   formData: ProgressNoteFormData;

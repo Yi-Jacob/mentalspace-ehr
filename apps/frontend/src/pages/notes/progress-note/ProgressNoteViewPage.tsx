@@ -8,7 +8,7 @@ import { ArrowLeft, Edit, User, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
-import { ProgressNoteFormData } from './types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 

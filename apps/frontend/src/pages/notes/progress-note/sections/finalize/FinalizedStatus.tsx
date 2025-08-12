@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
-import { ProgressNoteFormData } from '../../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 
 interface FinalizedStatusProps {
   formData: ProgressNoteFormData;

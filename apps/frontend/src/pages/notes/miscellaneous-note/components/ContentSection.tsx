@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Textarea } from '@/components/basic/textarea';
 import { FileText } from 'lucide-react';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 interface ContentSectionProps {
   formData: Pick<MiscellaneousNoteFormData, 'noteDescription' | 'detailedNotes'>;

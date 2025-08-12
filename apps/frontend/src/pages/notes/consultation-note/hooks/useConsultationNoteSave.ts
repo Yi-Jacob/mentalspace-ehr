@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { noteService } from '@/services/noteService';
-import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
+import { ConsultationNoteFormData } from '@/types/noteType';
 
 export const useConsultationNoteSave = (noteId?: string) => {
   const navigate = useNavigate();

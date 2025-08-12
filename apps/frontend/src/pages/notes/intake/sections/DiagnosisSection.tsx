@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 import DiagnosisGuidelines from './diagnosis/DiagnosisGuidelines';
 import PriorDiagnosesDisplay from './diagnosis/PriorDiagnosesDisplay';
 import PrimaryDiagnosisSelector from './diagnosis/PrimaryDiagnosisSelector';

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 import { noteService } from '@/services/noteService';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 import { NoteStatus } from '@/types/noteType';
 
 export const useSaveTreatmentPlan = (noteId: string | undefined, formData: TreatmentPlanFormData) => {

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Textarea } from '@/components/basic/textarea';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 
 interface PsychosocialSectionProps {
   formData: IntakeFormData;

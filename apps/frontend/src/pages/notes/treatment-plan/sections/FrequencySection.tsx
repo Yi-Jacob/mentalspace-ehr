@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Checkbox } from '@/components/basic/checkbox';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 import FrequencySelect from '../../components/shared/FrequencySelect';
 
 interface FrequencySectionProps {

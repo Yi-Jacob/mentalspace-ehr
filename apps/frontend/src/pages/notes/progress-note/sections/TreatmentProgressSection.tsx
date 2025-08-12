@@ -5,7 +5,7 @@ import { Textarea } from '@/components/basic/textarea';
 import { Button } from '@/components/basic/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Plus, X } from 'lucide-react';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 
 interface TreatmentProgressSectionProps {
   formData: ProgressNoteFormData;

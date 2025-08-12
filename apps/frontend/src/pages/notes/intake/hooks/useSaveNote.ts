@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 import { noteService } from '@/services/noteService';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 
 export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData) => {
   const { toast } = useToast();

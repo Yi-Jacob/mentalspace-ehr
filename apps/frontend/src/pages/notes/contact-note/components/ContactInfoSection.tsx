@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { ContactNoteFormData } from '../types/ContactNoteFormData';
+import { ContactNoteFormData } from '@/types/noteType';
 
 interface ContactInfoSectionProps {
   formData: ContactNoteFormData;

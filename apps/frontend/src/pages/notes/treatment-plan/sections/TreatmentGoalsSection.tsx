@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/basic/collapsible';
 import { Badge } from '@/components/basic/badge';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 import { Textarea } from '@/components/basic/textarea';
 
 interface TreatmentGoalsSectionProps {

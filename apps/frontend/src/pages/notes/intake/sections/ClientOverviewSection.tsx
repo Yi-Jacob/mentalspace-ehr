@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 import ValidatedInput from '@/components/form/ValidatedInput';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
 import { validationSchemas, sanitizeInput } from '@/utils/validation';

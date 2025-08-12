@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 interface BasicInfoSectionProps {
   formData: Pick<MiscellaneousNoteFormData, 'eventDate' | 'noteDate' | 'noteCategory' | 'noteSubtype' | 'urgencyLevel' | 'noteTitle'>;

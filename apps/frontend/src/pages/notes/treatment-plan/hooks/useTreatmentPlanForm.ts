@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 import { SECTIONS } from '../constants/sections';
 import { useNoteData } from '../../intake/hooks/useNoteData';
 import { useSaveTreatmentPlan } from './useSaveTreatmentPlan';
@@ -45,7 +45,7 @@ export const useTreatmentPlanForm = (noteId?: string) => {
       const savedData = note.content as any;
       setFormData(prev => ({
         ...prev,
-        clientId: note.client_id || '',
+        clientId: note.clientId || '',
         ...savedData,
       }));
     }

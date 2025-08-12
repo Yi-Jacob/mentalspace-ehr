@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { noteService } from '@/services/noteService';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 export const useMiscellaneousNoteSave = (noteId?: string) => {
   const [isLoading, setIsLoading] = useState(false);

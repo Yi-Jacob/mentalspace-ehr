@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { ContactNoteFormData } from '../types/ContactNoteFormData';
+import { ContactNoteFormData } from '@/types/noteType';
 
 export const useContactNoteForm = (noteData?: any) => {
   const [formData, setFormData] = useState<ContactNoteFormData>({

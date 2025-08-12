@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/basic/checkbox';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { Calendar, Clock, DollarSign, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
-import { CancellationNoteFormData } from './types/CancellationNoteFormData';
+import { CancellationNoteFormData } from '@/types/noteType';
 import { useToast } from '@/hooks/use-toast';
 import ClientInfoDisplay from '@/pages/notes/components/shared/ClientInfoDisplay';
 import PageLayout from '@/components/basic/PageLayout';

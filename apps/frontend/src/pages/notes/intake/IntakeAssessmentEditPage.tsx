@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { IntakeFormData } from './types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 import { SECTIONS } from './constants/sections';
 import { useNoteData } from './hooks/useNoteData';
 import { useSaveNote } from './hooks/useSaveNote';

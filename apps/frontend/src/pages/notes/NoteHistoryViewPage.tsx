@@ -7,7 +7,7 @@ import { ArrowLeft, History, User, Calendar, FileText, Clock } from 'lucide-reac
 import { format } from 'date-fns';
 import { noteService } from '@/services/noteService';
 import { NoteHistoryVersion } from '@/types/noteHistoryType';
-import { IntakeFormData } from '../intake/types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 

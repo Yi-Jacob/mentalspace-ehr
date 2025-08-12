@@ -2,7 +2,7 @@
 import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Textarea } from '@/components/basic/textarea';
-import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
+import { ConsultationNoteFormData } from '@/types/noteType';
 
 interface ClinicalDiscussionSectionProps {
   formData: Pick<ConsultationNoteFormData, 'presentingConcerns' | 'backgroundInformation' | 'currentTreatment'>;

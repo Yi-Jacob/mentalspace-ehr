@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
 import { Plus, X } from 'lucide-react';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import { useDiagnosisCodes } from '@/hooks/useDiagnosisCodes';
 

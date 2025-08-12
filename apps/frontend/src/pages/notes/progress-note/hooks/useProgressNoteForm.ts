@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 import { SECTIONS } from '../constants/sections';
 import { useNoteData } from '../../intake/hooks/useNoteData';
 import { useSaveProgressNote } from './useSaveProgressNote';

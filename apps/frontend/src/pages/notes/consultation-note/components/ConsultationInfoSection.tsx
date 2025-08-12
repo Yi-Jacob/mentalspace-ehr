@@ -4,7 +4,7 @@ import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Textarea } from '@/components/basic/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
+import { ConsultationNoteFormData } from '@/types/noteType';
 
 interface ConsultationInfoSectionProps {
   formData: ConsultationNoteFormData;

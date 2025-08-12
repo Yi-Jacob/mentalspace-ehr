@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { CheckCircle } from 'lucide-react';
-import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
+import { ProgressNoteFormData } from '@/types/noteType';
 import CompletionStatus from './finalize/CompletionStatus';
 import ProgressNoteSummary from './finalize/ProgressNoteSummary';
 import FinalizationForm from './finalize/FinalizationForm';

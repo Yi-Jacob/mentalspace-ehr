@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
+import { ConsultationNoteFormData } from '@/types/noteType';
 
 export const useConsultationNoteForm = (noteData?: any) => {
   const [formData, setFormData] = useState<ConsultationNoteFormData>({

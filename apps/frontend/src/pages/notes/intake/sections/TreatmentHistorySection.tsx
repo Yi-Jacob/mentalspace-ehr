@@ -3,7 +3,7 @@ import { Label } from '@/components/basic/label';
 import { RadioGroup, RadioGroupItem } from '@/components/basic/radio-group';
 import { Checkbox } from '@/components/basic/checkbox';
 import { Textarea } from '@/components/basic/textarea';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 
 const TREATMENT_TYPES = [
   'Individual Therapy',

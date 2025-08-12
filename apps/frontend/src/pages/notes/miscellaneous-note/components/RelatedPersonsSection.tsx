@@ -5,7 +5,7 @@ import { Input } from '@/components/basic/input';
 import { Button } from '@/components/basic/button';
 import { Card } from '@/components/basic/card';
 import { Plus, Trash2 } from 'lucide-react';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 interface RelatedPersonsSectionProps {
   formData: Pick<MiscellaneousNoteFormData, 'relatedPersons'>;

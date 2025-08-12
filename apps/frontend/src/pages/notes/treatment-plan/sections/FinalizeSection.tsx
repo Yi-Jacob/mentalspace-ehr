@@ -7,7 +7,7 @@ import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle, XCircle, FileText } from 'lucide-react';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 
 interface FinalizeSectionProps {
   formData: TreatmentPlanFormData;

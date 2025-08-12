@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Textarea } from '@/components/basic/textarea';
-import { ContactNoteFormData } from '../types/ContactNoteFormData';
+import { ContactNoteFormData } from '@/types/noteType';
 
 interface ContactSummarySectionProps {
   formData: ContactNoteFormData;

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import ValidatedTextarea from '@/components/form/ValidatedTextarea';
 import { z } from 'zod';
-import { TreatmentPlanFormData } from '../types/TreatmentPlanFormData';
+import { TreatmentPlanFormData } from '@/types/noteType';
 
 interface DischargePlanningSectionProps {
   formData: TreatmentPlanFormData;

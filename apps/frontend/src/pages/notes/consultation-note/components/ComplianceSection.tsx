@@ -2,7 +2,7 @@
 import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Checkbox } from '@/components/basic/checkbox';
-import { ConsultationNoteFormData } from '../types/ConsultationNoteFormData';
+import { ConsultationNoteFormData } from '@/types/noteType';
 
 interface ComplianceSectionProps {
   formData: Pick<ConsultationNoteFormData, 'confidentialityAgreement' | 'consentObtained'>;

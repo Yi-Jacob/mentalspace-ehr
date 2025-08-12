@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/basic/radio-group';
 import { Input } from '@/components/basic/input';
 import { Textarea } from '@/components/basic/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { IntakeFormData } from '../types/IntakeFormData';
+import { IntakeFormData } from '@/types/noteType';
 
 const SUBSTANCES = [
   'Alcohol',

@@ -1,14 +1,4 @@
-import { Note } from '@/types/noteType';
-
-export interface FilterOptions {
-  status?: string;
-  noteType?: string;
-  clientId?: string;
-  dateRange?: {
-    start: Date;
-    end: Date;
-  };
-}
+import { Note, FilterOptions } from '@/types/noteType';
 
 export const filterNotes = (notes: Note[], filters: FilterOptions): Note[] => {
   return notes.filter(note => {

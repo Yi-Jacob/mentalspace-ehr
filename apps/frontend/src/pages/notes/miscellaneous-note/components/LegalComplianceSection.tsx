@@ -4,7 +4,7 @@ import { Label } from '@/components/basic/label';
 import { Textarea } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
 import { AlertTriangle } from 'lucide-react';
-import { MiscellaneousNoteFormData } from '../types/MiscellaneousNoteFormData';
+import { MiscellaneousNoteFormData } from '@/types/noteType';
 
 interface LegalComplianceSectionProps {
   formData: Pick<MiscellaneousNoteFormData, 'mandatoryReporting' | 'reportingDetails' | 'legalImplications'>;
