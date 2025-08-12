@@ -1,6 +1,5 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
-import Notes from '../pages/notes';
 import ProgressNoteForm from '../pages/notes/progress-note/ProgressNoteEditPage';
 import ProgressNoteView from '../pages/notes/progress-note/ProgressNoteViewPage';
 import IntakeAssessmentForm from '../pages/notes/intake/IntakeAssessmentEditPage';

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import NavigationButtons from './NavigationButtons';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { SECTIONS } from '../constants/sections';
 import { ProgressNoteFormData } from '../types/ProgressNoteFormData';
@@ -75,15 +74,6 @@ const CurrentSectionCard: React.FC<CurrentSectionCardProps> = ({
             {...getSectionProps()}
           />
         </ErrorBoundary>
-        
-        <NavigationButtons
-          currentSection={currentSection}
-          totalSections={SECTIONS.length}
-          onPrevious={onPrevious}
-          onNext={onNext}
-          onSaveDraft={onSaveDraft}
-          isLoading={isLoading}
-        />
       </CardContent>
     </Card>
   );
