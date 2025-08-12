@@ -12,7 +12,7 @@ import { getNoteRoute } from '@/utils/routingUtils';
 import { ClientFormData } from '@/types/clientType';
 import { LoadingState } from '@/components/basic/loading-state';
 import { EmptyState } from '@/components/basic/empty-state';
-import { getStatusColor, formatStatus } from '../shared/StatusBadge';
+import { getStatusColor, formatStatus } from '../StatusBadge';
 
 interface ClientNotesTabProps {
   client: ClientFormData;
