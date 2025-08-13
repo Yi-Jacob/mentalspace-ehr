@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
+import { InputField } from '@/components/basic/input';
+import { TextareaField } from '@/components/basic/textarea';
 import { Button } from '@/components/basic/button';
-import { Input } from '@/components/basic/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Plus, X } from 'lucide-react';
 import { IntakeFormData } from '@/types/noteType';
@@ -44,21 +43,19 @@ const MedicalHistorySection: React.FC<MedicalHistorySectionProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Label htmlFor="medicalConditions">Medical Conditions</Label>
-        <Textarea
-          id="medicalConditions"
-          placeholder="List any current or past medical conditions that may be relevant to treatment (e.g., diabetes, hypertension, thyroid disorders, etc.)"
-          value={formData.medicalConditions}
-          onChange={(e) => updateFormData({ medicalConditions: e.target.value })}
-          rows={3}
-        />
-      </div>
+      <TextareaField
+        id="medicalConditions"
+        label="Medical Conditions"
+        placeholder="List any current or past medical conditions that may be relevant to treatment (e.g., diabetes, hypertension, thyroid disorders, etc.)"
+        value={formData.medicalConditions}
+        onChange={(e) => updateFormData({ medicalConditions: e.target.value })}
+        rows={3}
+      />
 
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <Label className="text-base font-medium">Current Medications</Label>
+            <h3 className="text-base font-medium">Current Medications</h3>
             <p className="text-sm text-gray-600">Include all prescription medications, over-the-counter drugs, and supplements</p>
           </div>
           <Button onClick={addMedication} size="sm" variant="outline">
@@ -92,42 +89,35 @@ const MedicalHistorySection: React.FC<MedicalHistorySectionProps> = ({
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`med-name-${index}`}>Medication Name *</Label>
-                      <Input
-                        id={`med-name-${index}`}
-                        placeholder="e.g., Sertraline"
-                        value={medication.name}
-                        onChange={(e) => updateMedication(index, 'name', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`med-dosage-${index}`}>Dosage</Label>
-                      <Input
-                        id={`med-dosage-${index}`}
-                        placeholder="e.g., 50mg"
-                        value={medication.dosage}
-                        onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`med-frequency-${index}`}>Frequency</Label>
-                      <Input
-                        id={`med-frequency-${index}`}
-                        placeholder="e.g., Once daily"
-                        value={medication.frequency}
-                        onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`med-prescriber-${index}`}>Prescriber</Label>
-                      <Input
-                        id={`med-prescriber-${index}`}
-                        placeholder="e.g., Dr. Smith"
-                        value={medication.prescriber}
-                        onChange={(e) => updateMedication(index, 'prescriber', e.target.value)}
-                      />
-                    </div>
+                    <InputField
+                      id={`med-name-${index}`}
+                      label="Medication Name"
+                      placeholder="e.g., Sertraline"
+                      value={medication.name}
+                      onChange={(e) => updateMedication(index, 'name', e.target.value)}
+                      required
+                    />
+                    <InputField
+                      id={`med-dosage-${index}`}
+                      label="Dosage"
+                      placeholder="e.g., 50mg"
+                      value={medication.dosage}
+                      onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
+                    />
+                    <InputField
+                      id={`med-frequency-${index}`}
+                      label="Frequency"
+                      placeholder="e.g., Once daily"
+                      value={medication.frequency}
+                      onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
+                    />
+                    <InputField
+                      id={`med-prescriber-${index}`}
+                      label="Prescriber"
+                      placeholder="e.g., Dr. Smith"
+                      value={medication.prescriber}
+                      onChange={(e) => updateMedication(index, 'prescriber', e.target.value)}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -136,27 +126,23 @@ const MedicalHistorySection: React.FC<MedicalHistorySectionProps> = ({
         )}
       </div>
 
-      <div>
-        <Label htmlFor="medicationAllergies">Medication Allergies</Label>
-        <Textarea
-          id="medicationAllergies"
-          placeholder="List any known medication allergies or adverse reactions"
-          value={formData.medicationAllergies}
-          onChange={(e) => updateFormData({ medicationAllergies: e.target.value })}
-          rows={2}
-        />
-      </div>
+      <TextareaField
+        id="medicationAllergies"
+        label="Medication Allergies"
+        placeholder="List any known medication allergies or adverse reactions"
+        value={formData.medicationAllergies}
+        onChange={(e) => updateFormData({ medicationAllergies: e.target.value })}
+        rows={2}
+      />
 
-      <div>
-        <Label htmlFor="familyPsychiatricHistory">Family Psychiatric History</Label>
-        <Textarea
-          id="familyPsychiatricHistory"
-          placeholder="Describe any known mental health conditions in the client's family (parents, siblings, grandparents, etc.)"
-          value={formData.familyPsychiatricHistory}
-          onChange={(e) => updateFormData({ familyPsychiatricHistory: e.target.value })}
-          rows={3}
-        />
-      </div>
+      <TextareaField
+        id="familyPsychiatricHistory"
+        label="Family Psychiatric History"
+        placeholder="Describe any known mental health conditions in the client's family (parents, siblings, grandparents, etc.)"
+        value={formData.familyPsychiatricHistory}
+        onChange={(e) => updateFormData({ familyPsychiatricHistory: e.target.value })}
+        rows={3}
+      />
     </div>
   );
 };

@@ -1,19 +1,11 @@
 import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Checkbox } from '@/components/basic/checkbox';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { Card, CardContent } from '@/components/basic/card';
 import { AlertTriangle } from 'lucide-react';
 import { IntakeFormData } from '@/types/noteType';
-
-const RISK_FACTORS = [
-  'Current Suicidal Ideation',
-  'History of Suicide Attempt(s)',
-  'Homicidal Ideation',
-  'Self-Harm Behaviors',
-  'Significant Impulsivity',
-  'Aggression/Violence History',
-];
+import { RISK_FACTORS } from '@/types/enums/notesEnum';
 
 interface RiskAssessmentSectionProps {
   formData: IntakeFormData;
@@ -67,20 +59,20 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
         <Label className="text-base font-medium">Risk Factors</Label>
         <div className="mt-4 space-y-3">
           {RISK_FACTORS.map((factor) => (
-            <div key={factor} className="flex items-center space-x-3">
+            <div key={factor.value} className="flex items-center space-x-3">
               <Checkbox
-                id={`risk-${factor}`}
-                checked={formData.riskFactors.includes(factor)}
+                id={`risk-${factor.value}`}
+                checked={formData.riskFactors.includes(factor.value)}
                 onCheckedChange={(checked) => 
-                  handleRiskFactorChange(factor, checked as boolean)
+                  handleRiskFactorChange(factor.value, checked as boolean)
                 }
                 disabled={formData.noAcuteRisk}
               />
               <Label 
-                htmlFor={`risk-${factor}`} 
-                className={`text-sm ${hasRiskFactors && formData.riskFactors.includes(factor) ? 'font-medium text-red-700' : ''}`}
+                htmlFor={`risk-${factor.value}`} 
+                className={`text-sm ${hasRiskFactors && formData.riskFactors.includes(factor.value) ? 'font-medium text-red-700' : ''}`}
               >
-                {factor}
+                {factor.label}
               </Label>
             </div>
           ))}
@@ -109,33 +101,25 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
 
       {hasRiskFactors && (
         <div className="space-y-4 border-l-4 border-red-300 pl-6">
-          <div>
-            <Label htmlFor="riskDetails" className="text-base font-medium text-red-800">
-              Risk Assessment Details *
-            </Label>
-            <Textarea
-              id="riskDetails"
-              placeholder="Provide detailed assessment of identified risk factors including severity, frequency, triggers, protective factors, and clinical impressions..."
-              value={formData.riskDetails}
-              onChange={(e) => updateFormData({ riskDetails: e.target.value })}
-              rows={4}
-              className="border-red-200 focus:border-red-400"
-            />
-          </div>
+          <TextareaField
+            id="riskDetails"
+            label="Risk Assessment Details"
+            placeholder="Provide detailed assessment of identified risk factors including severity, frequency, triggers, protective factors, and clinical impressions..."
+            value={formData.riskDetails}
+            onChange={(e) => updateFormData({ riskDetails: e.target.value })}
+            rows={4}
+            required
+          />
 
-          <div>
-            <Label htmlFor="safetyPlan" className="text-base font-medium text-red-800">
-              Safety Plan *
-            </Label>
-            <Textarea
-              id="safetyPlan"
-              placeholder="Document safety planning interventions, coping strategies, support contacts, emergency resources, and follow-up plans..."
-              value={formData.safetyPlan}
-              onChange={(e) => updateFormData({ safetyPlan: e.target.value })}
-              rows={4}
-              className="border-red-200 focus:border-red-400"
-            />
-          </div>
+          <TextareaField
+            id="safetyPlan"
+            label="Safety Plan"
+            placeholder="Document safety planning interventions, coping strategies, support contacts, emergency resources, and follow-up plans..."
+            value={formData.safetyPlan}
+            onChange={(e) => updateFormData({ safetyPlan: e.target.value })}
+            rows={4}
+            required
+          />
         </div>
       )}
     </div>

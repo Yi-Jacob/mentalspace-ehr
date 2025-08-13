@@ -261,3 +261,162 @@ export const URGENCY_LEVELS: UrgencyLevelOption[] = [
   { value: 'high', label: 'High' },
   { value: 'urgent', label: 'Urgent' }
 ];
+
+// ============================================================================
+// INTAKE NOTE ENUMS
+// ============================================================================
+
+export interface PresentingProblemOption {
+  value: string;
+  label: string;
+}
+
+export const PRESENTING_PROBLEMS: PresentingProblemOption[] = [
+  { value: 'Anxiety', label: 'Anxiety' },
+  { value: 'Depression', label: 'Depression' },
+  { value: 'Trauma / PTSD', label: 'Trauma / PTSD' },
+  { value: 'Stress Management', label: 'Stress Management' },
+  { value: 'Relationship Issues', label: 'Relationship Issues' },
+  { value: 'Grief / Loss', label: 'Grief / Loss' },
+  { value: 'Anger Management', label: 'Anger Management' },
+  { value: 'Substance Use / Addiction', label: 'Substance Use / Addiction' },
+  { value: 'Behavioral Issues', label: 'Behavioral Issues' },
+  { value: 'Bipolar Symptoms', label: 'Bipolar Symptoms' },
+  { value: 'Psychosis / Schizophrenia', label: 'Psychosis / Schizophrenia' },
+  { value: 'Eating Disorder Concerns', label: 'Eating Disorder Concerns' },
+  { value: 'Personality Disorder Concerns', label: 'Personality Disorder Concerns' },
+  { value: 'Sexual / Gender Identity Concerns', label: 'Sexual / Gender Identity Concerns' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface SymptomOnsetOption {
+  value: string;
+  label: string;
+}
+
+export const SYMPTOM_ONSET_OPTIONS: SymptomOnsetOption[] = [
+  { value: 'Recent (Less than 1 month)', label: 'Recent (Less than 1 month)' },
+  { value: 'Acute (1-3 months)', label: 'Acute (1-3 months)' },
+  { value: 'Subacute (3-6 months)', label: 'Subacute (3-6 months)' },
+  { value: 'Chronic (6+ months)', label: 'Chronic (6+ months)' },
+  { value: 'Episodic (Comes and goes)', label: 'Episodic (Comes and goes)' },
+  { value: 'Longstanding (Years)', label: 'Longstanding (Years)' },
+  { value: 'Since childhood', label: 'Since childhood' },
+  { value: 'Unknown / Not specified', label: 'Unknown / Not specified' }
+];
+
+export interface SymptomSeverityOption {
+  value: string;
+  label: string;
+}
+
+export const SYMPTOM_SEVERITY_OPTIONS: SymptomSeverityOption[] = [
+  { value: 'Mild', label: 'Mild' },
+  { value: 'Moderate', label: 'Moderate' },
+  { value: 'Severe', label: 'Severe' },
+  { value: 'Extreme', label: 'Extreme' },
+  { value: 'Fluctuating', label: 'Fluctuating' }
+];
+
+export interface RelationshipStatusOption {
+  value: string;
+  label: string;
+}
+
+export const RELATIONSHIP_STATUS_OPTIONS: RelationshipStatusOption[] = [
+  { value: 'Single', label: 'Single' },
+  { value: 'Married', label: 'Married' },
+  { value: 'Divorced', label: 'Divorced' },
+  { value: 'Separated', label: 'Separated' },
+  { value: 'Widowed', label: 'Widowed' },
+  { value: 'In a relationship', label: 'In a relationship' },
+  { value: 'Engaged', label: 'Engaged' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface LivingSituationOption {
+  value: string;
+  label: string;
+}
+
+export const LIVING_SITUATION_OPTIONS: LivingSituationOption[] = [
+  { value: 'Own home/apartment', label: 'Own home/apartment' },
+  { value: 'Rental home/apartment', label: 'Rental home/apartment' },
+  { value: 'Living with family', label: 'Living with family' },
+  { value: 'Living with friends', label: 'Living with friends' },
+  { value: 'Group home', label: 'Group home' },
+  { value: 'Homeless', label: 'Homeless' },
+  { value: 'Institution', label: 'Institution' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface RiskLevelOption {
+  value: string;
+  label: string;
+}
+
+export const RISK_LEVEL_OPTIONS: RiskLevelOption[] = [
+  { value: 'Low', label: 'Low' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'High', label: 'High' },
+  { value: 'Imminent', label: 'Imminent' }
+];
+
+export interface IntentToActOption {
+  value: string;
+  label: string;
+}
+
+export const INTENT_TO_ACT_OPTIONS: IntentToActOption[] = [
+  { value: 'Yes', label: 'Yes' },
+  { value: 'No', label: 'No' },
+  { value: 'Not Applicable', label: 'Not Applicable' }
+];
+
+export interface RiskFactorOption {
+  value: string;
+  label: string;
+}
+
+export const RISK_FACTORS: RiskFactorOption[] = [
+  { value: 'Current Suicidal Ideation', label: 'Current Suicidal Ideation' },
+  { value: 'History of Suicide Attempt(s)', label: 'History of Suicide Attempt(s)' },
+  { value: 'Homicidal Ideation', label: 'Homicidal Ideation' },
+  { value: 'Self-Harm Behaviors', label: 'Self-Harm Behaviors' },
+  { value: 'Significant Impulsivity', label: 'Significant Impulsivity' },
+  { value: 'Aggression/Violence History', label: 'Aggression/Violence History' }
+];
+
+export interface TreatmentTypeOption {
+  value: string;
+  label: string;
+}
+
+export const TREATMENT_TYPES: TreatmentTypeOption[] = [
+  { value: 'Individual Therapy', label: 'Individual Therapy' },
+  { value: 'Group Therapy', label: 'Group Therapy' },
+  { value: 'Family Therapy', label: 'Family Therapy' },
+  { value: 'Couples Therapy', label: 'Couples Therapy' },
+  { value: 'Psychiatric Medication', label: 'Psychiatric Medication' },
+  { value: 'Substance Abuse Treatment', label: 'Substance Abuse Treatment' },
+  { value: 'Inpatient Hospitalization', label: 'Inpatient Hospitalization' },
+  { value: 'Partial Hospitalization (PHP)', label: 'Partial Hospitalization (PHP)' },
+  { value: 'Intensive Outpatient Program (IOP)', label: 'Intensive Outpatient Program (IOP)' },
+  { value: 'Support Group', label: 'Support Group' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface SubstanceOption {
+  value: string;
+  label: string;
+}
+
+export const SUBSTANCES: SubstanceOption[] = [
+  { value: 'Alcohol', label: 'Alcohol' },
+  { value: 'Tobacco/Nicotine', label: 'Tobacco/Nicotine' },
+  { value: 'Cannabis', label: 'Cannabis' },
+  { value: 'Stimulants (cocaine, methamphetamine, etc.)', label: 'Stimulants (cocaine, methamphetamine, etc.)' },
+  { value: 'Opioids (heroin, prescription pain medications, etc.)', label: 'Opioids (heroin, prescription pain medications, etc.)' },
+  { value: 'Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)', label: 'Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)' },
+  { value: 'Other Substances', label: 'Other Substances' }
+];

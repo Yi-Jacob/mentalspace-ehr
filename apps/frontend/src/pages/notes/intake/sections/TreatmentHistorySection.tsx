@@ -2,22 +2,9 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { RadioGroup, RadioGroupItem } from '@/components/basic/radio-group';
 import { Checkbox } from '@/components/basic/checkbox';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { IntakeFormData } from '@/types/noteType';
-
-const TREATMENT_TYPES = [
-  'Individual Therapy',
-  'Group Therapy',
-  'Family Therapy',
-  'Couples Therapy',
-  'Psychiatric Medication',
-  'Substance Abuse Treatment',
-  'Inpatient Hospitalization',
-  'Partial Hospitalization (PHP)',
-  'Intensive Outpatient Program (IOP)',
-  'Support Group',
-  'Other',
-];
+import { TREATMENT_TYPES } from '@/types/enums/notesEnum';
 
 interface TreatmentHistorySectionProps {
   formData: IntakeFormData;
@@ -63,51 +50,39 @@ const TreatmentHistorySection: React.FC<TreatmentHistorySectionProps> = ({
             <p className="text-sm text-gray-600 mb-3">Select all types of treatment the client has received:</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {TREATMENT_TYPES.map((type) => (
-                <div key={type} className="flex items-center space-x-2">
+                <div key={type.value} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`treatment-${type}`}
-                    checked={formData.treatmentTypes.includes(type)}
+                    id={`treatment-${type.value}`}
+                    checked={formData.treatmentTypes.includes(type.value)}
                     onCheckedChange={(checked) => 
-                      handleTreatmentTypeChange(type, checked as boolean)
+                      handleTreatmentTypeChange(type.value, checked as boolean)
                     }
                   />
-                  <Label htmlFor={`treatment-${type}`} className="text-sm">
-                    {type}
+                  <Label htmlFor={`treatment-${type.value}`} className="text-sm">
+                    {type.label}
                   </Label>
                 </div>
               ))}
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="treatmentDetails">Treatment Details</Label>
-            <Textarea
-              id="treatmentDetails"
-              placeholder="Provide details about previous treatment including providers, duration, specific therapies received, medications tried, etc..."
-              value={formData.treatmentDetails}
-              onChange={(e) => updateFormData({ treatmentDetails: e.target.value })}
-              rows={4}
-            />
-          </div>
+          <TextareaField
+            id="treatmentDetails"
+            label="Treatment Details"
+            placeholder="Provide details about previous treatment including providers, duration, specific therapies received, medications tried, etc..."
+            value={formData.treatmentDetails}
+            onChange={(e) => updateFormData({ treatmentDetails: e.target.value })}
+            rows={4}
+          />
 
-          <div>
-            <Label htmlFor="treatmentEffectiveness">Treatment Effectiveness</Label>
-            <Textarea
-              id="treatmentEffectiveness"
-              placeholder="Describe the effectiveness of previous treatments. What worked well? What didn't work? Any adverse reactions or concerns?"
-              value={formData.treatmentEffectiveness}
-              onChange={(e) => updateFormData({ treatmentEffectiveness: e.target.value })}
-              rows={3}
-            />
-          </div>
-        </div>
-      )}
-
-      {!formData.hasPriorTreatment && (
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700">
-            Client reports no prior treatment history. This will be documented in the intake assessment.
-          </p>
+          <TextareaField
+            id="treatmentEffectiveness"
+            label="Treatment Effectiveness"
+            placeholder="Describe the effectiveness of previous treatments. What worked well? What didn't work? Any adverse reactions or concerns?"
+            value={formData.treatmentEffectiveness}
+            onChange={(e) => updateFormData({ treatmentEffectiveness: e.target.value })}
+            rows={3}
+          />
         </div>
       )}
     </div>
