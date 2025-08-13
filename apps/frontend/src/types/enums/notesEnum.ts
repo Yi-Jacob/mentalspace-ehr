@@ -142,3 +142,44 @@ export const CPT_CODES: CptCodeOption[] = [
     category: 'Other'
   }
 ];
+
+// ============================================================================
+// CANCELLATION NOTE ENUMS
+// ============================================================================
+
+export interface CancellationInitiatorOption {
+  value: string;
+  label: string;
+}
+
+export const CANCELLATION_INITIATORS: CancellationInitiatorOption[] = [
+  { value: 'client', label: 'Client' },
+  { value: 'provider', label: 'Provider' },
+  { value: 'emergency', label: 'Emergency' },
+  { value: 'system', label: 'System/Other' }
+];
+
+export interface NotificationMethodOption {
+  value: string;
+  label: string;
+}
+
+export const NOTIFICATION_METHODS: NotificationMethodOption[] = [
+  { value: 'phone', label: 'Phone Call' },
+  { value: 'email', label: 'Email' },
+  { value: 'text', label: 'Text Message' },
+  { value: 'in_person', label: 'In Person' },
+  { value: 'no_show', label: 'No Show (No Notice)' }
+];
+
+export interface BillingStatusOption {
+  value: string;
+  label: string;
+}
+
+export const BILLING_STATUS_OPTIONS: BillingStatusOption[] = [
+  { value: 'not_billed', label: 'Not Billed' },
+  { value: 'billed', label: 'Full Charge Applied' },
+  { value: 'partial_charge', label: 'Partial Charge Applied' },
+  { value: 'pending_review', label: 'Pending Review' }
+];

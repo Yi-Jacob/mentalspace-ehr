@@ -5,7 +5,7 @@ import ProgressNoteView from '../pages/notes/progress-note/ProgressNoteViewPage'
 import IntakeAssessmentForm from '../pages/notes/intake/IntakeAssessmentEditPage';
 import IntakeAssessmentView from '../pages/notes/intake/IntakeAssessmentViewPage';
 import TreatmentPlanForm from '../pages/notes/treatment-plan/TreatmentPlanEditPage';
-import CancellationNoteForm from '../pages/notes/cancellation-note/CancellationNoteEditPage';
+import CancellationNoteForm from '../pages/notes/CancellationNoteEditPage';
 import ContactNoteForm from '../pages/notes/contact-note/ContactNoteEditPage';
 import ConsultationNoteForm from '../pages/notes/consultation-note/ConsultationNoteEditPage';
 import MiscellaneousNoteForm from '../pages/notes/miscellaneous-note/MiscellaneousNoteEditPage';
