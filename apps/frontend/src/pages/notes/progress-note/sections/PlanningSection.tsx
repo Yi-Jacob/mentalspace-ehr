@@ -1,28 +1,16 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { SelectField } from '@/components/basic/select';
+import { TextareaField } from '@/components/basic/textarea';
 import { ProgressNoteFormData } from '@/types/noteType';
+import { RECOMMENDATION_OPTIONS, PRESCRIBED_FREQUENCY_OPTIONS } from '@/types/enums/notesEnum';
 import SmartTemplates from '../components/SmartTemplates';
 
 interface PlanningSectionProps {
   formData: ProgressNoteFormData;
   updateFormData: (updates: Partial<ProgressNoteFormData>) => void;
 }
-
-const PRESCRIBED_FREQUENCY_OPTIONS = [
-  'As Needed',
-  'Twice a Week',
-  'Weekly',
-  'Every 2 Weeks',
-  'Every 4 Weeks',
-  'Every Month',
-  'Every 2 Months',
-  'Every 3 Months',
-  'Every 4 Months'
-];
 
 const PlanningSection: React.FC<PlanningSectionProps> = ({
   formData,
@@ -36,7 +24,15 @@ const PlanningSection: React.FC<PlanningSectionProps> = ({
       </CardHeader>
       <CardContent className="space-y-6 pt-6">
         <div className="space-y-3">
-          <Label htmlFor="planContent" className="text-sm font-medium">Plan for Future Sessions</Label>
+          <TextareaField
+            id="planContent"
+            label="Plan for Future Sessions"
+            value={formData.planContent || ''}
+            onChange={(e) => updateFormData({ planContent: e.target.value })}
+            placeholder="Document plans for future sessions, homework assignments, goals to work on, and any other therapeutic planning..."
+            rows={6}
+            className="min-h-[120px]"
+          />
           
           <SmartTemplates
             fieldType="plan"
@@ -44,61 +40,27 @@ const PlanningSection: React.FC<PlanningSectionProps> = ({
             onInsertTemplate={(content) => updateFormData({ planContent: content })}
           />
           
-          <Textarea
-            id="planContent"
-            value={formData.planContent || ''}
-            onChange={(e) => updateFormData({ planContent: e.target.value })}
-            placeholder="Document plans for future sessions, homework assignments, goals to work on, and any other therapeutic planning..."
-            rows={6}
-            className="min-h-[120px]"
-          />
           <div className="text-xs text-gray-500 mt-1">
             Tip: Include homework assignments, goals for next session, and any follow-up actions needed
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="recommendation" className="text-sm font-medium">Recommendation</Label>
-            <Select
-              value={formData.recommendation}
-              onValueChange={(value: any) => updateFormData({ recommendation: value })}
-            >
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="Select recommendation" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="Continue current therapeutic focus">
-                  Continue current therapeutic focus
-                </SelectItem>
-                <SelectItem value="Change treatment goals or objectives">
-                  Change treatment goals or objectives
-                </SelectItem>
-                <SelectItem value="Terminate treatment">
-                  Terminate treatment
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectField
+            label="Recommendation"
+            value={formData.recommendation}
+            onValueChange={(value: any) => updateFormData({ recommendation: value })}
+            options={RECOMMENDATION_OPTIONS}
+            placeholder="Select recommendation"
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="prescribedFrequency" className="text-sm font-medium">Prescribed Frequency of Treatment</Label>
-            <Select
-              value={formData.prescribedFrequency}
-              onValueChange={(value) => updateFormData({ prescribedFrequency: value })}
-            >
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                {PRESCRIBED_FREQUENCY_OPTIONS.map((frequency) => (
-                  <SelectItem key={frequency} value={frequency}>
-                    {frequency}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectField
+            label="Prescribed Frequency of Treatment"
+            value={formData.prescribedFrequency}
+            onValueChange={(value) => updateFormData({ prescribedFrequency: value })}
+            options={PRESCRIBED_FREQUENCY_OPTIONS}
+            placeholder="Select frequency"
+          />
         </div>
       </CardContent>
     </Card>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Button } from '@/components/basic/button';
 import { Plus } from 'lucide-react';
 import { ProgressNoteFormData } from '@/types/noteType';
+import { AREA_OF_RISK_OPTIONS } from '@/types/enums/notesEnum';
 import { RiskAreaCard } from './risk-assessment/RiskAreaCard';
 import { NoRiskCheckbox } from './risk-assessment/NoRiskCheckbox';
 
@@ -11,21 +12,6 @@ interface RiskAssessmentSectionProps {
   formData: ProgressNoteFormData;
   updateFormData: (updates: Partial<ProgressNoteFormData>) => void;
 }
-
-const AREA_OF_RISK_OPTIONS = [
-  'Inability to care for self',
-  'Inability to care for others',
-  'Aggression toward others',
-  'Aggression toward property',
-  'Self-harm',
-  'Suicide',
-  'Violence',
-  'Substance abuse',
-  'Elopement/Wandering',
-  'Sexual acting out',
-  'Fire setting',
-  'Other'
-];
 
 const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
   formData,

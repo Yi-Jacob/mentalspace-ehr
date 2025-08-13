@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { Button } from '@/components/basic/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Plus, X } from 'lucide-react';
@@ -60,27 +59,23 @@ const TreatmentProgressSection: React.FC<TreatmentProgressSectionProps> = ({
               </Button>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor={`objective-${index}`}>Treatment Plan Objective</Label>
-              <Textarea
-                id={`objective-${index}`}
-                value={objective.objectiveText}
-                onChange={(e) => updateObjective(index, 'objectiveText', e.target.value)}
-                placeholder="Enter the treatment plan objective..."
-                rows={2}
-              />
-            </div>
+            <TextareaField
+              id={`objective-${index}`}
+              label="Treatment Plan Objective"
+              value={objective.objectiveText}
+              onChange={(e) => updateObjective(index, 'objectiveText', e.target.value)}
+              placeholder="Enter the treatment plan objective..."
+              rows={2}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor={`progress-${index}`}>Progress Made</Label>
-              <Textarea
-                id={`progress-${index}`}
-                value={objective.progress}
-                onChange={(e) => updateObjective(index, 'progress', e.target.value)}
-                placeholder="Describe progress made toward this objective..."
-                rows={3}
-              />
-            </div>
+            <TextareaField
+              id={`progress-${index}`}
+              label="Progress Made"
+              value={objective.progress}
+              onChange={(e) => updateObjective(index, 'progress', e.target.value)}
+              placeholder="Describe progress made toward this objective..."
+              rows={3}
+            />
           </div>
         ))}
 

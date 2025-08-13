@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { ProgressNoteFormData } from '@/types/noteType';
 
@@ -21,18 +20,14 @@ const MedicationsSection: React.FC<MedicationsSectionProps> = ({
         <p className="text-sm text-gray-600">Document current medications and any changes discussed</p>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <Label htmlFor="medicationsContent">
-            Current medications, changes, compliance, and side effects discussed
-          </Label>
-          <Textarea
-            id="medicationsContent"
-            value={formData.medicationsContent || ''}
-            onChange={(e) => updateFormData({ medicationsContent: e.target.value })}
-            placeholder="Document current medications, any changes made, medication compliance, side effects discussed, and client's response to medications..."
-            rows={6}
-          />
-        </div>
+        <TextareaField
+          id="medicationsContent"
+          label="Current medications, changes, compliance, and side effects discussed"
+          value={formData.medicationsContent || ''}
+          onChange={(e) => updateFormData({ medicationsContent: e.target.value })}
+          placeholder="Document current medications, any changes made, medication compliance, side effects discussed, and client's response to medications..."
+          rows={6}
+        />
       </CardContent>
     </Card>
   );

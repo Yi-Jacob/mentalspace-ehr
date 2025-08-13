@@ -517,3 +517,288 @@ export const MODALITY_OPTIONS: ModalityOption[] = [
   { value: 'Telehealth', label: 'Telehealth' },
   { value: 'Other', label: 'Other' }
 ];
+
+// ============================================================================
+// PROGRESS NOTE ENUMS
+// ============================================================================
+
+export interface MentalStatusOption {
+  value: string;
+  label: string;
+}
+
+export const ORIENTATION_OPTIONS: MentalStatusOption[] = [
+  { value: 'X3: Oriented to Person, Place, and Time', label: 'X3: Oriented to Person, Place, and Time' },
+  { value: 'X2: Oriented to Person, Place; Impaired to Time', label: 'X2: Oriented to Person, Place; Impaired to Time' },
+  { value: 'X2: Oriented to Person, Time; Impaired to Place', label: 'X2: Oriented to Person, Time; Impaired to Place' },
+  { value: 'X2: Oriented to Time, Place; Impaired to Person', label: 'X2: Oriented to Time, Place; Impaired to Person' },
+  { value: 'X1: Oriented to Person; Impaired to Place, Time', label: 'X1: Oriented to Person; Impaired to Place, Time' },
+  { value: 'X1: Oriented to Place; Impaired to Person, Time', label: 'X1: Oriented to Place; Impaired to Person, Time' },
+  { value: 'X1: Oriented to Time; Impaired to Person, Place', label: 'X1: Oriented to Time; Impaired to Person, Place' },
+  { value: 'X0: Impaired to Person, Place, and Time', label: 'X0: Impaired to Person, Place, and Time' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const GENERAL_APPEARANCE_OPTIONS: MentalStatusOption[] = [
+  { value: 'Well-groomed', label: 'Well-groomed' },
+  { value: 'Disheveled', label: 'Disheveled' },
+  { value: 'Unkempt', label: 'Unkempt' },
+  { value: 'Clean and neat', label: 'Clean and neat' },
+  { value: 'Poor hygiene', label: 'Poor hygiene' },
+  { value: 'Age-appropriate', label: 'Age-appropriate' },
+  { value: 'Younger than stated age', label: 'Younger than stated age' },
+  { value: 'Older than stated age', label: 'Older than stated age' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const DRESS_OPTIONS: MentalStatusOption[] = [
+  { value: 'Appropriate', label: 'Appropriate' },
+  { value: 'Disheveled', label: 'Disheveled' },
+  { value: 'Emaciated', label: 'Emaciated' },
+  { value: 'Obese', label: 'Obese' },
+  { value: 'Poor Hygiene', label: 'Poor Hygiene' },
+  { value: 'Inappropriate for weather', label: 'Inappropriate for weather' },
+  { value: 'Bizarre', label: 'Bizarre' },
+  { value: 'Seductive', label: 'Seductive' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const MOTOR_ACTIVITY_OPTIONS: MentalStatusOption[] = [
+  { value: 'Unremarkable', label: 'Unremarkable' },
+  { value: 'Agitation', label: 'Agitation' },
+  { value: 'Retardation', label: 'Retardation' },
+  { value: 'Posturing', label: 'Posturing' },
+  { value: 'Repetitive actions', label: 'Repetitive actions' },
+  { value: 'Tics', label: 'Tics' },
+  { value: 'Tremor', label: 'Tremor' },
+  { value: 'Unusual Gait', label: 'Unusual Gait' },
+  { value: 'Hyperactive', label: 'Hyperactive' },
+  { value: 'Hypoactive', label: 'Hypoactive' },
+  { value: 'Restless', label: 'Restless' },
+  { value: 'Catatonic', label: 'Catatonic' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const INTERVIEW_BEHAVIOR_OPTIONS: MentalStatusOption[] = [
+  { value: 'Cooperative', label: 'Cooperative' },
+  { value: 'Uncooperative', label: 'Uncooperative' },
+  { value: 'Guarded', label: 'Guarded' },
+  { value: 'Hostile', label: 'Hostile' },
+  { value: 'Evasive', label: 'Evasive' },
+  { value: 'Suspicious', label: 'Suspicious' },
+  { value: 'Seductive', label: 'Seductive' },
+  { value: 'Manipulative', label: 'Manipulative' },
+  { value: 'Demanding', label: 'Demanding' },
+  { value: 'Pleasant', label: 'Pleasant' },
+  { value: 'Withdrawn', label: 'Withdrawn' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const SPEECH_OPTIONS: MentalStatusOption[] = [
+  { value: 'Normal rate and rhythm', label: 'Normal rate and rhythm' },
+  { value: 'Rapid', label: 'Rapid' },
+  { value: 'Slow', label: 'Slow' },
+  { value: 'Loud', label: 'Loud' },
+  { value: 'Soft', label: 'Soft' },
+  { value: 'Pressured', label: 'Pressured' },
+  { value: 'Monotone', label: 'Monotone' },
+  { value: 'Slurred', label: 'Slurred' },
+  { value: 'Stammering', label: 'Stammering' },
+  { value: 'Circumstantial', label: 'Circumstantial' },
+  { value: 'Tangential', label: 'Tangential' },
+  { value: 'Flight of ideas', label: 'Flight of ideas' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const MOOD_OPTIONS: MentalStatusOption[] = [
+  { value: 'Euthymic', label: 'Euthymic' },
+  { value: 'Depressed', label: 'Depressed' },
+  { value: 'Elevated', label: 'Elevated' },
+  { value: 'Irritable', label: 'Irritable' },
+  { value: 'Anxious', label: 'Anxious' },
+  { value: 'Angry', label: 'Angry' },
+  { value: 'Euphoric', label: 'Euphoric' },
+  { value: 'Dysphoric', label: 'Dysphoric' },
+  { value: 'Labile', label: 'Labile' },
+  { value: 'Expansive', label: 'Expansive' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const AFFECT_OPTIONS: MentalStatusOption[] = [
+  { value: 'Euthymic', label: 'Euthymic' },
+  { value: 'Depressed', label: 'Depressed' },
+  { value: 'Elevated', label: 'Elevated' },
+  { value: 'Irritable', label: 'Irritable' },
+  { value: 'Anxious', label: 'Anxious' },
+  { value: 'Angry', label: 'Angry' },
+  { value: 'Flat', label: 'Flat' },
+  { value: 'Blunted', label: 'Blunted' },
+  { value: 'Labile', label: 'Labile' },
+  { value: 'Inappropriate', label: 'Inappropriate' },
+  { value: 'Constricted', label: 'Constricted' },
+  { value: 'Expansive', label: 'Expansive' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const INSIGHT_OPTIONS: MentalStatusOption[] = [
+  { value: 'Excellent', label: 'Excellent' },
+  { value: 'Good', label: 'Good' },
+  { value: 'Fair', label: 'Fair' },
+  { value: 'Poor', label: 'Poor' },
+  { value: 'Nil', label: 'Nil' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const JUDGMENT_OPTIONS: MentalStatusOption[] = [
+  { value: 'Excellent', label: 'Excellent' },
+  { value: 'Good', label: 'Good' },
+  { value: 'Fair', label: 'Fair' },
+  { value: 'Poor', label: 'Poor' },
+  { value: 'Nil', label: 'Nil' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const MEMORY_OPTIONS: MentalStatusOption[] = [
+  { value: 'Excellent', label: 'Excellent' },
+  { value: 'Good', label: 'Good' },
+  { value: 'Fair', label: 'Fair' },
+  { value: 'Poor', label: 'Poor' },
+  { value: 'Nil', label: 'Nil' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const ATTENTION_OPTIONS: MentalStatusOption[] = [
+  { value: 'Excellent', label: 'Excellent' },
+  { value: 'Good', label: 'Good' },
+  { value: 'Fair', label: 'Fair' },
+  { value: 'Poor', label: 'Poor' },
+  { value: 'Nil', label: 'Nil' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const THOUGHT_PROCESS_OPTIONS: MentalStatusOption[] = [
+  { value: 'Linear', label: 'Linear' },
+  { value: 'Goal-directed', label: 'Goal-directed' },
+  { value: 'Circumstantial', label: 'Circumstantial' },
+  { value: 'Tangential', label: 'Tangential' },
+  { value: 'Flight of ideas', label: 'Flight of ideas' },
+  { value: 'Loose associations', label: 'Loose associations' },
+  { value: 'Word salad', label: 'Word salad' },
+  { value: 'Thought blocking', label: 'Thought blocking' },
+  { value: 'Perseveration', label: 'Perseveration' },
+  { value: 'Clang associations', label: 'Clang associations' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const THOUGHT_CONTENT_OPTIONS: MentalStatusOption[] = [
+  { value: 'No abnormalities noted', label: 'No abnormalities noted' },
+  { value: 'Obsessions', label: 'Obsessions' },
+  { value: 'Compulsions', label: 'Compulsions' },
+  { value: 'Phobias', label: 'Phobias' },
+  { value: 'Suicidal ideation', label: 'Suicidal ideation' },
+  { value: 'Homicidal ideation', label: 'Homicidal ideation' },
+  { value: 'Delusions', label: 'Delusions' },
+  { value: 'Ideas of reference', label: 'Ideas of reference' },
+  { value: 'Paranoid thoughts', label: 'Paranoid thoughts' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const PERCEPTION_OPTIONS: MentalStatusOption[] = [
+  { value: 'No abnormalities noted', label: 'No abnormalities noted' },
+  { value: 'Auditory hallucinations', label: 'Auditory hallucinations' },
+  { value: 'Visual hallucinations', label: 'Visual hallucinations' },
+  { value: 'Tactile hallucinations', label: 'Tactile hallucinations' },
+  { value: 'Olfactory hallucinations', label: 'Olfactory hallucinations' },
+  { value: 'Gustatory hallucinations', label: 'Gustatory hallucinations' },
+  { value: 'Illusions', label: 'Illusions' },
+  { value: 'Depersonalization', label: 'Depersonalization' },
+  { value: 'Derealization', label: 'Derealization' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export const FUNCTIONAL_STATUS_OPTIONS: MentalStatusOption[] = [
+  { value: 'Independent in all activities', label: 'Independent in all activities' },
+  { value: 'Mild impairment', label: 'Mild impairment' },
+  { value: 'Moderate impairment', label: 'Moderate impairment' },
+  { value: 'Severe impairment', label: 'Severe impairment' },
+  { value: 'Requires assistance with ADLs', label: 'Requires assistance with ADLs' },
+  { value: 'Requires supervision', label: 'Requires supervision' },
+  { value: 'Homebound', label: 'Homebound' },
+  { value: 'Institutionalized', label: 'Institutionalized' },
+  { value: 'Not Assessed', label: 'Not Assessed' }
+];
+
+export interface RecommendationOption {
+  value: string;
+  label: string;
+}
+
+export const RECOMMENDATION_OPTIONS: RecommendationOption[] = [
+  { value: 'Continue current therapeutic focus', label: 'Continue current therapeutic focus' },
+  { value: 'Change treatment goals or objectives', label: 'Change treatment goals or objectives' },
+  { value: 'Terminate treatment', label: 'Terminate treatment' }
+];
+
+export interface PrescribedFrequencyOption {
+  value: string;
+  label: string;
+}
+
+export const PRESCRIBED_FREQUENCY_OPTIONS: PrescribedFrequencyOption[] = [
+  { value: 'As Needed', label: 'As Needed' },
+  { value: 'Twice a Week', label: 'Twice a Week' },
+  { value: 'Weekly', label: 'Weekly' },
+  { value: 'Every 2 Weeks', label: 'Every 2 Weeks' },
+  { value: 'Every 4 Weeks', label: 'Every 4 Weeks' },
+  { value: 'Every Month', label: 'Every Month' },
+  { value: 'Every 2 Months', label: 'Every 2 Months' },
+  { value: 'Every 3 Months', label: 'Every 3 Months' },
+  { value: 'Every 4 Months', label: 'Every 4 Months' }
+];
+
+export interface AreaOfRiskOption {
+  value: string;
+  label: string;
+}
+
+export const AREA_OF_RISK_OPTIONS: AreaOfRiskOption[] = [
+  { value: 'Inability to care for self', label: 'Inability to care for self' },
+  { value: 'Inability to care for others', label: 'Inability to care for others' },
+  { value: 'Aggression toward others', label: 'Aggression toward others' },
+  { value: 'Aggression toward property', label: 'Aggression toward property' },
+  { value: 'Self-harm', label: 'Self-harm' },
+  { value: 'Suicide', label: 'Suicide' },
+  { value: 'Violence', label: 'Violence' },
+  { value: 'Substance abuse', label: 'Substance abuse' },
+  { value: 'Elopement/Wandering', label: 'Elopement/Wandering' },
+  { value: 'Sexual acting out', label: 'Sexual acting out' },
+  { value: 'Fire setting', label: 'Fire setting' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface LocationOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export const LOCATION_OPTIONS: LocationOption[] = [
+  { value: 'office', label: 'Office', description: 'In-person office visit' },
+  { value: 'telehealth', label: 'HIPAA Compliant Telehealth Platform', description: 'Virtual session' },
+  { value: 'home', label: 'Home Visit', description: 'Provider visit to client home' },
+  { value: 'hospital', label: 'Hospital', description: 'Hospital-based session' },
+  { value: 'other', label: 'Other', description: 'Other location' }
+];
+
+export interface ParticipantOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export const PARTICIPANT_OPTIONS: ParticipantOption[] = [
+  { value: 'client-only', label: 'Client only', description: 'Individual session' },
+  { value: 'client-family', label: 'Client and family', description: 'Family therapy with client present' },
+  { value: 'family-only', label: 'Family only', description: 'Family therapy without client' },
+  { value: 'group', label: 'Group session', description: 'Group therapy session' }
+];

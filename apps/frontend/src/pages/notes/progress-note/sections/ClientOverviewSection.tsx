@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
+import { InputField } from '@/components/basic/input';
 import { ProgressNoteFormData } from '@/types/noteType';
 import { useCptCodes } from '@/hooks/useCptCodes';
+import { LOCATION_OPTIONS, PARTICIPANT_OPTIONS } from '@/types/enums/notesEnum';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
 
@@ -40,21 +40,6 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
     updateFormData(updates);
   };
 
-  const locationOptions = [
-    { value: 'office', label: 'Office', description: 'In-person office visit' },
-    { value: 'telehealth', label: 'HIPAA Compliant Telehealth Platform', description: 'Virtual session' },
-    { value: 'home', label: 'Home Visit', description: 'Provider visit to client home' },
-    { value: 'hospital', label: 'Hospital', description: 'Hospital-based session' },
-    { value: 'other', label: 'Other', description: 'Other location' },
-  ];
-
-  const participantOptions = [
-    { value: 'client-only', label: 'Client only', description: 'Individual session' },
-    { value: 'client-family', label: 'Client and family', description: 'Family therapy with client present' },
-    { value: 'family-only', label: 'Family only', description: 'Family therapy without client' },
-    { value: 'group', label: 'Group session', description: 'Group therapy session' },
-  ];
-
   return (
     <div className="space-y-6">
       <div className="bg-blue-50 p-4 rounded-lg">
@@ -67,17 +52,14 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
       <ClientInfoDisplay clientData={clientData} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="sessionDate">Session Date *</Label>
-          <Input
-            id="sessionDate"
-            type="date"
-            value={formData.sessionDate}
-            onChange={(e) => updateFormData({ sessionDate: e.target.value })}
-            required
-            className="mt-1"
-          />
-        </div>
+        <InputField
+          id="sessionDate"
+          label="Session Date *"
+          type="date"
+          value={formData.sessionDate}
+          onChange={(e) => updateFormData({ sessionDate: e.target.value })}
+          required
+        />
 
         <SearchableSelect
           label="Service Code"
@@ -90,40 +72,32 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <Label htmlFor="startTime">Start Time *</Label>
-          <Input
-            id="startTime"
-            type="time"
-            value={formData.startTime}
-            onChange={(e) => handleTimeChange('startTime', e.target.value)}
-            required
-            className="mt-1"
-          />
-        </div>
+        <InputField
+          id="startTime"
+          label="Start Time *"
+          type="time"
+          value={formData.startTime}
+          onChange={(e) => handleTimeChange('startTime', e.target.value)}
+          required
+        />
 
-        <div>
-          <Label htmlFor="endTime">End Time *</Label>
-          <Input
-            id="endTime"
-            type="time"
-            value={formData.endTime}
-            onChange={(e) => handleTimeChange('endTime', e.target.value)}
-            required
-            className="mt-1"
-          />
-        </div>
+        <InputField
+          id="endTime"
+          label="End Time *"
+          type="time"
+          value={formData.endTime}
+          onChange={(e) => handleTimeChange('endTime', e.target.value)}
+          required
+        />
 
-        <div>
-          <Label htmlFor="duration">Duration (minutes)</Label>
-          <Input
-            id="duration"
-            type="number"
-            value={formData.duration}
-            readOnly
-            className="bg-gray-50 mt-1"
-          />
-        </div>
+        <InputField
+          id="duration"
+          label="Duration (minutes)"
+          type="number"
+          value={formData.duration}
+          readOnly
+          className="bg-gray-50"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,7 +105,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
           label="Location"
           value={formData.location}
           onChange={(value) => updateFormData({ location: value })}
-          options={locationOptions}
+          options={LOCATION_OPTIONS}
           placeholder="Select session location..."
         />
 
@@ -139,7 +113,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
           label="Participants"
           value={formData.participants}
           onChange={(value) => updateFormData({ participants: value })}
-          options={participantOptions}
+          options={PARTICIPANT_OPTIONS}
           placeholder="Select session participants..."
         />
       </div>

@@ -1,9 +1,26 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { SelectField } from '@/components/basic/select';
 import { ProgressNoteFormData } from '@/types/noteType';
+import {
+  ORIENTATION_OPTIONS,
+  GENERAL_APPEARANCE_OPTIONS,
+  DRESS_OPTIONS,
+  MOTOR_ACTIVITY_OPTIONS,
+  INTERVIEW_BEHAVIOR_OPTIONS,
+  SPEECH_OPTIONS,
+  MOOD_OPTIONS,
+  AFFECT_OPTIONS,
+  INSIGHT_OPTIONS,
+  JUDGMENT_OPTIONS,
+  MEMORY_OPTIONS,
+  ATTENTION_OPTIONS,
+  THOUGHT_PROCESS_OPTIONS,
+  THOUGHT_CONTENT_OPTIONS,
+  PERCEPTION_OPTIONS,
+  FUNCTIONAL_STATUS_OPTIONS
+} from '@/types/enums/notesEnum';
 
 interface MentalStatusSectionProps {
   formData: ProgressNoteFormData;
@@ -15,191 +32,22 @@ const MentalStatusSection: React.FC<MentalStatusSectionProps> = ({
   updateFormData,
 }) => {
   const mentalStatusOptions = {
-    orientation: [
-      'X3: Oriented to Person, Place, and Time',
-      'X2: Oriented to Person, Place; Impaired to Time',
-      'X2: Oriented to Person, Time; Impaired to Place',
-      'X2: Oriented to Time, Place; Impaired to Person',
-      'X1: Oriented to Person; Impaired to Place, Time',
-      'X1: Oriented to Place; Impaired to Person, Time',
-      'X1: Oriented to Time; Impaired to Person, Place',
-      'X0: Impaired to Person, Place, and Time',
-      'Not Assessed'
-    ],
-    generalAppearance: [
-      'Well-groomed',
-      'Disheveled',
-      'Unkempt',
-      'Clean and neat',
-      'Poor hygiene',
-      'Age-appropriate',
-      'Younger than stated age',
-      'Older than stated age',
-      'Not Assessed'
-    ],
-    dress: [
-      'Appropriate',
-      'Disheveled',
-      'Emaciated',
-      'Obese',
-      'Poor Hygiene',
-      'Inappropriate for weather',
-      'Bizarre',
-      'Seductive',
-      'Not Assessed'
-    ],
-    motorActivity: [
-      'Unremarkable',
-      'Agitation',
-      'Retardation',
-      'Posturing',
-      'Repetitive actions',
-      'Tics',
-      'Tremor',
-      'Unusual Gait',
-      'Hyperactive',
-      'Hypoactive',
-      'Restless',
-      'Catatonic',
-      'Not Assessed'
-    ],
-    interviewBehavior: [
-      'Cooperative',
-      'Uncooperative',
-      'Guarded',
-      'Hostile',
-      'Evasive',
-      'Suspicious',
-      'Seductive',
-      'Manipulative',
-      'Demanding',
-      'Pleasant',
-      'Withdrawn',
-      'Not Assessed'
-    ],
-    speech: [
-      'Normal rate and rhythm',
-      'Rapid',
-      'Slow',
-      'Loud',
-      'Soft',
-      'Pressured',
-      'Monotone',
-      'Slurred',
-      'Stammering',
-      'Circumstantial',
-      'Tangential',
-      'Flight of ideas',
-      'Not Assessed'
-    ],
-    mood: [
-      'Euthymic',
-      'Depressed',
-      'Elevated',
-      'Irritable',
-      'Anxious',
-      'Angry',
-      'Euphoric',
-      'Dysphoric',
-      'Labile',
-      'Expansive',
-      'Not Assessed'
-    ],
-    affect: [
-      'Euthymic',
-      'Depressed',
-      'Elevated',
-      'Irritable',
-      'Anxious',
-      'Angry',
-      'Flat',
-      'Blunted',
-      'Labile',
-      'Inappropriate',
-      'Constricted',
-      'Expansive',
-      'Not Assessed'
-    ],
-    insight: [
-      'Excellent',
-      'Good',
-      'Fair',
-      'Poor',
-      'Nil',
-      'Not Assessed'
-    ],
-    judgmentImpulseControl: [
-      'Excellent',
-      'Good',
-      'Fair',
-      'Poor',
-      'Nil',
-      'Not Assessed'
-    ],
-    memory: [
-      'Excellent',
-      'Good',
-      'Fair',
-      'Poor',
-      'Nil',
-      'Not Assessed'
-    ],
-    attentionConcentration: [
-      'Excellent',
-      'Good',
-      'Fair',
-      'Poor',
-      'Nil',
-      'Not Assessed'
-    ],
-    thoughtProcess: [
-      'Linear',
-      'Goal-directed',
-      'Circumstantial',
-      'Tangential',
-      'Flight of ideas',
-      'Loose associations',
-      'Word salad',
-      'Thought blocking',
-      'Perseveration',
-      'Clang associations',
-      'Not Assessed'
-    ],
-    thoughtContent: [
-      'No abnormalities noted',
-      'Obsessions',
-      'Compulsions',
-      'Phobias',
-      'Suicidal ideation',
-      'Homicidal ideation',
-      'Delusions',
-      'Ideas of reference',
-      'Paranoid thoughts',
-      'Not Assessed'
-    ],
-    perception: [
-      'No abnormalities noted',
-      'Auditory hallucinations',
-      'Visual hallucinations',
-      'Tactile hallucinations',
-      'Olfactory hallucinations',
-      'Gustatory hallucinations',
-      'Illusions',
-      'Depersonalization',
-      'Derealization',
-      'Not Assessed'
-    ],
-    functionalStatus: [
-      'Independent in all activities',
-      'Mild impairment',
-      'Moderate impairment',
-      'Severe impairment',
-      'Requires assistance with ADLs',
-      'Requires supervision',
-      'Homebound',
-      'Institutionalized',
-      'Not Assessed'
-    ]
+    orientation: ORIENTATION_OPTIONS,
+    generalAppearance: GENERAL_APPEARANCE_OPTIONS,
+    dress: DRESS_OPTIONS,
+    motorActivity: MOTOR_ACTIVITY_OPTIONS,
+    interviewBehavior: INTERVIEW_BEHAVIOR_OPTIONS,
+    speech: SPEECH_OPTIONS,
+    mood: MOOD_OPTIONS,
+    affect: AFFECT_OPTIONS,
+    insight: INSIGHT_OPTIONS,
+    judgmentImpulseControl: JUDGMENT_OPTIONS,
+    memory: MEMORY_OPTIONS,
+    attentionConcentration: ATTENTION_OPTIONS,
+    thoughtProcess: THOUGHT_PROCESS_OPTIONS,
+    thoughtContent: THOUGHT_CONTENT_OPTIONS,
+    perception: PERCEPTION_OPTIONS,
+    functionalStatus: FUNCTIONAL_STATUS_OPTIONS
   };
 
   const fields = [
@@ -229,24 +77,14 @@ const MentalStatusSection: React.FC<MentalStatusSectionProps> = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {fields.map((field) => (
-            <div key={field.key} className="space-y-2">
-              <Label htmlFor={field.key}>{field.label}</Label>
-              <Select
-                value={formData[field.key as keyof ProgressNoteFormData] as string || ''}
-                onValueChange={(value) => updateFormData({ [field.key]: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={`Select ${field.label.toLowerCase()}...`} />
-                </SelectTrigger>
-                <SelectContent className="max-h-[200px] bg-white">
-                  {mentalStatusOptions[field.key as keyof typeof mentalStatusOptions].map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectField
+              key={field.key}
+              label={field.label}
+              value={formData[field.key as keyof ProgressNoteFormData] as string || ''}
+              onValueChange={(value) => updateFormData({ [field.key]: value })}
+              options={mentalStatusOptions[field.key as keyof typeof mentalStatusOptions]}
+              placeholder={`Select ${field.label.toLowerCase()}...`}
+            />
           ))}
         </div>
       </CardContent>
