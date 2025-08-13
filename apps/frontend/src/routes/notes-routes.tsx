@@ -6,6 +6,7 @@ import IntakeAssessmentForm from '../pages/notes/IntakeAssessmentNoteEditPage';
 import IntakeAssessmentView from '../pages/notes/IntakeAssessmentNoteEditPage/IntakeAssessmentViewPage';
 import TreatmentPlanForm from '../pages/notes/TreatmentPlanEditPage/TreatmentPlanEditPage';
 import CancellationNoteForm from '../pages/notes/CancellationNoteEditPage';
+import CancellationNoteView from '../pages/notes/CancellationNoteViewPage';
 import ContactNoteForm from '../pages/notes/ContactNoteEditPage';
 import ContactNoteView from '../pages/notes/ContactNoteViewPage';
 import ConsultationNoteForm from '../pages/notes/ConsultationNoteEditPage';
@@ -72,7 +73,7 @@ const notesRoutes: RouteObject[] = [
   },
   {
     path: 'cancellation-note/:noteId',
-    element: <GenericNoteView />,
+    element: <CancellationNoteView />,
   },
   // Contact Notes
   {
