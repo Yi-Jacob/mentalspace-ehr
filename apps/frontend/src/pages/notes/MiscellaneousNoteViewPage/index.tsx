@@ -3,18 +3,14 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { InfoDisplay, InfoSection } from '@/components/basic/InfoDisplay';
 import { LoadingState } from '@/components/basic/loading-state';
-import { Calendar, AlertTriangle, Clock, DollarSign, CheckCircle } from 'lucide-react';
+import { FileText, AlertTriangle, Clock, CheckCircle, Calendar, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
 import NoteViewLayout from '../components/layout/NoteViewLayout';
-import { 
-  CANCELLATION_INITIATORS, 
-  NOTIFICATION_METHODS, 
-  BILLING_STATUS_OPTIONS 
-} from '@/types/enums/notesEnum';
+import { NOTE_CATEGORIES, URGENCY_LEVELS } from '@/types/enums/notesEnum';
 
-const CancellationNoteViewPage = () => {
+const MiscellaneousNoteViewPage = () => {
   const { noteId } = useParams();
   
   const { data: noteData, isLoading } = useQuery({
@@ -38,171 +34,181 @@ const CancellationNoteViewPage = () => {
     return null; // NoteViewLayout will handle the not found state
   }
 
-  const getCancellationInitiatorLabel = (value: string) => {
-    const initiator = CANCELLATION_INITIATORS.find(i => i.value === value);
-    return initiator ? initiator.label : value;
+  const getNoteCategoryLabel = (value: string) => {
+    const category = NOTE_CATEGORIES.find(c => c.value === value);
+    return category ? category.label : value;
   };
 
-  const getNotificationMethodLabel = (value: string) => {
-    const method = NOTIFICATION_METHODS.find(m => m.value === value);
-    return method ? method.label : value;
-  };
-
-  const getBillingStatusLabel = (value: string) => {
-    const status = BILLING_STATUS_OPTIONS.find(s => s.value === value);
-    return status ? status.label : value;
+  const getUrgencyLevelLabel = (value: string) => {
+    const urgency = URGENCY_LEVELS.find(u => u.value === value);
+    return urgency ? urgency.label : value;
   };
 
   return (
     <NoteViewLayout
       note={noteData}
-      noteType="cancellation_note"
-      icon={Calendar}
-      title="Cancellation Note"
+      noteType="miscellaneous_note"
+      icon={FileText}
+      title="Miscellaneous Note"
     >
-      {/* Session Information Section */}
+      {/* Note Information Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-600" />
-            Session Information
+            <FileText className="h-5 w-5 text-blue-600" />
+            Note Information
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <InfoSection title="Session Details">
+          <InfoSection title="Basic Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InfoDisplay 
-                label="Scheduled Session Date" 
-                value={noteData.content.sessionDate ? format(new Date(noteData.content.sessionDate), 'PPP') : null} 
-              />
-              <InfoDisplay 
-                label="Scheduled Session Time" 
-                value={noteData.content.sessionTime} 
+                label="Event/Activity Date" 
+                value={noteData.content.eventDate ? format(new Date(noteData.content.eventDate), 'PPP') : null} 
               />
               <InfoDisplay 
                 label="Note Date" 
                 value={noteData.content.noteDate ? format(new Date(noteData.content.noteDate), 'PPP') : null} 
               />
+              <InfoDisplay 
+                label="Note Category" 
+                value={getNoteCategoryLabel(noteData.content.noteCategory)} 
+              />
+              <InfoDisplay 
+                label="Note Subtype" 
+                value={noteData.content.noteSubtype} 
+              />
+              <InfoDisplay 
+                label="Urgency Level" 
+                value={getUrgencyLevelLabel(noteData.content.urgencyLevel)} 
+              />
+              <InfoDisplay 
+                label="Note Title" 
+                value={noteData.content.noteTitle} 
+              />
             </div>
           </InfoSection>
         </CardContent>
       </Card>
 
-      {/* Cancellation Details Section */}
+      {/* Note Content Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-            Cancellation Details
+            <FileText className="h-5 w-5 text-indigo-600" />
+            Note Content
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <InfoSection title="Cancellation Information">
+          <InfoSection title="Content Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InfoDisplay 
-                label="Cancellation Initiated By" 
-                value={getCancellationInitiatorLabel(noteData.content.cancellationInitiator)} 
+                label="Brief Description" 
+                value={noteData.content.noteDescription} 
               />
               <InfoDisplay 
-                label="Notification Method" 
-                value={getNotificationMethodLabel(noteData.content.notificationMethod)} 
-              />
-              <InfoDisplay 
-                label="Advance Notice" 
-                value={noteData.content.advanceNoticeHours ? `${noteData.content.advanceNoticeHours} hours` : null} 
-              />
-              <InfoDisplay 
-                label="Reason for Cancellation" 
-                value={noteData.content.cancellationReason} 
+                label="Detailed Notes" 
+                value={noteData.content.detailedNotes} 
               />
             </div>
           </InfoSection>
         </CardContent>
       </Card>
 
-      {/* Billing & Policy Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-green-600" />
-            Billing & Policy Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <InfoSection title="Billing Details">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoDisplay 
-                label="Billing Status" 
-                value={getBillingStatusLabel(noteData.content.billingStatus)} 
-              />
-              <InfoDisplay 
-                label="Charge Amount" 
-                value={noteData.content.chargeAmount ? `$${noteData.content.chargeAmount}` : null} 
-              />
-              <InfoDisplay 
-                label="Policy Violation" 
-                value={noteData.content.policyViolation ? 'Yes' : 'No'} 
-              />
-              {noteData.content.policyViolation && (
-                <InfoDisplay 
-                  label="Policy Violation Details" 
-                  value={noteData.content.policyDetails} 
-                />
-              )}
-            </div>
-          </InfoSection>
-        </CardContent>
-      </Card>
-
-      {/* Rescheduling Section */}
-      {noteData.content.willReschedule && (
+      {/* Related Persons Section */}
+      {noteData.content.relatedPersons && noteData.content.relatedPersons.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              Rescheduling Information
+              <Users className="h-5 w-5 text-green-600" />
+              Related Persons
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <InfoSection title="Rescheduling Details">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InfoDisplay 
-                  label="Will Reschedule" 
-                  value="Yes" 
-                />
-                <InfoDisplay 
-                  label="New Session Date" 
-                  value={noteData.content.rescheduleDate ? format(new Date(noteData.content.rescheduleDate), 'PPP') : null} 
-                />
-                <InfoDisplay 
-                  label="New Session Time" 
-                  value={noteData.content.rescheduleTime} 
-                />
-                <InfoDisplay 
-                  label="Rescheduling Notes" 
-                  value={noteData.content.rescheduleNotes} 
-                />
+            <InfoSection title="Person Information">
+              <div className="space-y-4">
+                {noteData.content.relatedPersons.map((person, index) => (
+                  <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <InfoDisplay 
+                        label="Name" 
+                        value={person.name} 
+                      />
+                      <InfoDisplay 
+                        label="Relationship" 
+                        value={person.relationship} 
+                      />
+                      <InfoDisplay 
+                        label="Role" 
+                        value={person.role} 
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </InfoSection>
           </CardContent>
         </Card>
       )}
 
-      {/* Follow-up & Provider Notes Section */}
+      {/* Legal & Compliance Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Follow-up & Provider Notes</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            Legal & Compliance
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <InfoSection title="Follow-up Information">
+          <InfoSection title="Compliance Information">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InfoDisplay 
+                label="Mandatory Reporting" 
+                value={noteData.content.mandatoryReporting ? 'Yes' : 'No'} 
+              />
+              {noteData.content.mandatoryReporting && (
+                <InfoDisplay 
+                  label="Reporting Details" 
+                  value={noteData.content.reportingDetails} 
+                />
+              )}
+              <InfoDisplay 
+                label="Legal Implications" 
+                value={noteData.content.legalImplications} 
+              />
+            </div>
+          </InfoSection>
+        </CardContent>
+      </Card>
+
+      {/* Outcomes Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            Outcomes & Resolution
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <InfoSection title="Outcome Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InfoDisplay 
                 label="Follow-up Required" 
                 value={noteData.content.followUpRequired ? 'Yes' : 'No'} 
               />
+              {noteData.content.followUpRequired && (
+                <InfoDisplay 
+                  label="Follow-up Details" 
+                  value={noteData.content.followUpDetails} 
+                />
+              )}
               <InfoDisplay 
-                label="Provider Notes" 
-                value={noteData.content.providerNotes} 
+                label="Resolution" 
+                value={noteData.content.resolution} 
+              />
+              <InfoDisplay 
+                label="Outcome Summary" 
+                value={noteData.content.outcomeSummary} 
               />
             </div>
           </InfoSection>
@@ -266,5 +272,4 @@ const CancellationNoteViewPage = () => {
   );
 };
 
-export default CancellationNoteViewPage;
-
+export default MiscellaneousNoteViewPage;

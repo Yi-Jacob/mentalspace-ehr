@@ -1,17 +1,19 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import ProgressNoteForm from '../pages/notes/ProgressNoteEditPage';
-import ProgressNoteView from '../pages/notes/ProgressNoteEditPage/ProgressNoteViewPage';
+import ProgressNoteView from '../pages/notes/ProgressNoteViewPage';
 import IntakeAssessmentForm from '../pages/notes/IntakeAssessmentNoteEditPage';
-import IntakeAssessmentView from '../pages/notes/IntakeAssessmentNoteEditPage/IntakeAssessmentViewPage';
-import TreatmentPlanForm from '../pages/notes/TreatmentPlanEditPage/TreatmentPlanEditPage';
+import IntakeAssessmentView from '../pages/notes/IntakeAssessmentNoteViewPage';
+import TreatmentPlanForm from '../pages/notes/TreatmentPlanEditPage';
+import TreatmentPlanView from '../pages/notes/TreatmentPlanViewPage';
 import CancellationNoteForm from '../pages/notes/CancellationNoteEditPage';
 import CancellationNoteView from '../pages/notes/CancellationNoteViewPage';
 import ContactNoteForm from '../pages/notes/ContactNoteEditPage';
 import ContactNoteView from '../pages/notes/ContactNoteViewPage';
 import ConsultationNoteForm from '../pages/notes/ConsultationNoteEditPage';
+import ConsultationNoteView from '../pages/notes/ConsultationNoteViewPage';
 import MiscellaneousNoteForm from '../pages/notes/MiscellaneousNoteEditPage';
-import GenericNoteView from '../pages/notes/GenericNoteViewPage';
+import MiscellaneousNoteView from '../pages/notes/MiscellaneousNoteViewPage';
 import PendingApprovals from '@/pages/notes/PendingApprovalPage';
 import AllNotes from '@/pages/notes/AllNotesPage';
 import CreateNotePage from '@/pages/notes/CreateNotePage/index';
@@ -64,7 +66,7 @@ const notesRoutes: RouteObject[] = [
   },
   {
     path: 'treatment-plan/:noteId',
-    element: <GenericNoteView />,
+    element: <TreatmentPlanView />,
   },
   // Cancellation Notes
   {
@@ -91,7 +93,7 @@ const notesRoutes: RouteObject[] = [
   },
   {
     path: 'consultation-note/:noteId',
-    element: <GenericNoteView />,
+    element: <ConsultationNoteView />,
   },
   // Miscellaneous Notes
   {
@@ -100,7 +102,7 @@ const notesRoutes: RouteObject[] = [
   },
   {
     path: 'miscellaneous-note/:noteId',
-    element: <GenericNoteView />,
+    element: <MiscellaneousNoteView />,
   },
   // Note History
   {
