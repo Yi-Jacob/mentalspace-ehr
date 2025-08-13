@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { TreatmentPlanFormData } from '@/types/noteType';
 import { SECTIONS } from '../constants/sections';
-import { useNoteData } from '../../intake/hooks/useNoteData';
+import { useNoteData } from '../../IntakeAssessmentEditPage/hooks/useNoteData';
 import { useSaveTreatmentPlan } from './useSaveTreatmentPlan';
 
 export const useTreatmentPlanForm = (noteId?: string) => {

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { ProgressNoteFormData } from '@/types/noteType';
 import { SECTIONS } from '../constants/sections';
-import { useNoteData } from '../../intake/hooks/useNoteData';
+import { useNoteData } from '../../IntakeAssessmentEditPage/hooks/useNoteData';
 import { useSaveProgressNote } from './useSaveProgressNote';
 
 export const useProgressNoteForm = (noteId?: string) => {
