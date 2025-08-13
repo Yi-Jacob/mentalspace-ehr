@@ -2,8 +2,8 @@
 import React from 'react';
 import { Card } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
-import { Input } from '@/components/basic/input';
-import { Label } from '@/components/basic/label';
+import { InputField } from '@/components/basic/input';
+import { DateInput } from '@/components/basic/date-input';
 import { Plus, Trash2 } from 'lucide-react';
 import { ConsultationNoteFormData } from '@/types/noteType';
 
@@ -33,29 +33,24 @@ const ActionItemsSection: React.FC<ActionItemsSectionProps> = ({
       {actionItems.map((action, index) => (
         <Card key={index} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Action</Label>
-              <Input
-                value={action.action}
-                onChange={(e) => onUpdateActionItem(index, 'action', e.target.value)}
-                placeholder="Action to be taken"
-              />
-            </div>
-            <div>
-              <Label>Owner</Label>
-              <Input
-                value={action.owner}
-                onChange={(e) => onUpdateActionItem(index, 'owner', e.target.value)}
-                placeholder="Responsible person"
-              />
-            </div>
+            <InputField
+              label="Action"
+              value={action.action}
+              onChange={(e) => onUpdateActionItem(index, 'action', e.target.value)}
+              placeholder="Action to be taken"
+            />
+            <InputField
+              label="Owner"
+              value={action.owner}
+              onChange={(e) => onUpdateActionItem(index, 'owner', e.target.value)}
+              placeholder="Responsible person"
+            />
             <div className="flex items-end space-x-2">
               <div className="flex-1">
-                <Label>Due Date</Label>
-                <Input
-                  type="date"
+                <DateInput
+                  label="Due Date"
                   value={action.dueDate}
-                  onChange={(e) => onUpdateActionItem(index, 'dueDate', e.target.value)}
+                  onChange={(value) => onUpdateActionItem(index, 'dueDate', value)}
                 />
               </div>
               <Button

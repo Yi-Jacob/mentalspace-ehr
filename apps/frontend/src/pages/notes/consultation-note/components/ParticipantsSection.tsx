@@ -2,8 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
-import { Input } from '@/components/basic/input';
-import { Label } from '@/components/basic/label';
+import { InputField } from '@/components/basic/input';
 import { Plus, Trash2 } from 'lucide-react';
 import { ConsultationNoteFormData } from '@/types/noteType';
 
@@ -33,26 +32,22 @@ const ParticipantsSection: React.FC<ParticipantsSectionProps> = ({
       {participants.map((participant) => (
         <Card key={participant.id} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Name</Label>
-              <Input
-                value={participant.name}
-                onChange={(e) => onUpdateParticipant(participant.id, 'name', e.target.value)}
-                placeholder="Participant name"
-              />
-            </div>
-            <div>
-              <Label>Role</Label>
-              <Input
-                value={participant.role}
-                onChange={(e) => onUpdateParticipant(participant.id, 'role', e.target.value)}
-                placeholder="Professional role"
-              />
-            </div>
+            <InputField
+              label="Name"
+              value={participant.name}
+              onChange={(e) => onUpdateParticipant(participant.id, 'name', e.target.value)}
+              placeholder="Participant name"
+            />
+            <InputField
+              label="Role"
+              value={participant.role}
+              onChange={(e) => onUpdateParticipant(participant.id, 'role', e.target.value)}
+              placeholder="Professional role"
+            />
             <div className="flex items-end space-x-2">
               <div className="flex-1">
-                <Label>Organization</Label>
-                <Input
+                <InputField
+                  label="Organization"
                   value={participant.organization}
                   onChange={(e) => onUpdateParticipant(participant.id, 'organization', e.target.value)}
                   placeholder="Organization/Agency"

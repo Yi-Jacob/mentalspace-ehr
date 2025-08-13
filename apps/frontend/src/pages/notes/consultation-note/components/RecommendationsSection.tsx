@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { ConsultationNoteFormData } from '@/types/noteType';
 
 interface RecommendationsSectionProps {
@@ -17,16 +16,14 @@ const RecommendationsSection: React.FC<RecommendationsSectionProps> = ({
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Recommendations & Actions</h3>
       
-      <div>
-        <Label htmlFor="treatmentModifications">Treatment Modifications</Label>
-        <Textarea
-          id="treatmentModifications"
-          value={formData.treatmentModifications}
-          onChange={(e) => updateFormData({ treatmentModifications: e.target.value })}
-          placeholder="Any recommended changes to treatment approach..."
-          rows={3}
-        />
-      </div>
+      <TextareaField
+        id="treatmentModifications"
+        label="Treatment Modifications"
+        value={formData.treatmentModifications}
+        onChange={(e) => updateFormData({ treatmentModifications: e.target.value })}
+        placeholder="Any recommended changes to treatment approach..."
+        rows={3}
+      />
     </div>
   );
 };

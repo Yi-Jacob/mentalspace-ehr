@@ -183,3 +183,20 @@ export const BILLING_STATUS_OPTIONS: BillingStatusOption[] = [
   { value: 'partial_charge', label: 'Partial Charge Applied' },
   { value: 'pending_review', label: 'Pending Review' }
 ];
+
+// ============================================================================
+// CONSULTATION NOTE ENUMS
+// ============================================================================
+
+export interface ConsultationTypeOption {
+  value: string;
+  label: string;
+}
+
+export const CONSULTATION_TYPES: ConsultationTypeOption[] = [
+  { value: 'case_review', label: 'Case Review' },
+  { value: 'treatment_planning', label: 'Treatment Planning' },
+  { value: 'supervision', label: 'Clinical Supervision' },
+  { value: 'peer_consultation', label: 'Peer Consultation' },
+  { value: 'multidisciplinary_team', label: 'Multidisciplinary Team' }
+];
