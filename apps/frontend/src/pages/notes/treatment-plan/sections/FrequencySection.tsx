@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Input } from '@/components/basic/input';
-import { Label } from '@/components/basic/label';
+import { SelectField } from '@/components/basic/select';
 import { Checkbox } from '@/components/basic/checkbox';
+import { Label } from '@/components/basic/label';
 import { TreatmentPlanFormData } from '@/types/noteType';
-import FrequencySelect from '../../components/shared/FrequencySelect';
+import { SESSION_FREQUENCY_OPTIONS, SESSION_DURATION_OPTIONS, MODALITY_OPTIONS } from '@/types/enums/notesEnum';
 
 interface FrequencySectionProps {
   formData: TreatmentPlanFormData;
@@ -23,10 +23,38 @@ const FrequencySection: React.FC<FrequencySectionProps> = ({
         <CardTitle>Frequency of Treatment</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <FrequencySelect
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SelectField
+            label="Session Frequency"
+            value={formData.sessionFrequency}
+            onValueChange={(value) => updateFormData({ sessionFrequency: value })}
+            options={SESSION_FREQUENCY_OPTIONS}
+            placeholder="Select session frequency"
+          />
+
+          <SelectField
+            label="Session Duration"
+            value={formData.sessionDuration}
+            onValueChange={(value) => updateFormData({ sessionDuration: value })}
+            options={SESSION_DURATION_OPTIONS}
+            placeholder="Select session duration"
+          />
+        </div>
+
+        <SelectField
+          label="Treatment Modality"
+          value={formData.modality}
+          onValueChange={(value) => updateFormData({ modality: value })}
+          options={MODALITY_OPTIONS}
+          placeholder="Select treatment modality"
+        />
+
+        <SelectField
           label="Prescribed Frequency of Treatment"
           value={formData.prescribedFrequency}
-          onChange={(value) => updateFormData({ prescribedFrequency: value })}
+          onValueChange={(value) => updateFormData({ prescribedFrequency: value })}
+          options={SESSION_FREQUENCY_OPTIONS}
+          placeholder="Select prescribed frequency"
           required
         />
 

@@ -420,3 +420,100 @@ export const SUBSTANCES: SubstanceOption[] = [
   { value: 'Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)', label: 'Sedatives/Hypnotics (benzodiazepines, sleep medications, etc.)' },
   { value: 'Other Substances', label: 'Other Substances' }
 ];
+
+// ============================================================================
+// TREATMENT PLAN ENUMS
+// ============================================================================
+
+export interface InterventionStrategyOption {
+  value: string;
+  label: string;
+}
+
+export const INTERVENTION_STRATEGIES: InterventionStrategyOption[] = [
+  { value: 'Cognitive Challenging', label: 'Cognitive Challenging' },
+  { value: 'Cognitive Refocusing', label: 'Cognitive Refocusing' },
+  { value: 'Cognitive Reframing', label: 'Cognitive Reframing' },
+  { value: 'Communication Skills', label: 'Communication Skills' },
+  { value: 'Compliance Issues', label: 'Compliance Issues' },
+  { value: 'DBT', label: 'DBT' },
+  { value: 'Exploration of Coping Patterns', label: 'Exploration of Coping Patterns' },
+  { value: 'Exploration of Emotions', label: 'Exploration of Emotions' },
+  { value: 'Exploration of Relationship Patterns', label: 'Exploration of Relationship Patterns' },
+  { value: 'Guided Imagery', label: 'Guided Imagery' },
+  { value: 'Interactive Feedback', label: 'Interactive Feedback' },
+  { value: 'Interpersonal Resolutions', label: 'Interpersonal Resolutions' },
+  { value: 'Mindfulness Training', label: 'Mindfulness Training' },
+  { value: 'Preventative Services', label: 'Preventative Services' },
+  { value: 'Psycho-Education', label: 'Psycho-Education' },
+  { value: 'Relaxation/Deep Breathing', label: 'Relaxation/Deep Breathing' },
+  { value: 'Review of Treatment Plan/Progress', label: 'Review of Treatment Plan/Progress' },
+  { value: 'Role-Play/Behavioral Rehearsal', label: 'Role-Play/Behavioral Rehearsal' },
+  { value: 'Structured Problem Solving', label: 'Structured Problem Solving' },
+  { value: 'Supportive Reflection', label: 'Supportive Reflection' },
+  { value: 'Symptom Management', label: 'Symptom Management' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface EstimatedCompletionOption {
+  value: string;
+  label: string;
+}
+
+export const ESTIMATED_COMPLETION_OPTIONS: EstimatedCompletionOption[] = [
+  { value: '3 months', label: '3 months' },
+  { value: '6 months', label: '6 months' },
+  { value: '9 months', label: '9 months' },
+  { value: '12 months', label: '12 months' }
+];
+
+export interface PriorityOption {
+  value: string;
+  label: string;
+}
+
+export const PRIORITY_OPTIONS: PriorityOption[] = [
+  { value: 'High', label: 'High' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'Low', label: 'Low' }
+];
+
+export interface SessionFrequencyOption {
+  value: string;
+  label: string;
+}
+
+export const SESSION_FREQUENCY_OPTIONS: SessionFrequencyOption[] = [
+  { value: 'Weekly', label: 'Weekly' },
+  { value: 'Bi-weekly', label: 'Bi-weekly' },
+  { value: 'Monthly', label: 'Monthly' },
+  { value: 'As needed', label: 'As needed' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface SessionDurationOption {
+  value: string;
+  label: string;
+}
+
+export const SESSION_DURATION_OPTIONS: SessionDurationOption[] = [
+  { value: '30 minutes', label: '30 minutes' },
+  { value: '45 minutes', label: '45 minutes' },
+  { value: '60 minutes', label: '60 minutes' },
+  { value: '90 minutes', label: '90 minutes' },
+  { value: 'Other', label: 'Other' }
+];
+
+export interface ModalityOption {
+  value: string;
+  label: string;
+}
+
+export const MODALITY_OPTIONS: ModalityOption[] = [
+  { value: 'Individual Therapy', label: 'Individual Therapy' },
+  { value: 'Group Therapy', label: 'Group Therapy' },
+  { value: 'Family Therapy', label: 'Family Therapy' },
+  { value: 'Couples Therapy', label: 'Couples Therapy' },
+  { value: 'Telehealth', label: 'Telehealth' },
+  { value: 'Other', label: 'Other' }
+];

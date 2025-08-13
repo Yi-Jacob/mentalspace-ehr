@@ -4,7 +4,7 @@ import { Button } from '@/components/basic/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Checkbox } from '@/components/basic/checkbox';
 import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
+import { InputField } from '@/components/basic/input';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { TreatmentPlanFormData } from '@/types/noteType';
@@ -107,7 +107,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <FileText className="h-5 w-5 text-green-600" />
+          <FileText className="h-5 w-5 text-blue-600" />
           <span>Finalize & Sign Treatment Plan</span>
         </CardTitle>
       </CardHeader>
@@ -123,39 +123,30 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
         </div>
 
         {/* Section Completion Status */}
-        <div className={`border rounded-lg p-4 ${allSectionsComplete ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-          <div className="flex items-center space-x-2 mb-3">
-            {allSectionsComplete ? (
-              <>
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <h3 className="font-medium text-green-900">All Required Sections Complete</h3>
-              </>
-            ) : (
-              <>
-                <XCircle className="h-5 w-5 text-red-600" />
-                <h3 className="font-medium text-red-900">Incomplete Required Sections</h3>
-              </>
-            )}
+        <div className="space-y-4">
+          <h4 className="font-medium text-gray-900">Section Completion Status</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sectionCompletionStatus.map((section, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                {section.isComplete ? (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-500" />
+                )}
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${section.isComplete ? 'text-green-800' : 'text-red-800'}`}>
+                    {section.name}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {section.isComplete ? 'Complete' : `Missing: ${section.fields.join(', ')}`}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-          
-          {!allSectionsComplete && (
-            <div className="space-y-2">
-              <p className="text-sm text-red-800 mb-2">Please complete the following sections before finalizing:</p>
-              <ul className="space-y-1">
-                {incompleteSections.map((section, index) => (
-                  <li key={index} className="text-sm text-red-800">
-                    <strong>{section.name}:</strong> {section.fields.join(', ')}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {allSectionsComplete && (
-            <p className="text-sm text-green-800">Ready for finalization and signature.</p>
-          )}
         </div>
 
+        {/* Finalization Section */}
         {!formData.isFinalized && (
           <>
             <Alert>
@@ -198,22 +189,18 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
                 </Label>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signature" className={!allSectionsComplete ? 'text-gray-400' : ''}>
-                  Electronic Signature
-                </Label>
-                <Input
-                  id="signature"
-                  value={formData.signature || ''}
-                  onChange={(e) => updateFormData({ signature: e.target.value })}
-                  placeholder="Type your full name to sign"
-                  disabled={!allSectionsComplete}
-                  className={!allSectionsComplete ? 'bg-gray-100' : ''}
-                />
-                <p className={`text-xs ${!allSectionsComplete ? 'text-gray-400' : 'text-gray-600'}`}>
-                  By typing your name, you are providing your electronic signature
-                </p>
-              </div>
+              <InputField
+                id="signature"
+                label="Electronic Signature"
+                value={formData.signature || ''}
+                onChange={(e) => updateFormData({ signature: e.target.value })}
+                placeholder="Type your full name to sign"
+                disabled={!allSectionsComplete}
+                className={!allSectionsComplete ? 'bg-gray-100' : ''}
+              />
+              <p className={`text-xs ${!allSectionsComplete ? 'text-gray-400' : 'text-gray-600'}`}>
+                By typing your name, you are providing your electronic signature
+              </p>
             </div>
 
             <div className="flex space-x-3">

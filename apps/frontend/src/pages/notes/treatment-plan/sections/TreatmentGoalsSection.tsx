@@ -1,46 +1,20 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
-import { Input } from '@/components/basic/input';
-import { Label } from '@/components/basic/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { InputField } from '@/components/basic/input';
+import { SelectField } from '@/components/basic/select';
+import { TextareaField } from '@/components/basic/textarea';
 import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/basic/collapsible';
 import { Badge } from '@/components/basic/badge';
 import { TreatmentPlanFormData } from '@/types/noteType';
-import { Textarea } from '@/components/basic/textarea';
+import { INTERVENTION_STRATEGIES, ESTIMATED_COMPLETION_OPTIONS, PRIORITY_OPTIONS } from '@/types/enums/notesEnum';
 
 interface TreatmentGoalsSectionProps {
   formData: TreatmentPlanFormData;
   updateFormData: (updates: Partial<TreatmentPlanFormData>) => void;
   clientData?: any;
 }
-
-// Predefined intervention strategies
-const interventionStrategies = [
-  'Cognitive Challenging',
-  'Cognitive Refocusing', 
-  'Cognitive Reframing',
-  'Communication Skills',
-  'Compliance Issues',
-  'DBT',
-  'Exploration of Coping Patterns',
-  'Exploration of Emotions',
-  'Exploration of Relationship Patterns',
-  'Guided Imagery',
-  'Interactive Feedback',
-  'Interpersonal Resolutions',
-  'Mindfulness Training',
-  'Preventative Services',
-  'Psycho-Education',
-  'Relaxation/Deep Breathing',
-  'Review of Treatment Plan/Progress',
-  'Role-Play/Behavioral Rehearsal',
-  'Structured Problem Solving',
-  'Supportive Reflection',
-  'Symptom Management',
-  'Other'
-];
 
 const TreatmentGoalsSection: React.FC<TreatmentGoalsSectionProps> = ({
   formData,
@@ -177,9 +151,9 @@ const TreatmentGoalsSection: React.FC<TreatmentGoalsSectionProps> = ({
                   <CardContent className="space-y-6">
                     <div className="flex items-start space-x-2">
                       <div className="flex-1">
-                        <Label htmlFor={`goal-${goalIndex}`}>Goal Description</Label>
-                        <Textarea
+                        <TextareaField
                           id={`goal-${goalIndex}`}
+                          label="Goal Description"
                           value={goal.goalText}
                           onChange={(e) => updateGoal(goalIndex, e.target.value)}
                           placeholder="Describe the treatment goal..."
@@ -223,57 +197,42 @@ const TreatmentGoalsSection: React.FC<TreatmentGoalsSectionProps> = ({
                                   </Button>
                                 </div>
 
-                                <div>
-                                  <Label>Objective Description</Label>
-                                  <Textarea
-                                    value={objective.objectiveText}
-                                    onChange={(e) => updateObjective(goalIndex, objectiveIndex, 'objectiveText', e.target.value)}
-                                    placeholder="Describe the specific objective..."
-                                    rows={2}
+                                <TextareaField
+                                  label="Objective Description"
+                                  value={objective.objectiveText}
+                                  onChange={(e) => updateObjective(goalIndex, objectiveIndex, 'objectiveText', e.target.value)}
+                                  placeholder="Describe the specific objective..."
+                                  rows={2}
+                                />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <SelectField
+                                    label="Estimated Completion"
+                                    value={objective.estimatedCompletion}
+                                    onValueChange={(value) => updateObjective(goalIndex, objectiveIndex, 'estimatedCompletion', value)}
+                                    options={ESTIMATED_COMPLETION_OPTIONS}
+                                  />
+
+                                  <InputField
+                                    label="Target Completion Date"
+                                    type="date"
+                                    value={objective.completionDate}
+                                    onChange={(e) => updateObjective(goalIndex, objectiveIndex, 'completionDate', e.target.value)}
                                   />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <Label>Estimated Completion</Label>
-                                    <Select
-                                      value={objective.estimatedCompletion}
-                                      onValueChange={(value) => updateObjective(goalIndex, objectiveIndex, 'estimatedCompletion', value)}
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="3 months">3 months</SelectItem>
-                                        <SelectItem value="6 months">6 months</SelectItem>
-                                        <SelectItem value="9 months">9 months</SelectItem>
-                                        <SelectItem value="12 months">12 months</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-
-                                  <div>
-                                    <Label>Target Completion Date</Label>
-                                    <Input
-                                      type="date"
-                                      value={objective.completionDate}
-                                      onChange={(e) => updateObjective(goalIndex, objectiveIndex, 'completionDate', e.target.value)}
-                                    />
-                                  </div>
-                                </div>
-
                                 <div>
-                                  <Label className="text-sm font-medium">Strategy / Intervention</Label>
-                                  <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
-                                    {interventionStrategies.map((strategy) => (
+                                  <h6 className="text-sm font-medium mb-2">Strategy / Intervention</h6>
+                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    {INTERVENTION_STRATEGIES.map((strategy) => (
                                       <Button
-                                        key={strategy}
+                                        key={strategy.value}
                                         size="sm"
-                                        variant={objective.strategies.includes(strategy) ? "default" : "outline"}
-                                        onClick={() => toggleStrategy(goalIndex, objectiveIndex, strategy)}
+                                        variant={objective.strategies.includes(strategy.value) ? "default" : "outline"}
+                                        onClick={() => toggleStrategy(goalIndex, objectiveIndex, strategy.value)}
                                         className="text-xs"
                                       >
-                                        + {strategy}
+                                        + {strategy.label}
                                       </Button>
                                     ))}
                                   </div>
