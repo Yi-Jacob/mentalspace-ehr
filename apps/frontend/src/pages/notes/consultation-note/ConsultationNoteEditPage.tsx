@@ -1,9 +1,6 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent } from '@/components/basic/card';
-import ClientInfoDisplay from '@/pages/notes/components/shared/ClientInfoDisplay';
-import ConsultationNoteHeader from './components/ConsultationNoteHeader';
 import ConsultationInfoSection from './components/ConsultationInfoSection';
 import ParticipantsSection from './components/ParticipantsSection';
 import ClinicalDiscussionSection from './components/ClinicalDiscussionSection';
@@ -14,8 +11,7 @@ import FinalizationSection from './components/FinalizationSection';
 import { useConsultationNoteData } from './hooks/useConsultationNoteData';
 import { useConsultationNoteForm } from './hooks/useConsultationNoteForm';
 import { useConsultationNoteSave } from './hooks/useConsultationNoteSave';
-import PageLayout from '@/components/basic/PageLayout';
-import PageHeader from '@/components/basic/PageHeader';
+import OneSectionNoteEditLayout from '@/pages/notes/components/layout/OneSectionNoteEditLayout';
 import { Users } from 'lucide-react';
 
 const ConsultationNoteForm = () => {
@@ -24,12 +20,6 @@ const ConsultationNoteForm = () => {
   const { data: noteData } = useConsultationNoteData(noteId);
   const { formData, updateFormData, validateForm } = useConsultationNoteForm(noteData);
   const { isLoading, handleSave } = useConsultationNoteSave(noteId);
-
-  const clientName = noteData?.client 
-    ? `${noteData.client.firstName} ${noteData.client.lastName}`
-    : 'Unknown Client';
-
-  const canFinalize = validateForm() && !!formData.signature;
 
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
   const handleFinalize = () => handleSave(formData, false, validateForm);
@@ -84,69 +74,62 @@ const ConsultationNoteForm = () => {
   };
 
   return (
-    <PageLayout variant="gradient">
-      <PageHeader
-        icon={Users}
-        title="Consultation Note"
-        description={`Client: ${clientName}`}
-        action={
-          <div className="flex space-x-2">
-            <ConsultationNoteHeader
-              clientName={clientName}
-              onSaveDraft={handleSaveDraft}
-              onFinalize={handleFinalize}
-              isLoading={isLoading}
-              canFinalize={canFinalize}
-            />
-          </div>
-        }
+    <OneSectionNoteEditLayout
+      icon={Users}
+      title="Consultation Note"
+      clientData={noteData?.client}
+      onSaveDraft={handleSaveDraft}
+      onFinalize={handleFinalize}
+      validateForm={validateForm}
+      isLoading={isLoading}
+      isFinalized={formData.isFinalized}
+      signature={formData.signature}
+      onSignatureChange={(signature) => updateFormData({ signature })}
+      signedBy={formData.signedBy}
+      signedAt={formData.signedAt}
+      showFinalizationSection={false}
+      showBottomActionButtons={false}
+      finalizeButtonColor="indigo"
+    >
+      <ConsultationInfoSection 
+        formData={formData} 
+        updateFormData={updateFormData} 
       />
 
-      <ClientInfoDisplay clientData={noteData?.client} />
+      <ParticipantsSection
+        participants={formData.participants}
+        onAddParticipant={addParticipant}
+        onUpdateParticipant={updateParticipant}
+        onRemoveParticipant={removeParticipant}
+      />
 
-      <Card>
-        <CardContent className="p-6 space-y-8">
-          <ConsultationInfoSection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
+      <ClinicalDiscussionSection
+        formData={formData}
+        updateFormData={updateFormData}
+      />
 
-          <ParticipantsSection
-            participants={formData.participants}
-            onAddParticipant={addParticipant}
-            onUpdateParticipant={updateParticipant}
-            onRemoveParticipant={removeParticipant}
-          />
+      <RecommendationsSection
+        formData={formData}
+        updateFormData={updateFormData}
+      />
 
-          <ClinicalDiscussionSection
-            formData={formData}
-            updateFormData={updateFormData}
-          />
+      <ActionItemsSection
+        actionItems={formData.actionItemOwners}
+        onAddActionItem={addActionItem}
+        onUpdateActionItem={updateActionItem}
+        onRemoveActionItem={removeActionItem}
+      />
 
-          <RecommendationsSection
-            formData={formData}
-            updateFormData={updateFormData}
-          />
+      <ComplianceSection
+        formData={formData}
+        updateFormData={updateFormData}
+      />
 
-          <ActionItemsSection
-            actionItems={formData.actionItemOwners}
-            onAddActionItem={addActionItem}
-            onUpdateActionItem={updateActionItem}
-            onRemoveActionItem={removeActionItem}
-          />
-
-          <ComplianceSection
-            formData={formData}
-            updateFormData={updateFormData}
-          />
-
-          <FinalizationSection
-            formData={formData}
-            updateFormData={updateFormData}
-          />
-        </CardContent>
-      </Card>
-    </PageLayout>
+      <FinalizationSection
+        formData={formData}
+        updateFormData={updateFormData}
+      />
+    </OneSectionNoteEditLayout>
   );
 };
 

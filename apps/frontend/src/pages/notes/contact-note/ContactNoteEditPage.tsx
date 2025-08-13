@@ -1,10 +1,6 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent } from '@/components/basic/card';
-import ClientInfoDisplay from '@/pages/notes/components/shared/ClientInfoDisplay';
-import ContactNoteHeader from './components/ContactNoteHeader';
-import ContactNoteNavigationButtons from './components/ContactNoteNavigationButtons';
 import ContactInfoSection from './components/ContactInfoSection';
 import ContactSummarySection from './components/ContactSummarySection';
 import RiskAssessmentSection from './components/RiskAssessmentSection';
@@ -14,8 +10,7 @@ import FinalizationSection from './components/FinalizationSection';
 import { useContactNoteData } from './hooks/useContactNoteData';
 import { useContactNoteForm } from './hooks/useContactNoteForm';
 import { useContactNoteSave } from './hooks/useContactNoteSave';
-import PageLayout from '@/components/basic/PageLayout';
-import PageHeader from '@/components/basic/PageHeader';
+import OneSectionNoteEditLayout from '@/pages/notes/components/layout/OneSectionNoteEditLayout';
 import { Phone } from 'lucide-react';
 
 const ContactNoteForm = () => {
@@ -25,75 +20,57 @@ const ContactNoteForm = () => {
   const { formData, updateFormData, validateForm } = useContactNoteForm(noteData);
   const { isLoading, handleSave } = useContactNoteSave(noteId);
 
-  const clientName = noteData?.client 
-    ? `${noteData.client.firstName} ${noteData.client.lastName}`
-    : 'Unknown Client';
-
-  const canFinalize = validateForm() && !!formData.signature;
-
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
   const handleFinalize = () => handleSave(formData, false, validateForm);
 
   return (
-    <PageLayout variant="gradient">
-      <PageHeader
-        icon={Phone}
-        title="Contact Note"
-        description={`Client: ${clientName}`}
-        action={
-          <div className="flex space-x-2">
-            <ContactNoteHeader
-              clientName={clientName}
-              onSaveDraft={handleSaveDraft}
-              onFinalize={handleFinalize}
-              isLoading={isLoading}
-              canFinalize={canFinalize}
-            />
-          </div>
-        }
+    <OneSectionNoteEditLayout
+      icon={Phone}
+      title="Contact Note"
+      clientData={noteData?.client}
+      onSaveDraft={handleSaveDraft}
+      onFinalize={handleFinalize}
+      validateForm={validateForm}
+      isLoading={isLoading}
+      isFinalized={formData.isFinalized}
+      signature={formData.signature}
+      onSignatureChange={(signature) => updateFormData({ signature })}
+      signedBy={formData.signedBy}
+      signedAt={formData.signedAt}
+      showFinalizationSection={false}
+      showBottomActionButtons={false}
+      finalizeButtonColor="teal"
+    >
+      <ContactInfoSection 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      />
+      
+      <ContactSummarySection 
+        formData={formData} 
+        updateFormData={updateFormData} 
       />
 
-      <ClientInfoDisplay clientData={noteData?.client} />
+      <RiskAssessmentSection 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      />
 
-      <Card>
-        <CardContent className="p-6 space-y-8">
-          <ContactInfoSection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
-          
-          <ContactSummarySection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
+      <ClinicalObservationsSection 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      />
 
-          <RiskAssessmentSection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
+      <FollowUpSection 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      />
 
-          <ClinicalObservationsSection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
-
-          <FollowUpSection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
-
-          <FinalizationSection 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
-
-          <ContactNoteNavigationButtons
-            onSaveDraft={handleSaveDraft}
-            isLoading={isLoading}
-          />
-        </CardContent>
-      </Card>
-    </PageLayout>
+      <FinalizationSection 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      />
+    </OneSectionNoteEditLayout>
   );
 };
 
