@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
+import { InputField } from '@/components/basic/input';
+import { SelectField } from '@/components/basic/select';
+import { DateInput } from '@/components/basic/date-input';
 import { ContactNoteFormData } from '@/types/noteType';
+import { CONTACT_TYPES, CONTACT_INITIATORS } from '@/types/enums/notesEnum';
 
 interface ContactInfoSectionProps {
   formData: ContactNoteFormData;
@@ -18,68 +19,46 @@ const ContactInfoSection: React.FC<ContactInfoSectionProps> = ({
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="contactDate">Contact Date *</Label>
-          <Input
-            id="contactDate"
-            type="date"
-            value={formData.contactDate}
-            onChange={(e) => updateFormData({ contactDate: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="contactTime">Contact Time</Label>
-          <Input
-            id="contactTime"
-            type="time"
-            value={formData.contactTime}
-            onChange={(e) => updateFormData({ contactTime: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="contactDuration">Duration (minutes) *</Label>
-          <Input
-            id="contactDuration"
-            type="number"
-            min="1"
-            value={formData.contactDuration}
-            onChange={(e) => updateFormData({ contactDuration: parseInt(e.target.value) || 0 })}
-          />
-        </div>
+        <DateInput
+          id="contactDate"
+          label="Contact Date"
+          value={formData.contactDate}
+          onChange={(value) => updateFormData({ contactDate: value })}
+          required
+        />
+        <InputField
+          id="contactTime"
+          label="Contact Time"
+          type="time"
+          value={formData.contactTime}
+          onChange={(e) => updateFormData({ contactTime: e.target.value })}
+        />
+        <InputField
+          id="contactDuration"
+          label="Duration (minutes)"
+          type="number"
+          min="1"
+          value={formData.contactDuration.toString()}
+          onChange={(e) => updateFormData({ contactDuration: parseInt(e.target.value) || 0 })}
+          required
+        />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="contactType">Contact Type *</Label>
-          <Select value={formData.contactType} onValueChange={(value: any) => updateFormData({ contactType: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="phone">Phone Call</SelectItem>
-              <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="text">Text Message</SelectItem>
-              <SelectItem value="video_call">Video Call</SelectItem>
-              <SelectItem value="in_person">In Person</SelectItem>
-              <SelectItem value="collateral">Collateral Contact</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="contactInitiator">Contact Initiated By *</Label>
-          <Select value={formData.contactInitiator} onValueChange={(value: any) => updateFormData({ contactInitiator: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="client">Client</SelectItem>
-              <SelectItem value="provider">Provider</SelectItem>
-              <SelectItem value="family">Family Member</SelectItem>
-              <SelectItem value="other_provider">Other Provider</SelectItem>
-              <SelectItem value="emergency">Emergency Contact</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SelectField
+          label="Contact Type"
+          value={formData.contactType}
+          onValueChange={(value) => updateFormData({ contactType: value as 'phone' | 'email' | 'text' | 'video_call' | 'in_person' | 'collateral' })}
+          options={CONTACT_TYPES}
+          required
+        />
+        <SelectField
+          label="Contact Initiated By"
+          value={formData.contactInitiator}
+          onValueChange={(value) => updateFormData({ contactInitiator: value as 'client' | 'provider' | 'family' | 'other_provider' | 'emergency' })}
+          options={CONTACT_INITIATORS}
+          required
+        />
       </div>
     </div>
   );

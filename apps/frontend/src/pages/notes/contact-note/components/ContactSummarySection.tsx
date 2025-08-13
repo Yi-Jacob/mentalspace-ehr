@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
-import { Textarea } from '@/components/basic/textarea';
+import { InputField } from '@/components/basic/input';
+import { TextareaField } from '@/components/basic/textarea';
 import { ContactNoteFormData } from '@/types/noteType';
 
 interface ContactSummarySectionProps {
@@ -18,26 +17,23 @@ const ContactSummarySection: React.FC<ContactSummarySectionProps> = ({
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Contact Summary</h3>
       
-      <div>
-        <Label htmlFor="contactSummary">Contact Summary *</Label>
-        <Textarea
-          id="contactSummary"
-          value={formData.contactSummary}
-          onChange={(e) => updateFormData({ contactSummary: e.target.value })}
-          placeholder="Summarize the purpose and content of this contact..."
-          rows={4}
-        />
-      </div>
+      <TextareaField
+        id="contactSummary"
+        label="Contact Summary"
+        value={formData.contactSummary}
+        onChange={(e) => updateFormData({ contactSummary: e.target.value })}
+        placeholder="Summarize the purpose and content of this contact..."
+        rows={4}
+        required
+      />
 
-      <div>
-        <Label htmlFor="clientMoodStatus">Client Mood/Status</Label>
-        <Input
-          id="clientMoodStatus"
-          value={formData.clientMoodStatus}
-          onChange={(e) => updateFormData({ clientMoodStatus: e.target.value })}
-          placeholder="Describe client's mood, affect, or status during contact"
-        />
-      </div>
+      <InputField
+        id="clientMoodStatus"
+        label="Client Mood/Status"
+        value={formData.clientMoodStatus}
+        onChange={(e) => updateFormData({ clientMoodStatus: e.target.value })}
+        placeholder="Describe client's mood, affect, or status during contact"
+      />
     </div>
   );
 };

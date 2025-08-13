@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
-import { Textarea } from '@/components/basic/textarea';
+import { InputField } from '@/components/basic/input';
+import { TextareaField } from '@/components/basic/textarea';
+import { DateInput } from '@/components/basic/date-input';
 import { Checkbox } from '@/components/basic/checkbox';
 import { Clock } from 'lucide-react';
 import { ContactNoteFormData } from '@/types/noteType';
@@ -35,16 +36,14 @@ const FollowUpSection: React.FC<FollowUpSectionProps> = ({
       </div>
 
       {formData.followUpRequired && (
-        <div>
-          <Label htmlFor="followUpPlan">Follow-up Plan</Label>
-          <Textarea
-            id="followUpPlan"
-            value={formData.followUpPlan}
-            onChange={(e) => updateFormData({ followUpPlan: e.target.value })}
-            placeholder="Describe the follow-up actions needed..."
-            rows={2}
-          />
-        </div>
+        <TextareaField
+          id="followUpPlan"
+          label="Follow-up Plan"
+          value={formData.followUpPlan}
+          onChange={(e) => updateFormData({ followUpPlan: e.target.value })}
+          placeholder="Describe the follow-up actions needed..."
+          rows={2}
+        />
       )}
 
       <div className="flex items-center space-x-2">
@@ -59,15 +58,12 @@ const FollowUpSection: React.FC<FollowUpSectionProps> = ({
       </div>
 
       {formData.nextAppointmentScheduled && (
-        <div>
-          <Label htmlFor="nextAppointmentDate">Next Appointment Date</Label>
-          <Input
-            id="nextAppointmentDate"
-            type="date"
-            value={formData.nextAppointmentDate}
-            onChange={(e) => updateFormData({ nextAppointmentDate: e.target.value })}
-          />
-        </div>
+        <DateInput
+          id="nextAppointmentDate"
+          label="Next Appointment Date"
+          value={formData.nextAppointmentDate}
+          onChange={(value) => updateFormData({ nextAppointmentDate: value })}
+        />
       )}
     </div>
   );

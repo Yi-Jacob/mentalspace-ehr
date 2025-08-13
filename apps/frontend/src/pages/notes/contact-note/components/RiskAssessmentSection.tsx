@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
 import { AlertTriangle } from 'lucide-react';
 import { ContactNoteFormData } from '@/types/noteType';
@@ -34,16 +34,14 @@ const RiskAssessmentSection: React.FC<RiskAssessmentSectionProps> = ({
       </div>
 
       {formData.riskFactorsDiscussed && (
-        <div>
-          <Label htmlFor="riskDetails">Risk Details</Label>
-          <Textarea
-            id="riskDetails"
-            value={formData.riskDetails}
-            onChange={(e) => updateFormData({ riskDetails: e.target.value })}
-            placeholder="Describe any risk factors, safety concerns, or interventions provided..."
-            rows={3}
-          />
-        </div>
+        <TextareaField
+          id="riskDetails"
+          label="Risk Details"
+          value={formData.riskDetails}
+          onChange={(e) => updateFormData({ riskDetails: e.target.value })}
+          placeholder="Describe any risk factors, safety concerns, or interventions provided..."
+          rows={3}
+        />
       )}
     </div>
   );

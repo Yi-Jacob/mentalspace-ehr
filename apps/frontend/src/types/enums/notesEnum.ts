@@ -200,3 +200,34 @@ export const CONSULTATION_TYPES: ConsultationTypeOption[] = [
   { value: 'peer_consultation', label: 'Peer Consultation' },
   { value: 'multidisciplinary_team', label: 'Multidisciplinary Team' }
 ];
+
+// ============================================================================
+// CONTACT NOTE ENUMS
+// ============================================================================
+
+export interface ContactTypeOption {
+  value: string;
+  label: string;
+}
+
+export const CONTACT_TYPES: ContactTypeOption[] = [
+  { value: 'phone', label: 'Phone Call' },
+  { value: 'email', label: 'Email' },
+  { value: 'text', label: 'Text Message' },
+  { value: 'video_call', label: 'Video Call' },
+  { value: 'in_person', label: 'In Person' },
+  { value: 'collateral', label: 'Collateral Contact' }
+];
+
+export interface ContactInitiatorOption {
+  value: string;
+  label: string;
+}
+
+export const CONTACT_INITIATORS: ContactInitiatorOption[] = [
+  { value: 'client', label: 'Client' },
+  { value: 'provider', label: 'Provider' },
+  { value: 'family', label: 'Family Member' },
+  { value: 'other_provider', label: 'Other Provider' },
+  { value: 'emergency', label: 'Emergency Contact' }
+];
