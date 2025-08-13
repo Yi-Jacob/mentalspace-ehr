@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
+import { InputField } from '@/components/basic/input';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { MiscellaneousNoteFormData } from '@/types/noteType';
@@ -42,15 +41,13 @@ const FinalizationSection: React.FC<FinalizationSectionProps> = ({
         </AlertDescription>
       </Alert>
 
-      <div>
-        <Label htmlFor="signature">Electronic Signature</Label>
-        <Input
-          id="signature"
-          value={formData.signature}
-          onChange={(e) => updateFormData({ signature: e.target.value })}
-          placeholder="Type your full name to sign"
-        />
-      </div>
+      <InputField
+        id="signature"
+        label="Electronic Signature"
+        value={formData.signature}
+        onChange={(e) => updateFormData({ signature: e.target.value })}
+        placeholder="Type your full name to sign"
+      />
     </div>
   );
 };

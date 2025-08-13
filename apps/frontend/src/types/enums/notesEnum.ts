@@ -231,3 +231,33 @@ export const CONTACT_INITIATORS: ContactInitiatorOption[] = [
   { value: 'other_provider', label: 'Other Provider' },
   { value: 'emergency', label: 'Emergency Contact' }
 ];
+
+// ============================================================================
+// MISCELLANEOUS NOTE ENUMS
+// ============================================================================
+
+export interface NoteCategoryOption {
+  value: string;
+  label: string;
+}
+
+export const NOTE_CATEGORIES: NoteCategoryOption[] = [
+  { value: 'administrative', label: 'Administrative' },
+  { value: 'legal', label: 'Legal' },
+  { value: 'insurance', label: 'Insurance' },
+  { value: 'coordination_of_care', label: 'Coordination of Care' },
+  { value: 'incident_report', label: 'Incident Report' },
+  { value: 'other', label: 'Other' }
+];
+
+export interface UrgencyLevelOption {
+  value: string;
+  label: string;
+}
+
+export const URGENCY_LEVELS: UrgencyLevelOption[] = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+  { value: 'urgent', label: 'Urgent' }
+];

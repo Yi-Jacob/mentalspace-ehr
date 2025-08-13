@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Label } from '@/components/basic/label';
-import { Textarea } from '@/components/basic/textarea';
+import { TextareaField } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
 import { AlertTriangle } from 'lucide-react';
 import { MiscellaneousNoteFormData } from '@/types/noteType';
@@ -34,28 +34,24 @@ const LegalComplianceSection: React.FC<LegalComplianceSectionProps> = ({
       </div>
 
       {formData.mandatoryReporting && (
-        <div>
-          <Label htmlFor="reportingDetails">Mandatory Reporting Details</Label>
-          <Textarea
-            id="reportingDetails"
-            value={formData.reportingDetails}
-            onChange={(e) => updateFormData({ reportingDetails: e.target.value })}
-            placeholder="Describe the reporting requirements and actions taken..."
-            rows={3}
-          />
-        </div>
+        <TextareaField
+          id="reportingDetails"
+          label="Mandatory Reporting Details"
+          value={formData.reportingDetails}
+          onChange={(e) => updateFormData({ reportingDetails: e.target.value })}
+          placeholder="Describe the reporting requirements and actions taken..."
+          rows={3}
+        />
       )}
 
-      <div>
-        <Label htmlFor="legalImplications">Legal Implications</Label>
-        <Textarea
-          id="legalImplications"
-          value={formData.legalImplications}
-          onChange={(e) => updateFormData({ legalImplications: e.target.value })}
-          placeholder="Any legal implications or considerations..."
-          rows={2}
-        />
-      </div>
+      <TextareaField
+        id="legalImplications"
+        label="Legal Implications"
+        value={formData.legalImplications}
+        onChange={(e) => updateFormData({ legalImplications: e.target.value })}
+        placeholder="Any legal implications or considerations..."
+        rows={2}
+      />
     </div>
   );
 };

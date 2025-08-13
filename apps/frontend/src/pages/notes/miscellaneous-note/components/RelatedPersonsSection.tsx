@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
+import { InputField } from '@/components/basic/input';
 import { Button } from '@/components/basic/button';
 import { Card } from '@/components/basic/card';
 import { Plus, Trash2 } from 'lucide-react';
@@ -53,26 +52,22 @@ const RelatedPersonsSection: React.FC<RelatedPersonsSectionProps> = ({
       {formData.relatedPersons.map((person, index) => (
         <Card key={index} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Name</Label>
-              <Input
-                value={person.name}
-                onChange={(e) => updateRelatedPerson(index, 'name', e.target.value)}
-                placeholder="Person's name"
-              />
-            </div>
-            <div>
-              <Label>Relationship</Label>
-              <Input
-                value={person.relationship}
-                onChange={(e) => updateRelatedPerson(index, 'relationship', e.target.value)}
-                placeholder="Relationship to client"
-              />
-            </div>
+            <InputField
+              label="Name"
+              value={person.name}
+              onChange={(e) => updateRelatedPerson(index, 'name', e.target.value)}
+              placeholder="Person's name"
+            />
+            <InputField
+              label="Relationship"
+              value={person.relationship}
+              onChange={(e) => updateRelatedPerson(index, 'relationship', e.target.value)}
+              placeholder="Relationship to client"
+            />
             <div className="flex items-end space-x-2">
               <div className="flex-1">
-                <Label>Role</Label>
-                <Input
+                <InputField
+                  label="Role"
                   value={person.role}
                   onChange={(e) => updateRelatedPerson(index, 'role', e.target.value)}
                   placeholder="Role in this matter"
