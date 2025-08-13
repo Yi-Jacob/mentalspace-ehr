@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Target } from 'lucide-react';
-import { useTreatmentPlanForm } from './hooks/useTreatmentPlanForm';
+import { useTreatmentPlanForm } from '../hooks/useTreatmentPlanForm';
 import { SECTIONS } from './constants/sections';
 import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 

@@ -1,53 +1,35 @@
 
 import { useState, useEffect } from 'react';
-import { ProgressNoteFormData } from '@/types/noteType';
-import { SECTIONS } from '../constants/sections';
-import { useNoteData } from '../../IntakeAssessmentEditPage/hooks/useNoteData';
-import { useSaveProgressNote } from './useSaveProgressNote';
+import { TreatmentPlanFormData } from '@/types/noteType';
+import { SECTIONS } from '../TreatmentPlanEditPage/constants/sections';
+import { useNoteData } from './useIntakeAssessmentNoteData';
+import { useSaveTreatmentPlan } from './useTreatmentPlanSave';
 
-export const useProgressNoteForm = (noteId?: string) => {
+export const useTreatmentPlanForm = (noteId?: string) => {
   const [currentSection, setCurrentSection] = useState(0);
   const [lastSaved, setLastSaved] = useState<Date | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const [formData, setFormData] = useState<ProgressNoteFormData>({
+  const [formData, setFormData] = useState<TreatmentPlanFormData>({
     clientId: '',
-    sessionDate: new Date().toISOString().split('T')[0],
-    startTime: '',
-    endTime: '',
-    duration: 0,
-    serviceCode: '90834',
-    location: 'office',
-    participants: 'client-only',
     primaryDiagnosis: '',
     secondaryDiagnoses: [],
-    orientation: '',
-    generalAppearance: '',
-    dress: '',
-    motorActivity: '',
-    interviewBehavior: '',
-    speech: '',
-    mood: '',
-    affect: '',
-    insight: '',
-    judgmentImpulseControl: '',
-    memory: '',
-    attentionConcentration: '',
-    thoughtProcess: '',
-    thoughtContent: '',
-    perception: '',
-    functionalStatus: '',
-    riskAreas: [],
-    noRiskPresent: false,
-    medicationsContent: '',
-    symptomDescription: '',
-    objectiveContent: '',
-    selectedInterventions: [],
-    otherInterventions: '',
-    objectives: [],
-    planContent: '',
-    recommendation: 'Continue current therapeutic focus',
+    presentingProblem: '',
+    functionalImpairments: [],
+    strengths: [],
+    treatmentGoals: [],
+    dischargeCriteria: '',
+    estimatedDuration: '',
+    aftercareRecommendations: '',
+    additionalInformation: '',
+    medicalConsiderations: '',
+    psychosocialFactors: '',
+    culturalConsiderations: '',
+    sessionFrequency: '',
+    sessionDuration: '',
+    modality: '',
     prescribedFrequency: '',
+    medicalNecessityDeclaration: false,
     isFinalized: false,
     signature: '',
     signedBy: '',
@@ -55,7 +37,7 @@ export const useProgressNoteForm = (noteId?: string) => {
   });
 
   const { data: note, isLoading } = useNoteData(noteId);
-  const saveNoteMutation = useSaveProgressNote(noteId, formData);
+  const saveNoteMutation = useSaveTreatmentPlan(noteId, formData);
 
   // Load form data from note content
   useEffect(() => {
@@ -63,13 +45,13 @@ export const useProgressNoteForm = (noteId?: string) => {
       const savedData = note.content as any;
       setFormData(prev => ({
         ...prev,
-        clientId: note.client_id || '',
+        clientId: note.clientId || '',
         ...savedData,
       }));
     }
   }, [note]);
 
-  // Enhanced auto-save with status tracking
+  // Auto-save functionality
   useEffect(() => {
     const interval = setInterval(() => {
       if (noteId && !note?.status?.includes('signed') && hasUnsavedChanges) {
@@ -82,7 +64,7 @@ export const useProgressNoteForm = (noteId?: string) => {
     return () => clearInterval(interval);
   }, [formData, noteId, note?.status, hasUnsavedChanges]);
 
-  const updateFormData = (updates: Partial<ProgressNoteFormData>) => {
+  const updateFormData = (updates: Partial<TreatmentPlanFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
     setHasUnsavedChanges(true);
   };
@@ -96,39 +78,31 @@ export const useProgressNoteForm = (noteId?: string) => {
 
       switch (section.id) {
         case 'client-overview':
-          isComplete = !!(formData.sessionDate && formData.startTime && formData.endTime && formData.serviceCode);
+          isComplete = !!(formData.clientId);
           requiredFieldsComplete = isComplete;
           break;
         case 'diagnosis':
           isComplete = !!(formData.primaryDiagnosis);
           requiredFieldsComplete = isComplete;
           break;
-        case 'mental-status':
-          isComplete = !!(formData.mood && formData.affect);
+        case 'presenting-problem':
+          isComplete = !!(formData.presentingProblem);
           requiredFieldsComplete = isComplete;
           break;
-        case 'risk-assessment':
-          isComplete = formData.noRiskPresent || (formData.riskAreas && formData.riskAreas.length > 0);
+        case 'treatment-goals':
+          isComplete = formData.treatmentGoals && formData.treatmentGoals.length > 0;
           requiredFieldsComplete = isComplete;
           break;
-        case 'medications':
-          isComplete = !!(formData.medicationsContent);
+        case 'discharge-planning':
+          isComplete = !!(formData.dischargeCriteria);
+          requiredFieldsComplete = isComplete;
+          break;
+        case 'additional-info':
+          isComplete = !!(formData.additionalInformation);
           hasRequiredFields = false;
           break;
-        case 'content':
-          isComplete = !!(formData.symptomDescription && formData.objectiveContent);
-          requiredFieldsComplete = isComplete;
-          break;
-        case 'interventions':
-          isComplete = !!(formData.selectedInterventions && formData.selectedInterventions.length > 0);
-          requiredFieldsComplete = isComplete;
-          break;
-        case 'treatment-progress':
-          isComplete = !!(formData.objectives && formData.objectives.length > 0);
-          hasRequiredFields = false;
-          break;
-        case 'planning':
-          isComplete = !!(formData.planContent && formData.recommendation);
+        case 'frequency':
+          isComplete = !!(formData.prescribedFrequency && formData.medicalNecessityDeclaration);
           requiredFieldsComplete = isComplete;
           break;
         case 'finalize':
@@ -150,7 +124,6 @@ export const useProgressNoteForm = (noteId?: string) => {
   };
 
   const handleSave = async (isDraft: boolean) => {
-    console.log('handleSave called with isDraft:', isDraft, 'formData:', formData);
     await saveNoteMutation.mutateAsync({ data: formData, isDraft });
     setLastSaved(new Date());
     setHasUnsavedChanges(false);

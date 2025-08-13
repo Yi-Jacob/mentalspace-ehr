@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { FileText, Plus } from 'lucide-react';
 import NotesFilters from '../components/notes/NotesFilters';
 import EmptyNotesState from '../components/notes/EmptyNotesState';
-import LoadingSpinner from '../../../components/LoadingSpinner';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import NotesDisplaySection from '../components/notes/NotesDisplaySection';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';

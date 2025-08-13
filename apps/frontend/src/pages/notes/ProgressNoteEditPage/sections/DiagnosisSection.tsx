@@ -8,9 +8,9 @@ import { Badge } from '@/components/basic/badge';
 import { Textarea } from '@/components/basic/textarea';
 import { Plus, X, History } from 'lucide-react';
 import { ProgressNoteFormData } from '@/types/noteType';
-import { useDiagnosesData } from '../../IntakeAssessmentEditPage/hooks/useDiagnosesData';
-import DiagnosisSearch, { DiagnosisOption } from '../../IntakeAssessmentEditPage/sections/diagnosis/DiagnosisSearch';
-import DiagnosisSuggestions from '../../IntakeAssessmentEditPage/sections/diagnosis/DiagnosisSuggestions';
+import { useDiagnosesData } from '../../hooks/useIntakeAssessmentNoteDiagnosesData';
+import DiagnosisSearch, { DiagnosisOption } from '../../IntakeAssessmentNoteEditPage/sections/diagnosis/DiagnosisSearch';
+import DiagnosisSuggestions from '../../IntakeAssessmentNoteEditPage/sections/diagnosis/DiagnosisSuggestions';
 
 interface DiagnosisSectionProps {
   formData: ProgressNoteFormData;

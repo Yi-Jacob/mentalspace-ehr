@@ -2,11 +2,12 @@ import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import ProgressNoteForm from '../pages/notes/ProgressNoteEditPage';
 import ProgressNoteView from '../pages/notes/ProgressNoteEditPage/ProgressNoteViewPage';
-import IntakeAssessmentForm from '../pages/notes/IntakeAssessmentEditPage';
-import IntakeAssessmentView from '../pages/notes/IntakeAssessmentEditPage/IntakeAssessmentViewPage';
+import IntakeAssessmentForm from '../pages/notes/IntakeAssessmentNoteEditPage';
+import IntakeAssessmentView from '../pages/notes/IntakeAssessmentNoteEditPage/IntakeAssessmentViewPage';
 import TreatmentPlanForm from '../pages/notes/TreatmentPlanEditPage/TreatmentPlanEditPage';
 import CancellationNoteForm from '../pages/notes/CancellationNoteEditPage';
 import ContactNoteForm from '../pages/notes/ContactNoteEditPage';
+import ContactNoteView from '../pages/notes/ContactNoteViewPage';
 import ConsultationNoteForm from '../pages/notes/ConsultationNoteEditPage';
 import MiscellaneousNoteForm from '../pages/notes/MiscellaneousNoteEditPage';
 import GenericNoteView from '../pages/notes/GenericNoteViewPage';
@@ -80,7 +81,7 @@ const notesRoutes: RouteObject[] = [
   },
   {
     path: 'contact-note/:noteId',
-    element: <GenericNoteView />,
+    element: <ContactNoteView />,
   },
   // Consultation Notes
   {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
-import { useProgressNoteForm } from './hooks/useProgressNoteForm';
+import { useProgressNoteForm } from '../hooks/useProgressNoteForm';
 import { SECTIONS } from './constants/sections';
 import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 

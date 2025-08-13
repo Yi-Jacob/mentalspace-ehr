@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { IntakeFormData } from '@/types/noteType';
 import { SECTIONS } from './constants/sections';
-import { useNoteData } from './hooks/useNoteData';
-import { useSaveNote } from './hooks/useSaveNote';
+import { useNoteData } from '../hooks/useIntakeAssessmentNoteData';
+import { useSaveNote } from '../hooks/useIntakeAssessmentNoteSave';
 import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 
 const IntakeAssessmentForm = () => {

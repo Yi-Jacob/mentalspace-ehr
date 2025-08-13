@@ -5,7 +5,7 @@ import DiagnosisGuidelines from './diagnosis/DiagnosisGuidelines';
 import PriorDiagnosesDisplay from './diagnosis/PriorDiagnosesDisplay';
 import PrimaryDiagnosisSelector from './diagnosis/PrimaryDiagnosisSelector';
 import SecondaryDiagnosesManager from './diagnosis/SecondaryDiagnosesManager';
-import { useDiagnosesData } from '../hooks/useDiagnosesData';
+import { useDiagnosesData } from '../../hooks/useIntakeAssessmentNoteDiagnosesData';
 
 interface DiagnosisSectionProps {
   formData: IntakeFormData;
