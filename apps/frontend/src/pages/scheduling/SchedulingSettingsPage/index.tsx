@@ -9,6 +9,8 @@ import { Switch } from '@/components/basic/switch';
 import { Separator } from '@/components/basic/separator';
 import { Settings, Bell, Calendar, Clock, Users, Mail, Sparkles, Download, Upload, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
 
 const SchedulingSettings = () => {
   const [settings, setSettings] = useState({
@@ -58,27 +60,21 @@ const SchedulingSettings = () => {
   };
 
   return (
-    <div className="space-y-6 bg-gradient-to-br from-white to-green-50/30 min-h-screen p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="p-3 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl text-white shadow-lg">
-            <Settings className="h-8 w-8" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-              Scheduling Settings
-            </h2>
-            <p className="text-gray-600 mt-1">Configure your scheduling preferences and integrations</p>
-          </div>
-        </div>
-        <Button 
-          onClick={handleSaveSettings}
-          className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Save Settings
-        </Button>
-      </div>
+    <PageLayout variant="gradient">
+      <PageHeader
+        icon={Settings}
+        title="Scheduling Settings"
+        description="Configure your scheduling preferences and integrations"
+        action={
+          <Button 
+            onClick={handleSaveSettings}
+            className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save Settings
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* General Settings */}
@@ -394,7 +390,7 @@ const SchedulingSettings = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   );
 };
 

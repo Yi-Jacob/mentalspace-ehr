@@ -58,7 +58,18 @@ const menuItems: MenuItem[] = [
       { id: 'note-compliance', label: 'Compliance', path: '/notes/note-compliance' },
     ]
   },
-  { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling' },
+  { 
+    id: 'scheduling', 
+    label: 'Scheduling', 
+    icon: Calendar, 
+    path: '/scheduling',
+    subItems: [
+      { id: 'calendar', label: 'Calendar', path: '/scheduling/calendar' },
+      { id: 'appointments', label: 'Appointments', path: '/scheduling/appointments' },
+      { id: 'work-schedule', label: 'Work Schedule', path: '/scheduling/work-schedule' },
+      { id: 'scheduling-settings', label: 'Settings', path: '/scheduling/settings' },
+    ]
+  },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
   { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
@@ -85,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling']));
 
   const getActiveItem = () => {
     if (propActiveItem) return propActiveItem;
