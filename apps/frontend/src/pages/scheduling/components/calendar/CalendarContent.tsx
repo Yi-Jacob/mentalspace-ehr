@@ -9,8 +9,6 @@ import { Appointment } from '@/services/schedulingService';
 
 type CalendarViewType = 'day' | 'week' | 'month' | 'list';
 
-
-
 interface CalendarContentProps {
   viewType: CalendarViewType;
   currentDate: Date;

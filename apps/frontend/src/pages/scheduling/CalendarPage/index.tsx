@@ -14,10 +14,6 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import { Calendar, Plus } from 'lucide-react';
 
-type CalendarViewType = 'day' | 'week' | 'month' | 'list';
-
-import { Appointment } from '@/services/schedulingService';
-
 const CalendarView = () => {
   const { 
     currentDate, 
@@ -95,7 +91,6 @@ const CalendarView = () => {
             onViewTypeChange={setViewType}
             onNavigateDate={navigateDate}
             onTodayClick={() => setCurrentDate(new Date())}
-            onCreateAppointment={() => setShowCreateModal(true)}
           />
           
           <CalendarContent

@@ -3,27 +3,7 @@ import React from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { cn } from '@/utils/utils';
 import AppointmentCard from '../AppointmentCard';
-
-interface Appointment {
-  id: string;
-  title: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  location?: string;
-  room_number?: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  users?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+import { Appointment } from '@/services/schedulingService';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -76,8 +56,8 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSl
               {/* Day columns */}
               {weekDays.map(day => {
                 const dayAppointments = appointments?.filter(apt => 
-                  isSameDay(new Date(apt.start_time), day) && 
-                  new Date(apt.start_time).getHours() === hour
+                  isSameDay(new Date(apt.startTime), day) && 
+                  new Date(apt.startTime).getHours() === hour
                 ) || [];
 
                 return (

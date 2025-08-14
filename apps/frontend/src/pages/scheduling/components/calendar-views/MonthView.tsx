@@ -1,85 +1,77 @@
 
 import React from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
-
-interface Appointment {
-  id: string;
-  title: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  location?: string;
-  room_number?: string;
-  clients?: {
-    first_name: string;
-    last_name: string;
-  };
-  users?: {
-    first_name: string;
-    last_name: string;
-  };
-}
+import { Appointment } from '@/services/schedulingService';
 
 interface MonthViewProps {
   currentDate: Date;
   appointments: Appointment[];
+  onTimeSlotClick: (date: Date, hour: number) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ currentDate, appointments }) => {
+const MonthView: React.FC<MonthViewProps> = ({ currentDate, appointments, onTimeSlotClick }) => {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-  
+
   const calendarDays = eachDayOfInterval({
     start: calendarStart,
     end: calendarEnd
   });
 
   return (
-    <div className="grid grid-cols-7 gap-1">
-      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-        <div key={day} className="font-medium text-center py-2 text-sm">
-          {day}
-        </div>
-      ))}
-      {calendarDays.map(day => {
-        const dayAppointments = appointments?.filter(apt => 
-          isSameDay(new Date(apt.start_time), day)
-        ) || [];
-        const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-
-        return (
-          <div 
-            key={day.toISOString()} 
-            className={`border border-gray-200 min-h-[100px] p-1 ${
-              !isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''
-            }`}
-          >
-            <div className="text-sm font-medium mb-1">
-              {format(day, 'd')}
-            </div>
-            <div className="space-y-1">
-              {dayAppointments.slice(0, 3).map(appointment => (
-                <div 
-                  key={appointment.id}
-                  className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded truncate"
-                >
-                  {format(new Date(appointment.start_time), 'HH:mm')} {appointment.title || 'Appointment'}
-                </div>
-              ))}
-              {dayAppointments.length > 3 && (
-                <div className="text-xs text-gray-500">
-                  +{dayAppointments.length - 3} more
-                </div>
-              )}
-            </div>
+    <div className="flex flex-col h-full bg-gradient-to-br from-white to-blue-50/30 p-6">
+      <div className="grid grid-cols-7 gap-1">
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+          <div key={day} className="font-medium text-center py-3 text-sm text-gray-700 bg-gray-50 rounded-md">
+            {day}
           </div>
-        );
-      })}
+        ))}
+        {calendarDays.map(day => {
+          const dayAppointments = appointments?.filter(apt =>
+            isSameDay(new Date(apt.startTime), day)
+          ) || [];
+          const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+          const isToday = isSameDay(day, new Date());
+
+          return (
+            <div
+              key={day.toISOString()}
+              className={`border border-gray-200 min-h-[120px] p-2 rounded-md hover:shadow-md transition-all duration-200 cursor-pointer ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white hover:bg-blue-50/30'
+                } ${isToday ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
+              onClick={() => onTimeSlotClick(day, 9)} // Default to 9 AM when clicking on a day
+            >
+              <div className={`text-sm font-medium mb-2 ${isToday ? 'text-blue-600 font-bold' : 'text-gray-700'
+                }`}>
+                {format(day, 'd')}
+              </div>
+              <div className="space-y-1">
+                {dayAppointments.slice(0, 3).map(appointment => (
+                  <div
+                    key={appointment.id}
+                    className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md truncate hover:bg-blue-200 transition-colors"
+                  >
+                    {format(new Date(appointment.startTime), 'HH:mm')} {appointment.title || 'Appointment'}
+                  </div>
+                ))}
+                {dayAppointments.length > 3 && (
+                  <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
+                    +{dayAppointments.length - 3} more
+                  </div>
+                )}
+                {dayAppointments.length === 0 && (
+                  <div className="h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                    <div className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded-full">
+                      +
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
