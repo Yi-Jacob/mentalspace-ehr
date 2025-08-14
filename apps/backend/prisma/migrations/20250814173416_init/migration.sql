@@ -76,6 +76,9 @@ CREATE TABLE "users" (
     "is_active" BOOLEAN,
     "last_name" TEXT NOT NULL,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "middle_name" TEXT,
+    "suffix" TEXT,
+    "user_name" TEXT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -269,25 +272,35 @@ CREATE TABLE "appointments" (
     "appointment_type" TEXT NOT NULL,
     "title" TEXT,
     "description" TEXT,
-    "start_time" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "end_time" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "start_time" TIMESTAMP(3) NOT NULL,
+    "duration" INTEGER NOT NULL DEFAULT 60,
     "status" TEXT NOT NULL,
     "location" TEXT,
     "room_number" TEXT,
-    "notes" TEXT,
-    "is_recurring" BOOLEAN,
-    "recurring_series_id" TEXT,
+    "recurring_rule_id" TEXT,
     "created_by" TEXT,
+    "cancelled_by" TEXT,
+    "cancelled_date" TIMESTAMP(3),
+    "cancelled_reason" TEXT,
+    "client_approved_date" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "cancelled_at" TIMESTAMP(3),
-    "cancelled_by" TEXT,
-    "cancellation_reason" TEXT,
-    "no_show_reason" TEXT,
-    "checked_in_at" TIMESTAMP(3),
-    "completed_at" TIMESTAMP(3),
 
     CONSTRAINT "appointments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "recurring_rules" (
+    "id" TEXT NOT NULL,
+    "recurring_pattern" TEXT NOT NULL,
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3),
+    "time_slots" JSONB NOT NULL,
+    "is_business_day_only" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "recurring_rules_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -446,6 +459,19 @@ CREATE TABLE "staff_profiles" (
     "notes" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "address_1" TEXT,
+    "address_2" TEXT,
+    "can_receive_text" BOOLEAN,
+    "city" TEXT,
+    "clinician_type" TEXT,
+    "formal_name" TEXT,
+    "home_phone" TEXT,
+    "mobile_phone" TEXT,
+    "state" TEXT,
+    "supervision_type" TEXT,
+    "user_comments" TEXT,
+    "work_phone" TEXT,
+    "zip_code" TEXT,
 
     CONSTRAINT "staff_profiles_pkey" PRIMARY KEY ("id")
 );
@@ -881,9 +907,11 @@ CREATE TABLE "supervision_relationships" (
     "supervisee_id" TEXT NOT NULL,
     "start_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "end_date" TIMESTAMP(3),
-    "supervision_type" TEXT,
-    "is_active" BOOLEAN,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "notes" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "termination_notes" TEXT,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "supervision_relationships_pkey" PRIMARY KEY ("id")
 );
@@ -1014,18 +1042,6 @@ CREATE TABLE "time_tracking" (
 );
 
 -- CreateTable
-CREATE TABLE "note_versions" (
-    "id" TEXT NOT NULL,
-    "note_id" TEXT NOT NULL,
-    "version" INTEGER NOT NULL,
-    "content" JSONB NOT NULL,
-    "created_by" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "note_versions_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "message_recipients" (
     "id" TEXT NOT NULL,
     "message_id" TEXT NOT NULL,
@@ -1146,6 +1162,22 @@ CREATE TABLE "provider_schedules" (
 );
 
 -- CreateTable
+CREATE TABLE "licenses" (
+    "id" TEXT NOT NULL,
+    "staff_id" TEXT NOT NULL,
+    "license_type" TEXT NOT NULL,
+    "license_number" TEXT NOT NULL,
+    "license_expiration_date" TIMESTAMP(3) NOT NULL,
+    "license_status" TEXT NOT NULL,
+    "license_state" TEXT NOT NULL,
+    "issued_by" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "licenses_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "password_reset_tokens" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -1157,6 +1189,22 @@ CREATE TABLE "password_reset_tokens" (
     CONSTRAINT "password_reset_tokens_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "note_history" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "note_id" TEXT NOT NULL,
+    "version" INTEGER NOT NULL,
+    "content" JSONB NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" TEXT,
+    "title" TEXT,
+    "updated_content" BOOLEAN DEFAULT false,
+    "updated_status" BOOLEAN DEFAULT false,
+    "updated_title" BOOLEAN DEFAULT false,
+
+    CONSTRAINT "note_versions_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -1165,3 +1213,9 @@ CREATE UNIQUE INDEX "practice_settings_user_id_key" ON "practice_settings"("user
 
 -- CreateIndex
 CREATE UNIQUE INDEX "password_reset_tokens_token_key" ON "password_reset_tokens"("token");
+
+-- CreateIndex
+CREATE INDEX "idx_note_history_note_id" ON "note_history"("note_id");
+
+-- CreateIndex
+CREATE INDEX "idx_note_history_version" ON "note_history"("version");

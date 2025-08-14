@@ -2,21 +2,16 @@
 import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { Textarea } from '@/components/basic/textarea';
-import { FileText, MessageSquare } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 interface AppointmentTypeSectionProps {
   appointment_type: string;
-  notes: string;
   onAppointmentTypeChange: (value: string) => void;
-  onNotesChange: (value: string) => void;
 }
 
 const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
   appointment_type,
-  notes,
-  onAppointmentTypeChange,
-  onNotesChange
+  onAppointmentTypeChange
 }) => {
   const appointmentTypes = [
     { value: 'initial_consultation', label: 'Initial Consultation' },
@@ -48,21 +43,6 @@ const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
             ))}
           </SelectContent>
         </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes" className="flex items-center space-x-2 text-gray-700 font-medium">
-          <MessageSquare className="h-4 w-4 text-indigo-500" />
-          <span>Notes</span>
-        </Label>
-        <Textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Additional notes or comments..."
-          className="bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 min-h-[80px]"
-          rows={3}
-        />
       </div>
     </div>
   );

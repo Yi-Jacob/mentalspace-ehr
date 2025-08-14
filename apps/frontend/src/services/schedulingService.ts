@@ -8,13 +8,11 @@ export interface Appointment {
   title?: string;
   description?: string;
   startTime: string;
-  endTime: string;
+  duration: number;
   status: string;
   location?: string;
   roomNumber?: string;
-  notes?: string;
-  isRecurring?: boolean;
-  recurringSeriesId?: string;
+  recurringRuleId?: string;
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
@@ -28,7 +26,7 @@ export interface Appointment {
     firstName: string;
     lastName: string;
   };
-  users?: {
+  staff?: {
     firstName: string;
     lastName: string;
   };
@@ -36,29 +34,24 @@ export interface Appointment {
 
 export interface CreateAppointmentData {
   clientId: string;
-  providerId: string;
   appointmentType: string;
   title?: string;
   description?: string;
   startTime: string;
-  endTime: string;
+  duration: number;
   location?: string;
   roomNumber?: string;
-  notes?: string;
-  isRecurring?: boolean;
-  recurringSeriesId?: string;
-  createdBy?: string;
+  recurringRuleId?: string;
 }
 
 export interface UpdateAppointmentData {
   id: string;
   title?: string;
   startTime?: string;
-  endTime?: string;
+  duration?: number;
   status?: string;
   location?: string;
   roomNumber?: string;
-  notes?: string;
   appointmentType?: string;
 }
 
@@ -104,7 +97,7 @@ export interface WaitlistEntry {
     firstName: string;
     lastName: string;
   };
-  users?: {
+  staff?: {
     firstName: string;
     lastName: string;
   };
@@ -161,6 +154,33 @@ export interface ScheduleException {
   reason?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RecurringRule {
+  id: string;
+  recurringPattern: string;
+  startDate: string;
+  endDate?: string;
+  timeSlots: any[];
+  isBusinessDayOnly: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRecurringRuleData {
+  recurringPattern: string;
+  startDate: string;
+  endDate?: string;
+  timeSlots: any[];
+  isBusinessDayOnly?: boolean;
+}
+
+export interface UpdateRecurringRuleData {
+  recurringPattern?: string;
+  startDate?: string;
+  endDate?: string;
+  timeSlots?: any[];
+  isBusinessDayOnly?: boolean;
 }
 
 class SchedulingService {
@@ -235,6 +255,27 @@ class SchedulingService {
 
   async getScheduleExceptions(): Promise<ScheduleException[]> {
     const response = await apiClient.get<ScheduleException[]>('/scheduling/schedules/exceptions');
+    return response.data;
+  }
+
+  // Recurring rule methods
+  async createRecurringRule(data: CreateRecurringRuleData): Promise<RecurringRule> {
+    const response = await apiClient.post<RecurringRule>('/scheduling/recurring-rules', data);
+    return response.data;
+  }
+
+  async getRecurringRule(id: string): Promise<RecurringRule> {
+    const response = await apiClient.get<RecurringRule>(`/scheduling/recurring-rules/${id}`);
+    return response.data;
+  }
+
+  async updateRecurringRule(id: string, data: UpdateRecurringRuleData): Promise<RecurringRule> {
+    const response = await apiClient.patch<RecurringRule>(`/scheduling/recurring-rules/${id}`, data);
+    return response.data;
+  }
+
+  async deleteRecurringRule(id: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/scheduling/recurring-rules/${id}`);
     return response.data;
   }
 }

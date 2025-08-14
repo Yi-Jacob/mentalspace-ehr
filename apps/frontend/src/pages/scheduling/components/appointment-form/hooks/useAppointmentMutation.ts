@@ -5,15 +5,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AppointmentData {
-  client_id: string;
-  appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+  clientId: string;
+  appointmentType: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
   title?: string | null;
+  description?: string | null;
   location?: string | null;
-  room_number?: string | null;
-  notes?: string | null;
-  date: Date;
-  start_time: string;
-  end_time: string;
+  roomNumber?: string | null;
+  startTime: string;
+  duration: number;
+  recurringRuleId?: string | null;
 }
 
 export const useAppointmentMutation = (onSuccess: () => void) => {
@@ -27,24 +27,17 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         throw new Error('User not authenticated');
       }
 
-      const startDateTime = new Date(appointmentData.date);
-      const [startHour, startMinute] = appointmentData.start_time.split(':');
-      startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-
-      const endDateTime = new Date(appointmentData.date);
-      const [endHour, endMinute] = appointmentData.end_time.split(':');
-      endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
-
       return await schedulingService.createAppointment({
-        clientId: appointmentData.client_id,
+        clientId: appointmentData.clientId,
         providerId: user.id,
-        appointmentType: appointmentData.appointment_type,
+        appointmentType: appointmentData.appointmentType,
         title: appointmentData.title || undefined,
+        description: appointmentData.description || undefined,
         location: appointmentData.location || undefined,
-        roomNumber: appointmentData.room_number || undefined,
-        notes: appointmentData.notes || undefined,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
+        roomNumber: appointmentData.roomNumber || undefined,
+        startTime: appointmentData.startTime,
+        duration: appointmentData.duration,
+        recurringRuleId: appointmentData.recurringRuleId || undefined,
       });
     },
     onSuccess: () => {

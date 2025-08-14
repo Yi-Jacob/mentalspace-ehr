@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { SchedulingService } from './scheduling.service';
 import {
@@ -19,16 +20,17 @@ import {
   CreateScheduleDto,
   AppointmentStatus,
 } from './dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('scheduling')
-@UseGuards(JwtAuthGuard)
 export class SchedulingController {
   constructor(private readonly schedulingService: SchedulingService) {}
 
   @Post('appointments')
-  createAppointment(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.schedulingService.createAppointment(createAppointmentDto);
+  createAppointment(@Body() createAppointmentDto: CreateAppointmentDto, @Request() req) {
+    console.log(createAppointmentDto)
+    return this.schedulingService.createAppointment(createAppointmentDto, req.user.id);
   }
 
   @Get('appointments')

@@ -3,17 +3,12 @@ import React from 'react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { ConflictResult } from '@/services/schedulingService';
 
 interface ConflictAndErrorAlertsProps {
   generalError?: string;
   hasConflicts?: boolean;
-  conflictData?: {
-    conflicts: Array<{
-      message: string;
-      start_time: string;
-      end_time: string;
-    }>;
-  };
+  conflictData?: ConflictResult;
   isCheckingConflicts: boolean;
   clientId: string;
 }
@@ -38,15 +33,18 @@ const ConflictAndErrorAlerts: React.FC<ConflictAndErrorAlertsProps> = ({
       )}
 
       {/* Conflict Warning */}
-      {hasConflicts && (
+      {hasConflicts && conflictData?.conflicts && (
         <Alert className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
           <AlertTriangle className="h-4 w-4 text-orange-600" />
           <AlertDescription className="text-orange-800">
             <strong>Scheduling Conflict Detected:</strong>
             <ul className="mt-2 space-y-1">
-              {conflictData?.conflicts.map((conflict, index) => (
+              {conflictData.conflicts.map((conflict, index) => (
                 <li key={index} className="text-sm">
-                  • {conflict.message} ({format(new Date(conflict.start_time), 'HH:mm')} - {format(new Date(conflict.end_time), 'HH:mm')})
+                  • {conflict.conflictType === 'provider_overlap' ? 'Provider' : 'Client'} already has an appointment at this time
+                  {conflict.clients && ` (${conflict.clients.firstName} ${conflict.clients.lastName})`}
+                  {conflict.staff && ` with ${conflict.staff.firstName} ${conflict.staff.lastName}`}
+                  {conflict.startTime && ` - ${format(new Date(conflict.startTime), 'MMM dd, yyyy HH:mm')}`}
                 </li>
               ))}
             </ul>

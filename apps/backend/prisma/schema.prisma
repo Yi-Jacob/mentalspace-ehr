@@ -83,7 +83,6 @@ model User {
   middleName                    String?                      @map("middle_name")
   suffix                        String?
   userName                      String?                      @map("user_name")
-  appointments                  Appointment[]
   waitlistEntries               AppointmentWaitlist[]
   userRoles                     UserRole[]
   claims                        Claim[]                      @relation("ClaimProvider")
@@ -311,27 +310,44 @@ model Appointment {
   appointmentType    String    @map("appointment_type")
   title              String?
   description        String?
-  startTime          DateTime  @default(now()) @map("start_time")
-  endTime            DateTime  @default(now()) @map("end_time")
+  startTime          DateTime  @map("start_time")
+  duration           Int       @default(60)
   status             String    @map("status")
   location           String?
   roomNumber         String?   @map("room_number")
-  notes              String?
-  isRecurring        Boolean?  @map("is_recurring")
-  recurringSeriesId  String?   @map("recurring_series_id")
+  recurringRuleId    String?   @map("recurring_rule_id")
   createdBy          String?   @map("created_by")
+  cancelledBy         String?   @map("cancelled_by")
+  cancelledDate       DateTime? @map("cancelled_date")
+  cancelledReason     String?   @map("cancelled_reason")
+  clientApprovedDate DateTime? @map("client_approved_date")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @default(now()) @map("updated_at")
-  cancelledAt        DateTime? @map("cancelled_at")
-  cancelledBy        String?   @map("cancelled_by")
-  cancellationReason String?   @map("cancellation_reason")
-  noShowReason       String?   @map("no_show_reason")
-  checkedInAt        DateTime? @map("checked_in_at")
-  completedAt        DateTime? @map("completed_at")
+  
+  // Relations
   clients            Client    @relation(fields: [clientId], references: [id])
-  users              User      @relation(fields: [providerId], references: [id])
+  staff              StaffProfile @relation(fields: [providerId], references: [id])
+  recurringRule      RecurringRule? @relation(fields: [recurringRuleId], references: [id])
+  createdByStaff     StaffProfile? @relation("AppointmentCreator", fields: [createdBy], references: [id])
+  canceledByStaff    StaffProfile? @relation("AppointmentCanceler", fields: [cancelledBy], references: [id])
 
   @@map("appointments")
+}
+
+model RecurringRule {
+  id                  String   @id @default(uuid())
+  recurringPattern    String   @map("recurring_pattern")
+  startDate           DateTime @map("start_date")
+  endDate             DateTime? @map("end_date")
+  timeSlots           Json     @map("time_slots")
+  isBusinessDayOnly   Boolean  @default(true) @map("is_business_day_only")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+  
+  // Relations
+  appointments        Appointment[]
+  
+  @@map("recurring_rules")
 }
 
 model ClientPrimaryCareProvider {
@@ -501,6 +517,11 @@ model StaffProfile {
   userComments          String?   @map("user_comments")
   workPhone             String?   @map("work_phone")
   zipCode               String?   @map("zip_code")
+  
+  // Relations
+  appointments          Appointment[]
+  createdAppointments   Appointment[] @relation("AppointmentCreator")
+  canceledAppointments  Appointment[] @relation("AppointmentCanceler")
 
   @@map("staff_profiles")
 }

@@ -10,24 +10,19 @@ import TimePickerGrid from './TimePickerGrid';
 interface DateTimeSectionProps {
   date: Date;
   startTime: string;
-  endTime: string;
   onDateChange: (date: Date) => void;
   onStartTimeChange: (time: string) => void;
-  onEndTimeChange: (time: string) => void;
   errors?: {
     date?: string;
     start_time?: string;
-    end_time?: string;
   };
 }
 
 const DateTimeSection: React.FC<DateTimeSectionProps> = ({
   date,
   startTime,
-  endTime,
   onDateChange,
   onStartTimeChange,
-  onEndTimeChange,
   errors
 }) => {
   const [showTimeGrid, setShowTimeGrid] = useState(false);
@@ -89,7 +84,7 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
             <div className="p-1.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg text-white shadow-md">
               <Clock className="h-4 w-4" />
             </div>
-            <span>Time *</span>
+            <span>Start Time *</span>
           </Label>
           <div className="relative group">
             <Button
@@ -107,8 +102,8 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
             >
               <span className={startTime ? 'text-gray-800' : 'text-gray-500'}>{displayTime}</span>
               <ChevronDown className={`h-4 w-4 opacity-60 transition-transform duration-300 ${
-                showTimeGrid ? 'rotate-180 text-purple-600' : ''
-              }`} />
+                showTimeGrid ? 'rotate-180 text-purple-600' : ''}
+              `} />
             </Button>
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-xl 
               opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />

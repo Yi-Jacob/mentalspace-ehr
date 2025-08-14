@@ -1,12 +1,14 @@
 
 import React from 'react';
 import { Dialog, DialogContent } from '@/components/basic/dialog';
+import PageHeader from '@/components/basic/PageHeader';
+import PageLayout from '@/components/basic/PageLayout';
 import { useAppointmentForm } from './appointment-form/hooks/useAppointmentForm';
 import { useConflictDetection } from './hooks/useConflictDetection';
-import CreateAppointmentModalHeader from './appointment-form/CreateAppointmentModalHeader';
 import CreateAppointmentFormContent from './appointment-form/CreateAppointmentFormContent';
 import CreateAppointmentModalFooter from './appointment-form/CreateAppointmentModalFooter';
 import ConflictAndErrorAlerts from './appointment-form/ConflictAndErrorAlerts';
+import { Calendar } from 'lucide-react';
 
 interface CreateAppointmentModalProps {
   open: boolean;
@@ -41,12 +43,12 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   const startDateTime = formData.date && formData.start_time 
     ? new Date(`${formData.date}T${formData.start_time}`).toISOString()
     : '';
-  const endDateTime = formData.date && formData.end_time 
-    ? new Date(`${formData.date}T${formData.end_time}`).toISOString()
+  const endDateTime = formData.date && formData.start_time && formData.duration_minutes
+    ? new Date(new Date(`${formData.date}T${formData.start_time}`).getTime() + formData.duration_minutes * 60000).toISOString()
     : '';
 
   const { data: conflictData, isLoading: isCheckingConflicts } = useConflictDetection({
-    providerId: formData.provider_id || '',
+    providerId: '', // Will be set from JWT token in backend
     clientId: formData.client_id,
     startTime: startDateTime,
     endTime: endDateTime
@@ -63,15 +65,20 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-5xl h-[90vh] bg-white border-0 shadow-2xl rounded-2xl p-0 flex flex-col"
+        className="max-w-6xl h-[95vh] bg-white border-0 shadow-2xl rounded-2xl p-0 flex flex-col"
         aria-describedby="create-appointment-description"
       >
         {/* Modern gradient background overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-blue-50/60 pointer-events-none rounded-2xl" />
         
-        {/* Fixed Header */}
-        <div className="relative flex-shrink-0">
-          <CreateAppointmentModalHeader onClose={handleClose} />
+        {/* Page Header */}
+        <div className="relative flex-shrink-0 px-8 pt-6">
+          <PageHeader
+            icon={Calendar}
+            title="Create New Appointment"
+            description="Schedule a new appointment with your client. Fill in the details below to get started."
+            className="mb-0"
+          />
         </div>
 
         <div id="create-appointment-description" className="sr-only">

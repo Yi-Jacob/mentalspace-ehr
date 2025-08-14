@@ -43,7 +43,7 @@ const CreateAppointmentModalFooter: React.FC<CreateAppointmentModalFooterProps> 
         
         <Button
           type="submit"
-          disabled={!canSubmit}
+          // disabled={!canSubmit}
           onClick={onSubmit}
           className="relative px-8 py-2.5 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-600 hover:from-emerald-600 hover:via-green-600 hover:to-teal-700 text-white border-0 shadow-xl hover:shadow-2xl shadow-emerald-200/50 hover:shadow-emerald-300/60 transform hover:scale-105 transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-lg group overflow-hidden"
         >

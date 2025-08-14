@@ -1,33 +1,33 @@
-import { IsString, IsOptional, IsDateString, IsEnum, IsBoolean, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsEnum, IsBoolean, IsUUID, IsInt, IsNumber } from 'class-validator';
 
 export enum AppointmentStatus {
-  SCHEDULED = 'scheduled',
-  CONFIRMED = 'confirmed',
-  CHECKED_IN = 'checked_in',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  NO_SHOW = 'no_show',
-  RESCHEDULED = 'rescheduled',
+  PENDING = 'Pending',
+  SCHEDULED = 'Scheduled',
+  CONFIRMED = 'Confirmed',
+  CHECKED_IN = 'Checked In',
+  CANCELLED = 'Cancelled',
+  COMPLETED = 'Completed',
+  NO_SHOW = 'No Show',
 }
 
 export enum AppointmentType {
-  INITIAL_CONSULTATION = 'initial_consultation',
-  FOLLOW_UP = 'follow_up',
-  THERAPY_SESSION = 'therapy_session',
-  GROUP_THERAPY = 'group_therapy',
-  ASSESSMENT = 'assessment',
-  MEDICATION_MANAGEMENT = 'medication_management',
-  CRISIS_INTERVENTION = 'crisis_intervention',
-  OTHER = 'other',
+  INITIAL_CONSULTATION = 'Initial Consultation',
+  FOLLOW_UP = 'Follow-up',
+  THERAPY_SESSION = 'Therapy Session',
+  GROUP_THERAPY = 'Group Therapy',
+  ASSESSMENT = 'Assessment',
+  MEDICATION_MANAGEMENT = 'Medication Management',
+  CRISIS_INTERVENTION = 'Crisis Intervention',
+  OTHER = 'Other',
 }
 
 export class CreateAppointmentDto {
   @IsUUID()
   clientId: string;
 
+  @IsOptional()
   @IsUUID()
-  providerId: string;
+  providerId?: string; // Made optional since it will be set from JWT token
 
   @IsEnum(AppointmentType)
   appointmentType: AppointmentType;
@@ -43,8 +43,8 @@ export class CreateAppointmentDto {
   @IsDateString()
   startTime: string;
 
-  @IsDateString()
-  endTime: string;
+  @IsInt()
+  duration: number; // Duration in minutes
 
   @IsOptional()
   @IsString()
@@ -55,18 +55,10 @@ export class CreateAppointmentDto {
   roomNumber?: string;
 
   @IsOptional()
-  @IsString()
-  notes?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  isRecurring?: boolean;
-
-  @IsOptional()
-  @IsString()
-  recurringSeriesId?: string;
+  @IsUUID()
+  createdBy?: string;
 
   @IsOptional()
   @IsUUID()
-  createdBy?: string;
+  recurringRuleId?: string;
 } 

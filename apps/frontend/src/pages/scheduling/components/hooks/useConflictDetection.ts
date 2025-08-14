@@ -22,7 +22,7 @@ export const useConflictDetection = ({
     queryFn: async () => {
       console.log('Checking for conflicts:', { appointmentId, providerId, clientId, startTime, endTime });
       
-      if (!providerId || !clientId || !startTime || !endTime) {
+      if (!clientId || !startTime || !endTime) {
         return { conflicts: [], hasConflicts: false };
       }
 
@@ -38,7 +38,7 @@ export const useConflictDetection = ({
       try {
         const result = await schedulingService.checkConflicts({
           appointmentId,
-          providerId,
+          providerId: providerId || 'temp', // Will be replaced by backend with actual provider ID
           clientId,
           startTime,
           endTime,
@@ -50,7 +50,7 @@ export const useConflictDetection = ({
         return { conflicts: [], hasConflicts: false };
       }
     },
-    enabled: !!(providerId && clientId && startTime && endTime),
+    enabled: !!(clientId && startTime && endTime),
     retry: 1,
     refetchOnWindowFocus: false,
   });

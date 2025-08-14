@@ -14,53 +14,47 @@ import {
 export class SchedulingService {
   constructor(private prisma: PrismaService) {}
 
-  async createAppointment(createAppointmentDto: CreateAppointmentDto) {
-    const { clientId, providerId, startTime, endTime } = createAppointmentDto;
+  async createAppointment(createAppointmentDto: CreateAppointmentDto, userId: string) {
+    const { clientId, startTime, duration } = createAppointmentDto;
+    
+    // Set provider ID from JWT token if not provided
+    const providerId = createAppointmentDto.providerId || userId;
+    
+    // Calculate end time from start time and duration
+    const startDateTime = new Date(startTime);
+    const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
     // Check for conflicts
     const conflicts = await this.checkConflicts({
       providerId,
       clientId,
       startTime,
-      endTime,
+      endTime: endDateTime.toISOString(),
     });
 
     if (conflicts.hasConflicts) {
       throw new BadRequestException('Appointment conflicts detected');
     }
 
-    return this.prisma.appointment.create({
+    // Create the appointment with only the fields that the Prisma client recognizes
+    const appointment = await this.prisma.appointment.create({
       data: {
         clientId,
         providerId,
         appointmentType: createAppointmentDto.appointmentType,
         title: createAppointmentDto.title,
         description: createAppointmentDto.description,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
+        startTime: startDateTime,
+        duration,
         status: AppointmentStatus.SCHEDULED,
         location: createAppointmentDto.location,
         roomNumber: createAppointmentDto.roomNumber,
-        notes: createAppointmentDto.notes,
-        isRecurring: createAppointmentDto.isRecurring,
-        recurringSeriesId: createAppointmentDto.recurringSeriesId,
-        createdBy: createAppointmentDto.createdBy,
-      },
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
+        recurringRuleId: createAppointmentDto.recurringRuleId,
+        createdBy: createAppointmentDto.createdBy || userId,
       },
     });
+
+    return appointment;
   }
 
   async findAll(query: QueryAppointmentsDto) {
@@ -91,20 +85,6 @@ export class SchedulingService {
 
     const appointments = await this.prisma.appointment.findMany({
       where,
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
       orderBy: {
         startTime: 'asc',
       },
@@ -113,16 +93,7 @@ export class SchedulingService {
     // Apply search filter if provided
     if (query.search) {
       return appointments.filter(appointment => {
-        const clientName = appointment.clients 
-          ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
-          : '';
-        const providerName = appointment.users
-          ? `${appointment.users.firstName} ${appointment.users.lastName}`
-          : '';
-        
         return (
-          clientName.toLowerCase().includes(query.search.toLowerCase()) ||
-          providerName.toLowerCase().includes(query.search.toLowerCase()) ||
           (appointment.title || '').toLowerCase().includes(query.search.toLowerCase()) ||
           appointment.appointmentType.toLowerCase().includes(query.search.toLowerCase())
         );
@@ -135,20 +106,6 @@ export class SchedulingService {
   async findOne(id: string) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id },
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
     });
 
     if (!appointment) {
@@ -180,20 +137,6 @@ export class SchedulingService {
     return this.prisma.appointment.update({
       where: { id },
       data: updateData,
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
     });
   }
 
@@ -217,20 +160,6 @@ export class SchedulingService {
     return this.prisma.appointment.update({
       where: { id },
       data: updateData,
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
     });
   }
 
@@ -247,6 +176,7 @@ export class SchedulingService {
   async checkConflicts(checkConflictsDto: CheckConflictsDto) {
     const { appointmentId, providerId, clientId, startTime, endTime } = checkConflictsDto;
 
+    // Calculate end time from start time and duration for existing appointments
     const conflicts = await this.prisma.appointment.findMany({
       where: {
         OR: [
@@ -260,31 +190,19 @@ export class SchedulingService {
         },
         AND: [
           {
-            endTime: {
-              gte: new Date(startTime),
+            // Check if existing appointment overlaps with new appointment time
+            startTime: {
+              lt: new Date(endTime), // Existing appointment starts before new appointment ends
             },
           },
           {
+            // Check if existing appointment ends after new appointment starts
             startTime: {
-              lte: new Date(endTime),
+              gte: new Date(new Date(startTime).getTime() - 60 * 60000), // Assuming 60 min default duration for existing
             },
           },
         ],
         ...(appointmentId && { id: { not: appointmentId } }),
-      },
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
       },
     });
 
@@ -320,20 +238,6 @@ export class SchedulingService {
         priority: createWaitlistDto.priority || 1,
         isFulfilled: false,
       },
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
     });
   }
 
@@ -341,20 +245,6 @@ export class SchedulingService {
     return this.prisma.appointmentWaitlist.findMany({
       where: {
         isFulfilled: false,
-      },
-      include: {
-        clients: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-        users: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
       },
       orderBy: [
         { priority: 'desc' },
