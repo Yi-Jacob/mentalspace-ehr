@@ -17,12 +17,17 @@ import { useAppointmentMutations } from './hooks/useAppointmentMutations';
 interface Appointment {
   id: string;
   title?: string;
-  start_time: string;
-  end_time: string;
+  startTime?: string;
+  duration?: number;
   clients?: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
+  // Fallback fields for backward compatibility
+  start_time?: string;
+  end_time?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 interface DeleteAppointmentDialogProps {
@@ -52,7 +57,7 @@ const DeleteAppointmentDialog: React.FC<DeleteAppointmentDialogProps> = ({
   if (!appointment) return null;
 
   const clientName = appointment.clients 
-    ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+    ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
     : 'Unknown Client';
 
   return (
@@ -73,7 +78,23 @@ const DeleteAppointmentDialog: React.FC<DeleteAppointmentDialogProps> = ({
               <div className="space-y-1 text-sm">
                 <p><strong>Client:</strong> {clientName}</p>
                 <p><strong>Title:</strong> {appointment.title || 'No title'}</p>
-                <p><strong>Date & Time:</strong> {format(new Date(appointment.start_time), 'MMM d, yyyy HH:mm')} - {format(new Date(appointment.end_time), 'HH:mm')}</p>
+                <p><strong>Date & Time:</strong> {
+                  (() => {
+                    const startTime = appointment.startTime || appointment.start_time;
+                    const duration = appointment.duration;
+                    
+                    if (startTime) {
+                      try {
+                        const startDate = new Date(startTime);
+                        const endDate = duration ? new Date(startDate.getTime() + duration * 60000) : new Date(startTime);
+                        return `${format(startDate, 'MMM d, yyyy HH:mm')} - ${format(endDate, 'HH:mm')}`;
+                      } catch (error) {
+                        return 'Invalid date';
+                      }
+                    }
+                    return 'N/A';
+                  })()
+                }</p>
               </div>
             </div>
             <p className="text-red-700 font-medium">

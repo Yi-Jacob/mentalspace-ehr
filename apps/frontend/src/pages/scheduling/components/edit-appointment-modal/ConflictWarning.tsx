@@ -7,9 +7,19 @@ import { format } from 'date-fns';
 interface ConflictData {
   hasConflicts: boolean;
   conflicts: Array<{
-    message: string;
-    start_time: string;
-    end_time: string;
+    id: string;
+    title?: string;
+    startTime?: string;
+    duration?: number;
+    clients?: {
+      firstName: string;
+      lastName: string;
+    };
+    // Fallback fields for backward compatibility
+    start_time?: string;
+    end_time?: string;
+    first_name?: string;
+    last_name?: string;
   }>;
 }
 
@@ -28,11 +38,36 @@ const ConflictWarning: React.FC<ConflictWarningProps> = ({ conflictData }) => {
       <AlertDescription className="text-orange-800">
         <strong>Scheduling Conflict Detected:</strong>
         <ul className="mt-2 space-y-1">
-          {conflictData.conflicts.map((conflict, index) => (
-            <li key={index} className="text-sm">
-              • {conflict.message} ({format(new Date(conflict.start_time), 'HH:mm')} - {format(new Date(conflict.end_time), 'HH:mm')})
-            </li>
-          ))}
+          {conflictData.conflicts.map((conflict, index) => {
+            const startTime = conflict.startTime || conflict.start_time;
+            const duration = conflict.duration;
+            const clientName = conflict.clients 
+              ? `${conflict.clients.firstName} ${conflict.clients.lastName}`
+              : conflict.first_name && conflict.last_name
+              ? `${conflict.first_name} ${conflict.last_name}`
+              : 'Unknown Client';
+            
+            let timeDisplay = 'N/A';
+            if (startTime) {
+              try {
+                const startDate = new Date(startTime);
+                if (duration) {
+                  const endDate = new Date(startDate.getTime() + duration * 60000);
+                  timeDisplay = `${format(startDate, 'HH:mm')} - ${format(endDate, 'HH:mm')}`;
+                } else {
+                  timeDisplay = format(startDate, 'HH:mm');
+                }
+              } catch (error) {
+                timeDisplay = 'Invalid time';
+              }
+            }
+            
+            return (
+              <li key={index} className="text-sm">
+                • {conflict.title || 'Appointment'} with {clientName} ({timeDisplay})
+              </li>
+            );
+          })}
         </ul>
       </AlertDescription>
     </Alert>

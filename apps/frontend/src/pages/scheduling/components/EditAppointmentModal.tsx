@@ -17,41 +17,48 @@ import { AppointmentTypeValue } from '@/types/scheduleType';
 interface Appointment {
   id: string;
   title?: string;
-  client_id: string;
-  provider_id: string;
-  appointment_type: AppointmentTypeValue;
-  start_time: string;
-  end_time: string;
-  status: string;
+  clientId?: string;
+  providerId?: string;
+  appointmentType?: AppointmentTypeValue;
+  startTime?: string;
+  duration?: number;
+  status?: string;
   location?: string;
-  room_number?: string;
+  roomNumber?: string;
   notes?: string;
   clients?: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
-  users?: {
-    first_name: string;
-    last_name: string;
-  };
+  // Fallback fields for backward compatibility
+  client_id?: string;
+  provider_id?: string;
+  appointment_type?: AppointmentTypeValue;
+  start_time?: string;
+  end_time?: string;
+  room_number?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 interface EditAppointmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  appointment: {
-    id: string;
-    client_id: string;
-    appointment_type: AppointmentTypeValue;
-    title: string;
-    description: string;
-    start_time: string;
-    end_time: string;
-    status: string;
-    location?: string;
-    room_number?: string;
-    notes?: string;
-  } | null;
+  appointment: Appointment | null;
+}
+
+interface FormData {
+  title: string;
+  appointment_type: string;
+  status: string;
+  location: string;
+  room_number: string;
+  notes: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  client_id: string;
+  description: string;
 }
 
 const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
@@ -59,7 +66,7 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   onOpenChange,
   appointment
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     appointment_type: '',
     status: '',
@@ -68,27 +75,36 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     notes: '',
     date: '',
     start_time: '',
-    end_time: ''
+    end_time: '',
+    client_id: '',
+    description: ''
   });
 
   const { updateAppointment } = useAppointmentMutations();
 
   useEffect(() => {
     if (appointment) {
-      const startDate = new Date(appointment.start_time);
-      const endDate = new Date(appointment.end_time);
+      const startTime = appointment.startTime || appointment.start_time;
+      const duration = appointment.duration;
       
-      setFormData({
-        title: appointment.title || '',
-        appointment_type: appointment.appointment_type,
-        status: appointment.status,
-        location: appointment.location || '',
-        room_number: appointment.room_number || '',
-        notes: appointment.notes || '',
-        date: format(startDate, 'yyyy-MM-dd'),
-        start_time: format(startDate, 'HH:mm'),
-        end_time: format(endDate, 'HH:mm')
-      });
+      if (startTime) {
+        const startDate = new Date(startTime);
+        const endDate = duration ? new Date(startDate.getTime() + duration * 60000) : startDate;
+        
+        setFormData({
+          title: appointment.title || '',
+          appointment_type: appointment.appointmentType || appointment.appointment_type || '',
+          status: appointment.status || '',
+          location: appointment.location || '',
+          room_number: appointment.roomNumber || appointment.room_number || '',
+          notes: appointment.notes || '',
+          date: format(startDate, 'yyyy-MM-dd'),
+          start_time: format(startDate, 'HH:mm'),
+          end_time: format(endDate, 'HH:mm'),
+          client_id: appointment.client_id || '',
+          description: appointment.title || ''
+        });
+      }
     }
   }, [appointment]);
 
@@ -101,8 +117,8 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
 
   const { data: conflictData } = useConflictDetection({
     appointmentId: appointment?.id,
-    providerId: appointment?.provider_id || '',
-    clientId: appointment?.client_id || '',
+    providerId: appointment?.providerId || appointment?.provider_id || '',
+    clientId: appointment?.clientId || appointment?.client_id || '',
     startTime: startDateTime,
     endTime: endDateTime
   });
@@ -124,7 +140,9 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
         room_number: formData.room_number,
         notes: formData.notes,
         start_time: startDateTime,
-        end_time: endDateTime
+        end_time: endDateTime,
+        client_id: formData.client_id,
+        description: formData.description
       });
       onOpenChange(false);
     } catch (error) {
@@ -133,7 +151,9 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   };
 
   const clientName = appointment?.clients 
-    ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+    ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
+    : appointment?.first_name && appointment?.last_name
+    ? `${appointment.first_name} ${appointment.last_name}`
     : 'Unknown Client';
 
   return (

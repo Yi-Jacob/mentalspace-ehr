@@ -293,6 +293,15 @@ export class SchedulingService {
     return this.prisma.appointment.update({
       where: { id },
       data: updateData,
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
   }
 
@@ -316,6 +325,15 @@ export class SchedulingService {
     return this.prisma.appointment.update({
       where: { id },
       data: updateData,
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
   }
 
