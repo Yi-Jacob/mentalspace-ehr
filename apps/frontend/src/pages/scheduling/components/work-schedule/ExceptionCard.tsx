@@ -74,7 +74,7 @@ const ExceptionCard: React.FC<ExceptionCardProps> = ({
           {exceptions?.map((exception) => (
             <div 
               key={exception.id} 
-              className="border-0 rounded-xl p-4 bg-gradient-to-r from-white to-pink-50/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform group"
+              className="border-0 rounded-xl p-4 bg-gradient-to-r from-white to-pink-50/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-lg text-gray-800">
@@ -93,7 +93,7 @@ const ExceptionCard: React.FC<ExceptionCardProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="hover:bg-pink-50 transition-colors duration-200"
+                    className="hover:bg-pink-50"
                     onClick={() => onEditException?.(exception)}
                   >
                     <Edit className="h-4 w-4" />
@@ -102,7 +102,7 @@ const ExceptionCard: React.FC<ExceptionCardProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="hover:bg-red-50 text-red-600 transition-colors duration-200"
+                      className="hover:bg-red-50 text-red-600"
                       onClick={() => onDeleteException?.(exception)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -114,7 +114,7 @@ const ExceptionCard: React.FC<ExceptionCardProps> = ({
               <div className="text-sm text-gray-600 space-y-2">
                 {!exception.isUnavailable && exception.startTime && exception.endTime && (
                   <div className="flex items-center justify-between p-2 bg-blue-50/50 rounded-lg">
-                                          <span className="flex items-center space-x-2">
+                    <span className="flex items-center space-x-2">
                       <Clock className="h-4 w-4 text-blue-500" />
                       <span>Modified Hours:</span>
                     </span>

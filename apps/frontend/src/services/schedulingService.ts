@@ -236,6 +236,16 @@ class SchedulingService {
     return response.data;
   }
 
+  async updateProviderSchedules(schedules: CreateScheduleData[]): Promise<{ message: string; count: number }> {
+    const response = await apiClient.patch<{ message: string; count: number }>('/scheduling/schedules/bulk', schedules);
+    return response.data;
+  }
+
+  async deleteAllProviderSchedules(): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>('/scheduling/schedules/all');
+    return response.data;
+  }
+
   async getProviderSchedules(providerId?: string): Promise<ProviderSchedule[]> {
     const queryParams = providerId ? `?providerId=${providerId}` : '';
     const response = await apiClient.get<ProviderSchedule[]>(`/scheduling/schedules${queryParams}`);

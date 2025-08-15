@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { schedulingService, ScheduleException } from '@/services/schedulingService';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { schedulingService, ScheduleException, ProviderSchedule } from '@/services/schedulingService';
 import WorkScheduleHeader from '../components/work-schedule/WorkScheduleHeader';
 import ScheduleCard from '../components/work-schedule/ScheduleCard';
 import ExceptionCard from '../components/work-schedule/ExceptionCard';
@@ -21,8 +21,10 @@ const WorkScheduleManagement = () => {
   const [showDeleteExceptionModal, setShowDeleteExceptionModal] = useState(false);
   const [deletingException, setDeletingException] = useState<ScheduleException | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<ProviderSchedule | null>(null);
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ['provider-schedules'],
@@ -84,11 +86,24 @@ const WorkScheduleManagement = () => {
     try {
       setIsDeleting(true);
       await schedulingService.deleteScheduleException(deletingException.id);
+      
+      toast({
+        title: "Exception Deleted",
+        description: "The schedule exception has been deleted successfully.",
+      });
+      
       setShowDeleteExceptionModal(false);
       setDeletingException(null);
-      // The query will be invalidated automatically
+      
+      // Invalidate the query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['schedule-exceptions'] });
     } catch (error) {
       console.error('Failed to delete exception:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete exception. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -97,6 +112,16 @@ const WorkScheduleManagement = () => {
   const handleCloseDeleteModal = () => {
     setShowDeleteExceptionModal(false);
     setDeletingException(null);
+  };
+
+  const handleEditSchedule = (schedule: ProviderSchedule) => {
+    setEditingSchedule(schedule);
+    setShowAddScheduleModal(true);
+  };
+
+  const handleCloseScheduleModal = () => {
+    setShowAddScheduleModal(false);
+    setEditingSchedule(null);
   };
 
   return (
@@ -133,6 +158,7 @@ const WorkScheduleManagement = () => {
               isLoading={schedulesLoading}
               dayMapping={dayMapping}
               getStatusColor={getStatusColor}
+              onEditSchedule={handleEditSchedule}
             />
 
             <ExceptionCard
@@ -152,7 +178,9 @@ const WorkScheduleManagement = () => {
 
       <AddScheduleModal 
         open={showAddScheduleModal} 
-        onOpenChange={setShowAddScheduleModal} 
+        onOpenChange={handleCloseScheduleModal}
+        editingSchedule={editingSchedule}
+        isEditMode={!!editingSchedule}
       />
       <AddExceptionModal 
         open={showAddExceptionModal} 

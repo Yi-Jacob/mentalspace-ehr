@@ -33,39 +33,31 @@ const DeleteExceptionModal: React.FC<DeleteExceptionModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
-              <Trash2 className="h-6 w-6 text-red-600" />
+          <div className="text-center py-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="h-8 w-8 text-red-600" />
+              </div>
             </div>
+            
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Are you sure you want to delete this exception?
             </h3>
-            <p className="text-sm text-gray-600">
-              This action cannot be undone. The schedule exception will be permanently removed.
+            
+            <p className="text-sm text-gray-600 mb-4">
+              This action cannot be undone. The schedule exception for{' '}
+              <span className="font-semibold">
+                {format(new Date(exception.exceptionDate), 'MMM d, yyyy')}
+              </span>{' '}
+              will be permanently removed.
             </p>
-          </div>
 
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Date:</span>
-                <span className="text-gray-900">
-                  {format(new Date(exception.exceptionDate), 'MMM d, yyyy')}
-                </span>
+            {exception.reason && (
+              <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                <span className="font-medium text-gray-700">Reason:</span>{' '}
+                <span className="text-gray-600">{exception.reason}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Type:</span>
-                <span className="text-gray-900">
-                  {exception.isUnavailable ? 'Unavailable' : 'Modified Hours'}
-                </span>
-              </div>
-              {exception.reason && (
-                <div className="flex justify-between">
-                  <span className="font-medium text-gray-700">Reason:</span>
-                  <span className="text-gray-900">{exception.reason}</span>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">

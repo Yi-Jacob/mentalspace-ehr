@@ -91,6 +91,16 @@ export class SchedulingController {
     return this.schedulingService.createProviderSchedules(createSchedulesDto, req.user.id);
   }
 
+  @Patch('schedules/bulk')
+  updateProviderSchedules(@Body() updateSchedulesDto: CreateScheduleDto[], @Request() req) {
+    return this.schedulingService.updateProviderSchedules(updateSchedulesDto, req.user.id);
+  }
+
+  @Delete('schedules/all')
+  deleteAllProviderSchedules(@Request() req) {
+    return this.schedulingService.deleteAllProviderSchedules(req.user.id);
+  }
+
   @Get('schedules')
   getProviderSchedules(@Query('providerId') providerId?: string) {
     return this.schedulingService.getProviderSchedules(providerId);

@@ -670,6 +670,50 @@ export class SchedulingService {
     };
   }
 
+  async updateProviderSchedules(updateSchedulesDto: CreateScheduleDto[], userId: string) {
+    // First, delete all existing schedules for the user
+    await this.prisma.providerSchedule.deleteMany({
+      where: {
+        providerId: userId,
+      },
+    });
+
+    // Then create all new schedules with updated data
+    const createdSchedules = await this.prisma.providerSchedule.createMany({
+      data: updateSchedulesDto.map(schedule => ({
+        providerId: userId, // Always use the userId from JWT token
+        dayOfWeek: schedule.dayOfWeek,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        isAvailable: schedule.isAvailable ?? true,
+        breakStartTime: schedule.breakStartTime,
+        breakEndTime: schedule.breakEndTime,
+        effectiveFrom: schedule.effectiveFrom ? new Date(schedule.effectiveFrom) : new Date(),
+        effectiveUntil: schedule.effectiveUntil ? new Date(schedule.effectiveUntil) : null,
+        status: schedule.status || 'active',
+      })),
+    });
+
+    return {
+      message: `Updated ${createdSchedules.count} provider schedules successfully`,
+      count: createdSchedules.count,
+    };
+  }
+
+  async deleteAllProviderSchedules(userId: string) {
+    // Delete all schedules for the authenticated user
+    const deletedSchedules = await this.prisma.providerSchedule.deleteMany({
+      where: {
+        providerId: userId,
+      },
+    });
+
+    return {
+      message: `Deleted ${deletedSchedules.count} provider schedules successfully`,
+      count: deletedSchedules.count,
+    };
+  }
+
   async getProviderSchedules(providerId?: string) {
     const where: any = {};
     if (providerId) {

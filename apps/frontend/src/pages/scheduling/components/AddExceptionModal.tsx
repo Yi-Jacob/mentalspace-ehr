@@ -72,7 +72,7 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
         title: "Exception Created",
         description: "The schedule exception has been created successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['schedules/exceptions'] });
+      queryClient.invalidateQueries({ queryKey: ['schedule-exceptions'] });
       onOpenChange(false);
       resetForm();
     },
@@ -103,7 +103,7 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
         title: "Exception Updated",
         description: "The schedule exception has been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['schedules/exceptions'] });
+      queryClient.invalidateQueries({ queryKey: ['schedule-exceptions'] });
       onOpenChange(false);
       resetForm();
     },

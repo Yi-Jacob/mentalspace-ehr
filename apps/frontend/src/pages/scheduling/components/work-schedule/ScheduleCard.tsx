@@ -7,13 +7,12 @@ import { Clock, Calendar, Edit, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ProviderSchedule } from '@/services/schedulingService';
 
-
-
 interface ScheduleCardProps {
   schedules: ProviderSchedule[];
   isLoading: boolean;
   dayMapping: Record<string, string>;
   getStatusColor: (status: string) => string;
+  onEditSchedule?: (schedule: ProviderSchedule) => void;
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -21,7 +20,18 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   isLoading,
   dayMapping,
   getStatusColor,
+  onEditSchedule,
 }) => {
+  // Sort schedules by dayOfWeek (Monday = 1, Sunday = 0)
+  const sortedSchedules = React.useMemo(() => {
+    const dayOrder = { 'monday': 1, 'tuesday': 2, 'wednesday': 3, 'thursday': 4, 'friday': 5, 'saturday': 6, 'sunday': 0 };
+    return [...schedules].sort((a, b) => {
+      const dayA = dayOrder[a.dayOfWeek.toLowerCase() as keyof typeof dayOrder] ?? 0;
+      const dayB = dayOrder[b.dayOfWeek.toLowerCase() as keyof typeof dayOrder] ?? 0;
+      return dayA - dayB;
+    });
+  }, [schedules]);
+
   if (isLoading) {
     return (
       <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
@@ -43,7 +53,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
     );
   }
 
-  if (schedules?.length === 0) {
+  if (sortedSchedules?.length === 0) {
     return (
       <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
         <CardHeader className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-t-lg">
@@ -73,10 +83,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       </CardHeader>
       <CardContent className="p-6">
         <div className="space-y-4">
-          {schedules?.map((schedule) => (
+          {sortedSchedules?.map((schedule) => (
             <div 
               key={schedule.id} 
-              className="border-0 rounded-xl p-4 bg-gradient-to-r from-white to-purple-50/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform group"
+              className="border-0 rounded-xl p-4 bg-gradient-to-r from-white to-purple-50/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-lg text-gray-800">
@@ -86,13 +96,16 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                   <Badge className={`${getStatusColor(schedule.status)} border font-medium px-3 py-1`}>
                     {schedule.status.replace('_', ' ')}
                   </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-purple-50"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
+                  {onEditSchedule && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="hover:bg-purple-50"
+                      onClick={() => onEditSchedule(schedule)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
               

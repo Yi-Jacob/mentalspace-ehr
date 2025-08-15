@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/basic/dialog';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
@@ -12,7 +12,7 @@ import { CalendarIcon, Clock, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/utils/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { schedulingService } from '@/services/schedulingService';
+import { schedulingService, ProviderSchedule } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import PageTabs from '@/components/basic/PageTabs';
@@ -20,6 +20,8 @@ import PageTabs from '@/components/basic/PageTabs';
 interface AddScheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingSchedule?: ProviderSchedule | null;
+  isEditMode?: boolean;
 }
 
 interface DayScheduleData {
@@ -33,7 +35,12 @@ interface DayScheduleData {
   effective_until: Date;
 }
 
-const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange }) => {
+const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ 
+  open, 
+  onOpenChange, 
+  editingSchedule, 
+  isEditMode = false 
+}) => {
   const [activeTab, setActiveTab] = useState('monday');
   const [schedulesData, setSchedulesData] = useState<Record<string, DayScheduleData>>({
     monday: {
@@ -112,7 +119,50 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Populate form when editing
+  useEffect(() => {
+    if (isEditMode && editingSchedule) {
+      // When editing, we need to populate all 7 days with current data
+      // First, get all existing schedules to populate the form
+      const populateFormData = async () => {
+        try {
+          const existingSchedules = await schedulingService.getProviderSchedules();
+          
+          // Update all days with existing data
+          setSchedulesData(prev => {
+            const updated = { ...prev };
+            
+            existingSchedules.forEach(existingSchedule => {
+              const dayKey = existingSchedule.dayOfWeek.toLowerCase();
+              if (updated[dayKey]) {
+                updated[dayKey] = {
+                  day_of_week: existingSchedule.dayOfWeek,
+                  start_time: existingSchedule.startTime,
+                  end_time: existingSchedule.endTime,
+                  break_start_time: existingSchedule.breakStartTime || '00:00',
+                  break_end_time: existingSchedule.breakEndTime || '00:00',
+                  is_available: existingSchedule.isAvailable,
+                  effective_from: new Date(existingSchedule.effectiveFrom),
+                  effective_until: existingSchedule.effectiveUntil ? new Date(existingSchedule.effectiveUntil) : new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+                };
+              }
+            });
+            
+            return updated;
+          });
 
+          // Set active tab to the day being edited
+          setActiveTab(editingSchedule.dayOfWeek.toLowerCase());
+        } catch (error) {
+          console.error('Failed to populate form data:', error);
+        }
+      };
+      
+      populateFormData();
+    } else {
+      resetForm();
+    }
+  }, [isEditMode, editingSchedule]);
 
   const createAllSchedulesMutation = useMutation({
     mutationFn: async () => {
@@ -148,6 +198,50 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
         variant: "destructive",
       });
       console.error('Create all schedules error:', error);
+    },
+  });
+
+  const updateScheduleMutation = useMutation({
+    mutationFn: async () => {
+      if (!user || !editingSchedule) throw new Error('User not authenticated or no schedule to edit');
+
+      // For editing, we send all 7 days from the current form data
+      // This ensures all days are updated together with their current values
+      const allSchedules = Object.keys(schedulesData).map(dayKey => {
+        const dayData = schedulesData[dayKey];
+        
+        return {
+          dayOfWeek: dayData.day_of_week,
+          startTime: dayData.start_time,
+          endTime: dayData.end_time,
+          breakStartTime: dayData.break_start_time || null,
+          breakEndTime: dayData.break_end_time || null,
+          isAvailable: dayData.is_available,
+          effectiveFrom: dayData.effective_from.toISOString().split('T')[0],
+          effectiveUntil: dayData.effective_until?.toISOString().split('T')[0] || null,
+          status: 'active', // Default status for all schedules
+        };
+      });
+
+      // Use the bulk update method to update all schedules
+      return await schedulingService.updateProviderSchedules(allSchedules);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Schedule Updated",
+        description: "The work schedule has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['provider-schedules'] });
+      onOpenChange(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update schedule. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Update schedule error:', error);
     },
   });
 
@@ -224,6 +318,7 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
         effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
       }
     });
+    setActiveTab('monday');
   };
 
   const handleScheduleChange = (day: string, field: keyof DayScheduleData, value: any) => {
@@ -266,7 +361,16 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
       return;
     }
 
-    createAllSchedulesMutation.mutate();
+    if (isEditMode) {
+      updateScheduleMutation.mutate();
+    } else {
+      createAllSchedulesMutation.mutate();
+    }
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
+    resetForm();
   };
 
   const renderDayForm = (day: string, data: DayScheduleData) => (
@@ -355,13 +459,13 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-                               <Calendar
-                   mode="single"
-                   selected={data.effective_from}
-                   onSelect={(date) => date && handleEffectiveDateChange('effective_from', date)}
-                   initialFocus
-                   className="pointer-events-auto"
-                 />
+              <Calendar
+                mode="single"
+                selected={data.effective_from}
+                onSelect={(date) => date && handleEffectiveDateChange('effective_from', date)}
+                initialFocus
+                className="pointer-events-auto"
+              />
             </PopoverContent>
           </Popover>
         </div>
@@ -381,23 +485,19 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-                               <Calendar
-                   mode="single"
-                   selected={data.effective_until}
-                   onSelect={(date) => handleEffectiveDateChange('effective_until', date)}
-                   initialFocus
-                   className="pointer-events-auto"
-                 />
+              <Calendar
+                mode="single"
+                selected={data.effective_until}
+                onSelect={(date) => date && handleEffectiveDateChange('effective_until', date)}
+                initialFocus
+                className="pointer-events-auto"
+              />
             </PopoverContent>
           </Popover>
         </div>
       </div>
-
-
     </div>
   );
-
-
 
   const tabItems = [
     {
@@ -438,12 +538,12 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
   ];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <Clock className="h-5 w-5 text-purple-600" />
-            <span>Add Weekly Work Schedule</span>
+            <span>{isEditMode ? 'Edit Work Schedule' : 'Add Weekly Work Schedule'}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -467,19 +567,22 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={createAllSchedulesMutation.isPending}
+              onClick={handleClose}
+              disabled={createAllSchedulesMutation.isPending || updateScheduleMutation.isPending}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createAllSchedulesMutation.isPending}
+              disabled={createAllSchedulesMutation.isPending || updateScheduleMutation.isPending}
               className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
             >
               <Save className="h-4 w-4 mr-2" />
-              {createAllSchedulesMutation.isPending ? 'Creating All Schedules...' : 'Create All Schedules'}
+              {isEditMode 
+                ? (updateScheduleMutation.isPending ? 'Updating Schedule...' : 'Update Schedule')
+                : (createAllSchedulesMutation.isPending ? 'Creating All Schedules...' : 'Create All Schedules')
+              }
             </Button>
           </div>
         </form>
