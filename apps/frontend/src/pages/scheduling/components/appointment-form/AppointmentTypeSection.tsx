@@ -3,26 +3,19 @@ import React from 'react';
 import { Label } from '@/components/basic/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { FileText } from 'lucide-react';
+import { getAppointmentTypeOptions } from '@/types/scheduleType';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentTypeSectionProps {
-  appointment_type: string;
-  onAppointmentTypeChange: (value: string) => void;
+  appointmentType: AppointmentTypeValue;
+  onAppointmentTypeChange: (type: AppointmentTypeValue) => void;
 }
 
 const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
-  appointment_type,
+  appointmentType,
   onAppointmentTypeChange
 }) => {
-  const appointmentTypes = [
-    { value: 'initial_consultation', label: 'Initial Consultation' },
-    { value: 'follow_up', label: 'Follow-up' },
-    { value: 'therapy_session', label: 'Therapy Session' },
-    { value: 'group_therapy', label: 'Group Therapy' },
-    { value: 'assessment', label: 'Assessment' },
-    { value: 'medication_management', label: 'Medication Management' },
-    { value: 'crisis_intervention', label: 'Crisis Intervention' },
-    { value: 'other', label: 'Other' },
-  ];
+  const appointmentTypes = getAppointmentTypeOptions();
 
   return (
     <div className="space-y-4">
@@ -31,7 +24,7 @@ const AppointmentTypeSection: React.FC<AppointmentTypeSectionProps> = ({
           <FileText className="h-4 w-4 text-blue-500" />
           <span>Appointment Type *</span>
         </Label>
-        <Select value={appointment_type} onValueChange={onAppointmentTypeChange}>
+        <Select value={appointmentType} onValueChange={onAppointmentTypeChange}>
           <SelectTrigger className="bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200">
             <SelectValue placeholder="Select appointment type" />
           </SelectTrigger>

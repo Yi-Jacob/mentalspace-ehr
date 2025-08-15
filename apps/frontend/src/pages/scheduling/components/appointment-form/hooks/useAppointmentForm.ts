@@ -41,6 +41,40 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
         return;
       }
 
+      // Prepare recurring information if needed
+      let recurringData = {};
+      
+      if (formData.recurring_period !== 'none' && formData.recurring_period !== 'custom') {
+        const startDate = new Date(`${formData.date}T${formData.start_time}`);
+        
+        // For recurring patterns, send the pattern and timeslots
+        recurringData = {
+          recurringPattern: formData.recurring_period,
+          recurringTimeSlots: [{
+            time: formData.start_time,
+            ...(formData.recurring_period === 'weekly' && { dayOfWeek: startDate.getDay() }),
+            ...(formData.recurring_period === 'monthly' && { dayOfMonth: startDate.getDate() }),
+            ...(formData.recurring_period === 'yearly' && { 
+              month: startDate.getMonth() + 1,
+              dayOfMonth: startDate.getDate()
+            })
+          }],
+          isBusinessDayOnly: true
+        };
+      } else if (formData.recurring_period === 'custom' && (formData as any)._recurringData) {
+        try {
+          // Parse the stored recurring data
+          const parsedRecurringData = JSON.parse((formData as any)._recurringData);
+          recurringData = {
+            recurringPattern: parsedRecurringData.recurringPattern,
+            recurringTimeSlots: parsedRecurringData.recurringTimeSlots,
+            isBusinessDayOnly: parsedRecurringData.isBusinessDayOnly
+          };
+        } catch (error) {
+          console.error('Error parsing recurring data:', error);
+        }
+      }
+
       // Prepare appointment data for the API
       const appointmentData = {
         clientId: formData.client_id,
@@ -51,9 +85,10 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
         duration: formData.duration_minutes,
         location: formData.location || undefined,
         roomNumber: formData.room_number || undefined,
-        recurringRuleId: formData.recurring_rule_id || undefined,
+        ...recurringData
       };
 
+      // Send to backend - the backend will handle creating all recurring appointments
       await mutation.mutateAsync(appointmentData);
     } catch (error) {
       console.error('Form submission error:', error);

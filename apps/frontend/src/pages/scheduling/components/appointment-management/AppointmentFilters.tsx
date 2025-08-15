@@ -5,17 +5,18 @@ import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Search, Filter } from 'lucide-react';
+import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 type AppointmentStatus = 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
-type AppointmentType = 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
 
 interface AppointmentFiltersProps {
   searchTerm: string;
   statusFilter: AppointmentStatus | 'all';
-  typeFilter: AppointmentType | 'all';
+  typeFilter: AppointmentTypeValue | 'all';
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: AppointmentStatus | 'all') => void;
-  onTypeFilterChange: (value: AppointmentType | 'all') => void;
+  onTypeFilterChange: (value: AppointmentTypeValue | 'all') => void;
   onClearFilters: () => void;
 }
 
@@ -68,14 +69,14 @@ const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
             </SelectTrigger>
             <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="initial_consultation">Initial Consultation</SelectItem>
-              <SelectItem value="follow_up">Follow-up</SelectItem>
-              <SelectItem value="therapy_session">Therapy Session</SelectItem>
-              <SelectItem value="group_therapy">Group Therapy</SelectItem>
-              <SelectItem value="assessment">Assessment</SelectItem>
-              <SelectItem value="medication_management">Medication Management</SelectItem>
-              <SelectItem value="crisis_intervention">Crisis Intervention</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value={AppointmentType.INITIAL_CONSULTATION}>Initial Consultation</SelectItem>
+              <SelectItem value={AppointmentType.FOLLOW_UP}>Follow-up</SelectItem>
+              <SelectItem value={AppointmentType.THERAPY_SESSION}>Therapy Session</SelectItem>
+              <SelectItem value={AppointmentType.GROUP_THERAPY}>Group Therapy</SelectItem>
+              <SelectItem value={AppointmentType.ASSESSMENT}>Assessment</SelectItem>
+              <SelectItem value={AppointmentType.MEDICATION_MANAGEMENT}>Medication Management</SelectItem>
+              <SelectItem value={AppointmentType.CRISIS_INTERVENTION}>Crisis Intervention</SelectItem>
+              <SelectItem value={AppointmentType.OTHER}>Other</SelectItem>
             </SelectContent>
           </Select>
           <Button 

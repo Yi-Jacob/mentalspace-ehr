@@ -12,13 +12,14 @@ import DateTimeSection from './edit-appointment-modal/DateTimeSection';
 import LocationSection from './edit-appointment-modal/LocationSection';
 import NotesSection from './edit-appointment-modal/NotesSection';
 import ActionButtons from './edit-appointment-modal/ActionButtons';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface Appointment {
   id: string;
   title?: string;
   client_id: string;
   provider_id: string;
-  appointment_type: string;
+  appointment_type: AppointmentTypeValue;
   start_time: string;
   end_time: string;
   status: string;
@@ -38,7 +39,19 @@ interface Appointment {
 interface EditAppointmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  appointment: Appointment | null;
+  appointment: {
+    id: string;
+    client_id: string;
+    appointment_type: AppointmentTypeValue;
+    title: string;
+    description: string;
+    start_time: string;
+    end_time: string;
+    status: string;
+    location?: string;
+    room_number?: string;
+    notes?: string;
+  } | null;
 }
 
 const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({

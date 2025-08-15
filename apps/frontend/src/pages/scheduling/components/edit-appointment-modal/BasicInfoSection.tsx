@@ -4,14 +4,24 @@ import { Label } from '@/components/basic/label';
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { FileText } from 'lucide-react';
+import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue } from '@/types/scheduleType';
+
+interface FormData {
+  client_id: string;
+  appointment_type: AppointmentTypeValue;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  location: string;
+  room_number: string;
+}
 
 interface BasicInfoSectionProps {
-  formData: {
-    title: string;
-    appointment_type: string;
-    status: string;
-  };
-  onFormDataChange: (field: string, value: string) => void;
+  formData: FormData;
+  onFormDataChange: (field: keyof FormData, value: string) => void;
 }
 
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
@@ -43,14 +53,14 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="initial_consultation">Initial Consultation</SelectItem>
-            <SelectItem value="follow_up">Follow-up</SelectItem>
-            <SelectItem value="therapy_session">Therapy Session</SelectItem>
-            <SelectItem value="group_therapy">Group Therapy</SelectItem>
-            <SelectItem value="assessment">Assessment</SelectItem>
-            <SelectItem value="medication_management">Medication Management</SelectItem>
-            <SelectItem value="crisis_intervention">Crisis Intervention</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value={AppointmentType.INITIAL_CONSULTATION}>Initial Consultation</SelectItem>
+            <SelectItem value={AppointmentType.FOLLOW_UP}>Follow-up</SelectItem>
+            <SelectItem value={AppointmentType.THERAPY_SESSION}>Therapy Session</SelectItem>
+            <SelectItem value={AppointmentType.GROUP_THERAPY}>Group Therapy</SelectItem>
+            <SelectItem value={AppointmentType.ASSESSMENT}>Assessment</SelectItem>
+            <SelectItem value={AppointmentType.MEDICATION_MANAGEMENT}>Medication Management</SelectItem>
+            <SelectItem value={AppointmentType.CRISIS_INTERVENTION}>Crisis Intervention</SelectItem>
+            <SelectItem value={AppointmentType.OTHER}>Other</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -6,7 +6,7 @@ import { Button } from '@/components/basic/button';
 import { Clock, MapPin, User, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Appointment } from '@/services/schedulingService';
-
+import { AppointmentType } from '@/types/enums/scheduleEnum';
 
 
 interface AppointmentCardProps {
@@ -43,13 +43,13 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'initial_consultation':
+      case AppointmentType.INITIAL_CONSULTATION:
         return 'bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-800 border-indigo-300';
-      case 'follow_up':
+      case AppointmentType.FOLLOW_UP:
         return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';
-      case 'therapy_session':
+      case AppointmentType.THERAPY_SESSION:
         return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300';
-      case 'assessment':
+      case AppointmentType.ASSESSMENT:
         return 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300';
       default:
         return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';

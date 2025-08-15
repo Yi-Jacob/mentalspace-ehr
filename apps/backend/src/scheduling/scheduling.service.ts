@@ -8,6 +8,7 @@ import {
   CreateWaitlistDto,
   CreateScheduleDto,
   AppointmentStatus,
+  RecurringPattern,
 } from './dto';
 
 @Injectable()
@@ -15,28 +16,28 @@ export class SchedulingService {
   constructor(private prisma: PrismaService) {}
 
   async createAppointment(createAppointmentDto: CreateAppointmentDto, userId: string) {
-    const { clientId, startTime, duration } = createAppointmentDto;
+    const { clientId, startTime, duration, recurringPattern, recurringTimeSlots, recurringEndDate, isBusinessDayOnly } = createAppointmentDto;
     
     // Set provider ID from JWT token if not provided
     const providerId = createAppointmentDto.providerId || userId;
     
     // Calculate end time from start time and duration
     const startDateTime = new Date(startTime);
-    const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
-    // Check for conflicts
-    const conflicts = await this.checkConflicts({
-      providerId,
-      clientId,
-      startTime,
-      endTime: endDateTime.toISOString(),
-    });
-
-    if (conflicts.hasConflicts) {
-      throw new BadRequestException('Appointment conflicts detected');
+    // If there's a recurring pattern, create all recurring appointments directly
+    if (recurringPattern && recurringTimeSlots && recurringTimeSlots.length > 0) {
+      return await this.createRecurringAppointmentsOnly(
+        createAppointmentDto,
+        userId,
+        recurringPattern,
+        startDateTime,
+        recurringTimeSlots,
+        isBusinessDayOnly ?? true,
+        recurringEndDate
+      );
     }
 
-    // Create the appointment with only the fields that the Prisma client recognizes
+    // Create the initial appointment (non-recurring)
     const appointment = await this.prisma.appointment.create({
       data: {
         clientId,
@@ -49,12 +50,158 @@ export class SchedulingService {
         status: AppointmentStatus.SCHEDULED,
         location: createAppointmentDto.location,
         roomNumber: createAppointmentDto.roomNumber,
-        recurringRuleId: createAppointmentDto.recurringRuleId,
+        recurringRuleId: null,
         createdBy: createAppointmentDto.createdBy || userId,
       },
     });
 
     return appointment;
+  }
+
+  private async createRecurringAppointmentsOnly(
+    createAppointmentDto: CreateAppointmentDto,
+    userId: string,
+    pattern: RecurringPattern,
+    startDate: Date,
+    timeSlots: any[],
+    isBusinessDayOnly: boolean,
+    endDate?: string
+  ) {
+    // Set default end date to 1 year from start if not provided
+    const recurringEndDate = endDate ? new Date(endDate) : new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+    
+    // Generate appointment dates based on the recurring pattern
+    const appointmentDates = this.generateRecurringDates(
+      pattern,
+      startDate,
+      recurringEndDate,
+      timeSlots,
+      isBusinessDayOnly
+    );
+
+    // Create all recurring appointments including the first one
+    const appointments = [];
+    for (const appointmentDate of appointmentDates) {
+      const appointmentData = {
+        clientId: createAppointmentDto.clientId,
+        providerId: createAppointmentDto.providerId || userId,
+        appointmentType: createAppointmentDto.appointmentType,
+        title: createAppointmentDto.title,
+        description: createAppointmentDto.description,
+        startTime: appointmentDate,
+        duration: createAppointmentDto.duration,
+        status: AppointmentStatus.SCHEDULED,
+        location: createAppointmentDto.location,
+        roomNumber: createAppointmentDto.roomNumber,
+        recurringRuleId: null,
+        createdBy: userId,
+      };
+
+      appointments.push(appointmentData);
+    }
+
+    // Create all recurring appointments in a transaction
+    if (appointments.length > 0) {
+      const createdAppointments = await this.prisma.appointment.createMany({
+        data: appointments
+      });
+      
+      // Return the first appointment as the main result
+      return {
+        id: 'recurring-appointments-created',
+        message: `Created ${appointments.length} recurring appointments`,
+        appointments: appointments
+      };
+    }
+
+    return { message: 'No recurring appointments created' };
+  }
+
+  private generateRecurringDates(
+    pattern: RecurringPattern,
+    startDate: Date,
+    endDate: Date,
+    timeSlots: any[],
+    isBusinessDayOnly: boolean
+  ): Date[] {
+    const dates: Date[] = [];
+    
+    // For each time slot, generate appointments starting from the start date
+    for (const timeSlot of timeSlots) {
+      let currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        const appointmentDate = new Date(currentDate);
+        console.log("timeSlot", timeSlot)
+        if (timeSlot.dayOfWeek !== undefined) {
+          appointmentDate.setDate(currentDate.getDate() + (timeSlot.dayOfWeek - currentDate.getDay() + 7) % 7);
+        }
+        
+        if (timeSlot.dayOfMonth !== undefined) {
+          appointmentDate.setDate(timeSlot.dayOfMonth);
+        }
+        
+        if (timeSlot.month !== undefined) {
+          appointmentDate.setMonth(timeSlot.month - 1); // Month is 0-indexed in JavaScript
+        }
+        
+        // NOW set the time from the time slot
+        const [hours, minutes] = timeSlot.time.split(':').map(Number);
+        appointmentDate.setHours(hours, minutes, 0, 0);
+        
+        // Check if this date should be included based on the pattern
+        let shouldInclude = false;
+        console.log("appointmentDate", appointmentDate)
+        switch (pattern) {
+          case RecurringPattern.DAILY:
+            shouldInclude = !isBusinessDayOnly || this.isBusinessDay(appointmentDate);
+            break;
+          
+          case RecurringPattern.WEEKLY:
+            shouldInclude = timeSlot.dayOfWeek === appointmentDate.getDay() &&
+              (!isBusinessDayOnly || this.isBusinessDay(appointmentDate));
+            break;
+          
+          case RecurringPattern.MONTHLY:
+            shouldInclude = timeSlot.dayOfMonth === appointmentDate.getDate() &&
+              (!isBusinessDayOnly || this.isBusinessDay(appointmentDate));
+            break;
+          
+          case RecurringPattern.YEARLY:
+            shouldInclude = timeSlot.month === (appointmentDate.getMonth() + 1) &&
+              timeSlot.dayOfMonth === appointmentDate.getDate() &&
+              (!isBusinessDayOnly || this.isBusinessDay(appointmentDate));
+            break;
+        }
+
+        if (shouldInclude && appointmentDate >= startDate && appointmentDate <= endDate) {
+          dates.push(new Date(appointmentDate));
+        }
+
+        // Move to next date based on pattern
+        switch (pattern) {
+          case RecurringPattern.DAILY:
+            currentDate.setDate(currentDate.getDate() + 1);
+            break;
+          case RecurringPattern.WEEKLY:
+            currentDate.setDate(currentDate.getDate() + 7);
+            break;
+          case RecurringPattern.MONTHLY:
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            break;
+          case RecurringPattern.YEARLY:
+            currentDate.setFullYear(currentDate.getFullYear() + 1);
+            break;
+        }
+      }
+    }
+
+    return dates.sort((a, b) => a.getTime() - b.getTime());
+  }
+
+  private isBusinessDay(date: Date): boolean {
+    const day = date.getDay();
+    return day >= 1 && day <= 5; // Monday = 1, Friday = 5
   }
 
   async findAll(query: QueryAppointmentsDto) {

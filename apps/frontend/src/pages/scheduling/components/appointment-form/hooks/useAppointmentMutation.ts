@@ -3,17 +3,21 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentData {
   clientId: string;
-  appointmentType: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+  appointmentType: AppointmentTypeValue;
   title?: string | null;
   description?: string | null;
   location?: string | null;
   roomNumber?: string | null;
   startTime: string;
   duration: number;
-  recurringRuleId?: string | null;
+  // Recurring appointment fields
+  recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  recurringTimeSlots?: any[];
+  isBusinessDayOnly?: boolean;
 }
 
 export const useAppointmentMutation = (onSuccess: () => void) => {
@@ -29,7 +33,6 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
 
       return await schedulingService.createAppointment({
         clientId: appointmentData.clientId,
-        providerId: user.id,
         appointmentType: appointmentData.appointmentType,
         title: appointmentData.title || undefined,
         description: appointmentData.description || undefined,
@@ -37,7 +40,9 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         roomNumber: appointmentData.roomNumber || undefined,
         startTime: appointmentData.startTime,
         duration: appointmentData.duration,
-        recurringRuleId: appointmentData.recurringRuleId || undefined,
+        recurringPattern: appointmentData.recurringPattern,
+        recurringTimeSlots: appointmentData.recurringTimeSlots,
+        isBusinessDayOnly: appointmentData.isBusinessDayOnly,
       });
     },
     onSuccess: () => {

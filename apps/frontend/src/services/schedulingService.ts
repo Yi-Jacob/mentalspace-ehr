@@ -1,10 +1,11 @@
 import { apiClient } from './api-helper/client';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 export interface Appointment {
   id: string;
   clientId: string;
   providerId: string;
-  appointmentType: string;
+  appointmentType: AppointmentTypeValue;
   title?: string;
   description?: string;
   startTime: string;
@@ -13,20 +14,10 @@ export interface Appointment {
   location?: string;
   roomNumber?: string;
   recurringRuleId?: string;
-  createdBy?: string;
   createdAt: string;
   updatedAt: string;
-  cancelledAt?: string;
-  cancelledBy?: string;
-  cancellationReason?: string;
-  noShowReason?: string;
-  checkedInAt?: string;
-  completedAt?: string;
-  clients?: {
-    firstName: string;
-    lastName: string;
-  };
-  staff?: {
+  client: {
+    id: string;
     firstName: string;
     lastName: string;
   };
@@ -34,32 +25,35 @@ export interface Appointment {
 
 export interface CreateAppointmentData {
   clientId: string;
-  appointmentType: string;
+  appointmentType: AppointmentTypeValue;
   title?: string;
   description?: string;
   startTime: string;
   duration: number;
   location?: string;
   roomNumber?: string;
-  recurringRuleId?: string;
+  // Recurring appointment fields
+  recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  recurringTimeSlots?: TimeSlot[];
+  isBusinessDayOnly?: boolean;
 }
 
 export interface UpdateAppointmentData {
   id: string;
   title?: string;
+  description?: string;
   startTime?: string;
   duration?: number;
-  status?: string;
   location?: string;
   roomNumber?: string;
-  appointmentType?: string;
+  status?: string;
 }
 
 export interface QueryAppointmentsParams {
   clientId?: string;
   providerId?: string;
   status?: string;
-  appointmentType?: string;
+  appointmentType?: AppointmentTypeValue;
   startDate?: string;
   endDate?: string;
   search?: string;
@@ -86,7 +80,7 @@ export interface WaitlistEntry {
   preferredDate: string;
   preferredTimeStart?: string;
   preferredTimeEnd?: string;
-  appointmentType: string;
+  appointmentType: AppointmentTypeValue;
   notes?: string;
   priority: number;
   createdAt: string;
@@ -109,7 +103,7 @@ export interface CreateWaitlistData {
   preferredDate: string;
   preferredTimeStart?: string;
   preferredTimeEnd?: string;
-  appointmentType: string;
+  appointmentType: AppointmentTypeValue;
   notes?: string;
   priority?: number;
 }
@@ -156,31 +150,11 @@ export interface ScheduleException {
   updatedAt: string;
 }
 
-export interface RecurringRule {
-  id: string;
-  recurringPattern: string;
-  startDate: string;
-  endDate?: string;
-  timeSlots: any[];
-  isBusinessDayOnly: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateRecurringRuleData {
-  recurringPattern: string;
-  startDate: string;
-  endDate?: string;
-  timeSlots: any[];
-  isBusinessDayOnly?: boolean;
-}
-
-export interface UpdateRecurringRuleData {
-  recurringPattern?: string;
-  startDate?: string;
-  endDate?: string;
-  timeSlots?: any[];
-  isBusinessDayOnly?: boolean;
+export interface TimeSlot {
+  time: string;
+  dayOfWeek?: number; // 0-6 (Sunday-Saturday)
+  dayOfMonth?: number; // 1-31
+  month?: number; // 1-12
 }
 
 class SchedulingService {
@@ -255,27 +229,6 @@ class SchedulingService {
 
   async getScheduleExceptions(): Promise<ScheduleException[]> {
     const response = await apiClient.get<ScheduleException[]>('/scheduling/schedules/exceptions');
-    return response.data;
-  }
-
-  // Recurring rule methods
-  async createRecurringRule(data: CreateRecurringRuleData): Promise<RecurringRule> {
-    const response = await apiClient.post<RecurringRule>('/scheduling/recurring-rules', data);
-    return response.data;
-  }
-
-  async getRecurringRule(id: string): Promise<RecurringRule> {
-    const response = await apiClient.get<RecurringRule>(`/scheduling/recurring-rules/${id}`);
-    return response.data;
-  }
-
-  async updateRecurringRule(id: string, data: UpdateRecurringRuleData): Promise<RecurringRule> {
-    const response = await apiClient.patch<RecurringRule>(`/scheduling/recurring-rules/${id}`, data);
-    return response.data;
-  }
-
-  async deleteRecurringRule(id: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/scheduling/recurring-rules/${id}`);
     return response.data;
   }
 }

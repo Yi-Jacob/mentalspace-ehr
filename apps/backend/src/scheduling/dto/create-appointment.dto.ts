@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsDateString, IsEnum, IsBoolean, IsUUID, IsInt, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsUUID, IsEnum, IsDateString, IsInt, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export enum AppointmentStatus {
   PENDING = 'Pending',
@@ -19,6 +20,30 @@ export enum AppointmentType {
   MEDICATION_MANAGEMENT = 'Medication Management',
   CRISIS_INTERVENTION = 'Crisis Intervention',
   OTHER = 'Other',
+}
+
+export enum RecurringPattern {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly',
+}
+
+export class TimeSlotDto {
+  @IsString()
+  time: string; // Format: "HH:MM"
+
+  @IsOptional()
+  @IsInt()
+  dayOfWeek?: number; // 0-6 (Sunday-Saturday), required for weekly
+
+  @IsOptional()
+  @IsInt()
+  dayOfMonth?: number; // 1-31, required for monthly and yearly
+
+  @IsOptional()
+  @IsInt()
+  month?: number; // 1-12, required for yearly
 }
 
 export class CreateAppointmentDto {
@@ -58,7 +83,22 @@ export class CreateAppointmentDto {
   @IsUUID()
   createdBy?: string;
 
+  // Recurring appointment fields
   @IsOptional()
-  @IsUUID()
-  recurringRuleId?: string;
+  @IsEnum(RecurringPattern)
+  recurringPattern?: RecurringPattern;
+
+  @IsOptional()
+  @IsDateString()
+  recurringEndDate?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TimeSlotDto)
+  recurringTimeSlots?: TimeSlotDto[];
+
+  @IsOptional()
+  @IsBoolean()
+  isBusinessDayOnly?: boolean;
 } 

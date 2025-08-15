@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface FormErrors {
   client_id?: string;
@@ -12,7 +13,7 @@ interface FormErrors {
 
 interface AppointmentFormData {
   client_id: string;
-  appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+  appointment_type: AppointmentTypeValue;
   title: string;
   description: string;
   date: string;

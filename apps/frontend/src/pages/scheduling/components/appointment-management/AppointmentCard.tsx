@@ -5,25 +5,23 @@ import { Button } from '@/components/basic/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/basic/dropdown-menu';
 import { Calendar, Clock, User, MapPin, Edit, Eye, Trash2, MoreVertical } from 'lucide-react';
 import { format } from 'date-fns';
+import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentCardProps {
   appointment: {
     id: string;
-    title?: string;
-    appointment_type: string;
+    client_id: string;
+    appointment_type: AppointmentTypeValue;
+    title: string;
+    description: string;
     start_time: string;
     end_time: string;
     status: string;
     location?: string;
+    room_number?: string;
     notes?: string;
-    clients?: {
-      first_name: string;
-      last_name: string;
-    };
-    users?: {
-      first_name: string;
-      last_name: string;
-    };
+    users?: any[];
   };
   onEdit: (appointment: any) => void;
   onDelete: (appointment: any) => void;

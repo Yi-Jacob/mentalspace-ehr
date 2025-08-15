@@ -2,17 +2,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
+import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface UpdateAppointmentData {
   id: string;
+  appointment_type?: AppointmentTypeValue;
   title?: string;
+  description?: string;
   start_time?: string;
   end_time?: string;
   status?: string;
+  client_id?: string;
   location?: string;
   room_number?: string;
   notes?: string;
-  appointment_type?: string;
 }
 
 export const useAppointmentMutations = () => {
@@ -55,8 +59,8 @@ export const useAppointmentMutations = () => {
       }
 
       if (data.appointment_type) {
-        const validTypes = ['initial_consultation', 'follow_up', 'therapy_session', 'group_therapy', 'assessment', 'medication_management', 'crisis_intervention', 'other'];
-        if (validTypes.includes(data.appointment_type)) {
+        const validTypes = Object.values(AppointmentType);
+        if (validTypes.includes(data.appointment_type as any)) {
           updateData.appointment_type = data.appointment_type;
         } else {
           throw new Error(`Invalid appointment type: ${data.appointment_type}`);

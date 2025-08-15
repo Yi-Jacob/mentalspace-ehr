@@ -21,15 +21,16 @@ import {
   AppointmentStatus,
 } from './dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('scheduling')
 export class SchedulingController {
   constructor(private readonly schedulingService: SchedulingService) {}
 
   @Post('appointments')
   createAppointment(@Body() createAppointmentDto: CreateAppointmentDto, @Request() req) {
-    console.log(createAppointmentDto)
     return this.schedulingService.createAppointment(createAppointmentDto, req.user.id);
   }
 

@@ -6,20 +6,26 @@ import RecurringRuleModal from './RecurringRuleModal';
 interface RecurringSectionProps {
   recurring_period: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
   onRecurringPeriodChange: (value: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom') => void;
+  onRecurringDataChange?: (recurringData: {
+    recurringPattern: 'daily' | 'weekly' | 'monthly' | 'yearly';
+    recurringTimeSlots: any[];
+    isBusinessDayOnly: boolean;
+  }) => void;
 }
 
 const RecurringSection: React.FC<RecurringSectionProps> = ({
   recurring_period,
-  onRecurringPeriodChange
+  onRecurringPeriodChange,
+  onRecurringDataChange
 }) => {
   const [showRecurringRuleModal, setShowRecurringRuleModal] = useState(false);
 
   const recurringOptions = [
     { value: 'none', label: 'None', description: 'One-time appointment' },
-    { value: 'daily', label: 'Daily', description: 'Every day' },
-    { value: 'weekly', label: 'Weekly', description: 'Every week on the same day' },
-    { value: 'monthly', label: 'Monthly', description: 'Every month on the same date' },
-    { value: 'yearly', label: 'Yearly', description: 'Every year on the same date' },
+    { value: 'daily', label: 'Daily', description: 'Every day at the same time' },
+    { value: 'weekly', label: 'Weekly', description: 'Every week on the same day and time' },
+    { value: 'monthly', label: 'Monthly', description: 'Every month on the same date and time' },
+    { value: 'yearly', label: 'Yearly', description: 'Every year on the same date and time' },
     { value: 'custom', label: 'Custom', description: 'Advanced recurring pattern' }
   ];
 
@@ -28,6 +34,31 @@ const RecurringSection: React.FC<RecurringSectionProps> = ({
       setShowRecurringRuleModal(true);
     } else {
       onRecurringPeriodChange(value as any);
+    }
+  };
+
+  const handleRecurringDataCreated = (recurringData: any) => {
+    if (onRecurringDataChange) {
+      onRecurringDataChange(recurringData);
+    }
+    onRecurringPeriodChange('custom');
+    setShowRecurringRuleModal(false);
+  };
+
+  const getRecurringDescription = () => {
+    switch (recurring_period) {
+      case 'daily':
+        return 'This appointment will repeat every day at the same time';
+      case 'weekly':
+        return 'This appointment will repeat every week on the same day and time';
+      case 'monthly':
+        return 'This appointment will repeat every month on the same date and time';
+      case 'yearly':
+        return 'This appointment will repeat every year on the same date and time';
+      case 'custom':
+        return 'This appointment will repeat based on custom recurring rules';
+      default:
+        return '';
     }
   };
 
@@ -42,7 +73,11 @@ const RecurringSection: React.FC<RecurringSectionProps> = ({
         {recurringOptions.map((option) => (
           <button
             key={option.value}
-            onClick={() => handleRecurringPeriodChange(option.value)}
+            type="button" // Prevent form submission
+            onClick={(e) => {
+              e.preventDefault(); // Extra safety
+              handleRecurringPeriodChange(option.value);
+            }}
             className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
               recurring_period === option.value
                 ? 'border-purple-500 bg-purple-50 text-purple-700'
@@ -64,10 +99,7 @@ const RecurringSection: React.FC<RecurringSectionProps> = ({
             </span>
           </div>
           <p className="text-sm text-blue-600 mt-1">
-            This appointment will repeat {recurring_period === 'daily' ? 'every day' :
-              recurring_period === 'weekly' ? 'every week' :
-              recurring_period === 'monthly' ? 'every month' :
-              recurring_period === 'yearly' ? 'every year' : 'based on custom rules'}
+            {getRecurringDescription()}
           </p>
         </div>
       )}
@@ -77,10 +109,7 @@ const RecurringSection: React.FC<RecurringSectionProps> = ({
         <RecurringRuleModal
           open={showRecurringRuleModal}
           onOpenChange={setShowRecurringRuleModal}
-          onRecurringRuleCreated={(ruleId) => {
-            onRecurringPeriodChange('custom');
-            setShowRecurringRuleModal(false);
-          }}
+          onRecurringRuleCreated={handleRecurringDataCreated}
         />
       )}
     </div>

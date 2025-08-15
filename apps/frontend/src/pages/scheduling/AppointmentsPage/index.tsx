@@ -14,14 +14,16 @@ import AppointmentsList from '../components/appointment-management/AppointmentsL
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import { Calendar, Plus } from 'lucide-react';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 type AppointmentStatus = 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
-type AppointmentType = 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+type AppointmentType = AppointmentTypeValue;
+type AppointmentTypeFilter = AppointmentTypeValue | 'all';
 
 const AppointmentManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<AppointmentType | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<AppointmentTypeFilter>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

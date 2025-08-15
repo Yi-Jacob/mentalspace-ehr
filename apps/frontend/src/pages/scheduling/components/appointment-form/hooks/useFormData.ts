@@ -1,10 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentFormData {
   client_id: string;
-  appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+  appointment_type: AppointmentTypeValue;
   title: string;
   description: string;
   date: string;
@@ -13,7 +15,6 @@ interface AppointmentFormData {
   location: string;
   room_number: string;
   recurring_period: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
-  recurring_rule_id?: string;
 }
 
 interface UseFormDataOptions {
@@ -24,7 +25,7 @@ interface UseFormDataOptions {
 export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) => {
   const [formData, setFormData] = useState<AppointmentFormData>({
     client_id: '',
-    appointment_type: 'therapy_session',
+    appointment_type: AppointmentType.THERAPY_SESSION,
     title: '',
     description: '',
     date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
@@ -55,7 +56,7 @@ export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) 
   const resetForm = () => {
     setFormData({
       client_id: '',
-      appointment_type: 'therapy_session',
+      appointment_type: AppointmentType.THERAPY_SESSION,
       title: '',
       description: '',
       date: format(new Date(), 'yyyy-MM-dd'),

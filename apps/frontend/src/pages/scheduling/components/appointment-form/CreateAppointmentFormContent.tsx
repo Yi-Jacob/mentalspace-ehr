@@ -7,10 +7,11 @@ import LocationSection from './LocationSection';
 import DurationSection from './DurationSection';
 import RecurringSection from './RecurringSection';
 import { format } from 'date-fns';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentFormData {
   client_id: string;
-  appointment_type: 'initial_consultation' | 'follow_up' | 'therapy_session' | 'group_therapy' | 'assessment' | 'medication_management' | 'crisis_intervention' | 'other';
+  appointment_type: AppointmentTypeValue;
   title: string;
   description: string;
   date: string;
@@ -66,7 +67,7 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
         
         <div className="space-y-6">
           <AppointmentTypeSection
-            appointment_type={formData.appointment_type}
+            appointmentType={formData.appointment_type}
             onAppointmentTypeChange={(value) => updateFormData('appointment_type', value)}
           />
 
@@ -133,7 +134,16 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
         
         <RecurringSection
           recurring_period={formData.recurring_period}
-          onRecurringPeriodChange={(value) => updateFormData('recurring_period', value)}
+          onRecurringPeriodChange={(value) => {
+            console.log(value);
+            updateFormData('recurring_period', value)
+          }}
+          onRecurringDataChange={(recurringData) => {
+            console.log(recurringData);
+            const recurringDataString = JSON.stringify(recurringData);
+            // Store in a way that doesn't interfere with the existing form structure
+            (formData as any)._recurringData = recurringDataString;
+          }}
         />
       </div>
 
