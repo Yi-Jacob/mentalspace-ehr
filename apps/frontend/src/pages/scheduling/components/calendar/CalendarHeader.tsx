@@ -6,7 +6,7 @@ import { Button } from '@/components/basic/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getCalendarTitle } from '../utils/calendarUtils';
 
-type CalendarViewType = 'day' | 'week' | 'month' | 'list';
+type CalendarViewType = 'day' | 'week' | 'month';
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -34,7 +34,6 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <SelectItem value="day" className="hover:bg-blue-50 transition-colors">Day</SelectItem>
             <SelectItem value="week" className="hover:bg-blue-50 transition-colors">Week</SelectItem>
             <SelectItem value="month" className="hover:bg-blue-50 transition-colors">Month</SelectItem>
-            <SelectItem value="list" className="hover:bg-blue-50 transition-colors">List</SelectItem>
           </SelectContent>
         </Select>
         

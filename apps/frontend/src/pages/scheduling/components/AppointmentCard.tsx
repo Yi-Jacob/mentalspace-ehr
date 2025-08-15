@@ -12,13 +12,11 @@ import { AppointmentType } from '@/types/enums/scheduleEnum';
 interface AppointmentCardProps {
   appointment: Appointment;
   compact?: boolean;
-  listView?: boolean;
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ 
   appointment, 
-  compact = false, 
-  listView = false 
+  compact = false
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -60,9 +58,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
     ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
     : 'Unknown Client';
 
-  const providerName = appointment.users
-    ? `${appointment.users.firstName} ${appointment.users.lastName}`
-    : 'Unknown Provider';
+  const providerName = 'Provider'; // Since provider info is not in the current interface
 
   if (compact) {
     return (
@@ -74,60 +70,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           {appointment.appointmentType.replace('_', ' ')}
         </div>
       </div>
-    );
-  }
-
-  if (listView) {
-    return (
-      <Card className="hover:shadow-xl transition-all duration-300 hover:scale-102 transform border-0 bg-gradient-to-r from-white to-blue-50/50">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-4">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-800">
-                    {appointment.title || `${appointment.appointmentType.replace('_', ' ')}`}
-                  </h3>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
-                    <div className="flex items-center space-x-1">
-                      <User className="h-4 w-4 text-blue-500" />
-                      <span>{clientName}</span>
-                    </div>
-                    <span className="text-gray-400">•</span>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4 text-green-500" />
-                      <span>
-                        {format(new Date(appointment.startTime), 'MMM d, yyyy HH:mm')} - 
-                        {format(new Date(appointment.endTime), 'HH:mm')}
-                      </span>
-                    </div>
-                    {appointment.location && (
-                      <>
-                        <span className="text-gray-400">•</span>
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="h-4 w-4 text-purple-500" />
-                          <span>{appointment.location}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Badge className={`${getStatusColor(appointment.status)} border font-medium`}>
-                {appointment.status.replace('_', ' ')}
-              </Badge>
-              <Badge variant="outline" className={`${getTypeColor(appointment.appointmentType)} border font-medium`}>
-                {appointment.appointmentType.replace('_', ' ')}
-              </Badge>
-              <Button variant="ghost" size="sm" className="hover:bg-blue-50 transition-colors">
-                <Edit className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     );
   }
 
@@ -148,7 +90,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 <Clock className="h-3 w-3 text-green-500" />
                 <span>
                   {format(new Date(appointment.startTime), 'HH:mm')} - 
-                  {format(new Date(appointment.endTime), 'HH:mm')}
+                  {format(new Date(new Date(appointment.startTime).getTime() + appointment.duration * 60000), 'HH:mm')}
                 </span>
               </div>
               {appointment.location && (

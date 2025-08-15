@@ -4,10 +4,9 @@ import { CardContent } from '@/components/basic/card';
 import DayView from '../calendar-views/DayView';
 import WeekView from '../calendar-views/WeekView';
 import MonthView from '../calendar-views/MonthView';
-import ListView from '../calendar-views/ListView';
 import { Appointment } from '@/services/schedulingService';
 
-type CalendarViewType = 'day' | 'week' | 'month' | 'list';
+type CalendarViewType = 'day' | 'week' | 'month';
 
 interface CalendarContentProps {
   viewType: CalendarViewType;
@@ -49,10 +48,9 @@ const CalendarContent: React.FC<CalendarContentProps> = ({
           <MonthView 
             currentDate={currentDate}
             appointments={appointments}
+            onTimeSlotClick={onTimeSlotClick}
           />
         );
-      case 'list':
-        return <ListView appointments={appointments} />;
       default:
         return null;
     }

@@ -16,7 +16,7 @@ export interface Appointment {
   recurringRuleId?: string;
   createdAt: string;
   updatedAt: string;
-  client: {
+  clients: {
     id: string;
     firstName: string;
     lastName: string;
@@ -57,7 +57,7 @@ export interface QueryAppointmentsParams {
   startDate?: string;
   endDate?: string;
   search?: string;
-  viewType?: 'day' | 'week' | 'month' | 'list';
+  viewType?: 'day' | 'week' | 'month';
 }
 
 export interface ConflictCheckParams {

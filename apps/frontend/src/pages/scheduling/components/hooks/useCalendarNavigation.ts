@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { addDays, addWeeks, addMonths, subWeeks, subMonths } from 'date-fns';
 
-type CalendarViewType = 'day' | 'week' | 'month' | 'list';
+type CalendarViewType = 'day' | 'week' | 'month';
 
 export const useCalendarNavigation = () => {
   const [currentDate, setCurrentDate] = useState(new Date());

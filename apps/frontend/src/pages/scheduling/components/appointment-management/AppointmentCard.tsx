@@ -11,17 +11,28 @@ import { AppointmentTypeValue } from '@/types/scheduleType';
 interface AppointmentCardProps {
   appointment: {
     id: string;
-    client_id: string;
-    appointment_type: AppointmentTypeValue;
-    title: string;
-    description: string;
-    start_time: string;
-    end_time: string;
-    status: string;
+    clientId?: string;
+    appointmentType?: AppointmentTypeValue;
+    title?: string;
+    description?: string;
+    startTime?: string;
+    duration?: number;
+    status?: string;
     location?: string;
-    room_number?: string;
+    roomNumber?: string;
     notes?: string;
-    users?: any[];
+    clients?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+    // Fallback fields for backward compatibility
+    client_id?: string;
+    appointment_type?: AppointmentTypeValue;
+    start_time?: string;
+    end_time?: string;
+    first_name?: string;
+    last_name?: string;
   };
   onEdit: (appointment: any) => void;
   onDelete: (appointment: any) => void;
@@ -34,6 +45,28 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onDelete,
   onStatusChange
 }) => {
+  // Safety check - ensure appointment has required fields
+  if (!appointment || !appointment.id) {
+    return (
+      <div className="border-0 rounded-xl p-6 bg-red-50 shadow-lg">
+        <p className="text-red-600">Invalid appointment data</p>
+      </div>
+    );
+  }
+
+  // Helper function to safely format dates
+  const safeFormatDate = (dateString: string | undefined, formatString: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid Date';
+      return format(date, formatString);
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Date Error';
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled':
@@ -56,7 +89,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   };
 
   const clientName = appointment.clients 
-    ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+    ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
+    : appointment.first_name && appointment.last_name
+    ? `${appointment.first_name} ${appointment.last_name}`
     : 'Unknown Client';
 
   return (
@@ -65,10 +100,11 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-3">
             <h3 className="font-semibold text-lg text-gray-800">
-              {appointment.title || `${appointment.appointment_type.replace('_', ' ')}`}
+              {appointment.title || 
+                `${(appointment.appointmentType || appointment.appointment_type || 'Unknown Type').replace('_', ' ')}`}
             </h3>
-            <Badge className={`${getStatusColor(appointment.status)} border font-medium px-3 py-1`}>
-              {appointment.status.replace('_', ' ')}
+            <Badge className={`${getStatusColor(appointment.status || 'scheduled')} border font-medium px-3 py-1`}>
+              {(appointment.status || 'scheduled').replace('_', ' ')}
             </Badge>
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
@@ -78,13 +114,29 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             </div>
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4 text-green-500" />
-              <span>{format(new Date(appointment.start_time), 'MMM d, yyyy')}</span>
+              <span>
+                {safeFormatDate(appointment.startTime || appointment.start_time, 'MMM d, yyyy')}
+              </span>
             </div>
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-purple-500" />
               <span>
-                {format(new Date(appointment.start_time), 'HH:mm')} - 
-                {format(new Date(appointment.end_time), 'HH:mm')}
+                {safeFormatDate(appointment.startTime || appointment.start_time, 'HH:mm')} - 
+                {(() => {
+                  const startTime = appointment.startTime || appointment.start_time;
+                  const duration = appointment.duration;
+                  
+                  if (startTime && duration) {
+                    try {
+                      const startDate = new Date(startTime);
+                      const endDate = new Date(startDate.getTime() + duration * 60000);
+                      return safeFormatDate(endDate.toISOString(), 'HH:mm');
+                    } catch (error) {
+                      return 'N/A';
+                    }
+                  }
+                  return 'N/A';
+                })()}
               </span>
             </div>
             {appointment.location && (

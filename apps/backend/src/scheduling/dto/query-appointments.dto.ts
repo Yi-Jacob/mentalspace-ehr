@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsDateString, IsEnum, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsDateString, IsEnum, IsUUID, IsIn } from 'class-validator';
 import { AppointmentStatus, AppointmentType } from './create-appointment.dto';
 
 export class QueryAppointmentsDto {
@@ -31,6 +31,6 @@ export class QueryAppointmentsDto {
   search?: string;
 
   @IsOptional()
-  @IsString()
-  viewType?: 'day' | 'week' | 'month' | 'list';
+  @IsIn(['day', 'week', 'month'])
+  viewType?: 'day' | 'week' | 'month';
 } 

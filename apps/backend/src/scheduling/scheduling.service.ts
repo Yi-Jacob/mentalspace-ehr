@@ -232,6 +232,15 @@ export class SchedulingService {
 
     const appointments = await this.prisma.appointment.findMany({
       where,
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
       orderBy: {
         startTime: 'asc',
       },

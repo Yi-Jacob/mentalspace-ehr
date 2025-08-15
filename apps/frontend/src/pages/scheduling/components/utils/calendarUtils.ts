@@ -1,7 +1,7 @@
 
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 
-type CalendarViewType = 'day' | 'week' | 'month' | 'list';
+type CalendarViewType = 'day' | 'week' | 'month';
 
 export const getCalendarTitle = (currentDate: Date, viewType: CalendarViewType): string => {
   switch (viewType) {
