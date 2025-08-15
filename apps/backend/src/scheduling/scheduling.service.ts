@@ -70,6 +70,17 @@ export class SchedulingService {
     // Set default end date to 1 year from start if not provided
     const recurringEndDate = endDate ? new Date(endDate) : new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
     
+    // First, create the recurring rule record
+    const recurringRule = await this.prisma.recurringRule.create({
+      data: {
+        recurringPattern: pattern,
+        startDate: startDate,
+        endDate: recurringEndDate,
+        timeSlots: timeSlots,
+        isBusinessDayOnly: isBusinessDayOnly,
+      },
+    });
+
     // Generate appointment dates based on the recurring pattern
     const appointmentDates = this.generateRecurringDates(
       pattern,
@@ -93,7 +104,7 @@ export class SchedulingService {
         status: AppointmentStatus.SCHEDULED,
         location: createAppointmentDto.location,
         roomNumber: createAppointmentDto.roomNumber,
-        recurringRuleId: null,
+        recurringRuleId: recurringRule.id, // Assign the ID of the newly created recurring rule
         createdBy: userId,
       };
 
@@ -132,7 +143,6 @@ export class SchedulingService {
       
       while (currentDate <= endDate) {
         const appointmentDate = new Date(currentDate);
-        console.log("timeSlot", timeSlot)
         if (timeSlot.dayOfWeek !== undefined) {
           appointmentDate.setDate(currentDate.getDate() + (timeSlot.dayOfWeek - currentDate.getDay() + 7) % 7);
         }
@@ -151,7 +161,6 @@ export class SchedulingService {
         
         // Check if this date should be included based on the pattern
         let shouldInclude = false;
-        console.log("appointmentDate", appointmentDate)
         switch (pattern) {
           case RecurringPattern.DAILY:
             shouldInclude = !isBusinessDayOnly || this.isBusinessDay(appointmentDate);
@@ -240,6 +249,16 @@ export class SchedulingService {
             lastName: true,
           },
         },
+        recurringRule: {
+          select: {
+            id: true,
+            recurringPattern: true,
+            startDate: true,
+            endDate: true,
+            timeSlots: true,
+            isBusinessDayOnly: true,
+          },
+        },
       },
       orderBy: {
         startTime: 'asc',
@@ -262,6 +281,25 @@ export class SchedulingService {
   async findOne(id: string) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id },
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        recurringRule: {
+          select: {
+            id: true,
+            recurringPattern: true,
+            startDate: true,
+            endDate: true,
+            timeSlots: true,
+            isBusinessDayOnly: true,
+          },
+        },
+      },
     });
 
     if (!appointment) {
@@ -290,6 +328,71 @@ export class SchedulingService {
       }
     }
 
+    // Handle recurring rule updates
+    if (updateAppointmentDto.recurringPattern && updateAppointmentDto.recurringTimeSlots && appointment.recurringRuleId) {
+      console.log('Updating recurring rule for appointment:', appointment.id);
+      console.log('New recurring data:', {
+        pattern: updateAppointmentDto.recurringPattern,
+        timeSlots: updateAppointmentDto.recurringTimeSlots,
+        isBusinessDayOnly: updateAppointmentDto.isBusinessDayOnly,
+        endDate: updateAppointmentDto.recurringEndDate
+      });
+      console.log('Updated appointment data:', updateAppointmentDto);
+      
+      // First, update the current appointment with basic details (title, description, etc.)
+      // This ensures the new recurring appointments have the updated information
+      if (updateAppointmentDto.title || updateAppointmentDto.description || updateAppointmentDto.location || 
+          updateAppointmentDto.roomNumber || updateAppointmentDto.appointmentType || updateAppointmentDto.duration) {
+        await this.prisma.appointment.update({
+          where: { id },
+          data: {
+            title: updateAppointmentDto.title,
+            description: updateAppointmentDto.description,
+            appointmentType: updateAppointmentDto.appointmentType,
+            location: updateAppointmentDto.location,
+            roomNumber: updateAppointmentDto.roomNumber,
+            duration: updateAppointmentDto.duration,
+            updatedAt: new Date()
+          }
+        });
+      }
+      
+      // Update the recurring rule
+      await this.updateRecurringRule(
+        appointment.recurringRuleId,
+        updateAppointmentDto.recurringPattern,
+        updateAppointmentDto.recurringTimeSlots,
+        updateAppointmentDto.isBusinessDayOnly ?? true,
+        updateAppointmentDto.recurringEndDate
+      );
+
+      // Delete existing recurring appointments from current time onwards
+      const deletedCount = await this.deleteFutureRecurringAppointments(appointment.recurringRuleId, appointment.startTime);
+      console.log(`Deleted ${deletedCount.count} future recurring appointments`);
+
+      // Create new recurring appointments based on the updated rule
+      const startDate = appointment.startTime;
+      const createdCount = await this.createRecurringAppointmentsFromRule(
+        appointment.recurringRuleId,
+        startDate,
+        updateAppointmentDto.recurringPattern,
+        updateAppointmentDto.recurringTimeSlots,
+        updateAppointmentDto.isBusinessDayOnly ?? true,
+        updateAppointmentDto.recurringEndDate,
+        updateAppointmentDto // Pass the updated appointment data
+      );
+      console.log(`Created ${createdCount.count} new recurring appointments`);
+      
+      // Return message instead of updated appointment since it was deleted and recreated
+      return {
+        message: `Recurring rule updated successfully. Deleted ${deletedCount.count} old appointments and created ${createdCount.count} new recurring appointments.`,
+        updatedRecurringRule: true,
+        deletedCount: deletedCount.count,
+        createdCount: createdCount.count
+      };
+    }
+
+    // Only update and return the appointment if no recurring rule changes
     return this.prisma.appointment.update({
       where: { id },
       data: updateData,
@@ -345,6 +448,114 @@ export class SchedulingService {
     });
 
     return { message: 'Appointment deleted successfully' };
+  }
+
+  // Recurring rule management methods
+  private async updateRecurringRule(
+    ruleId: string,
+    pattern: RecurringPattern,
+    timeSlots: any[],
+    isBusinessDayOnly: boolean,
+    endDate?: string
+  ) {
+    const updateData: any = {
+      recurringPattern: pattern,
+      timeSlots: timeSlots,
+      isBusinessDayOnly,
+      updatedAt: new Date(),
+    };
+
+    if (endDate) {
+      updateData.endDate = new Date(endDate);
+    }
+
+    return this.prisma.recurringRule.update({
+      where: { id: ruleId },
+      data: updateData,
+    });
+  }
+
+  private async deleteFutureRecurringAppointments(ruleId: string, startTime: Date) {
+    const now = startTime;
+    
+    return this.prisma.appointment.deleteMany({
+      where: {
+        recurringRuleId: ruleId,
+        startTime: {
+          gte: now,
+        },
+      },
+    });
+  }
+
+  private async createRecurringAppointmentsFromRule(
+    ruleId: string,
+    startDate: Date,
+    pattern: RecurringPattern,
+    timeSlots: any[],
+    isBusinessDayOnly: boolean,
+    endDate?: string,
+    updatedAppointmentData?: any // Add parameter for updated appointment data
+  ) {
+    // Get the recurring rule to get appointment details
+    const rule = await this.prisma.recurringRule.findUnique({
+      where: { id: ruleId },
+    });
+
+    if (!rule) {
+      throw new Error('Recurring rule not found');
+    }
+
+    // Get one of the existing appointments to copy basic details
+    const existingAppointment = await this.prisma.appointment.findFirst({
+      where: { recurringRuleId: ruleId },
+    });
+
+    if (!existingAppointment) {
+      throw new Error('No existing appointments found for this recurring rule');
+    }
+
+    // Set default end date to 1 year from start if not provided
+    const recurringEndDate = endDate ? new Date(endDate) : new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+    
+    // Generate appointment dates based on the recurring pattern
+    const appointmentDates = this.generateRecurringDates(
+      pattern,
+      startDate,
+      recurringEndDate,
+      timeSlots,
+      isBusinessDayOnly
+    );
+
+    // Create new recurring appointments
+    const appointments = [];
+    for (const appointmentDate of appointmentDates) {
+      const appointmentData = {
+        clientId: existingAppointment.clientId,
+        providerId: existingAppointment.providerId,
+        appointmentType: updatedAppointmentData?.appointmentType || existingAppointment.appointmentType,
+        title: updatedAppointmentData?.title || existingAppointment.title,
+        description: updatedAppointmentData?.description || existingAppointment.description,
+        startTime: appointmentDate,
+        duration: updatedAppointmentData?.duration || existingAppointment.duration,
+        status: AppointmentStatus.SCHEDULED,
+        location: updatedAppointmentData?.location || existingAppointment.location,
+        roomNumber: updatedAppointmentData?.roomNumber || existingAppointment.roomNumber,
+        recurringRuleId: ruleId,
+        createdBy: existingAppointment.createdBy,
+      };
+
+      appointments.push(appointmentData);
+    }
+
+    // Create all recurring appointments in a transaction
+    if (appointments.length > 0) {
+      return await this.prisma.appointment.createMany({
+        data: appointments
+      });
+    }
+
+    return { count: 0 };
   }
 
   async checkConflicts(checkConflictsDto: CheckConflictsDto) {

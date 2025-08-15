@@ -2,8 +2,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
-import { AppointmentType } from '@/types/enums/scheduleEnum';
-import { AppointmentTypeValue } from '@/types/scheduleType';
+import { AppointmentType, AppointmentStatus } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue, AppointmentStatusValue } from '@/types/scheduleType';
 
 interface UpdateAppointmentData {
   id: string;
@@ -12,11 +12,21 @@ interface UpdateAppointmentData {
   description?: string;
   start_time?: string;
   end_time?: string;
-  status?: string;
+  status?: AppointmentStatusValue;
   client_id?: string;
   location?: string;
   room_number?: string;
-  notes?: string;
+  duration?: number;
+  // Recurring appointment fields
+  recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  recurringTimeSlots?: Array<{
+    time: string;
+    dayOfWeek?: number;
+    dayOfMonth?: number;
+    month?: number;
+  }>;
+  isBusinessDayOnly?: boolean;
+  recurringEndDate?: string;
 }
 
 export const useAppointmentMutations = () => {
@@ -32,48 +42,49 @@ export const useAppointmentMutations = () => {
         throw new Error('Appointment ID is required');
       }
 
+      // Build the complete update data object with all fields
       const updateData: any = {
         title: data.title,
+        description: data.description,
+        appointmentType: data.appointment_type,
+        status: data.status,
         location: data.location,
-        room_number: data.room_number,
-        notes: data.notes,
-        updated_at: new Date().toISOString()
+        roomNumber: data.room_number,
+        startTime: data.start_time,
+        duration: data.duration,
+        clientId: data.client_id
       };
 
-      // Only include these fields if they're provided and valid
-      if (data.start_time) {
-        updateData.start_time = data.start_time;
-      }
-      
-      if (data.end_time) {
-        updateData.end_time = data.end_time;
-      }
-
-      if (data.status) {
-        const validStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'];
-        if (validStatuses.includes(data.status)) {
-          updateData.status = data.status;
-        } else {
-          throw new Error(`Invalid status: ${data.status}`);
-        }
+      // Handle recurring appointment fields - send them together
+      if (data.recurringPattern && data.recurringTimeSlots) {
+        updateData.recurringPattern = data.recurringPattern;
+        updateData.recurringTimeSlots = data.recurringTimeSlots;
+        updateData.isBusinessDayOnly = data.isBusinessDayOnly ?? true;
+        updateData.recurringEndDate = data.recurringEndDate;
       }
 
-      if (data.appointment_type) {
-        const validTypes = Object.values(AppointmentType);
-        if (validTypes.includes(data.appointment_type as any)) {
-          updateData.appointment_type = data.appointment_type;
-        } else {
-          throw new Error(`Invalid appointment type: ${data.appointment_type}`);
+      // Remove undefined fields to avoid sending them
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key];
         }
-      }
+      });
 
       return await schedulingService.updateAppointment(data.id, updateData);
     },
-    onSuccess: () => {
-      toast({
-        title: 'Success',
-        description: 'Appointment updated successfully',
-      });
+    onSuccess: (data: any) => {
+      // Check if this was a recurring rule update
+      if (data?.updatedRecurringRule) {
+        toast({
+          title: 'Recurring Rule Updated',
+          description: data.message || 'Recurring rule updated successfully',
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: 'Appointment updated successfully',
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       queryClient.invalidateQueries({ queryKey: ['appointments-management'] });
     },
@@ -116,15 +127,15 @@ export const useAppointmentMutations = () => {
   });
 
   const updateAppointmentStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status }: { id: string; status: AppointmentStatusValue }) => {
       console.log('Updating appointment status:', { id, status });
       
       if (!id || !status) {
         throw new Error('Appointment ID and status are required');
       }
 
-      const validStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'];
-      if (!validStatuses.includes(status)) {
+      const validStatuses = Object.values(AppointmentStatus);
+      if (!validStatuses.includes(status as any)) {
         throw new Error(`Invalid status: ${status}`);
       }
 
@@ -134,15 +145,15 @@ export const useAppointmentMutations = () => {
       };
 
       // Add timestamp fields for specific statuses
-      if (status === 'completed') {
+      if (status === AppointmentStatus.COMPLETED) {
         updateData.completed_at = new Date().toISOString();
       }
       
-      if (status === 'checked_in') {
+      if (status === AppointmentStatus.CHECKED_IN) {
         updateData.checked_in_at = new Date().toISOString();
       }
 
-      if (status === 'cancelled') {
+      if (status === AppointmentStatus.CANCELLED) {
         updateData.cancelled_at = new Date().toISOString();
       }
 

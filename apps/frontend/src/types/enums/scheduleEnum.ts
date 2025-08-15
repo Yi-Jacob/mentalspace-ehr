@@ -8,3 +8,13 @@ export enum AppointmentType {
   CRISIS_INTERVENTION = 'Crisis Intervention',
   OTHER = 'Other',
 }
+
+export enum AppointmentStatus {
+  PENDING = 'Pending',
+  SCHEDULED = 'Scheduled',
+  CONFIRMED = 'Confirmed',
+  CHECKED_IN = 'Checked In',
+  CANCELLED = 'Cancelled',
+  COMPLETED = 'Completed',
+  NO_SHOW = 'No Show',
+}
