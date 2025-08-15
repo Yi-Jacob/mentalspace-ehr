@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/basic/dialog';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
@@ -12,16 +12,17 @@ import { CalendarIcon, Save, X, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/utils/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/services/api-helper/client';
+import { schedulingService, ScheduleException } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AddExceptionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingException?: ScheduleException | null;
 }
 
-const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChange }) => {
+const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChange, editingException }) => {
   const [formData, setFormData] = useState({
     exception_date: new Date(),
     start_time: '',
@@ -31,6 +32,25 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
     requires_approval: false
   });
 
+  // Check if we're in edit mode
+  const isEditMode = !!editingException;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingException) {
+      setFormData({
+        exception_date: new Date(editingException.exceptionDate),
+        start_time: editingException.startTime || '',
+        end_time: editingException.endTime || '',
+        is_unavailable: editingException.isUnavailable || false,
+        reason: editingException.reason || '',
+        requires_approval: false
+      });
+    } else {
+      resetForm();
+    }
+  }, [editingException]);
+
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -39,23 +59,20 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
     mutationFn: async (data: typeof formData) => {
       if (!user) throw new Error('User not authenticated');
 
-      const response = await apiClient.post('/schedule-exceptions', {
-        provider_id: user.id,
-        exception_date: data.exception_date.toISOString().split('T')[0],
-        start_time: data.is_unavailable ? null : data.start_time || null,
-        end_time: data.is_unavailable ? null : data.end_time || null,
-        is_unavailable: data.is_unavailable,
-        reason: data.reason || null,
+      return await schedulingService.createScheduleException({
+        exceptionDate: data.exception_date.toISOString().split('T')[0],
+        startTime: data.is_unavailable ? undefined : data.start_time || undefined,
+        endTime: data.is_unavailable ? undefined : data.end_time || undefined,
+        isUnavailable: data.is_unavailable,
+        reason: data.reason || undefined,
       });
-
-      return response.data;
     },
     onSuccess: () => {
       toast({
         title: "Exception Created",
         description: "The schedule exception has been created successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['schedule-exceptions'] });
+      queryClient.invalidateQueries({ queryKey: ['schedules/exceptions'] });
       onOpenChange(false);
       resetForm();
     },
@@ -66,6 +83,37 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
         variant: "destructive",
       });
       console.error('Create exception error:', error);
+    },
+  });
+
+  const updateExceptionMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      if (!user || !editingException) throw new Error('User not authenticated or no exception to edit');
+
+      return await schedulingService.updateScheduleException(editingException.id, {
+        exceptionDate: data.exception_date.toISOString().split('T')[0],
+        startTime: data.is_unavailable ? undefined : data.start_time || undefined,
+        endTime: data.is_unavailable ? undefined : data.end_time || undefined,
+        isUnavailable: data.is_unavailable,
+        reason: data.reason || undefined,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Exception Updated",
+        description: "The schedule exception has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['schedules/exceptions'] });
+      onOpenChange(false);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update exception. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Update exception error:', error);
     },
   });
 
@@ -100,7 +148,11 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
       return;
     }
 
-    createExceptionMutation.mutate(formData);
+    if (isEditMode) {
+      updateExceptionMutation.mutate(formData);
+    } else {
+      createExceptionMutation.mutate(formData);
+    }
   };
 
   return (
@@ -109,7 +161,7 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <CalendarIcon className="h-5 w-5 text-pink-600" />
-            <span>Add Schedule Exception</span>
+            <span>{isEditMode ? 'Edit Schedule Exception' : 'Add Schedule Exception'}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -224,18 +276,21 @@ const AddExceptionModal: React.FC<AddExceptionModalProps> = ({ open, onOpenChang
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={createExceptionMutation.isPending}
+              disabled={isEditMode ? updateExceptionMutation.isPending : createExceptionMutation.isPending}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createExceptionMutation.isPending}
+              disabled={isEditMode ? updateExceptionMutation.isPending : createExceptionMutation.isPending}
               className="bg-gradient-to-r from-pink-500 to-red-600 hover:from-pink-600 hover:to-red-700"
             >
               <Save className="h-4 w-4 mr-2" />
-              {createExceptionMutation.isPending ? 'Creating...' : 'Create Exception'}
+                             {isEditMode 
+                 ? (updateExceptionMutation.isPending ? 'Updating...' : 'Update Exception')
+                 : (createExceptionMutation.isPending ? 'Creating...' : 'Create Exception')
+               }
             </Button>
           </div>
         </form>

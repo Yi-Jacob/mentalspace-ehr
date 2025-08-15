@@ -18,6 +18,7 @@ import {
   CheckConflictsDto,
   CreateWaitlistDto,
   CreateScheduleDto,
+  CreateScheduleExceptionDto,
   AppointmentStatus,
 } from './dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -81,8 +82,13 @@ export class SchedulingController {
   }
 
   @Post('schedules')
-  createProviderSchedule(@Body() createScheduleDto: CreateScheduleDto) {
-    return this.schedulingService.createProviderSchedule(createScheduleDto);
+  createProviderSchedule(@Body() createScheduleDto: CreateScheduleDto, @Request() req) {
+    return this.schedulingService.createProviderSchedule(createScheduleDto, req.user.id);
+  }
+
+  @Post('schedules/bulk')
+  createProviderSchedules(@Body() createSchedulesDto: CreateScheduleDto[], @Request() req) {
+    return this.schedulingService.createProviderSchedules(createSchedulesDto, req.user.id);
   }
 
   @Get('schedules')
@@ -93,5 +99,24 @@ export class SchedulingController {
   @Get('schedules/exceptions')
   getScheduleExceptions() {
     return this.schedulingService.getScheduleExceptions();
+  }
+
+  @Post('schedules/exceptions')
+  createScheduleException(@Body() createExceptionDto: CreateScheduleExceptionDto, @Request() req) {
+    return this.schedulingService.createScheduleException(createExceptionDto, req.user.id);
+  }
+
+  @Patch('schedules/exceptions/:id')
+  updateScheduleException(
+    @Param('id') id: string,
+    @Body() updateExceptionDto: CreateScheduleExceptionDto,
+    @Request() req
+  ) {
+    return this.schedulingService.updateScheduleException(id, updateExceptionDto, req.user.id);
+  }
+
+  @Delete('schedules/exceptions/:id')
+  deleteScheduleException(@Param('id') id: string, @Request() req) {
+    return this.schedulingService.deleteScheduleException(id, req.user.id);
   }
 } 

@@ -76,11 +76,11 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           {schedules?.map((schedule) => (
             <div 
               key={schedule.id} 
-              className="border-0 rounded-xl p-4 bg-gradient-to-r from-white to-purple-50/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-102 transform group"
+              className="border-0 rounded-xl p-4 bg-gradient-to-r from-white to-purple-50/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform group"
             >
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-lg text-gray-800">
-                  {dayMapping[schedule.dayOfWeek as keyof typeof dayMapping]}
+                  {dayMapping[schedule.dayOfWeek.toLowerCase() as keyof typeof dayMapping] || schedule.dayOfWeek}
                 </h3>
                 <div className="flex items-center space-x-2">
                   <Badge className={`${getStatusColor(schedule.status)} border font-medium px-3 py-1`}>
@@ -103,18 +103,18 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                     <span>Working Hours:</span>
                   </span>
                   <span className="font-semibold text-blue-700">
-                    {schedule.start_time} - {schedule.end_time}
+                    {schedule.startTime} - {schedule.endTime}
                   </span>
                 </div>
                 
-                {schedule.break_start_time && schedule.break_end_time && (
+                {schedule.breakStartTime && schedule.breakEndTime && (
                   <div className="flex items-center justify-between p-2 bg-orange-50/50 rounded-lg">
                     <span className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4 text-orange-500" />
                       <span>Break:</span>
                     </span>
                     <span className="font-semibold text-orange-700">
-                      {schedule.break_start_time} - {schedule.break_end_time}
+                      {schedule.breakStartTime} - {schedule.breakEndTime}
                     </span>
                   </div>
                 )}
@@ -123,21 +123,21 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                   <span className="flex items-center space-x-2">
                     <span>Available:</span>
                   </span>
-                  <span className={`inline-flex items-center font-semibold ${schedule.is_available ? 'text-green-600' : 'text-red-600'}`}>
-                    {schedule.is_available ? (
+                  <span className={`inline-flex items-center font-semibold ${schedule.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                    {schedule.isAvailable ? (
                       <CheckCircle className="h-4 w-4 mr-1" />
                     ) : (
                       <XCircle className="h-4 w-4 mr-1" />
                     )}
-                    {schedule.is_available ? 'Yes' : 'No'}
+                    {schedule.isAvailable ? 'Yes' : 'No'}
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between text-xs text-gray-400 p-2 bg-gray-50/50 rounded-lg">
                   <span>Effective:</span>
                   <span className="font-medium">
-                    {format(new Date(schedule.effective_from), 'MMM d, yyyy')}
-                    {schedule.effective_until && ` - ${format(new Date(schedule.effective_until), 'MMM d, yyyy')}`}
+                    {format(new Date(schedule.effectiveFrom), 'MMM d, yyyy')}
+                    {schedule.effectiveUntil && ` - ${format(new Date(schedule.effectiveUntil), 'MMM d, yyyy')}`}
                   </span>
                 </div>
               </div>

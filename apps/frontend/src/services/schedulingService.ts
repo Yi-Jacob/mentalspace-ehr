@@ -125,7 +125,7 @@ export interface ProviderSchedule {
 }
 
 export interface CreateScheduleData {
-  providerId: string;
+  providerId?: string; // Made optional since it's set in backend
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -137,15 +137,25 @@ export interface CreateScheduleData {
   status?: string;
 }
 
+export interface CreateScheduleExceptionData {
+  providerId?: string; // Made optional since it's set in backend
+  exceptionDate: string;
+  startTime?: string;
+  endTime?: string;
+  isUnavailable?: boolean;
+  reason?: string;
+}
+
 export interface ScheduleException {
   id: string;
   providerId: string;
   exceptionDate: string;
-  exceptionType: string;
   startTime?: string;
   endTime?: string;
-  isAvailable: boolean;
+  isUnavailable?: boolean;
   reason?: string;
+  approvedBy?: string;
+  approvedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -221,6 +231,11 @@ class SchedulingService {
     return response.data;
   }
 
+  async createProviderSchedules(schedules: CreateScheduleData[]): Promise<{ message: string; count: number }> {
+    const response = await apiClient.post<{ message: string; count: number }>('/scheduling/schedules/bulk', schedules);
+    return response.data;
+  }
+
   async getProviderSchedules(providerId?: string): Promise<ProviderSchedule[]> {
     const queryParams = providerId ? `?providerId=${providerId}` : '';
     const response = await apiClient.get<ProviderSchedule[]>(`/scheduling/schedules${queryParams}`);
@@ -229,6 +244,21 @@ class SchedulingService {
 
   async getScheduleExceptions(): Promise<ScheduleException[]> {
     const response = await apiClient.get<ScheduleException[]>('/scheduling/schedules/exceptions');
+    return response.data;
+  }
+
+  async createScheduleException(data: CreateScheduleExceptionData): Promise<ScheduleException> {
+    const response = await apiClient.post<ScheduleException>('/scheduling/schedules/exceptions', data);
+    return response.data;
+  }
+
+  async updateScheduleException(id: string, data: CreateScheduleExceptionData): Promise<ScheduleException> {
+    const response = await apiClient.patch<ScheduleException>(`/scheduling/schedules/exceptions/${id}`, data);
+    return response.data;
+  }
+
+  async deleteScheduleException(id: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/scheduling/schedules/exceptions/${id}`);
     return response.data;
   }
 }

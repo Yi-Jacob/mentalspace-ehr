@@ -12,55 +12,130 @@ import { CalendarIcon, Clock, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/utils/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/services/api-helper/client';
+import { schedulingService } from '@/services/schedulingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import PageTabs from '@/components/basic/PageTabs';
 
 interface AddScheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+interface DayScheduleData {
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  break_start_time: string;
+  break_end_time: string;
+  is_available: boolean;
+  effective_from: Date;
+  effective_until: Date;
+}
+
 const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange }) => {
-  const [formData, setFormData] = useState({
-    day_of_week: '',
-    start_time: '',
-    end_time: '',
-    break_start_time: '',
-    break_end_time: '',
-    is_available: true,
-    effective_from: new Date(),
-    effective_until: null as Date | null,
-    status: 'active'
+  const [activeTab, setActiveTab] = useState('monday');
+  const [schedulesData, setSchedulesData] = useState<Record<string, DayScheduleData>>({
+    monday: {
+      day_of_week: 'monday',
+      start_time: '09:00',
+      end_time: '18:00',
+      break_start_time: '12:00',
+      break_end_time: '13:00',
+      is_available: true,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    },
+    tuesday: {
+      day_of_week: 'tuesday',
+      start_time: '09:00',
+      end_time: '18:00',
+      break_start_time: '12:00',
+      break_end_time: '13:00',
+      is_available: true,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    },
+    wednesday: {
+      day_of_week: 'wednesday',
+      start_time: '09:00',
+      end_time: '18:00',
+      break_start_time: '12:00',
+      break_end_time: '13:00',
+      is_available: true,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    },
+    thursday: {
+      day_of_week: 'thursday',
+      start_time: '09:00',
+      end_time: '18:00',
+      break_start_time: '12:00',
+      break_end_time: '13:00',
+      is_available: true,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    },
+    friday: {
+      day_of_week: 'friday',
+      start_time: '09:00',
+      end_time: '18:00',
+      break_start_time: '12:00',
+      break_end_time: '13:00',
+      is_available: true,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    },
+    saturday: {
+      day_of_week: 'saturday',
+      start_time: '00:00',
+      end_time: '00:00',
+      break_start_time: '00:00',
+      break_end_time: '00:00',
+      is_available: false,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    },
+    sunday: {
+      day_of_week: 'sunday',
+      start_time: '00:00',
+      end_time: '00:00',
+      break_start_time: '00:00',
+      break_end_time: '00:00',
+      is_available: false,
+      effective_from: new Date(),
+      effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+    }
   });
 
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const createScheduleMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+
+
+  const createAllSchedulesMutation = useMutation({
+    mutationFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
-      const response = await apiClient.post('/provider-schedules', {
-        provider_id: user.id,
-        day_of_week: data.day_of_week,
-        start_time: data.start_time,
-        end_time: data.end_time,
-        break_start_time: data.break_start_time || null,
-        break_end_time: data.break_end_time || null,
-        is_available: data.is_available,
-        effective_from: data.effective_from.toISOString().split('T')[0],
-        effective_until: data.effective_until?.toISOString().split('T')[0] || null,
-        status: data.status,
-      });
+      const schedules = Object.values(schedulesData).map(schedule => ({
+        dayOfWeek: schedule.day_of_week,
+        startTime: schedule.start_time,
+        endTime: schedule.end_time,
+        breakStartTime: schedule.break_start_time || null,
+        breakEndTime: schedule.break_end_time || null,
+        isAvailable: schedule.is_available,
+        effectiveFrom: schedule.effective_from.toISOString().split('T')[0],
+        effectiveUntil: schedule.effective_until?.toISOString().split('T')[0] || null,
+        status: 'active', // Default status for all schedules
+      }));
 
-      return response.data;
+      return await schedulingService.createProviderSchedules(schedules);
     },
     onSuccess: () => {
       toast({
-        title: "Schedule Created",
-        description: "The work schedule has been created successfully.",
+        title: "All Schedules Created",
+        description: "All work schedules have been created successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['provider-schedules'] });
       onOpenChange(false);
@@ -69,241 +144,342 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ open, onOpenChange 
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create schedule. Please try again.",
+        description: "Failed to create some schedules. Please try again.",
         variant: "destructive",
       });
-      console.error('Create schedule error:', error);
+      console.error('Create all schedules error:', error);
     },
   });
 
   const resetForm = () => {
-    setFormData({
-      day_of_week: '',
-      start_time: '',
-      end_time: '',
-      break_start_time: '',
-      break_end_time: '',
-      is_available: true,
-      effective_from: new Date(),
-      effective_until: null,
-      status: 'active'
+    setSchedulesData({
+      monday: {
+        day_of_week: 'monday',
+        start_time: '09:00',
+        end_time: '18:00',
+        break_start_time: '12:00',
+        break_end_time: '13:00',
+        is_available: true,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      },
+      tuesday: {
+        day_of_week: 'tuesday',
+        start_time: '09:00',
+        end_time: '18:00',
+        break_start_time: '12:00',
+        break_end_time: '13:00',
+        is_available: true,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      },
+      wednesday: {
+        day_of_week: 'wednesday',
+        start_time: '09:00',
+        end_time: '18:00',
+        break_start_time: '12:00',
+        break_end_time: '13:00',
+        is_available: true,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      },
+      thursday: {
+        day_of_week: 'thursday',
+        start_time: '09:00',
+        end_time: '18:00',
+        break_start_time: '12:00',
+        break_end_time: '13:00',
+        is_available: true,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      },
+      friday: {
+        day_of_week: 'friday',
+        start_time: '09:00',
+        end_time: '18:00',
+        break_start_time: '12:00',
+        break_end_time: '13:00',
+        is_available: true,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      },
+      saturday: {
+        day_of_week: 'saturday',
+        start_time: '00:00',
+        end_time: '00:00',
+        break_start_time: '00:00',
+        break_end_time: '00:00',
+        is_available: false,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      },
+      sunday: {
+        day_of_week: 'sunday',
+        start_time: '00:00',
+        end_time: '00:00',
+        break_start_time: '00:00',
+        break_end_time: '00:00',
+        is_available: false,
+        effective_from: new Date(),
+        effective_until: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)
+      }
+    });
+  };
+
+  const handleScheduleChange = (day: string, field: keyof DayScheduleData, value: any) => {
+    setSchedulesData(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleEffectiveDateChange = (field: 'effective_from' | 'effective_until', value: Date) => {
+    setSchedulesData(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(day => {
+        updated[day] = {
+          ...updated[day],
+          [field]: value
+        };
+      });
+      return updated;
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.day_of_week || !formData.start_time || !formData.end_time) {
+    
+    // Validate that at least one day has required fields
+    const hasValidSchedule = Object.values(schedulesData).some(schedule => 
+      schedule.start_time && schedule.end_time
+    );
+
+    if (!hasValidSchedule) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields.",
+        description: "Please fill in at least one day's schedule.",
         variant: "destructive",
       });
       return;
     }
-    createScheduleMutation.mutate(formData);
+
+    createAllSchedulesMutation.mutate();
   };
 
-  const dayOptions = [
-    { value: 'monday', label: 'Monday' },
-    { value: 'tuesday', label: 'Tuesday' },
-    { value: 'wednesday', label: 'Wednesday' },
-    { value: 'thursday', label: 'Thursday' },
-    { value: 'friday', label: 'Friday' },
-    { value: 'saturday', label: 'Saturday' },
-    { value: 'sunday', label: 'Sunday' }
+  const renderDayForm = (day: string, data: DayScheduleData) => (
+    <div className="space-y-6">
+      {/* Working Hours */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor={`${day}_start_time`} className="text-sm font-medium">
+            Start Time *
+          </Label>
+          <Input
+            id={`${day}_start_time`}
+            type="time"
+            value={data.start_time}
+            onChange={(e) => handleScheduleChange(day, 'start_time', e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`${day}_end_time`} className="text-sm font-medium">
+            End Time *
+          </Label>
+          <Input
+            id={`${day}_end_time`}
+            type="time"
+            value={data.end_time}
+            onChange={(e) => handleScheduleChange(day, 'end_time', e.target.value)}
+            required
+          />
+        </div>
+      </div>
+
+      {/* Break Times */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor={`${day}_break_start_time`} className="text-sm font-medium">
+            Break Start Time
+          </Label>
+          <Input
+            id={`${day}_break_start_time`}
+            type="time"
+            value={data.break_start_time}
+            onChange={(e) => handleScheduleChange(day, 'break_start_time', e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`${day}_break_end_time`} className="text-sm font-medium">
+            Break End Time
+          </Label>
+          <Input
+            id={`${day}_break_end_time`}
+            type="time"
+            value={data.break_end_time}
+            onChange={(e) => handleScheduleChange(day, 'break_end_time', e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Availability Toggle */}
+      <div className="flex items-center space-x-2">
+        <Switch
+          id={`${day}_is_available`}
+          checked={data.is_available}
+          onCheckedChange={(checked) => handleScheduleChange(day, 'is_available', checked)}
+        />
+        <Label htmlFor={`${day}_is_available`} className="text-sm font-medium">
+          Available for appointments
+        </Label>
+      </div>
+
+      {/* Effective Dates */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Effective From *</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !data.effective_from && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {data.effective_from ? format(data.effective_from, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+                               <Calendar
+                   mode="single"
+                   selected={data.effective_from}
+                   onSelect={(date) => date && handleEffectiveDateChange('effective_from', date)}
+                   initialFocus
+                   className="pointer-events-auto"
+                 />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Effective Until</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !data.effective_until && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {data.effective_until ? format(data.effective_until, "PPP") : "No end date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+                               <Calendar
+                   mode="single"
+                   selected={data.effective_until}
+                   onSelect={(date) => handleEffectiveDateChange('effective_until', date)}
+                   initialFocus
+                   className="pointer-events-auto"
+                 />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+
+    </div>
+  );
+
+
+
+  const tabItems = [
+    {
+      id: 'monday',
+      label: 'Monday',
+      content: renderDayForm('monday', schedulesData.monday)
+    },
+    {
+      id: 'tuesday',
+      label: 'Tuesday',
+      content: renderDayForm('tuesday', schedulesData.tuesday)
+    },
+    {
+      id: 'wednesday',
+      label: 'Wednesday',
+      content: renderDayForm('wednesday', schedulesData.wednesday)
+    },
+    {
+      id: 'thursday',
+      label: 'Thursday',
+      content: renderDayForm('thursday', schedulesData.thursday)
+    },
+    {
+      id: 'friday',
+      label: 'Friday',
+      content: renderDayForm('friday', schedulesData.friday)
+    },
+    {
+      id: 'saturday',
+      label: 'Saturday',
+      content: renderDayForm('saturday', schedulesData.saturday)
+    },
+    {
+      id: 'sunday',
+      label: 'Sunday',
+      content: renderDayForm('sunday', schedulesData.sunday)
+    }
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 text-xl">
             <Clock className="h-5 w-5 text-purple-600" />
-            <span>Add Work Schedule</span>
+            <span>Add Weekly Work Schedule</span>
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Day of Week */}
-          <div className="space-y-2">
-            <Label htmlFor="day_of_week" className="text-sm font-medium">
-              Day of Week *
-            </Label>
-            <Select
-              value={formData.day_of_week}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, day_of_week: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a day" />
-              </SelectTrigger>
-              <SelectContent>
-                {dayOptions.map((day) => (
-                  <SelectItem key={day.value} value={day.value}>
-                    {day.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Info about synchronized dates */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Effective dates are synchronized across all days. Changing the effective from or until date for any day will apply to all 7 days.
+            </p>
           </div>
-
-          {/* Working Hours */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_time" className="text-sm font-medium">
-                Start Time *
-              </Label>
-              <Input
-                id="start_time"
-                type="time"
-                value={formData.start_time}
-                onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end_time" className="text-sm font-medium">
-                End Time *
-              </Label>
-              <Input
-                id="end_time"
-                type="time"
-                value={formData.end_time}
-                onChange={(e) => setFormData(prev => ({ ...prev, end_time: e.target.value }))}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Break Times */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="break_start_time" className="text-sm font-medium">
-                Break Start Time
-              </Label>
-              <Input
-                id="break_start_time"
-                type="time"
-                value={formData.break_start_time}
-                onChange={(e) => setFormData(prev => ({ ...prev, break_start_time: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="break_end_time" className="text-sm font-medium">
-                Break End Time
-              </Label>
-              <Input
-                id="break_end_time"
-                type="time"
-                value={formData.break_end_time}
-                onChange={(e) => setFormData(prev => ({ ...prev, break_end_time: e.target.value }))}
-              />
-            </div>
-          </div>
-
-          {/* Availability Toggle */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_available"
-              checked={formData.is_available}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_available: checked }))}
-            />
-            <Label htmlFor="is_available" className="text-sm font-medium">
-              Available for appointments
-            </Label>
-          </div>
-
-          {/* Effective Dates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Effective From *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.effective_from && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.effective_from ? format(formData.effective_from, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.effective_from}
-                    onSelect={(date) => date && setFormData(prev => ({ ...prev, effective_from: date }))}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Effective Until</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.effective_until && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.effective_until ? format(formData.effective_until, "PPP") : "No end date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.effective_until}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, effective_until: date }))}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm font-medium">Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          
+          <PageTabs
+            items={tabItems}
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          />
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={createScheduleMutation.isPending}
+              disabled={createAllSchedulesMutation.isPending}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createScheduleMutation.isPending}
+              disabled={createAllSchedulesMutation.isPending}
               className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
             >
               <Save className="h-4 w-4 mr-2" />
-              {createScheduleMutation.isPending ? 'Creating...' : 'Create Schedule'}
+              {createAllSchedulesMutation.isPending ? 'Creating All Schedules...' : 'Create All Schedules'}
             </Button>
           </div>
         </form>

@@ -7,6 +7,7 @@ import {
   CheckConflictsDto,
   CreateWaitlistDto,
   CreateScheduleDto,
+  CreateScheduleExceptionDto,
   AppointmentStatus,
   RecurringPattern,
 } from './dto';
@@ -330,15 +331,6 @@ export class SchedulingService {
 
     // Handle recurring rule updates
     if (updateAppointmentDto.recurringPattern && updateAppointmentDto.recurringTimeSlots && appointment.recurringRuleId) {
-      console.log('Updating recurring rule for appointment:', appointment.id);
-      console.log('New recurring data:', {
-        pattern: updateAppointmentDto.recurringPattern,
-        timeSlots: updateAppointmentDto.recurringTimeSlots,
-        isBusinessDayOnly: updateAppointmentDto.isBusinessDayOnly,
-        endDate: updateAppointmentDto.recurringEndDate
-      });
-      console.log('Updated appointment data:', updateAppointmentDto);
-      
       // First, update the current appointment with basic details (title, description, etc.)
       // This ensures the new recurring appointments have the updated information
       if (updateAppointmentDto.title || updateAppointmentDto.description || updateAppointmentDto.location || 
@@ -638,10 +630,10 @@ export class SchedulingService {
     });
   }
 
-  async createProviderSchedule(createScheduleDto: CreateScheduleDto) {
+  async createProviderSchedule(createScheduleDto: CreateScheduleDto, userId: string) {
     return this.prisma.providerSchedule.create({
       data: {
-        providerId: createScheduleDto.providerId,
+        providerId: userId, // Use the userId from JWT token
         dayOfWeek: createScheduleDto.dayOfWeek,
         startTime: createScheduleDto.startTime,
         endTime: createScheduleDto.endTime,
@@ -653,6 +645,29 @@ export class SchedulingService {
         status: createScheduleDto.status || 'active',
       },
     });
+  }
+
+  async createProviderSchedules(schedules: CreateScheduleDto[], userId: string) {
+    // Create all schedules in a transaction
+    const createdSchedules = await this.prisma.providerSchedule.createMany({
+      data: schedules.map(schedule => ({
+        providerId: userId, // Use the userId from JWT token
+        dayOfWeek: schedule.dayOfWeek,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        isAvailable: schedule.isAvailable ?? true,
+        breakStartTime: schedule.breakStartTime,
+        breakEndTime: schedule.breakEndTime,
+        effectiveFrom: schedule.effectiveFrom ? new Date(schedule.effectiveFrom) : new Date(),
+        effectiveUntil: schedule.effectiveUntil ? new Date(schedule.effectiveUntil) : null,
+        status: schedule.status || 'active',
+      })),
+    });
+
+    return {
+      message: `Created ${createdSchedules.count} provider schedules successfully`,
+      count: createdSchedules.count,
+    };
   }
 
   async getProviderSchedules(providerId?: string) {
@@ -676,5 +691,64 @@ export class SchedulingService {
         exceptionDate: 'asc',
       },
     });
+  }
+
+  async createScheduleException(createExceptionDto: CreateScheduleExceptionDto, userId: string) {
+    return this.prisma.scheduleException.create({
+      data: {
+        providerId: userId, // Use the userId from JWT token
+        exceptionDate: new Date(createExceptionDto.exceptionDate),
+        startTime: createExceptionDto.startTime,
+        endTime: createExceptionDto.endTime,
+        isUnavailable: createExceptionDto.isUnavailable ?? true,
+        reason: createExceptionDto.reason,
+      },
+    });
+  }
+
+  async updateScheduleException(id: string, updateExceptionDto: CreateScheduleExceptionDto, userId: string) {
+    // First check if the exception exists and belongs to the user
+    const existingException = await this.prisma.scheduleException.findFirst({
+      where: {
+        id,
+        providerId: userId,
+      },
+    });
+
+    if (!existingException) {
+      throw new NotFoundException(`Schedule exception with ID ${id} not found`);
+    }
+
+    return this.prisma.scheduleException.update({
+      where: { id },
+      data: {
+        exceptionDate: new Date(updateExceptionDto.exceptionDate),
+        startTime: updateExceptionDto.startTime,
+        endTime: updateExceptionDto.endTime,
+        isUnavailable: updateExceptionDto.isUnavailable ?? true,
+        reason: updateExceptionDto.reason,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async deleteScheduleException(id: string, userId: string) {
+    // First check if the exception exists and belongs to the user
+    const existingException = await this.prisma.scheduleException.findFirst({
+      where: {
+        id,
+        providerId: userId,
+      },
+    });
+
+    if (!existingException) {
+      throw new NotFoundException(`Schedule exception with ID ${id} not found`);
+    }
+
+    await this.prisma.scheduleException.delete({
+      where: { id },
+    });
+
+    return { message: 'Schedule exception deleted successfully' };
   }
 } 
