@@ -10,7 +10,6 @@ import StaffReports from './components/staff/StaffReports';
 import ComplianceReports from './components/compliance/ComplianceReports';
 import BillingReports from './components/billing/BillingReports';
 import SchedulingReports from './components/scheduling/SchedulingReports';
-import CRMReports from './components/crm/CRMReports';
 import ExecutiveDashboard from './components/executive/ExecutiveDashboard';
 
 const Reports = () => {
@@ -58,13 +57,6 @@ const Reports = () => {
       icon: Calendar,
       description: 'Appointment patterns and utilization',
       color: 'text-indigo-600'
-    },
-    {
-      id: 'crm',
-      name: 'CRM Reports',
-      icon: Phone,
-      description: 'Referrals, leads, and growth metrics',
-      color: 'text-pink-600'
     }
   ];
 
@@ -141,12 +133,6 @@ const Reports = () => {
             label: 'Scheduling',
             icon: Calendar,
             content: <SchedulingReports />
-          },
-          {
-            id: 'crm',
-            label: 'CRM',
-            icon: Phone,
-            content: <CRMReports />
           }
         ]}
       />

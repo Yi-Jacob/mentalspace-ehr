@@ -73,7 +73,6 @@ const menuItems: MenuItem[] = [
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
   { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
-  { id: 'crm', label: 'CRM', icon: UserPlus, path: '/crm' },
   {
     id: 'staff',
     label: 'Staff',
@@ -140,7 +139,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     if (onItemClick) {
       onItemClick(item.id);
     } else {
-      navigate(item.path);
+      // Open in new tab instead of navigating in current tab
+      window.open(item.path, '_blank');
     }
   };
 
