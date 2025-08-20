@@ -129,6 +129,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           isLoading={isLoading}
           onReply={handleReply}
           replyToId={replyToId}
+          conversationId={conversationId}
         />
         
         <MessageInput
@@ -141,6 +142,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           onCancelReply={handleCancelReply}
           disabled={sendMessageMutation.isPending}
           isLoading={sendMessageMutation.isPending}
+          conversationId={conversationId}
         />
       </CardContent>
     </Card>

@@ -9,7 +9,9 @@ import { useMessagesQuery } from './components/message-management/MessagesQuery'
 import ConversationList from './components/message/ConversationList';
 import MessageThread from './components/message/MessageThread';
 import { ConversationData } from '@/services/messageService';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useWebSocket } from '@/services/websocketService';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MessageManagement = () => {
   const {
@@ -21,11 +23,66 @@ const MessageManagement = () => {
 
   const [conversationToEdit, setConversationToEdit] = useState<ConversationData | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const { connect, disconnect, webSocketService } = useWebSocket();
+  const queryClient = useQueryClient();
 
   const { data: conversations, isLoading: conversationsLoading } = useConversationsQuery();
   const { data: messages, isLoading: messagesLoading } = useMessagesQuery(selectedConversationId);
 
   const selectedConversation = conversations?.find(c => c.id === selectedConversationId);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    connect();
+
+    // Set up WebSocket event handlers
+    const handleNewMessage = (data: any) => {
+      // Invalidate messages query for the specific conversation
+      queryClient.invalidateQueries({ queryKey: ['messages', data.conversationId] });
+      // Invalidate conversations query to update last message
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    };
+
+    const handleConversationUpdate = (data: any) => {
+      // Invalidate conversations query to reflect updates
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      // If we're currently viewing the updated conversation, refresh messages too
+      if (selectedConversationId === data.conversationId) {
+        queryClient.invalidateQueries({ queryKey: ['messages', data.conversationId] });
+      }
+    };
+
+    const handleParticipantChange = (data: any) => {
+      // Invalidate conversations query to reflect participant changes
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    };
+
+    // Register event handlers
+    webSocketService.onNewMessage(handleNewMessage);
+    webSocketService.onConversationUpdate(handleConversationUpdate);
+    webSocketService.onParticipantChange(handleParticipantChange);
+
+    // Cleanup on unmount
+    return () => {
+      webSocketService.offNewMessage(handleNewMessage);
+      webSocketService.offConversationUpdate(handleConversationUpdate);
+      webSocketService.offParticipantChange(handleParticipantChange);
+      disconnect();
+    };
+  }, [connect, disconnect, webSocketService, queryClient, selectedConversationId]);
+
+  // Join/leave conversation rooms when selection changes
+  useEffect(() => {
+    if (selectedConversationId) {
+      webSocketService.joinConversation(selectedConversationId);
+    }
+
+    return () => {
+      if (selectedConversationId) {
+        webSocketService.leaveConversation(selectedConversationId);
+      }
+    };
+  }, [selectedConversationId, webSocketService]);
 
   const handleEditConversation = (conversation: ConversationData) => {
     setConversationToEdit(conversation);

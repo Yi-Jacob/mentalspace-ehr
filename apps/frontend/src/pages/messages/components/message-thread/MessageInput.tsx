@@ -1,7 +1,8 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/basic/button';
 import { Send, X, Reply } from 'lucide-react';
+import { useWebSocket } from '../../../../services/websocketService';
 
 interface MessageInputProps {
   value: string;
@@ -13,6 +14,7 @@ interface MessageInputProps {
   onCancelReply?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
+  conversationId: string;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -25,8 +27,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onCancelReply,
   disabled = false,
   isLoading = false,
+  conversationId,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { webSocketService } = useWebSocket();
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -45,6 +51,39 @@ const MessageInput: React.FC<MessageInputProps> = ({
       textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
     }
   }, [value]);
+
+  // Handle typing indicators
+  const handleTyping = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+    
+    // Start typing indicator
+    if (!isTyping) {
+      setIsTyping(true);
+      webSocketService.startTyping(conversationId);
+    }
+
+    // Clear existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+
+    // Set timeout to stop typing indicator
+    const timeout = setTimeout(() => {
+      setIsTyping(false);
+      webSocketService.stopTyping(conversationId);
+    }, 2000); // Stop typing indicator after 2 seconds of inactivity
+
+    setTypingTimeout(timeout);
+  };
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [typingTimeout]);
 
   return (
     <div className="border-t border-gray-200 p-2 bg-gradient-to-r from-gray-50 to-blue-50/50">
@@ -75,7 +114,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           <textarea
             ref={textareaRef}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleTyping}
             onKeyPress={onKeyPress}
             placeholder={replyToId ? "Type your reply..." : "Type your message..."}
             className="flex-1 resize-none h-10 border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none text-sm transition-all duration-200"

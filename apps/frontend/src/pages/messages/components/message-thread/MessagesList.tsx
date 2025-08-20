@@ -1,61 +1,71 @@
 
-import React from 'react';
-import { MessageSquare, Clock, AlertCircle, Reply, CheckCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { Clock, Reply, CheckCheck, AlertTriangle, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/basic/button';
-import { useAuth } from '@/hooks/useAuth';
-
-interface MessageData {
-  id: string;
-  content: string;
-  createdAt: string;
-  senderId: string;
-  priority: string;
-  replyToId?: string;
-  sender: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-  replyTo?: {
-    id: string;
-    content: string;
-    sender: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-  };
-  readReceipts: {
-    id: string;
-    readAt: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-  }[];
-}
+import { MessageData } from '@/services/messageService';
+import TypingIndicator from './TypingIndicator';
+import { useWebSocket } from '../../../../services/websocketService';
+import { useAuth } from '../../../../hooks/useAuth';
 
 interface MessagesListProps {
   messages: MessageData[];
   isLoading: boolean;
   onReply?: (messageId: string) => void;
   replyToId?: string | null;
+  conversationId?: string;
 }
 
-const MessagesList: React.FC<MessagesListProps> = ({ 
-  messages, 
-  isLoading, 
+const MessagesList: React.FC<MessagesListProps> = ({
+  messages,
+  isLoading,
   onReply,
-  replyToId 
+  replyToId,
+  conversationId,
 }) => {
+  const { webSocketService } = useWebSocket();
   const { user } = useAuth();
-  const currentUserId = user?.id;
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+
+  // Handle typing indicators
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const handleTypingStart = (data: any) => {
+      if (data.conversationId === conversationId && data.userId !== user?.id) {
+        setTypingUsers(prev => new Set(prev).add(data.userId));
+      }
+    };
+
+    const handleTypingStop = (data: any) => {
+      if (data.conversationId === conversationId) {
+        setTypingUsers(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(data.userId);
+          return newSet;
+        });
+      }
+    };
+
+    // Register event handlers
+    webSocketService.onTypingStart(handleTypingStart);
+    webSocketService.onTypingStop(handleTypingStop);
+
+    // Cleanup
+    return () => {
+      webSocketService.offTypingStart(handleTypingStart);
+      webSocketService.offTypingStop(handleTypingStop);
+    };
+  }, [conversationId, user?.id, webSocketService]);
+
+  // Clear typing indicators when conversation changes
+  useEffect(() => {
+    setTypingUsers(new Set());
+  }, [conversationId]);
 
   const getPriorityIcon = (priority: string) => {
     if (priority === 'urgent' || priority === 'high') {
-      return <AlertCircle className="h-3 w-3 text-red-500" />;
+      return <AlertTriangle className="h-3 w-3 text-red-500" />;
     }
     return null;
   };
@@ -94,7 +104,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
   return (
     <div className="flex-1 overflow-y-auto p-2 space-y-2">
       {messages.map((message) => {
-        const isOwnMessage = message.senderId === currentUserId;
+        const isOwnMessage = message.senderId === user?.id;
         
         // Calculate message width based on content length
         const contentLength = message.content.length;
@@ -207,6 +217,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
           </div>
         );
       })}
+      <TypingIndicator typingUsers={typingUsers} />
     </div>
   );
 };

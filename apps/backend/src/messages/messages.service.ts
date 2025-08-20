@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ConflictException, ForbiddenException } 
 import { PrismaService } from '../database/prisma.service';
 import { CreateConversationDto, CreateGroupConversationDto, CreateMessageDto, MarkMessageReadDto, UpdateConversationDto, UpdateGroupParticipantsDto } from './dto';
 import { ConversationPriority, ConversationCategory } from './dto/shared-enums';
+import { MessagesEventsService } from './messages-events.service';
 
 @Injectable()
 export class MessagesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private messagesEventsService: MessagesEventsService,
+  ) {}
 
   // Get all conversations for a user (both individual and group)
   async getConversations(userId: string) {
@@ -391,6 +395,9 @@ export class MessagesService {
       },
     });
 
+    // Broadcast new message to all participants via WebSocket
+    this.messagesEventsService.emitNewMessage(createMessageDto.conversationId, message);
+
     return message;
   }
 
@@ -715,6 +722,13 @@ export class MessagesService {
       },
     });
 
+    // Broadcast conversation update via WebSocket
+    this.messagesEventsService.emitConversationUpdate(conversationId, {
+      type: 'conversation_updated',
+      data: updateData,
+      conversation: updatedConversation,
+    });
+
     return updatedConversation;
   }
 
@@ -786,7 +800,7 @@ export class MessagesService {
       });
 
       // Return updated conversation
-      return prisma.conversation.findUnique({
+      const updatedConversation = await prisma.conversation.findUnique({
         where: { id: conversationId },
         include: {
           client: {
@@ -834,6 +848,15 @@ export class MessagesService {
           },
         },
       });
+
+      // Broadcast participant change via WebSocket
+      this.messagesEventsService.emitParticipantChange(conversationId, {
+        type: 'participants_updated',
+        participantIds: allParticipantIds,
+        conversation: updatedConversation,
+      });
+
+      return updatedConversation;
     });
   }
 } 
