@@ -98,7 +98,7 @@ export class MessagesController {
   @HttpCode(HttpStatus.CREATED)
   async sendQuickMessage(
     @Body() data: {
-      clientId: string;
+      recipientId: string;
       content: string;
       category?: string;
       priority?: string;
@@ -109,7 +109,7 @@ export class MessagesController {
     
     // Find or create conversation
     const conversation = await this.messagesService.findOrCreateConversation(
-      data.clientId,
+      data.recipientId,
       therapistId,
       data.category,
       data.priority

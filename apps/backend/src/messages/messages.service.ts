@@ -155,6 +155,7 @@ export class MessagesService {
         category: createConversationDto.category || 'general',
         priority: createConversationDto.priority || 'normal',
         createdBy: therapistId,
+        lastMessageAt: new Date(), // Set this explicitly to ensure it's current
       },
       include: {
         client: {
@@ -190,8 +191,8 @@ export class MessagesService {
       throw new NotFoundException('One or more participants not found');
     }
 
-    // Create conversation and participants in a transaction
-    return this.prisma.$transaction(async (prisma) => {
+        // Create conversation and participants in a transaction
+    return this.prisma.$transactionWithRetry(async (prisma) => {
       const conversation = await prisma.conversation.create({
         data: {
           title: createGroupConversationDto.title,
@@ -229,6 +230,9 @@ export class MessagesService {
           },
         },
       });
+    }, {
+      timeout: 10000, // 10 seconds timeout
+      maxRetries: 3,
     });
   }
 
@@ -433,25 +437,33 @@ export class MessagesService {
   }
 
   // Find or create conversation for quick message
-  async findOrCreateConversation(clientId: string, therapistId: string, category?: string, priority?: string) {
+  async findOrCreateConversation(recipientId: string, therapistId: string, category?: string, priority?: string) {
+    // First, try to find an existing conversation between these users
     let conversation = await this.prisma.conversation.findFirst({
       where: {
-        clientId,
-        therapistId,
-        type: 'individual',
+        OR: [
+          // Check if recipient is a client
+          { clientId: recipientId, therapistId, type: 'individual' },
+          // Check if recipient is a therapist (staff)
+          { clientId: therapistId, therapistId: recipientId, type: 'individual' },
+        ],
       },
     });
 
     if (!conversation) {
+      // Determine if the recipient is a client or staff member
+      // For now, we'll assume the recipient is a client if no existing conversation is found
+      // This can be enhanced later with proper user type checking
       conversation = await this.prisma.conversation.create({
         data: {
           title: 'Quick Message',
           type: 'individual',
-          clientId,
+          clientId: recipientId,
           therapistId,
           category: category || 'general',
           priority: priority || 'normal',
           createdBy: therapistId,
+          lastMessageAt: new Date(), // Set this explicitly to ensure it's current
         },
       });
     }
@@ -471,8 +483,8 @@ export class MessagesService {
     },
     creatorId: string
   ) {
-    return this.prisma.$transaction(async (prisma) => {
-      // Create conversation
+    return this.prisma.$transactionWithRetry(async (prisma) => {
+      // Create conversation with lastMessageAt set to current time
       const conversation = await prisma.conversation.create({
         data: {
           title: data.title,
@@ -480,6 +492,7 @@ export class MessagesService {
           category: data.category || 'general',
           priority: data.priority || 'normal',
           createdBy: creatorId,
+          lastMessageAt: new Date(), // Set this explicitly to ensure it's current
           // For individual conversations, set clientId and therapistId
           ...(data.type === 'individual' && data.participantIds.length === 2 && {
             clientId: data.participantIds.find(id => id !== creatorId),
@@ -520,16 +533,13 @@ export class MessagesService {
         },
       });
 
-      // Update conversation's last message timestamp
-      await prisma.conversation.update({
-        where: { id: conversation.id },
-        data: { lastMessageAt: new Date() },
-      });
-
       return {
         conversation,
         message,
       };
+    }, {
+      timeout: 15000, // 15 seconds timeout
+      maxRetries: 3,
     });
   }
 

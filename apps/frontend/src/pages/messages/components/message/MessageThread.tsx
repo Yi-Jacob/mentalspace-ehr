@@ -162,7 +162,6 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           onSend={handleSendMessage}
           onKeyPress={handleKeyPress}
           priority={messagePriority}
-          onPriorityChange={setMessagePriority}
           replyToId={replyToId}
           onCancelReply={handleCancelReply}
           disabled={sendMessageMutation.isPending}

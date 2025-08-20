@@ -95,7 +95,7 @@ export interface CreateConversationWithMessageData {
 }
 
 export interface QuickMessageData {
-  clientId: string;
+  recipientId: string;
   content: string;
   category?: string;
   priority?: string;

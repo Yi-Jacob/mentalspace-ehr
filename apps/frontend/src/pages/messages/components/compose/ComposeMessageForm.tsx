@@ -1,21 +1,28 @@
 
 import React from 'react';
-import ClientSelectionField from './ClientSelectionField';
+import UserSelectionField from './UserSelectionField';
 import MessageCategoryField from './MessageCategoryField';
 import MessagePriorityField from './MessagePriorityField';
 import MessageContentField from './MessageContentField';
+import { Label } from '@/components/basic/label';
+import { Input } from '@/components/basic/input';
 
-interface Client {
+interface User {
   id: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  userType: 'staff' | 'client';
+  jobTitle?: string;
+  department?: string;
 }
 
 interface ComposeMessageFormProps {
-  clients: Client[];
-  selectedClientId: string;
-  onClientChange: (value: string) => void;
+  users: User[];
+  selectedUserIds: string[];
+  onUserChange: (value: string[]) => void;
+  conversationTitle: string;
+  onTitleChange: (value: string) => void;
   messageCategory: 'clinical' | 'administrative' | 'urgent' | 'general';
   onCategoryChange: (value: 'clinical' | 'administrative' | 'urgent' | 'general') => void;
   messagePriority: 'low' | 'normal' | 'high' | 'urgent';
@@ -24,12 +31,15 @@ interface ComposeMessageFormProps {
   onContentChange: (value: string) => void;
   isLoading: boolean;
   disabled?: boolean;
+  showTitleField: boolean;
 }
 
 const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
-  clients,
-  selectedClientId,
-  onClientChange,
+  users,
+  selectedUserIds,
+  onUserChange,
+  conversationTitle,
+  onTitleChange,
   messageCategory,
   onCategoryChange,
   messagePriority,
@@ -38,15 +48,34 @@ const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
   onContentChange,
   isLoading,
   disabled = false,
+  showTitleField,
 }) => {
   return (
     <div className="space-y-6">
-      <ClientSelectionField
-        clients={clients}
-        selectedClientId={selectedClientId}
-        onClientChange={onClientChange}
+      <UserSelectionField
+        users={users}
+        selectedUserIds={selectedUserIds}
+        onUserChange={onUserChange}
         disabled={disabled}
       />
+
+      {/* Conversation Title Field - Only show for group conversations */}
+      {showTitleField && (
+        <div className="space-y-2">
+          <Label htmlFor="conversationTitle" className="text-sm font-medium">
+            Conversation Title *
+          </Label>
+          <Input
+            id="conversationTitle"
+            type="text"
+            placeholder="Enter conversation title..."
+            value={conversationTitle}
+            onChange={(e) => onTitleChange(e.target.value)}
+            disabled={disabled}
+            required
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <MessageCategoryField

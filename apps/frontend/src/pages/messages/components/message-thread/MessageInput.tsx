@@ -2,14 +2,12 @@
 import React from 'react';
 import { Button } from '@/components/basic/button';
 import { Textarea } from '@/components/basic/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Send, X, Reply } from 'lucide-react';
 
 interface MessageInputProps {
   value: string;
   onChange: (value: string) => void;
   priority: 'low' | 'normal' | 'high' | 'urgent';
-  onPriorityChange: (value: 'low' | 'normal' | 'high' | 'urgent') => void;
   onSend: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   replyToId?: string | null;
@@ -22,7 +20,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
   value,
   onChange,
   priority,
-  onPriorityChange,
   onSend,
   onKeyPress,
   replyToId,
@@ -54,20 +51,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
             )}
           </div>
         )}
-
-        <div className="flex space-x-2">
-          <Select value={priority} onValueChange={onPriorityChange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="normal">Normal</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="urgent">Urgent</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
         
         <div className="flex space-x-3">
           <Textarea

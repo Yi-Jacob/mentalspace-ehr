@@ -51,9 +51,9 @@ class AuthService {
     if (!token) {
       throw new Error('No token found');
     }
-    const response = await apiClient.post<User>('/auth/validate', { token });
-    this.setUser(response.data);
-    return response.data;
+    const response = await apiClient.post<{user: User}>('/auth/validate', { token });
+    this.setUser(response.data.user);
+    return response.data.user;
   }
 
   async resetPassword(data: ResetPasswordRequest): Promise<ResetPasswordResponse> {

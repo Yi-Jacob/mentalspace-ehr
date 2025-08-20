@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/basic/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tabs';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,7 +20,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -48,22 +46,6 @@ const Login = () => {
       const passwordValidation = validatePassword(password);
       if (!passwordValidation.isValid) {
         newErrors.password = passwordValidation.errors[0];
-      }
-    }
-
-    if (isSignUp) {
-      if (!firstName.trim()) {
-        newErrors.firstName = 'First name is required';
-      }
-
-      if (!lastName.trim()) {
-        newErrors.lastName = 'Last name is required';
-      }
-
-      if (!confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password';
-      } else if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
       }
     }
 
