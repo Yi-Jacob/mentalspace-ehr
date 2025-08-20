@@ -20,24 +20,9 @@ async function main() {
     try {
       // Use Prisma transaction to ensure data consistency (following users.service pattern)
       const result = await prisma.$transaction(async (prisma) => {
-        // 1. Create the user record
-        const user = await prisma.user.create({
-          data: {
-            email: 'example@gmail.com',
-            password: hashedPassword,
-            firstName: 'Default',
-            lastName: 'User',
-            middleName: '',
-            suffix: '',
-            userName: 'defaultuser',
-            isActive: true,
-          },
-        });
-
-        // 2. Create the staff profile
+        // 1. Create the staff profile first
         const staffProfile = await prisma.staffProfile.create({
           data: {
-            userId: user.id,
             employeeId: 'EMP001',
             npiNumber: '',
             licenseNumber: '',
@@ -68,6 +53,21 @@ async function main() {
           },
         });
 
+        // 2. Create the user record with reference to staff profile
+        const user = await prisma.user.create({
+          data: {
+            email: 'example@gmail.com',
+            password: hashedPassword,
+            firstName: 'Default',
+            lastName: 'User',
+            middleName: '',
+            suffix: '',
+            userName: 'defaultuser',
+            isActive: true,
+            staffId: staffProfile.id,
+          },
+        });
+
         // 3. Create user role
         await prisma.userRole.create({
           data: {
@@ -86,7 +86,7 @@ async function main() {
       });
 
       console.log('Default user created:', result.user.email);
-      console.log('Staff profile created for user ID:', result.staffProfile.userId);
+      console.log('Staff profile created for user ID:', result.user.id);
       
     } catch (error) {
       console.error('Error creating default user:', error);
@@ -194,27 +194,22 @@ async function main() {
   
   for (const staffData of additionalStaff) {
     try {
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: staffData.email }
+      });
+
+      if (existingUser) {
+        console.log(`Staff member ${staffData.email} already exists, skipping...`);
+        continue;
+      }
+
       const hashedPassword = await bcrypt.hash(staffData.password, 12);
       
       const result = await prisma.$transaction(async (prisma) => {
-        // Create user
-        const user = await prisma.user.create({
-          data: {
-            email: staffData.email,
-            password: hashedPassword,
-            firstName: staffData.firstName,
-            lastName: staffData.lastName,
-            middleName: staffData.middleName,
-            suffix: staffData.suffix,
-            userName: staffData.userName,
-            isActive: true,
-          },
-        });
-
-        // Create staff profile
+        // Create staff profile first
         const staffProfile = await prisma.staffProfile.create({
           data: {
-            userId: user.id,
             employeeId: staffData.employeeId,
             npiNumber: staffData.npiNumber,
             licenseNumber: staffData.licenseNumber,
@@ -241,6 +236,21 @@ async function main() {
           },
         });
 
+        // Create user with reference to staff profile
+        const user = await prisma.user.create({
+          data: {
+            email: staffData.email,
+            password: hashedPassword,
+            firstName: staffData.firstName,
+            lastName: staffData.lastName,
+            middleName: staffData.middleName,
+            suffix: staffData.suffix,
+            userName: staffData.userName,
+            isActive: true,
+            staffId: staffProfile.id,
+          },
+        });
+
         // Create user role
         await prisma.userRole.create({
           data: {
@@ -262,8 +272,8 @@ async function main() {
     }
   }
 
-  // Create clients
-  console.log('Creating clients...');
+  // Create clients with user records
+  console.log('Creating clients with user records...');
   
   const clients = [
     {
@@ -359,12 +369,40 @@ async function main() {
   
   for (const clientData of clients) {
     try {
-      const client = await prisma.client.create({
-        data: clientData
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: clientData.email }
+      });
+
+      if (existingUser) {
+        console.log(`Client ${clientData.email} already exists, skipping...`);
+        continue;
+      }
+
+      const result = await prisma.$transaction(async (prisma) => {
+        // Create the client
+        const client = await prisma.client.create({
+          data: clientData
+        });
+
+        // Create a user record for the client
+        const clientUser = await prisma.user.create({
+          data: {
+            email: clientData.email || `client.${client.id}@example.com`,
+            firstName: clientData.firstName,
+            lastName: clientData.lastName,
+            middleName: clientData.middleName,
+            userName: `${clientData.firstName.toLowerCase()}.${clientData.lastName.toLowerCase()}`,
+            isActive: true,
+            clientId: client.id,
+          },
+        });
+
+        return { client, user: clientUser };
       });
       
-      createdClients.push(client);
-      console.log(`Client created: ${client.firstName} ${client.lastName}`);
+      createdClients.push(result);
+      console.log(`Client created: ${result.client.firstName} ${result.client.lastName} with user ID: ${result.user.id}`);
       
     } catch (error) {
       console.error(`Error creating client ${clientData.firstName} ${clientData.lastName}:`, error);
@@ -422,7 +460,7 @@ async function main() {
 
   console.log('Database seeding completed successfully!');
   console.log(`Created ${createdStaff.length} additional staff members`);
-  console.log(`Created ${createdClients.length} clients`);
+  console.log(`Created ${createdClients.length} clients with user records`);
   console.log('Created supervision relationships');
 }
 

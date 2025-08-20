@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsUUID } from 'class-validator';
 
 export enum MessagePriority {
   LOW = 'low',
@@ -9,6 +9,7 @@ export enum MessagePriority {
 
 export class CreateMessageDto {
   @IsString()
+  @IsUUID()
   conversationId: string;
 
   @IsString()
@@ -21,4 +22,8 @@ export class CreateMessageDto {
   @IsOptional()
   @IsString()
   messageType?: string;
+
+  @IsOptional()
+  @IsUUID()
+  replyToId?: string;
 } 

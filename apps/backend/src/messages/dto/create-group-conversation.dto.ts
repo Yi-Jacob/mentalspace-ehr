@@ -1,13 +1,13 @@
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsArray, IsUUID } from 'class-validator';
 import { ConversationCategory, ConversationPriority } from './shared-enums';
 
-export class CreateConversationDto {
-  @IsOptional()
+export class CreateGroupConversationDto {
   @IsString()
-  title?: string;
+  title: string;
 
-  @IsString()
-  clientId: string;
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  participantIds: string[];
 
   @IsOptional()
   @IsEnum(ConversationCategory)
@@ -16,4 +16,4 @@ export class CreateConversationDto {
   @IsOptional()
   @IsEnum(ConversationPriority)
   priority?: ConversationPriority;
-} 
+}

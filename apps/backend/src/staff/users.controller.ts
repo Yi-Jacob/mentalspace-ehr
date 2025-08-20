@@ -25,6 +25,13 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('users')
+  @ApiOperation({ summary: 'Get all users with their types (staff/clients)' })
+  @ApiResponse({ status: 200, description: 'List of all users with types' })
+  getAllUsersWithTypes() {
+    return this.usersService.getAllUsersWithTypes();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiResponse({ status: 200, description: 'User found' })

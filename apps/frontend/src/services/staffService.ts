@@ -264,6 +264,39 @@ class StaffService {
     const response = await apiClient.get<StaffMember[]>('/supervision-relationships/supervisee-candidates');
     return response.data;
   }
+
+  // Get all users (staff and clients) for conversation creation
+  async getAllUsers(): Promise<Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    userType: 'staff' | 'client';
+    jobTitle?: string;
+    department?: string;
+  }>> {
+    const response = await apiClient.get<Array<{
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      userType: 'staff' | 'client';
+      staffProfile?: {
+        jobTitle: string;
+        department: string;
+      };
+    }>>('/staff/users');
+    
+    return response.data.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      userType: user.userType,
+      jobTitle: user.staffProfile?.jobTitle,
+      department: user.staffProfile?.department,
+    }));
+  }
 }
 
 export const staffService = new StaffService(); 

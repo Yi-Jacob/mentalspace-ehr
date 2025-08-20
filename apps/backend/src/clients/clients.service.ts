@@ -19,8 +19,27 @@ export class ClientsService {
   }
 
   async create(createClientDto: CreateClientDto) {
-    return this.prisma.client.create({
-      data: createClientDto,
+    return this.prisma.$transaction(async (prisma) => {
+      // Create the client
+      const client = await prisma.client.create({
+        data: createClientDto,
+      });
+
+      // Create a user record for the client
+      const clientUser = await prisma.user.create({
+        data: {
+          email: createClientDto.email || `client.${client.id}@example.com`,
+          firstName: createClientDto.firstName,
+          lastName: createClientDto.lastName,
+          middleName: createClientDto.middleName,
+          suffix: createClientDto.suffix,
+          userName: `${createClientDto.firstName.toLowerCase()}.${createClientDto.lastName.toLowerCase()}`,
+          isActive: true,
+          clientId: client.id,
+        },
+      });
+
+      return { ...client, userId: clientUser.id };
     });
   }
 
@@ -224,6 +243,20 @@ export class ClientsService {
         data: mappedClientData,
       });
 
+      // Create a user record for the client
+      const clientUser = await prisma.user.create({
+        data: {
+          email: clientData.email || `client.${client.id}@example.com`,
+          firstName: clientData.firstName,
+          lastName: clientData.lastName,
+          middleName: clientData.middleName,
+          suffix: clientData.suffix,
+          userName: `${clientData.firstName.toLowerCase()}.${clientData.lastName.toLowerCase()}`,
+          isActive: true,
+          clientId: client.id,
+        },
+      });
+
       // Create phone numbers
       if (phoneNumbers.length > 0) {
         await prisma.clientPhoneNumber.createMany({
@@ -283,7 +316,7 @@ export class ClientsService {
         });
       }
 
-      return client;
+      return { ...client, userId: clientUser.id };
     }, {
       timeout: 30000, // 30 seconds
       maxWait: 10000, // 10 seconds

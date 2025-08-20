@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -13,6 +13,105 @@ export class UsersService {
     private authService: AuthService,
     private configService: ConfigService,
   ) {}
+
+  /**
+   * Helper method to determine user type
+   * @param user - User object with staffId and clientId fields
+   * @returns 'staff' | 'client' | 'unknown'
+   */
+  private getUserType(user: { staffId?: string | null; clientId?: string | null }): 'staff' | 'client' | 'unknown' {
+    if (user.staffId) return 'staff';
+    if (user.clientId) return 'client';
+    return 'unknown';
+  }
+
+  /**
+   * Helper method to get user type description
+   * @param user - User object with staffId and clientId fields
+   * @returns Human-readable user type description
+   */
+  private getUserTypeDescription(user: { staffId?: string | null; clientId?: string | null }): string {
+    if (user.staffId) return 'Staff Member';
+    if (user.clientId) return 'Client/Patient';
+    return 'Unknown User Type';
+  }
+
+  /**
+   * Public method to get user type - use this in controllers
+   * @param userId - User ID to check
+   * @returns User type information
+   */
+  async getUserTypeInfo(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        staffId: true,
+        clientId: true
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      userId: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      userType: this.getUserType(user),
+      userTypeDescription: this.getUserTypeDescription(user),
+      isStaff: !!user.staffId,
+      isClient: !!user.clientId
+    };
+  }
+
+  /**
+   * Get all users with their types (staff/clients) for conversation creation
+   * @returns Array of users with their types and profile information
+   */
+  async getAllUsersWithTypes() {
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        staffId: true,
+        clientId: true,
+        staffProfile: {
+          select: {
+            jobTitle: true,
+            department: true,
+          }
+        },
+        client: {
+          select: {
+            preferredName: true,
+          }
+        }
+      },
+      orderBy: [
+        { lastName: 'asc' },
+        { firstName: 'asc' }
+      ]
+    });
+
+    return users.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      userType: this.getUserType(user),
+      jobTitle: user.staffProfile?.jobTitle,
+      department: user.staffProfile?.department,
+      preferredName: user.client?.preferredName,
+    }));
+  }
 
   // Helper function to safely parse dates
   private parseDate(dateString: string | undefined): Date | undefined {
@@ -46,24 +145,9 @@ export class UsersService {
     try {
       // Use Prisma transaction to ensure data consistency
       const result = await this.prisma.$transaction(async (prisma) => {
-        // 1. Create the user record without a password
-        const user = await prisma.user.create({
-          data: {
-            email: createUserDto.email,
-            password: null, // No password set initially
-            firstName: createUserDto.firstName,
-            lastName: createUserDto.lastName,
-            middleName: createUserDto.middleName,
-            suffix: createUserDto.suffix,
-            userName: createUserDto.userName,
-            isActive: true,
-          },
-        });
-
-        // 2. Create the staff profile
+        // 1. Create the staff profile first
         const staffProfile = await prisma.staffProfile.create({
           data: {
-            userId: user.id,
             employeeId: createUserDto.employeeId,
             npiNumber: createUserDto.npiNumber,
             licenseNumber: createUserDto.licenseNumber,
@@ -94,7 +178,20 @@ export class UsersService {
           },
         });
 
-
+        // 2. Create user with reference to staff profile
+        const user = await prisma.user.create({
+          data: {
+            email: createUserDto.email,
+            password: null, // No password set initially
+            firstName: createUserDto.firstName,
+            lastName: createUserDto.lastName,
+            middleName: createUserDto.middleName,
+            suffix: createUserDto.suffix,
+            userName: createUserDto.userName,
+            isActive: true,
+            staffId: staffProfile.id,
+          },
+        });
 
         // 3. Create user roles if specified
         if (createUserDto.roles && createUserDto.roles.length > 0) {
@@ -192,29 +289,20 @@ export class UsersService {
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
+      include: {
+        staffProfile: true,
+        client: true,
+        userRoles: {
+          where: { isActive: true }
+        },
+        licenses: true,
+      }
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    // Get related data separately
-    const staffProfile = await this.prisma.staffProfile.findFirst({ 
-      where: { userId: user.id } 
-    });
-
-    // Get user roles
-    const userRoles = await this.prisma.userRole.findMany({
-      where: { userId: user.id, isActive: true },
-    });
-
-    // Get licenses
-    const licenses = await this.prisma.license.findMany({
-      where: { staffId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    console.log('licenses', licenses);
     // Transform data to use camelCase
     return {
       id: user.id,
@@ -227,34 +315,64 @@ export class UsersService {
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      roles: userRoles.map(role => role.role),
-      employeeId: staffProfile.employeeId,
-      npiNumber: staffProfile.npiNumber,
-      licenseNumber: staffProfile.licenseNumber,
-      licenseState: staffProfile.licenseState,
-      licenseExpiryDate: staffProfile.licenseExpiryDate,
-      department: staffProfile.department,
-      jobTitle: staffProfile.jobTitle,
-      hireDate: staffProfile.hireDate,
-      phoneNumber: staffProfile.phoneNumber,
-      billingRate: staffProfile.billingRate,
-      canBillInsurance: staffProfile.canBillInsurance,
-      status: staffProfile.status,
-      notes: staffProfile.notes,
-      userComments: staffProfile.userComments,
-      mobilePhone: staffProfile.mobilePhone,
-      workPhone: staffProfile.workPhone,
-      homePhone: staffProfile.homePhone,
-      canReceiveText: staffProfile.canReceiveText,
-      address1: staffProfile.address1,
-      address2: staffProfile.address2,
-      city: staffProfile.city,
-      state: staffProfile.state,
-      zipCode: staffProfile.zipCode,
-      formalName: staffProfile.formalName,
-      clinicianType: staffProfile.clinicianType,
-      supervisionType: staffProfile.supervisionType,
-      licenses: licenses.map(license => ({
+      // Determine user type from which ID is populated
+      userType: user.staffId ? 'staff' : user.clientId ? 'client' : 'unknown',
+      roles: user.userRoles.map(role => role.role),
+      // Staff profile fields (if user is staff)
+      ...(user.staffProfile && {
+        employeeId: user.staffProfile.employeeId,
+        npiNumber: user.staffProfile.npiNumber,
+        licenseNumber: user.staffProfile.licenseNumber,
+        licenseState: user.staffProfile.licenseState,
+        licenseExpiryDate: user.staffProfile.licenseExpiryDate,
+        department: user.staffProfile.department,
+        jobTitle: user.staffProfile.jobTitle,
+        hireDate: user.staffProfile.hireDate,
+        phoneNumber: user.staffProfile.phoneNumber,
+        billingRate: user.staffProfile.billingRate,
+        canBillInsurance: user.staffProfile.canBillInsurance,
+        status: user.staffProfile.status,
+        notes: user.staffProfile.notes,
+        userComments: user.staffProfile.userComments,
+        mobilePhone: user.staffProfile.mobilePhone,
+        workPhone: user.staffProfile.workPhone,
+        homePhone: user.staffProfile.homePhone,
+        canReceiveText: user.staffProfile.canReceiveText,
+        address1: user.staffProfile.address1,
+        address2: user.staffProfile.address2,
+        city: user.staffProfile.city,
+        state: user.staffProfile.state,
+        zipCode: user.staffProfile.zipCode,
+        formalName: user.staffProfile.formalName,
+        clinicianType: user.staffProfile.clinicianType,
+        supervisionType: user.staffProfile.supervisionType,
+      }),
+      // Client fields (if user is client)
+      ...(user.client && {
+        clientId: user.client.id,
+        dateOfBirth: user.client.dateOfBirth,
+        preferredName: user.client.preferredName,
+        pronouns: user.client.pronouns,
+        administrativeSex: user.client.administrativeSex,
+        genderIdentity: user.client.genderIdentity,
+        sexualOrientation: user.client.sexualOrientation,
+        address1: user.client.address1,
+        address2: user.client.address2,
+        timezone: user.client.timezone,
+        race: user.client.race,
+        ethnicity: user.client.ethnicity,
+        languages: user.client.languages,
+        maritalStatus: user.client.maritalStatus,
+        employmentStatus: user.client.employmentStatus,
+        religiousAffiliation: user.client.religiousAffiliation,
+        smokingStatus: user.client.smokingStatus,
+        appointmentReminders: user.client.appointmentReminders,
+        hipaaSigned: user.client.hipaaSigned,
+        pcpRelease: user.client.pcpRelease,
+        patientComments: user.client.patientComments,
+        assignedClinicianId: user.client.assignedClinicianId,
+      }),
+      licenses: user.licenses.map(license => ({
         id: license.id,
         staffId: license.staffId,
         licenseType: license.licenseType,
@@ -331,7 +449,7 @@ export class UsersService {
 
       // Update or create staff profile
       const existingStaffProfile = await prisma.staffProfile.findFirst({
-        where: { userId: id },
+        where: { id: updatedUser.staffId || '' },
       });
 
       let updatedStaffProfile;
@@ -341,12 +459,18 @@ export class UsersService {
           data: cleanStaffProfileFields,
         });
       } else {
-        updatedStaffProfile = await prisma.staffProfile.create({
-          data: {
-            userId: id,
-            ...cleanStaffProfileFields,
-          },
+        // Create new staff profile
+        const newStaffProfile = await prisma.staffProfile.create({
+          data: cleanStaffProfileFields,
         });
+        
+        // Update user to reference the new staff profile
+        await prisma.user.update({
+          where: { id },
+          data: { staffId: newStaffProfile.id },
+        });
+        
+        updatedStaffProfile = newStaffProfile;
       }
 
       // Update roles if provided

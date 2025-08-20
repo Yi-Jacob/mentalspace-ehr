@@ -15,22 +15,55 @@ interface MessageData {
   createdAt: string;
   senderId: string;
   priority: string;
+  replyToId?: string;
   sender: {
     id: string;
     firstName: string;
     lastName: string;
   };
+  replyTo?: {
+    id: string;
+    content: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  };
+  readReceipts: {
+    id: string;
+    readAt: string;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  }[];
 }
 
 interface ConversationData {
   id: string;
   title: string;
+  type: 'individual' | 'group';
   category: string;
   priority: string;
-  client: {
+  client?: {
     firstName: string;
     lastName: string;
   };
+  therapist?: {
+    firstName: string;
+    lastName: string;
+  };
+  participants?: {
+    id: string;
+    role: string;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  }[];
 }
 
 interface MessageThreadProps {
@@ -48,6 +81,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const [messagePriority, setMessagePriority] = useState<'low' | 'normal' | 'high' | 'urgent'>('normal');
+  const [replyToId, setReplyToId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -59,6 +93,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
         conversationId,
         content: content.trim(),
         priority: messagePriority,
+        replyToId: replyToId || undefined,
       });
     },
     onSuccess: () => {
@@ -70,6 +105,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       setNewMessage('');
       setMessagePriority('normal');
+      setReplyToId(null);
     },
     onError: (error) => {
       toast({
@@ -93,30 +129,44 @@ const MessageThread: React.FC<MessageThreadProps> = ({
     }
   };
 
+  const handleReply = (messageId: string) => {
+    setReplyToId(messageId);
+  };
+
+  const handleCancelReply = () => {
+    setReplyToId(null);
+  };
+
   if (!conversationId) {
     return <EmptyThreadState />;
   }
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm h-full flex flex-col">
-      <MessageThreadHeader selectedConversation={selectedConversation} />
-
-      <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <MessagesList messages={messages} isLoading={isLoading} />
-        </div>
-
-        {/* Message Input Area */}
+    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm h-full flex flex-col">
+      <MessageThreadHeader 
+        conversation={selectedConversation}
+        isLoading={isLoading}
+      />
+      
+      <CardContent className="flex-1 p-0 flex flex-col">
+        <MessagesList
+          messages={messages}
+          isLoading={isLoading}
+          onReply={handleReply}
+          replyToId={replyToId}
+        />
+        
         <MessageInput
-          newMessage={newMessage}
-          onMessageChange={setNewMessage}
-          messagePriority={messagePriority}
-          onPriorityChange={setMessagePriority}
-          onSendMessage={handleSendMessage}
+          value={newMessage}
+          onChange={setNewMessage}
+          onSend={handleSendMessage}
           onKeyPress={handleKeyPress}
+          priority={messagePriority}
+          onPriorityChange={setMessagePriority}
+          replyToId={replyToId}
+          onCancelReply={handleCancelReply}
+          disabled={sendMessageMutation.isPending}
           isLoading={sendMessageMutation.isPending}
-          disabled={!newMessage.trim() || sendMessageMutation.isPending}
         />
       </CardContent>
     </Card>

@@ -10,7 +10,7 @@ import {
   HttpCode 
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
-import { CreateConversationDto, CreateMessageDto } from './dto';
+import { CreateConversationDto, CreateGroupConversationDto, CreateMessageDto, MarkMessageReadDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('messages')
@@ -18,21 +18,21 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
-  // Get all conversations for the authenticated therapist
+  // Get all conversations for the authenticated user
   @Get('conversations')
   async getConversations(@Request() req) {
-    const therapistId = req.user.id;
-    return this.messagesService.getConversations(therapistId);
+    const userId = req.user.id;
+    return this.messagesService.getConversations(userId);
   }
 
   // Get a specific conversation
   @Get('conversations/:id')
   async getConversation(@Param('id') id: string, @Request() req) {
-    const therapistId = req.user.id;
-    return this.messagesService.getConversation(id, therapistId);
+    const userId = req.user.id;
+    return this.messagesService.getConversation(id, userId);
   }
 
-  // Create a new conversation
+  // Create a new individual conversation
   @Post('conversations')
   @HttpCode(HttpStatus.CREATED)
   async createConversation(
@@ -43,14 +43,25 @@ export class MessagesController {
     return this.messagesService.createConversation(createConversationDto, therapistId);
   }
 
+  // Create a new group conversation
+  @Post('conversations/group')
+  @HttpCode(HttpStatus.CREATED)
+  async createGroupConversation(
+    @Body() createGroupConversationDto: CreateGroupConversationDto,
+    @Request() req
+  ) {
+    const creatorId = req.user.id;
+    return this.messagesService.createGroupConversation(createGroupConversationDto, creatorId);
+  }
+
   // Get messages for a conversation
   @Get('conversations/:conversationId/messages')
   async getMessages(
     @Param('conversationId') conversationId: string,
     @Request() req
   ) {
-    const therapistId = req.user.id;
-    return this.messagesService.getMessages(conversationId, therapistId);
+    const userId = req.user.id;
+    return this.messagesService.getMessages(conversationId, userId);
   }
 
   // Send a message
@@ -62,6 +73,24 @@ export class MessagesController {
   ) {
     const senderId = req.user.id;
     return this.messagesService.sendMessage(createMessageDto, senderId);
+  }
+
+  // Mark message as read
+  @Post('messages/read')
+  @HttpCode(HttpStatus.OK)
+  async markMessageAsRead(
+    @Body() markReadDto: MarkMessageReadDto,
+    @Request() req
+  ) {
+    const userId = req.user.id;
+    return this.messagesService.markMessageAsRead(markReadDto, userId);
+  }
+
+  // Get unread message count
+  @Get('unread-count')
+  async getUnreadCount(@Request() req) {
+    const userId = req.user.id;
+    return this.messagesService.getUnreadMessageCount(userId);
   }
 
   // Quick message endpoint (find or create conversation and send message)
@@ -94,5 +123,23 @@ export class MessagesController {
     };
 
     return this.messagesService.sendMessage(messageDto, therapistId);
+  }
+
+  // Create conversation with initial message
+  @Post('conversations/with-message')
+  @HttpCode(HttpStatus.CREATED)
+  async createConversationWithMessage(
+    @Body() data: {
+      title: string;
+      participantIds: string[];
+      category?: string;
+      priority?: string;
+      initialMessage: string;
+      type: 'individual' | 'group';
+    },
+    @Request() req
+  ) {
+    const creatorId = req.user.id;
+    return this.messagesService.createConversationWithMessage(data, creatorId);
   }
 } 
