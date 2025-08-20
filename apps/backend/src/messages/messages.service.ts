@@ -397,7 +397,7 @@ export class MessagesService {
 
     // Broadcast new message to all participants via WebSocket
     this.messagesEventsService.emitNewMessage(createMessageDto.conversationId, message);
-
+    
     return message;
   }
 

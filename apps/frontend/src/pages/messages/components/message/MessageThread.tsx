@@ -97,55 +97,50 @@ const MessageThread: React.FC<MessageThreadProps> = ({
     sendMessageMutation.mutate(newMessage);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
 
-  const handleReply = (messageId: string) => {
-    setReplyToId(messageId);
-  };
-
-  const handleCancelReply = () => {
-    setReplyToId(null);
-  };
 
   if (!conversationId) {
     return <EmptyThreadState />;
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-white h-full flex flex-col">
-      <MessageThreadHeader 
-        conversation={selectedConversation}
-        isLoading={isLoading}
-      />
-      
-      <CardContent className="flex-1 p-0 flex flex-col">
-        <MessagesList
-          messages={messages}
-          isLoading={isLoading}
-          onReply={handleReply}
-          replyToId={replyToId}
-          conversationId={conversationId}
-        />
-        
-        <MessageInput
-          value={newMessage}
-          onChange={setNewMessage}
-          onSend={handleSendMessage}
-          onKeyPress={handleKeyPress}
-          priority={messagePriority}
-          replyToId={replyToId}
-          onCancelReply={handleCancelReply}
-          disabled={sendMessageMutation.isPending}
-          isLoading={sendMessageMutation.isPending}
-          conversationId={conversationId}
-        />
-      </CardContent>
-    </Card>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-full flex flex-col">
+      {selectedConversation ? (
+        <>
+          <MessageThreadHeader conversation={selectedConversation} />
+          
+          <div className="flex-1 overflow-hidden">
+            <MessagesList
+              messages={messages}
+              isLoading={isLoading}
+              conversationId={conversationId}
+            />
+          </div>
+          
+          <div className="border-t border-gray-200 p-4">
+            <MessageInput
+              value={newMessage}
+              onChange={setNewMessage}
+              onSend={handleSendMessage}
+              priority="normal"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              conversationId={conversationId}
+              replyToId={null}
+              onCancelReply={() => {}}
+              disabled={sendMessageMutation.isPending}
+              isLoading={sendMessageMutation.isPending}
+            />
+          </div>
+        </>
+      ) : (
+        <EmptyThreadState />
+      )}
+    </div>
   );
 };
 

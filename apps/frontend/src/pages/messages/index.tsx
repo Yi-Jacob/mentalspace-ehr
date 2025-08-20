@@ -23,7 +23,7 @@ const MessageManagement = () => {
 
   const [conversationToEdit, setConversationToEdit] = useState<ConversationData | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const { connect, disconnect, webSocketService } = useWebSocket();
+  const { connect, disconnect, webSocketService, isAuthReady } = useWebSocket();
   const queryClient = useQueryClient();
 
   const { data: conversations, isLoading: conversationsLoading } = useConversationsQuery();
@@ -31,11 +31,15 @@ const MessageManagement = () => {
 
   const selectedConversation = conversations?.find(c => c.id === selectedConversationId);
 
-  // Initialize WebSocket connection
+  // Initialize WebSocket connection when auth is ready
   useEffect(() => {
+    if (!isAuthReady) {
+      console.log('🟠 Messages page: Auth not ready yet, waiting...');
+      return;
+    }
     connect();
 
-    // Set up WebSocket event handlers
+    // Set up WebSocket event handlers - ONLY for new messages
     const handleNewMessage = (data: any) => {
       // Invalidate messages query for the specific conversation
       queryClient.invalidateQueries({ queryKey: ['messages', data.conversationId] });
@@ -43,46 +47,15 @@ const MessageManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     };
 
-    const handleConversationUpdate = (data: any) => {
-      // Invalidate conversations query to reflect updates
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      // If we're currently viewing the updated conversation, refresh messages too
-      if (selectedConversationId === data.conversationId) {
-        queryClient.invalidateQueries({ queryKey: ['messages', data.conversationId] });
-      }
-    };
-
-    const handleParticipantChange = (data: any) => {
-      // Invalidate conversations query to reflect participant changes
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
-    };
-
     // Register event handlers
     webSocketService.onNewMessage(handleNewMessage);
-    webSocketService.onConversationUpdate(handleConversationUpdate);
-    webSocketService.onParticipantChange(handleParticipantChange);
 
     // Cleanup on unmount
     return () => {
       webSocketService.offNewMessage(handleNewMessage);
-      webSocketService.offConversationUpdate(handleConversationUpdate);
-      webSocketService.offParticipantChange(handleParticipantChange);
       disconnect();
     };
-  }, [connect, disconnect, webSocketService, queryClient, selectedConversationId]);
-
-  // Join/leave conversation rooms when selection changes
-  useEffect(() => {
-    if (selectedConversationId) {
-      webSocketService.joinConversation(selectedConversationId);
-    }
-
-    return () => {
-      if (selectedConversationId) {
-        webSocketService.leaveConversation(selectedConversationId);
-      }
-    };
-  }, [selectedConversationId, webSocketService]);
+  }, [isAuthReady, connect, disconnect, webSocketService, queryClient]);
 
   const handleEditConversation = (conversation: ConversationData) => {
     setConversationToEdit(conversation);
@@ -114,8 +87,8 @@ const MessageManagement = () => {
           }
         />
 
-        <div className="mt-4 grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-180px)]">
-          <div className="lg:col-span-1">
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-180px)] min-h-0">
+          <div className="lg:col-span-1 min-h-0">
             <ConversationList
               conversations={conversations || []}
               isLoading={conversationsLoading}
@@ -125,7 +98,7 @@ const MessageManagement = () => {
             />
           </div>
 
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 min-h-0">
             <MessageThread
               messages={messages || []}
               isLoading={messagesLoading}

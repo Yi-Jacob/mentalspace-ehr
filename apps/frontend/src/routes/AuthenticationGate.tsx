@@ -50,7 +50,6 @@ const AuthenticationGate: React.FC<AuthenticationGateProps> = ({ children }) => 
         className={cn(
           "flex-1 transition-all duration-300 min-h-screen",
           isCollapsed ? "ml-16" : "ml-64",
-          "p-4 sm:p-6",
           isMobile && "ml-0 pt-20"
         )}
       >

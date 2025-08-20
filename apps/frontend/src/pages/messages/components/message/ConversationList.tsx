@@ -24,16 +24,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
 }) => {
   const { user: currentUser } = useAuth();
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'normal': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'low': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-
   const getConversationTitle = (conversation: ConversationData) => {
     if (conversation.type === 'group') {
       return conversation.title;
@@ -109,83 +99,88 @@ const ConversationList: React.FC<ConversationListProps> = ({
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-white h-full">
-      <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg pb-3">
-        <CardTitle className="flex items-center space-x-2 text-lg">
-          <MessageSquare className="h-4 w-4" />
-          <span>Conversations</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-3">
-        <div className="space-y-2">
-          {conversations.map((conversation) => {
-            const lastMessage = conversation.messages?.[0];
-            const isSelected = selectedConversationId === conversation.id;
-            
-            return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-full flex flex-col">
+      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
+        <h2 className="text-lg font-semibold">Conversations</h2>
+      </div>
+      
+      <div className="flex-1 overflow-hidden">
+        {isLoading ? (
+          <div className="p-4">
+            <div className="animate-pulse space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : conversations.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">
+            <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+            <p>No conversations yet</p>
+            <p className="text-sm">Start a new conversation to get started</p>
+          </div>
+        ) : (
+          <div className="overflow-y-auto h-full">
+            {conversations.map((conversation) => (
               <div
                 key={conversation.id}
                 onClick={() => onSelectConversation(conversation.id)}
-                className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
-                  isSelected
-                    ? 'border-blue-500 bg-blue-50 shadow-md'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                className={`p-4 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
+                  selectedConversationId === conversation.id ? 'bg-blue-50 border-blue-200' : ''
                 }`}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-2 min-w-0 flex-1">
-                    {conversation.type === 'group' ? (
-                      <Users className="h-3 w-3 text-purple-600 flex-shrink-0" />
-                    ) : (
-                      <User className="h-3 w-3 text-blue-600 flex-shrink-0" />
-                    )}
-                    <h3 className="font-medium text-gray-900 truncate text-sm">
-                      {getConversationTitle(conversation)}
-                    </h3>
-                  </div>
-                  <div className="flex items-center space-x-2 flex-shrink-0">
-                    <Badge className={`text-xs px-2 py-1 ${getPriorityColor(conversation.priority)}`}>
-                      {conversation.priority}
-                    </Badge>
-                    {onEditConversation && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditConversation(conversation);
-                        }}
-                        className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                        title="Edit conversation"
-                      >
-                        <MoreVertical className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {lastMessage && (
-                  <div className="text-xs text-gray-500 mb-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {getConversationTitle(conversation)}
+                      </h3>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        conversation.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                        conversation.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                        conversation.priority === 'normal' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {conversation.priority}
+                      </span>
+                    </div>
                     
-                    <span className="truncate block overflow-hidden text-ellipsis whitespace-nowrap"><span className="font-medium">{lastMessage.sender.firstName}:</span>{' '}{lastMessage.content}</span>
+                    {conversation.messages && conversation.messages.length > 0 && (
+                      <p className="text-sm text-gray-600 truncate">
+                        {conversation.messages[0].content}
+                      </p>
+                    )}
+                    
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-gray-500">
+                        {conversation.lastMessageAt ? format(new Date(conversation.lastMessageAt), 'MMM d, h:mm a') : 'No messages'}
+                      </span>
+                    </div>
                   </div>
-                )}
-
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-3 w-3" />
-                    <span>
-                      {format(new Date(conversation.lastMessageAt), 'MMM d, h:mm a')}
-                    </span>
-                  </div>
-                  {conversation.priority === 'urgent' && (
-                    <AlertCircle className="h-3 w-3 text-red-500" />
-                  )}
+                  
+                  {/* Edit button positioned at the end of the vertical line */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditConversation(conversation);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors ml-2 flex-shrink-0"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -18,11 +18,20 @@ export class WsJwtGuard implements CanActivate {
       }
 
       const payload = this.jwtService.verify(token);
+      
+      // JWT payload structure: { sub: userId, email: string, roles: string[], iat: number, exp: number }
       client.data.user = payload;
-      client.data.userId = payload.id;
+      client.data.userId = payload.sub; // Use 'sub' field for userId
+      
+      console.log('🟢 WsJwtGuard: JWT payload decoded:', { 
+        userId: payload.sub, 
+        email: payload.email,
+        roles: payload.roles 
+      });
 
       return true;
     } catch (err) {
+      console.error('🟢 WsJwtGuard: JWT verification failed:', err);
       throw new WsException('Invalid authentication token');
     }
   }
