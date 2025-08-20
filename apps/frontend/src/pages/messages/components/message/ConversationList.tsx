@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Badge } from '@/components/basic/badge';
 import { MessageSquare, Clock, AlertCircle, Users, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ConversationData {
   id: string;
@@ -56,6 +57,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
   selectedConversationId,
   onSelectConversation,
 }) => {
+  const { user: currentUser } = useAuth();
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
@@ -66,26 +69,20 @@ const ConversationList: React.FC<ConversationListProps> = ({
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'urgent': return 'bg-red-50 text-red-700';
-      case 'clinical': return 'bg-green-50 text-green-700';
-      case 'administrative': return 'bg-purple-50 text-purple-700';
-      default: return 'bg-gray-50 text-gray-700';
-    }
-  };
-
   const getConversationTitle = (conversation: ConversationData) => {
     if (conversation.type === 'group') {
       return conversation.title;
     }
     
-    if (conversation.client) {
-      return `${conversation.client.firstName} ${conversation.client.lastName}`;
-    }
-    
-    if (conversation.therapist) {
-      return `${conversation.therapist.firstName} ${conversation.therapist.lastName}`;
+    // For individual conversations, determine whose name to show
+    if (conversation.type === 'individual') {
+      if (conversation.client) {
+        return `${conversation.therapist.firstName} ${conversation.therapist.lastName}`;
+      }
+      
+      if (conversation.therapist) {
+        return `${conversation.client.firstName} ${conversation.client.lastName}`;
+      }
     }
     
     return conversation.title || 'Unknown Conversation';
@@ -93,16 +90,15 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   const getConversationSubtitle = (conversation: ConversationData) => {
     if (conversation.type === 'group') {
-      const participantCount = conversation.participants?.length || 0;
-      return `${participantCount} participant${participantCount !== 1 ? 's' : ''}`;
+      return 'Group Conversation';
     }
     
     if (conversation.client) {
-      return 'Client Conversation';
+      return 'Client';
     }
     
     if (conversation.therapist) {
-      return 'Therapist Conversation';
+      return 'Staff';
     }
     
     return 'Conversation';
@@ -110,18 +106,18 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   if (isLoading) {
     return (
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm h-full">
-        <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <MessageSquare className="h-5 w-5" />
+      <Card className="border-0 shadow-lg bg-white h-full">
+        <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg pb-3">
+          <CardTitle className="flex items-center space-x-2 text-lg">
+            <MessageSquare className="h-4 w-4" />
             <span>Conversations</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-              <div className="text-gray-600 font-medium">Loading conversations...</div>
+        <CardContent className="p-4">
+          <div className="text-center py-6">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+              <div className="text-gray-600 text-sm">Loading...</div>
             </div>
           </div>
         </CardContent>
@@ -131,18 +127,18 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   if (conversations.length === 0) {
     return (
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm h-full">
-        <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <MessageSquare className="h-5 w-5" />
+      <Card className="border-0 shadow-lg bg-white h-full">
+        <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg pb-3">
+          <CardTitle className="flex items-center space-x-2 text-lg">
+            <MessageSquare className="h-4 w-4" />
             <span>Conversations</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center py-12 text-gray-500">
-            <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-semibold mb-2">No conversations yet</h3>
-            <p className="text-sm">Start a new conversation to begin messaging</p>
+        <CardContent className="p-4">
+          <div className="text-center py-8 text-gray-500">
+            <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+            <h3 className="text-base font-semibold mb-1">No conversations</h3>
+            <p className="text-xs">Start a new conversation</p>
           </div>
         </CardContent>
       </Card>
@@ -150,15 +146,15 @@ const ConversationList: React.FC<ConversationListProps> = ({
   }
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
-        <CardTitle className="flex items-center space-x-2 text-xl">
-          <MessageSquare className="h-5 w-5" />
+    <Card className="border-0 shadow-lg bg-white h-full">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg pb-3">
+        <CardTitle className="flex items-center space-x-2 text-lg">
+          <MessageSquare className="h-4 w-4" />
           <span>Conversations</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-3">
+      <CardContent className="p-3">
+        <div className="space-y-2">
           {conversations.map((conversation) => {
             const lastMessage = conversation.messages?.[0];
             const isSelected = selectedConversationId === conversation.id;
@@ -167,39 +163,36 @@ const ConversationList: React.FC<ConversationListProps> = ({
               <div
                 key={conversation.id}
                 onClick={() => onSelectConversation(conversation.id)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md ${
                   isSelected
                     ? 'border-blue-500 bg-blue-50 shadow-md'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0 flex-1">
                     {conversation.type === 'group' ? (
-                      <Users className="h-4 w-4 text-purple-600" />
+                      <Users className="h-3 w-3 text-purple-600 flex-shrink-0" />
                     ) : (
-                      <User className="h-4 w-4 text-blue-600" />
+                      <User className="h-3 w-3 text-blue-600 flex-shrink-0" />
                     )}
-                    <h3 className="font-semibold text-gray-900 truncate">
+                    <h3 className="font-medium text-gray-900 truncate text-sm">
                       {getConversationTitle(conversation)}
                     </h3>
                   </div>
-                  <div className="flex space-x-1">
-                    <Badge className={getPriorityColor(conversation.priority)}>
+                  <div className="flex space-x-1 flex-shrink-0">
+                    <Badge className={`text-xs px-2 py-1 ${getPriorityColor(conversation.priority)}`}>
                       {conversation.priority}
-                    </Badge>
-                    <Badge className={getCategoryColor(conversation.category)}>
-                      {conversation.category}
                     </Badge>
                   </div>
                 </div>
                 
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-xs text-gray-600 mb-2">
                   {getConversationSubtitle(conversation)}
                 </p>
 
                 {lastMessage && (
-                  <div className="text-sm text-gray-500 mb-2">
+                  <div className="text-xs text-gray-500 mb-2">
                     <span className="font-medium">{lastMessage.sender.firstName}:</span>{' '}
                     <span className="truncate">{lastMessage.content}</span>
                   </div>

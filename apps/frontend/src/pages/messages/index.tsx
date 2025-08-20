@@ -31,7 +31,7 @@ const MessageManagement = () => {
           title="Messages"
           description="Secure communication with clients and team members"
           action={
-            <div className="flex space-x-3">
+            <div className="flex space-x-2">
               <Button 
                 onClick={() => setShowComposeModal(true)}
                 className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -43,7 +43,7 @@ const MessageManagement = () => {
           }
         />
 
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-180px)]">
           <div className="lg:col-span-1">
             <ConversationList
               conversations={conversations || []}
@@ -53,7 +53,7 @@ const MessageManagement = () => {
             />
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <MessageThread
               messages={messages || []}
               isLoading={messagesLoading}

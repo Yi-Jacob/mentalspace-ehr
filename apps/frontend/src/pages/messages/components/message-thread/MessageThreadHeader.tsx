@@ -59,39 +59,38 @@ const MessageThreadHeader: React.FC<MessageThreadHeaderProps> = ({
     if (!conversation) return '';
     
     if (conversation.type === 'group') {
-      const participantCount = conversation.participants?.length || 0;
-      return `${participantCount} participant${participantCount !== 1 ? 's' : ''}`;
+      return 'Group Conversation';
     }
     
     if (conversation.client) {
-      return 'Client Conversation';
+      return 'Client';
     }
     
     if (conversation.therapist) {
-      return 'Therapist Conversation';
+      return 'Staff';
     }
     
     return 'Conversation';
   };
 
   const getConversationIcon = () => {
-    if (!conversation) return <MessageSquare className="h-5 w-5" />;
+    if (!conversation) return <MessageSquare className="h-4 w-4" />;
     
     if (conversation.type === 'group') {
-      return <Users className="h-5 w-5" />;
+      return <Users className="h-4 w-4" />;
     }
     
-    return <User className="h-5 w-5" />;
+    return <User className="h-4 w-4" />;
   };
 
   return (
-    <CardHeader className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
-      <CardTitle className="flex items-center space-x-2 text-xl">
+    <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg pb-3">
+      <CardTitle className="flex items-center space-x-2 text-lg">
         {getConversationIcon()}
         <span>{getConversationTitle()}</span>
       </CardTitle>
       {conversation && !isLoading && (
-        <div className="flex items-center justify-between text-blue-100 text-sm">
+        <div className="flex items-center justify-between text-blue-100 text-xs">
           <span>{getConversationSubtitle()}</span>
           <div className="flex items-center space-x-2">
             <span className="capitalize">{conversation.category}</span>

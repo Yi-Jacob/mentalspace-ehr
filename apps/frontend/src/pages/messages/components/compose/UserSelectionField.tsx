@@ -5,7 +5,6 @@ import { Users, User, UserCheck, X, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 
 interface User {
   id: string;
@@ -32,7 +31,6 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const { user: currentUser } = useAuth();
   const selectedUsers = users.filter(user => selectedUserIds.includes(user.id));
 
   const getUserIcon = (userType: 'staff' | 'client') => {
@@ -63,16 +61,7 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
   };
 
   const removeUser = (userId: string) => {
-    if (userId === currentUser?.id) {
-      toast({
-        title: "Error",
-        description: "You cannot remove yourself from the conversation.",
-        variant: "destructive",
-      });
-    } else {
-      onUserChange(selectedUserIds.filter(id => id !== userId));
-    }
-    
+    onUserChange(selectedUserIds.filter(id => id !== userId));
   };
 
   // Separate users into clients and staff, then sort each group alphabetically

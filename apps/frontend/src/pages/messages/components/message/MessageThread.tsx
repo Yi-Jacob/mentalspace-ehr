@@ -142,7 +142,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   }
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm h-full flex flex-col">
+    <Card className="border-0 shadow-lg bg-white h-full flex flex-col">
       <MessageThreadHeader 
         conversation={selectedConversation}
         isLoading={isLoading}

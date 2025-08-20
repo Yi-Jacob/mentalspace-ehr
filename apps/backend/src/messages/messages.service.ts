@@ -204,7 +204,10 @@ export class MessagesService {
       });
 
       // Add all participants including creator
-      const participantData = createGroupConversationDto.participantIds.map((participantId) => ({
+      const allParticipantIds = [...createGroupConversationDto.participantIds, creatorId];
+      const uniqueParticipantIds = [...new Set(allParticipantIds)];
+
+      const participantData = uniqueParticipantIds.map((participantId) => ({
         conversationId: conversation.id,
         userId: participantId,
         role: participantId === creatorId ? 'admin' : 'participant',
@@ -503,14 +506,26 @@ export class MessagesService {
 
       // Add participants for group conversations
       if (data.type === 'group') {
+        // Create participant data for selected users
         const participantData = data.participantIds.map((participantId) => ({
+          conversationId: conversation.id,
+          userId: participantId,
+          role: 'participant', // All selected users are participants
+        }));
+
+        // Add the creator as admin (if not already in the participant list)
+        const allParticipantIds = [...data.participantIds, creatorId];
+        const uniqueParticipantIds = [...new Set(allParticipantIds)];
+
+        // Create all participants including creator
+        const allParticipantData = uniqueParticipantIds.map((participantId) => ({
           conversationId: conversation.id,
           userId: participantId,
           role: participantId === creatorId ? 'admin' : 'participant',
         }));
 
         await prisma.conversationParticipant.createMany({
-          data: participantData,
+          data: allParticipantData,
         });
       }
 

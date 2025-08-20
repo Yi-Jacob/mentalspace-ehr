@@ -39,22 +39,18 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
     }
   }, [open, preselectedClientId]);
 
+  // Reset selected users when modal opens (no auto-selection of current user)
   useEffect(() => {
-    console.log('currentUser.id', currentUser?.id)
-    if (open && currentUser?.id) {
-      setSelectedUserIds(prev => {
-        if (preselectedClientId) {
-          // If there's a preselected client, add current user to the list
-          return prev.includes(currentUser.id) ? prev : [...prev, currentUser.id];
-        } else {
-          // If no preselected client, just select current user
-          return [currentUser.id];
-        }
-      });
+    if (open) {
+      if (preselectedClientId) {
+        setSelectedUserIds([preselectedClientId]);
+      } else {
+        setSelectedUserIds([]); // Start with no users selected
+      }
     }
-  }, [open, currentUser?.id, preselectedClientId]);
+  }, [open, preselectedClientId]);
 
-  const { data: users, isLoading: usersLoading, error: usersError } = useQuery({
+  const { data: allUsers, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['all-users-for-compose'],
     queryFn: async () => {
       console.log('Fetching all users for compose message...');
@@ -63,6 +59,9 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
     enabled: open, // Only fetch when modal is open
   });
 
+  // Filter out the current user from the available recipients
+  const availableUsers = allUsers?.filter(user => user.id !== currentUser?.id) || [];
+
   useEffect(() => {
     if (usersError) {
       console.error('Users query error:', usersError);
@@ -70,10 +69,11 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
     if (usersLoading) {
       console.log('Loading users...');
     }
-    if (users) {
-      console.log('Users loaded:', users.length, 'users');
+    if (allUsers) {
+      console.log('All users loaded:', allUsers.length, 'users');
+      console.log('Available recipients (excluding current user):', availableUsers.length, 'users');
     }
-  }, [users, usersLoading, usersError]);
+  }, [allUsers, usersLoading, usersError, availableUsers.length]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async () => {
@@ -91,10 +91,12 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
         });
       } else {
         // Multiple recipients - create group conversation
+        // Only send the selected participant IDs to the service
+        // The current user will be automatically added as admin in the backend
         const title = conversationTitle.trim() || `Group Message - ${new Date().toLocaleDateString()}`;
         return messageService.createConversationWithMessage({
           title,
-          participantIds: selectedUserIds,
+          participantIds: selectedUserIds, // Only the selected recipients, not including current user
           category: messageCategory,
           priority: messagePriority,
           initialMessage: messageContent.trim(),
@@ -163,7 +165,7 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <ComposeMessageForm
-            users={users || []}
+            users={availableUsers} // Pass filtered users (excluding current user)
             selectedUserIds={selectedUserIds}
             onUserChange={setSelectedUserIds}
             conversationTitle={conversationTitle}
