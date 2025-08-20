@@ -96,12 +96,30 @@ const MessagesList: React.FC<MessagesListProps> = ({
       {messages.map((message) => {
         const isOwnMessage = message.senderId === currentUserId;
         
+        // Calculate message width based on content length
+        const contentLength = message.content.length;
+        let messageWidth;
+        
+        if (contentLength <= 30) {
+          // Short messages: 50% width
+          messageWidth = 'max-w-[40%]';
+        } else if (contentLength <= 80) {
+          // Medium messages: 70% width
+          messageWidth = 'max-w-[70%]';
+        } else if (contentLength <= 150) {
+          // Long messages: 85% width
+          messageWidth = 'max-w-[85%]';
+        } else {
+          // Very long messages: 95% width (maximum)
+          messageWidth = 'max-w-[95%]';
+        }
+        
         return (
           <div key={message.id} className="space-y-1">
-            <div className={`rounded-lg p-2 shadow-sm border transition-all duration-200 hover:shadow-md ${
+            <div className={`rounded-lg p-2 shadow-sm border transition-all duration-200 hover:shadow-md ${messageWidth} ${
               isOwnMessage 
-                ? 'bg-blue-100 text-gray-800 border-blue-300 ml-6' 
-                : 'bg-gray-100 text-gray-700 border-gray-300 mr-6'
+                ? 'bg-blue-100 text-gray-800 border-blue-300 ml-auto' 
+                : 'bg-gray-100 text-gray-700 border-gray-300 mr-auto'
             }`}>
               {/* Reply to message */}
               {message.replyTo && (
@@ -179,11 +197,9 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     ? 'border-blue-300 text-blue-700' 
                     : 'border-gray-300 text-gray-600'
                 }`}>
-                  <CheckCheck className={`h-3 w-3 ${
-                    isOwnMessage ? 'text-blue-600' : 'text-green-500'
-                  }`} />
+                  <CheckCheck className="h-3 w-3" />
                   <span>
-                    Read by {message.readReceipts.map(r => r.user.firstName).join(', ')}
+                    Read by {message.readReceipts.length} {message.readReceipts.length === 1 ? 'person' : 'people'}
                   </span>
                 </div>
               )}

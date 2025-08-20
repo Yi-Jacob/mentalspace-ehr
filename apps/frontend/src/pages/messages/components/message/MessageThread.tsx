@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/basic/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { messageService } from '@/services/messageService';
+import { messageService, ConversationData } from '@/services/messageService';
 import { useToast } from '@/hooks/use-toast';
 import MessageThreadHeader from '../message-thread/MessageThreadHeader';
 import MessagesList from '../message-thread/MessagesList';
@@ -33,31 +33,6 @@ interface MessageData {
   readReceipts: {
     id: string;
     readAt: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-  }[];
-}
-
-interface ConversationData {
-  id: string;
-  title: string;
-  type: 'individual' | 'group';
-  category: string;
-  priority: string;
-  client?: {
-    firstName: string;
-    lastName: string;
-  };
-  therapist?: {
-    firstName: string;
-    lastName: string;
-  };
-  participants?: {
-    id: string;
-    role: string;
     user: {
       id: string;
       firstName: string;

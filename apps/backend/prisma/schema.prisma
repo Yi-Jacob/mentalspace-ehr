@@ -92,6 +92,7 @@ model User {
   clinicalNotes                 ClinicalNote[]               @relation("ClinicalNoteProvider")
   providerCompensations         ProviderCompensationConfig[] @relation("ProviderCompensationProvider")
   conversations                 Conversation[]               @relation("ConversationTherapist")
+  clientConversations          Conversation[]                @relation("ConversationClient")
   messages                      Message[]                    @relation("MessageSender")
   conversationParticipants      ConversationParticipant[]    @relation("ConversationParticipant")
   messageReadReceipts           MessageReadReceipt[]         @relation("MessageReadReceipt")
@@ -283,7 +284,6 @@ model Client {
   waitlistEntries        AppointmentWaitlist[]
   claims                 Claim[]
   clinicalNotes          ClinicalNote[]
-  conversations          Conversation[]
   timeTracking           TimeTracking[]
   sessionCompletions     SessionCompletion[]
   payments               Payment[]
@@ -860,7 +860,7 @@ model Conversation {
   updatedAt     DateTime                  @default(now()) @map("updated_at")
   lastMessageAt DateTime                  @default(now()) @map("last_message_at")
   type          String                    @default("individual")
-  client        Client?                   @relation(fields: [clientId], references: [id])
+  client        User?                     @relation("ConversationClient", fields: [clientId], references: [id])
   therapist     User?                     @relation("ConversationTherapist", fields: [therapistId], references: [id])
   messages      Message[]
   participants  ConversationParticipant[]

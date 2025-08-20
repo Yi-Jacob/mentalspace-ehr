@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { CreateConversationDto, CreateGroupConversationDto, CreateMessageDto, MarkMessageReadDto } from './dto';
+import { CreateConversationDto, CreateGroupConversationDto, CreateMessageDto, MarkMessageReadDto, UpdateConversationDto, UpdateGroupParticipantsDto } from './dto';
+import { ConversationPriority, ConversationCategory } from './dto/shared-enums';
 
 @Injectable()
 export class MessagesService {
@@ -440,7 +441,7 @@ export class MessagesService {
   }
 
   // Find or create conversation for quick message
-  async findOrCreateConversation(recipientId: string, therapistId: string, category?: string, priority?: string) {
+  async findOrCreateConversation(recipientId: string, therapistId: string, category?: ConversationCategory, priority?: ConversationPriority) {
     // First, try to find an existing conversation between these users
     let conversation = await this.prisma.conversation.findFirst({
       where: {
@@ -479,8 +480,8 @@ export class MessagesService {
     data: {
       title: string;
       participantIds: string[];
-      category?: string;
-      priority?: string;
+      category?: ConversationCategory;
+      priority?: ConversationPriority;
       initialMessage: string;
       type: 'individual' | 'group';
     },
@@ -599,5 +600,240 @@ export class MessagesService {
     });
 
     return unreadCount;
+  }
+
+  // Update conversation details (priority, category, title)
+  async updateConversation(
+    conversationId: string,
+    userId: string,
+    updateData: {
+      priority?: ConversationPriority;
+      category?: ConversationCategory;
+      title?: string;
+    }
+  ) {
+    // Verify user has access to this conversation
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [
+          { therapistId: userId },
+          { clientId: userId },
+          {
+            participants: {
+              some: {
+                userId,
+                leftAt: null,
+                role: { in: ['admin', 'participant'] },
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        participants: {
+          where: {
+            leftAt: null,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found or access denied');
+    }
+
+    // For group conversations, only admins can update
+    if (conversation.type === 'group') {
+      const userParticipant = conversation.participants.find(p => p.user.id === userId);
+      if (!userParticipant || userParticipant.role !== 'admin') {
+        throw new ForbiddenException('Only admins can update group conversations');
+      }
+    }
+
+    // Update conversation
+    const updatedConversation = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: {
+        ...(updateData.priority && { priority: updateData.priority }),
+        ...(updateData.category && { category: updateData.category }),
+        ...(updateData.title && conversation.type === 'group' && { title: updateData.title }),
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        therapist: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        participants: {
+          where: {
+            leftAt: null,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        messages: {
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    return updatedConversation;
+  }
+
+  // Update group conversation participants
+  async updateGroupConversationParticipants(
+    conversationId: string,
+    userId: string,
+    participantIds: string[]
+  ) {
+    // Verify user is admin of this group conversation
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        type: 'group',
+        participants: {
+          some: {
+            userId,
+            leftAt: null,
+            role: 'admin',
+          },
+        },
+      },
+      include: {
+        participants: {
+          where: {
+            leftAt: null,
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new ForbiddenException('Only admins can update group participants');
+    }
+
+    // Ensure the admin user is always included
+    const allParticipantIds = [...new Set([...participantIds, userId])];
+
+    return this.prisma.$transaction(async (prisma) => {
+      // Mark all current participants as left
+      await prisma.conversationParticipant.updateMany({
+        where: {
+          conversationId,
+          leftAt: null,
+        },
+        data: {
+          leftAt: new Date(),
+        },
+      });
+
+      // Create new participants
+      const participantData = allParticipantIds.map((participantId) => ({
+        conversationId,
+        userId: participantId,
+        role: participantId === userId ? 'admin' : 'participant',
+        joinedAt: new Date(),
+      }));
+
+      await prisma.conversationParticipant.createMany({
+        data: participantData,
+      });
+
+      // Update conversation's lastMessageAt to trigger refresh
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: {
+          lastMessageAt: new Date(),
+        },
+      });
+
+      // Return updated conversation
+      return prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          client: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          therapist: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          participants: {
+            where: {
+              leftAt: null,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          messages: {
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 1,
+          },
+        },
+      });
+    });
   }
 } 

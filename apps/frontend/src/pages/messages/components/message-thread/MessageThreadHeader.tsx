@@ -2,31 +2,7 @@
 import React from 'react';
 import { CardHeader, CardTitle } from '@/components/basic/card';
 import { MessageSquare, Users, User } from 'lucide-react';
-
-interface ConversationData {
-  id: string;
-  title: string;
-  type: 'individual' | 'group';
-  category: string;
-  priority: string;
-  client?: {
-    firstName: string;
-    lastName: string;
-  };
-  therapist?: {
-    firstName: string;
-    lastName: string;
-  };
-  participants?: {
-    id: string;
-    role: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-  }[];
-}
+import { ConversationData } from '@/services/messageService';
 
 interface MessageThreadHeaderProps {
   conversation: ConversationData | undefined;

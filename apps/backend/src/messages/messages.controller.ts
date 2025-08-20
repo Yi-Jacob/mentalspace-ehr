@@ -2,6 +2,7 @@ import {
   Controller, 
   Get, 
   Post, 
+  Put,
   Body, 
   Param, 
   UseGuards, 
@@ -10,7 +11,7 @@ import {
   HttpCode 
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
-import { CreateConversationDto, CreateGroupConversationDto, CreateMessageDto, MarkMessageReadDto } from './dto';
+import { CreateConversationDto, CreateGroupConversationDto, CreateMessageDto, MarkMessageReadDto, UpdateConversationDto, UpdateGroupParticipantsDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('messages')
@@ -111,8 +112,8 @@ export class MessagesController {
     const conversation = await this.messagesService.findOrCreateConversation(
       data.recipientId,
       therapistId,
-      data.category,
-      data.priority
+      data.category as any,
+      data.priority as any
     );
 
     // Send message
@@ -140,6 +141,34 @@ export class MessagesController {
     @Request() req
   ) {
     const creatorId = req.user.id;
-    return this.messagesService.createConversationWithMessage(data, creatorId);
+    return this.messagesService.createConversationWithMessage({
+      ...data,
+      category: data.category as any,
+      priority: data.priority as any,
+    }, creatorId);
+  }
+
+  // Update conversation details (priority, category, title)
+  @Put('conversations/:id')
+  @HttpCode(HttpStatus.OK)
+  async updateConversation(
+    @Param('id') id: string,
+    @Body() updateConversationDto: UpdateConversationDto,
+    @Request() req
+  ) {
+    const userId = req.user.id;
+    return this.messagesService.updateConversation(id, userId, updateConversationDto);
+  }
+
+  // Update group conversation participants
+  @Put('conversations/:id/participants')
+  @HttpCode(HttpStatus.OK)
+  async updateGroupParticipants(
+    @Param('id') id: string,
+    @Body() updateGroupParticipantsDto: UpdateGroupParticipantsDto,
+    @Request() req
+  ) {
+    const userId = req.user.id;
+    return this.messagesService.updateGroupConversationParticipants(id, userId, updateGroupParticipantsDto.participantIds);
   }
 } 

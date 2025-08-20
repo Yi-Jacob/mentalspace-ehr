@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Button } from '@/components/basic/button';
-import { Textarea } from '@/components/basic/textarea';
 import { Send, X, Reply } from 'lucide-react';
 
 interface MessageInputProps {
@@ -27,6 +26,26 @@ const MessageInput: React.FC<MessageInputProps> = ({
   disabled = false,
   isLoading = false,
 }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current;
+      
+      // Reset height to calculate new dimensions
+      textarea.style.height = 'auto';
+      
+      // Calculate new height based on content
+      const scrollHeight = textarea.scrollHeight;
+      const lineHeight = 20; // Approximate line height in pixels
+      const maxHeight = lineHeight * 4; // Maximum 4 rows
+      
+      // Set height to minimum of calculated height or max height
+      textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
+    }
+  }, [value]);
+
   return (
     <div className="border-t border-gray-200 p-2 bg-gradient-to-r from-gray-50 to-blue-50/50">
       <div className="flex flex-col space-y-2">
@@ -53,13 +72,19 @@ const MessageInput: React.FC<MessageInputProps> = ({
         )}
         
         <div className="flex space-x-2">
-          <Textarea
+          <textarea
+            ref={textareaRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyPress={onKeyPress}
             placeholder={replyToId ? "Type your reply..." : "Type your message..."}
-            className="flex-1 resize-none h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+            className="flex-1 resize-none h-10 border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none text-sm transition-all duration-200"
             disabled={isLoading}
+            rows={1}
+            style={{ 
+              minHeight: '40px', 
+              maxHeight: '80px'
+            }}
           />
           <Button
             onClick={onSend}

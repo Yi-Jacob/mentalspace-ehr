@@ -21,6 +21,8 @@ interface UserSelectionFieldProps {
   selectedUserIds: string[];
   onUserChange: (value: string[]) => void;
   disabled?: boolean;
+  isEditing?: boolean;
+  conversationType?: 'individual' | 'group';
 }
 
 const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
@@ -28,6 +30,8 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
   selectedUserIds,
   onUserChange,
   disabled = false,
+  isEditing = false,
+  conversationType,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
@@ -80,7 +84,12 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
   return (
     <div className="space-y-2">
       <Label htmlFor="user" className="text-sm font-medium">
-        Select Recipients *
+        {isEditing ? 'Manage Participants' : 'Select Recipients'} *
+        {isEditing && conversationType && (
+          <span className="ml-2 text-xs font-normal text-gray-500">
+            ({conversationType === 'group' ? 'Group Chat' : 'Individual Chat'})
+          </span>
+        )}
       </Label>
       
       {disabled && selectedUsers.length > 0 ? (

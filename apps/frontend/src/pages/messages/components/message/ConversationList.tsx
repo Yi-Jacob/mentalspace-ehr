@@ -2,53 +2,17 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
-import { MessageSquare, Clock, AlertCircle, Users, User } from 'lucide-react';
+import { MessageSquare, Clock, AlertCircle, Users, User, MoreVertical } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-
-interface ConversationData {
-  id: string;
-  title: string;
-  type: 'individual' | 'group';
-  category: string;
-  priority: string;
-  status?: string;
-  lastMessageAt: string;
-  client?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-  therapist?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-  participants?: {
-    id: string;
-    role: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-    };
-  }[];
-  messages: Array<{
-    id: string;
-    content: string;
-    createdAt: string;
-    sender: {
-      firstName: string;
-      lastName: string;
-    };
-  }>;
-}
+import { ConversationData } from '@/services/messageService';
 
 interface ConversationListProps {
   conversations: ConversationData[];
   isLoading: boolean;
   selectedConversationId: string | null;
   onSelectConversation: (id: string) => void;
+  onEditConversation?: (conversation: ConversationData) => void;
 }
 
 const ConversationList: React.FC<ConversationListProps> = ({
@@ -56,6 +20,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   isLoading,
   selectedConversationId,
   onSelectConversation,
+  onEditConversation,
 }) => {
   const { user: currentUser } = useAuth();
 
@@ -76,32 +41,30 @@ const ConversationList: React.FC<ConversationListProps> = ({
     
     // For individual conversations, determine whose name to show
     if (conversation.type === 'individual') {
+      if (conversation.client && conversation.therapist) {
+        // If current user is the client, show therapist name
+        if (currentUser?.id === conversation.client.id) {
+          return `${conversation.therapist.firstName} ${conversation.therapist.lastName}`;
+        }
+        // If current user is the therapist, show client name
+        if (currentUser?.id === conversation.therapist.id) {
+          return `${conversation.client.firstName} ${conversation.client.lastName}`;
+        }
+        // Fallback: show client name if current user is neither
+        return `${conversation.client.firstName} ${conversation.client.lastName}`;
+      }
+      
+      // Fallback cases
       if (conversation.client) {
-        return `${conversation.therapist.firstName} ${conversation.therapist.lastName}`;
+        return `${conversation.client.firstName} ${conversation.client.lastName}`;
       }
       
       if (conversation.therapist) {
-        return `${conversation.client.firstName} ${conversation.client.lastName}`;
+        return `${conversation.therapist.firstName} ${conversation.therapist.lastName}`;
       }
     }
     
     return conversation.title || 'Unknown Conversation';
-  };
-
-  const getConversationSubtitle = (conversation: ConversationData) => {
-    if (conversation.type === 'group') {
-      return 'Group Conversation';
-    }
-    
-    if (conversation.client) {
-      return 'Client';
-    }
-    
-    if (conversation.therapist) {
-      return 'Staff';
-    }
-    
-    return 'Conversation';
   };
 
   if (isLoading) {
@@ -180,21 +143,29 @@ const ConversationList: React.FC<ConversationListProps> = ({
                       {getConversationTitle(conversation)}
                     </h3>
                   </div>
-                  <div className="flex space-x-1 flex-shrink-0">
+                  <div className="flex items-center space-x-2 flex-shrink-0">
                     <Badge className={`text-xs px-2 py-1 ${getPriorityColor(conversation.priority)}`}>
                       {conversation.priority}
                     </Badge>
+                    {onEditConversation && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditConversation(conversation);
+                        }}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        title="Edit conversation"
+                      >
+                        <MoreVertical className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                
-                <p className="text-xs text-gray-600 mb-2">
-                  {getConversationSubtitle(conversation)}
-                </p>
 
                 {lastMessage && (
                   <div className="text-xs text-gray-500 mb-2">
-                    <span className="font-medium">{lastMessage.sender.firstName}:</span>{' '}
-                    <span className="truncate">{lastMessage.content}</span>
+                    
+                    <span className="truncate block overflow-hidden text-ellipsis whitespace-nowrap"><span className="font-medium">{lastMessage.sender.firstName}:</span>{' '}{lastMessage.content}</span>
                   </div>
                 )}
 

@@ -105,6 +105,16 @@ export interface MarkMessageReadData {
   messageId: string;
 }
 
+export interface UpdateConversationData {
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  category?: 'clinical' | 'administrative' | 'urgent' | 'general';
+  title?: string;
+}
+
+export interface UpdateGroupParticipantsData {
+  participantIds: string[];
+}
+
 // Message Service
 export class MessageService {
   private baseUrl = '/messages';
@@ -172,6 +182,18 @@ export class MessageService {
       conversation: ConversationData;
       message: MessageData;
     }>(`${this.baseUrl}/conversations/with-message`, data);
+    return response.data;
+  }
+
+  // Update conversation details (priority, category, title)
+  async updateConversation(id: string, data: UpdateConversationData): Promise<ConversationData> {
+    const response = await apiClient.put<ConversationData>(`${this.baseUrl}/conversations/${id}`, data);
+    return response.data;
+  }
+
+  // Update group conversation participants
+  async updateGroupParticipants(id: string, data: UpdateGroupParticipantsData): Promise<ConversationData> {
+    const response = await apiClient.put<ConversationData>(`${this.baseUrl}/conversations/${id}/participants`, data);
     return response.data;
   }
 }

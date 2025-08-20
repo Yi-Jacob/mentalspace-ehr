@@ -8,7 +8,8 @@ import { useConversationsQuery } from './components/message-management/Conversat
 import { useMessagesQuery } from './components/message-management/MessagesQuery';
 import ConversationList from './components/message/ConversationList';
 import MessageThread from './components/message/MessageThread';
-
+import { ConversationData } from '@/services/messageService';
+import { useState } from 'react';
 
 const MessageManagement = () => {
   const {
@@ -18,10 +19,23 @@ const MessageManagement = () => {
     setShowComposeModal
   } = useMessageManagementState();
 
+  const [conversationToEdit, setConversationToEdit] = useState<ConversationData | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const { data: conversations, isLoading: conversationsLoading } = useConversationsQuery();
   const { data: messages, isLoading: messagesLoading } = useMessagesQuery(selectedConversationId);
 
   const selectedConversation = conversations?.find(c => c.id === selectedConversationId);
+
+  const handleEditConversation = (conversation: ConversationData) => {
+    setConversationToEdit(conversation);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setConversationToEdit(null);
+  };
 
   return (
     <>
@@ -50,6 +64,7 @@ const MessageManagement = () => {
               isLoading={conversationsLoading}
               selectedConversationId={selectedConversationId}
               onSelectConversation={setSelectedConversationId}
+              onEditConversation={handleEditConversation}
             />
           </div>
 
@@ -64,9 +79,17 @@ const MessageManagement = () => {
         </div>
       </PageLayout>
 
+      {/* New Message Modal */}
       <ComposeMessageModal 
         open={showComposeModal} 
         onOpenChange={setShowComposeModal} 
+      />
+
+      {/* Edit Conversation Modal */}
+      <ComposeMessageModal 
+        open={showEditModal} 
+        onOpenChange={handleCloseEditModal}
+        conversationToEdit={conversationToEdit}
       />
     </>
   );

@@ -32,6 +32,8 @@ interface ComposeMessageFormProps {
   isLoading: boolean;
   disabled?: boolean;
   showTitleField: boolean;
+  isEditing?: boolean;
+  conversationType?: 'individual' | 'group';
 }
 
 const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
@@ -49,18 +51,31 @@ const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
   isLoading,
   disabled = false,
   showTitleField,
+  isEditing = false,
+  conversationType,
 }) => {
   return (
     <div className="space-y-6">
+      {/* Show conversation type when editing */}
+      {isEditing && conversationType && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="text-sm text-blue-800">
+            <span className="font-medium">Conversation Type:</span> {conversationType === 'group' ? 'Group Chat' : 'Individual Chat'}
+          </div>
+        </div>
+      )}
+
       <UserSelectionField
         users={users}
         selectedUserIds={selectedUserIds}
         onUserChange={onUserChange}
         disabled={disabled}
+        isEditing={isEditing}
+        conversationType={conversationType}
       />
 
-      {/* Conversation Title Field - Only show for group conversations */}
-      {showTitleField && (
+      {/* Conversation Title Field - Show for group conversations or when editing */}
+      {(showTitleField || (isEditing && conversationType === 'group')) && (
         <div className="space-y-2">
           <Label htmlFor="conversationTitle" className="text-sm font-medium">
             Conversation Title *
@@ -88,11 +103,14 @@ const ComposeMessageForm: React.FC<ComposeMessageFormProps> = ({
         />
       </div>
 
-      <MessageContentField
-        messageContent={messageContent}
-        onContentChange={onContentChange}
-        isLoading={isLoading}
-      />
+      {/* Only show message content field when not editing */}
+      {!isEditing && (
+        <MessageContentField
+          messageContent={messageContent}
+          onContentChange={onContentChange}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 };
