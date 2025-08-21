@@ -111,10 +111,23 @@ model User {
   supervisionAsSupervisor       SupervisionRelationship[]    @relation("SupervisionSupervisor")
   supervisionAsSupervisee       SupervisionRelationship[]    @relation("SupervisionSupervisee")
   licenses                      License[]
+  chatSessions                 ChatSession[]                 @relation("UserChatSessions")
   client                        Client?                      @relation("UserClient", fields: [clientId], references: [id])
   staffProfile                  StaffProfile?                @relation("UserStaffProfile", fields: [staffId], references: [id])
 
   @@map("users")
+}
+
+model ChatSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  messages  Json[]   // Array of message objects with role and content
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user User @relation("UserChatSessions", fields: [userId], references: [id])
+
+  @@map("chat_sessions")
 }
 
 model Payer {

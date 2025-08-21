@@ -18,6 +18,7 @@ import { TrainingRecordsModule } from './training-records/training-records.modul
 import { PracticeSettingsModule } from './practice-settings/practice-settings.module';
 import { QuickActionsModule } from './quick-actions/quick-actions.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { AIChatbotModule } from './ai-chatbot/ai-chatbot.module';
 import { DatabaseModule } from './database/database.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { LoggerModule } from './common/logger/logger.module';
@@ -53,6 +54,7 @@ import { HealthModule } from './health/health.module';
     PracticeSettingsModule,
     QuickActionsModule,
     PermissionsModule,
+    AIChatbotModule,
     HealthModule,
   ],
   controllers: [AppController],
