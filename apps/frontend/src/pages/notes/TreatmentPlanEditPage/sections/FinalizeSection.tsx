@@ -29,7 +29,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
     const requiredSections = [
       {
         name: 'Client Overview',
-        isComplete: !!(formData.clientId && formData.treatmentPlanDate),
+        isComplete: !!(formData.clientId),
         fields: ['Client ID', 'Treatment Plan Date']
       },
       {
@@ -121,7 +121,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
             <p><strong>Goals:</strong> {formData.treatmentGoals?.length || 0} treatment goals</p>
           </div>
         </div>
-
+{formData.treatmentPlanDate}
         {/* Section Completion Status */}
         <div className="space-y-4">
           <h4 className="font-medium text-gray-900">Section Completion Status</h4>

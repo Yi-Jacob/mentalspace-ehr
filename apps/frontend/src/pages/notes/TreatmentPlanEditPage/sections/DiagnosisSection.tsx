@@ -5,7 +5,7 @@ import { Button } from '@/components/basic/button';
 import { Plus, X } from 'lucide-react';
 import { TreatmentPlanFormData } from '@/types/noteType';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
-import { useDiagnosisCodes } from '@/hooks/useDiagnosisCodes';
+import { availableDiagnoses } from '@/data/diagnoses';
 
 interface DiagnosisSectionProps {
   formData: TreatmentPlanFormData;
@@ -18,7 +18,12 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
-  const { data: diagnosisOptions = [], isLoading } = useDiagnosisCodes();
+  // Transform static diagnoses to match SearchableSelect format
+  const diagnosisOptions = availableDiagnoses.map(diagnosis => ({
+    value: diagnosis.code,
+    label: diagnosis.description,
+    description: diagnosis.category || '',
+  }));
 
   const addSecondaryDiagnosis = () => {
     updateFormData({
@@ -45,15 +50,14 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <SearchableSelect
-              label="Primary Diagnosis"
-              value={formData.primaryDiagnosis}
-              onChange={(value) => updateFormData({ primaryDiagnosis: value })}
-              options={diagnosisOptions}
-              placeholder={isLoading ? "Loading diagnoses..." : "Search for a diagnosis..."}
-              required
-              disabled={isLoading}
-            />
+                         <SearchableSelect
+               label="Primary Diagnosis"
+               value={formData.primaryDiagnosis}
+               onChange={(value) => updateFormData({ primaryDiagnosis: value })}
+               options={diagnosisOptions}
+               placeholder="Search for a diagnosis..."
+               required
+             />
           </div>
         </CardContent>
       </Card>
@@ -73,14 +77,13 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
             {formData.secondaryDiagnoses.map((diagnosis, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <div className="flex-1">
-                  <SearchableSelect
-                    label={`Secondary Diagnosis ${index + 1}`}
-                    value={diagnosis}
-                    onChange={(value) => updateSecondaryDiagnosis(index, value)}
-                    options={diagnosisOptions}
-                    placeholder={isLoading ? "Loading diagnoses..." : "Search for a diagnosis..."}
-                    disabled={isLoading}
-                  />
+                                     <SearchableSelect
+                     label={`Secondary Diagnosis ${index + 1}`}
+                     value={diagnosis}
+                     onChange={(value) => updateSecondaryDiagnosis(index, value)}
+                     options={diagnosisOptions}
+                     placeholder="Search for a diagnosis..."
+                   />
                 </div>
                 <Button
                   size="sm"

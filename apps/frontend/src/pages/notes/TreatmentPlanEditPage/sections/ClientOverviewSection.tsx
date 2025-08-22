@@ -84,7 +84,11 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             onChange={(value) => updateFormData({ primaryPhone: value })}
             onValidationChange={handleValidationChange('primaryPhone')}
             validation={validationSchemas.phone}
-            sanitizer={sanitizeInput.phone}
+            sanitizer={(input: string) => {
+              if (!input) return '';
+              // Allow phone numbers with spaces, dashes, parentheses, plus signs
+              return input.replace(/[^0-9\s\-\(\)\+\.]/g, '').slice(0, 20);
+            }}
             placeholder="Enter primary phone number"
           />
 
@@ -107,7 +111,14 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
             onChange={(value) => updateFormData({ primaryInsurance: value })}
             onValidationChange={handleValidationChange('primaryInsurance')}
             validation={validationSchemas.textArea}
-            sanitizer={sanitizeInput.text}
+            sanitizer={(input: string) => {
+              if (!input) return '';
+              // Only remove HTML tags and javascript protocols, preserve spaces and length
+              return input
+                .replace(/[<>]/g, '')
+                .replace(/javascript:/gi, '')
+                .slice(0, 100);
+            }}
             placeholder="Enter primary insurance"
           />
 
