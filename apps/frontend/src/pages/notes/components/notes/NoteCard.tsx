@@ -3,11 +3,12 @@ import React from 'react';
 import { Card, CardContent } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
-import { FileText, Calendar, User, Clock, AlertTriangle } from 'lucide-react';
+import { FileText, Calendar, User, Clock, AlertTriangle, Bot } from 'lucide-react';
 import { format, isAfter, subDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Note } from '@/types/noteType';
 import { useAuth } from '@/hooks/useAuth';
+import { useAIChatbot } from '@/components/ai-chatbot/AIChatbotContext';
 
 interface NoteCardProps {
   note: Note;
@@ -30,6 +31,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { openChatWithNote } = useAIChatbot();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -72,6 +74,47 @@ const NoteCard: React.FC<NoteCardProps> = ({
     }
   };
 
+  const handleAIChat = () => {
+    // Extract note content in a readable format
+    let noteContent = 'No content available';
+    
+    if (note.content && typeof note.content === 'object') {
+      try {
+        // Convert content object to readable string
+        const contentEntries = Object.entries(note.content);
+        if (contentEntries.length > 0) {
+          noteContent = contentEntries
+            .map(([key, value]) => {
+              if (value && typeof value === 'string' && value.trim()) {
+                return `${key}: ${value}`;
+              } else if (value && typeof value === 'object') {
+                return `${key}: ${JSON.stringify(value, null, 2)}`;
+              }
+              return null;
+            })
+            .filter(Boolean)
+            .join('\n');
+        }
+      } catch (error) {
+        noteContent = 'Content available but could not be parsed';
+      }
+    }
+    
+    // Fallback to title if no content
+    if (!noteContent || noteContent === 'No content available') {
+      noteContent = note.title;
+    }
+
+    const noteContext = {
+      noteId: note.id,
+      noteType: note.noteType,
+      clientName: `${note.client?.firstName || ''} ${note.client?.lastName || ''}`.trim(),
+      noteContent: noteContent
+    };
+
+    openChatWithNote(noteContext);
+  };
+
   return (
     <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardContent className="p-6">
@@ -98,6 +141,17 @@ const NoteCard: React.FC<NoteCardProps> = ({
               <span>ID: {note.id.slice(0, 8)}...</span>
             </div>
           </div>
+          
+          {/* AI Chat Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleAIChat}
+            className="p-2 hover:bg-blue-50 text-blue-600 hover:text-blue-700 transition-colors"
+            title="Chat with AI about this note"
+          >
+            <Bot className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Content */}

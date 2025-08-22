@@ -50,8 +50,6 @@ const NotesList = () => {
     },
   });
 
-
-
   // Apply search filter and sorting
   const filteredNotes = React.useMemo(() => {
     if (!notesResponse?.notes) return [];

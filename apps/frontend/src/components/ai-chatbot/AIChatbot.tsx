@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bot } from 'lucide-react';
-import { useAIChatbot } from '@/hooks/useAIChatbot';
+import { useAIChatbot } from './AIChatbotContext';
 import { ChatInterface } from './ChatInterface';
 
 export const AIChatbot: React.FC = () => {
@@ -9,6 +9,7 @@ export const AIChatbot: React.FC = () => {
     messages,
     isLoading,
     error,
+    noteContext,
     messagesEndRef,
     sendMessage,
     openChat,
@@ -16,6 +17,8 @@ export const AIChatbot: React.FC = () => {
     clearChat,
     startNewConversation,
   } = useAIChatbot();
+
+  console.log('AIChatbot render - isOpen:', isOpen, 'noteContext:', noteContext);
 
   return (
     <>
@@ -40,6 +43,7 @@ export const AIChatbot: React.FC = () => {
           onStartNewConversation={startNewConversation}
           isLoading={isLoading}
           messagesEndRef={messagesEndRef}
+          noteContext={noteContext}
         />
       )}
 

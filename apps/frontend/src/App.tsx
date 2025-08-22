@@ -9,7 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { SidebarProvider } from "@/hooks/useSidebarContext";
 import BaseRoutes from "./routes";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { AIChatbot } from "@/components/ai-chatbot";
+import { AIChatbot, AIChatbotProvider } from "@/components/ai-chatbot";
 
 const queryClient = new QueryClient();
 const router = createBrowserRouter(BaseRoutes);
@@ -20,13 +20,15 @@ function App() {
       <AuthProvider>
         <TooltipProvider>
           <SidebarProvider>
-            <Suspense fallback={<LoadingSpinner />}>
-              <RouterProvider router={router} />
-            </Suspense>
+            <AIChatbotProvider>
+              <Suspense fallback={<LoadingSpinner />}>
+                <RouterProvider router={router} />
+              </Suspense>
+              <AIChatbot />
+              <Toaster />
+              <Sonner />
+            </AIChatbotProvider>
           </SidebarProvider>
-          <AIChatbot />
-          <Toaster />
-          <Sonner />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

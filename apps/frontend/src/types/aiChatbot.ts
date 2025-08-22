@@ -22,6 +22,12 @@ export interface ChatSession {
 export interface ChatRequest {
   message: string;
   sessionId?: string;
+  noteContext?: {
+    noteId: string;
+    noteType: string;
+    clientName: string;
+    noteContent: string;
+  };
 }
 
 export interface ChatResponse {
@@ -36,4 +42,10 @@ export interface AIChatbotState {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
+  noteContext?: {
+    noteId: string;
+    noteType: string;
+    clientName: string;
+    noteContent: string;
+  };
 }

@@ -42,10 +42,16 @@ export class AIChatbotService {
       // Prepare messages for OpenAI - only send last N messages for performance
       const recentMessages = (existingSession.messages as unknown as OpenAIMessage[]).slice(-AI_CHATBOT_CONFIG.MAX_CONTEXT_MESSAGES);
       
+      // Build system prompt with note context if available
+      let systemPrompt = AI_CHATBOT_CONFIG.SYSTEM_PROMPT;
+      if (request.noteContext) {
+        systemPrompt += `\n\nYou are currently discussing a ${request.noteContext.noteType.replace('_', ' ')} note for client ${request.noteContext.clientName}. Here is the note content:\n\n${request.noteContext.noteContent}\n\nPlease provide helpful insights and assistance related to this specific note.`;
+      }
+      
       const messages: OpenAIMessage[] = [
         {
           role: 'system',
-          content: AI_CHATBOT_CONFIG.SYSTEM_PROMPT
+          content: systemPrompt
         },
         ...recentMessages,
         {

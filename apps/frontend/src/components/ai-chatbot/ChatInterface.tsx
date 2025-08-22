@@ -2,7 +2,7 @@ import React from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ChatMessage as ChatMessageType } from '@/types/aiChatbot';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, FileText, User } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 
 interface ChatInterfaceProps {
@@ -13,6 +13,12 @@ interface ChatInterfaceProps {
   onStartNewConversation: () => void;
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement>;
+  noteContext?: {
+    noteId: string;
+    noteType: string;
+    clientName: string;
+    noteContent: string;
+  };
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -23,6 +29,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onStartNewConversation,
   isLoading,
   messagesEndRef,
+  noteContext,
 }) => {
   return (
     <div className="fixed bottom-4 right-4 w-96 h-[500px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col z-50">
@@ -69,6 +76,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Note Context Info */}
+      {noteContext && (
+        <div className="px-4 py-3 bg-blue-50 border-b border-blue-200">
+          <div className="flex items-center gap-2 text-sm">
+            <FileText className="h-4 w-4 text-blue-600" />
+            <span className="font-medium text-blue-800">
+              {noteContext.noteType.replace('_', ' ').toUpperCase()}
+            </span>
+            <span className="text-blue-600">•</span>
+            <User className="h-4 w-4 text-blue-600" />
+            <span className="font-medium text-blue-800">{noteContext.clientName}</span>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-2">

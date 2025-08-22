@@ -19,6 +19,24 @@ export class ChatMessageDto {
   timestamp?: string;
 }
 
+export class NoteContextDto {
+  @IsString()
+  @IsNotEmpty()
+  noteId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  noteType: string;
+
+  @IsString()
+  @IsNotEmpty()
+  clientName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  noteContent: string;
+}
+
 export class ChatRequestDto {
   @IsString()
   @IsNotEmpty()
@@ -27,6 +45,9 @@ export class ChatRequestDto {
   @IsOptional()
   @IsString()
   sessionId?: string;
+
+  @IsOptional()
+  noteContext?: NoteContextDto;
 }
 
 export class ChatResponseDto {
