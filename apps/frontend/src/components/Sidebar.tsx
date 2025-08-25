@@ -85,7 +85,19 @@ const menuItems: MenuItem[] = [
       { id: 'staff-permissions', label: 'Permissions', path: '/staff/permissions' },
     ]
   },
-  { id: 'compliance', label: 'Compliance', icon: Shield, path: '/compliance' },
+  { 
+    id: 'compliance', 
+    label: 'Compliance', 
+    icon: Shield, 
+    path: '/compliance',
+    subItems: [
+      { id: 'compensation', label: 'Compensation', path: '/compliance/compensation' },
+      { id: 'sessions', label: 'Sessions', path: '/compliance/sessions' },
+      { id: 'time-tracking', label: 'Time Tracking', path: '/compliance/time-tracking' },
+      { id: 'payments', label: 'Payments', path: '/compliance/payments' },
+      { id: 'deadlines', label: 'Deadlines', path: '/compliance/deadlines' }
+    ]
+  },
   { id: 'settings', label: 'Practice Settings', icon: Settings, path: '/settings' },
 ];
 
@@ -95,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance']));
 
   const getActiveItem = () => {
     if (propActiveItem) return propActiveItem;
@@ -118,6 +130,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       }
       // If no specific sub-item matches, return 'notes' for the main notes page
       return 'notes';
+    }
+
+    // Handle compliance sub-items
+    if (currentPath.startsWith('/compliance')) {
+      for (const item of menuItems) {
+        if (item.id === 'compliance' && item.subItems) {
+          const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
+          if (matchedSubItem) {
+            return matchedSubItem.id;
+          }
+        }
+      }
+      // If no specific sub-item matches, return 'compliance-overview' for the main compliance page
+      return 'compliance-overview';
     }
 
     for (const item of menuItems) {

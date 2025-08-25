@@ -62,6 +62,44 @@ export interface ComplianceMetrics {
 export class ComplianceService {
   private baseUrl = '/compliance';
 
+  // Get all compliance data (generic method)
+  async getAll(filter?: string): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (filter) params.append('filter', filter);
+    
+    const url = `${this.baseUrl}/all${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiClient.get<any[]>(url);
+    return response.data;
+  }
+
+  // Create new compliance entry
+  async create(data: any): Promise<any> {
+    const response = await apiClient.post(`${this.baseUrl}/create`, data);
+    return response.data;
+  }
+
+  // Clock in functionality
+  async clockIn(userId: string): Promise<any> {
+    const response = await apiClient.post(`${this.baseUrl}/clock-in`, { userId });
+    return response.data;
+  }
+
+  // Clock out functionality
+  async clockOut(entryId: string): Promise<any> {
+    const response = await apiClient.post(`${this.baseUrl}/clock-out`, { entryId });
+    return response.data;
+  }
+
+  // Get session multipliers
+  async getSessionMultipliers(providerId?: string): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (providerId) params.append('providerId', providerId);
+    
+    const url = `${this.baseUrl}/session-multipliers${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiClient.get<any[]>(url);
+    return response.data;
+  }
+
   // Get payment calculations with filters
   async getPaymentCalculations(status?: string, period?: string): Promise<PaymentCalculation[]> {
     const params = new URLSearchParams();

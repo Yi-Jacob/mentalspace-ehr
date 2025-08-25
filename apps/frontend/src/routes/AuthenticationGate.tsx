@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { cn } from '@/utils/utils';
 import { Button } from '@/components/basic/button';
 import { Menu } from 'lucide-react';
+import { AIChatbot } from "@/components/ai-chatbot";
 
 interface AuthenticationGateProps {
   children?: React.ReactNode;
@@ -30,7 +31,7 @@ const AuthenticationGate: React.FC<AuthenticationGateProps> = ({ children }) => 
   return (
     <div className="flex w-full min-h-screen">
       <Sidebar />
-      
+      <AIChatbot />
       {/* Mobile Menu Button */}
       {isMobile && (
         <div className="fixed top-4 left-4 z-30 lg:hidden">
