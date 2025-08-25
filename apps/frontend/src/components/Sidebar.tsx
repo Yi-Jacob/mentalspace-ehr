@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   ChevronDown,
   ChevronRight,
-  Home
+  Home,
+  Circle
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -161,13 +162,22 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
   const activeItem = getActiveItem();
 
-  const handleItemClick = (item: { id: string; path: string }) => {
+  const handleItemClick = (item: { id: string; path: string }, event: React.MouseEvent) => {
+    // If middle click (scroll wheel click), open in new tab
+    if (event.button === 1) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.open(item.path, '_blank');
+      return;
+    }
+
+    // If onItemClick prop is provided, use it
     if (onItemClick) {
       onItemClick(item.id);
-    } else {
-      // Open in new tab instead of navigating in current tab
-      window.open(item.path, '_blank');
+      return;
     }
+
+    // Otherwise, navigate in the same tab (Link component will handle this)
   };
 
   const toggleExpanded = (itemId: string) => {
@@ -263,73 +273,122 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
           return (
             <div key={item.id} className="space-y-1">
-              <button
-                onClick={() => {
-                  if (item.subItems) {
-                    toggleExpanded(item.id);
-                  } else {
-                    handleItemClick(item);
-                  }
-                }}
-                className={cn(
-                  "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left group relative",
-                  isActive
-                    ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
-                    : "text-blue-200 hover:bg-blue-700/50 hover:text-white",
-                  isCollapsed && "justify-center space-x-0 px-2 py-3"
-                )}
-                title={isCollapsed ? item.label : undefined}
-              >
-                {/* Active indicator */}
-                {isActive && !isCollapsed && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></div>
-                )}
+              {item.subItems ? (
+                // Items with sub-items - keep as button for expansion
+                <button
+                  onClick={() => toggleExpanded(item.id)}
+                  className={cn(
+                    "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left group relative",
+                    isActive
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+                      : "text-white hover:bg-blue-700/50 hover:text-white",
+                    isCollapsed && "justify-center space-x-0 px-2 py-3"
+                  )}
+                  style={{ color: 'white' }}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  {/* Active indicator */}
+                  {isActive && !isCollapsed && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></div>
+                  )}
 
-                <div className={cn(
-                  "flex items-center justify-center rounded-xl transition-all duration-200",
-                  isActive
-                    ? "bg-white/20 text-white"
-                    : "bg-blue-700/50 text-blue-200 group-hover:bg-blue-600 group-hover:text-white"
-                )}>
-                  <IconComponent size={18} />
-                </div>
+                  <div className={cn(
+                    "flex items-center justify-center rounded-xl transition-all duration-200",
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-blue-700/50 text-white group-hover:bg-blue-600 group-hover:text-white"
+                  )}>
+                    <IconComponent size={18} />
+                  </div>
 
-                {!isCollapsed && (
-                  <>
-                    <span className="font-medium text-sm flex-1">{item.label}</span>
-                    {item.subItems && (
+                  {!isCollapsed && (
+                    <>
+                      <span className="font-medium text-sm flex-1" style={{ color: 'white' }}>{item.label}</span>
                       <div className="ml-auto flex-shrink-0">
                         {isExpanded ? (
-                          <ChevronDown size={14} className="text-blue-300" />
+                          <ChevronDown size={14} className="text-white" />
                         ) : (
-                          <ChevronRight size={14} className="text-blue-300" />
+                          <ChevronRight size={14} className="text-white" />
                         )}
                       </div>
-                    )}
-                  </>
-                )}
-              </button>
+                    </>
+                  )}
+                </button>
+              ) : (
+                // Items without sub-items - use Link component
+                <Link
+                  to={item.path}
+                  onClick={(event) => handleItemClick(item, event)}
+                  onMouseDown={(event) => {
+                    // Prevent default behavior for middle click
+                    if (event.button === 1) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }
+                  }}
+                  className={cn(
+                    "w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left group relative no-underline hover:no-underline focus:no-underline",
+                    isActive
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+                      : "text-white hover:bg-blue-700/50 hover:text-white",
+                    isCollapsed && "justify-center space-x-0 px-2 py-3"
+                  )}
+                  style={{ color: 'white' }}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  {/* Active indicator */}
+                  {isActive && !isCollapsed && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full"></div>
+                  )}
+
+                  <div className={cn(
+                    "flex items-center justify-center rounded-xl transition-all duration-200",
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-blue-700/50 text-white group-hover:bg-blue-600 group-hover:text-white"
+                  )}>
+                    <IconComponent size={18} />
+                  </div>
+
+                  {!isCollapsed && (
+                    <span className="font-medium text-sm flex-1" style={{ color: 'white' }}>{item.label}</span>
+                  )}
+                </Link>
+              )}
 
               {/* Sub-items */}
               {item.subItems && !isCollapsed && isExpanded && (
                 <div className="ml-4 space-y-1">
                   {item.subItems.map((subItem) => (
-                    <button
+                    <Link
                       key={subItem.id}
-                      onClick={() => handleItemClick(subItem)}
+                      to={subItem.path}
+                      onClick={(event) => handleItemClick(subItem, event)}
+                      onMouseDown={(event) => {
+                        // Prevent default behavior for middle click
+                        if (event.button === 1) {
+                          event.preventDefault();
+                          event.stopPropagation();
+                        }
+                      }}
                       className={cn(
-                        "w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 text-left text-sm relative",
+                        "w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 text-left text-sm relative no-underline hover:no-underline focus:no-underline",
                         activeItem === subItem.id
-                          ? "bg-blue-500/30 text-blue-200 border border-blue-400/50"
-                          : "text-blue-300 hover:bg-blue-700/50 hover:text-blue-200"
+                          ? "bg-blue-500/30 text-white border border-blue-400/50"
+                          : "text-white hover:bg-blue-700/50 hover:text-white"
                       )}
+                      style={{ color: 'white' }}
                     >
                       <div className={cn(
-                        "w-2 h-2 rounded-full flex-shrink-0",
-                        activeItem === subItem.id ? "bg-blue-300" : "bg-blue-500"
-                      )}></div>
-                      <span className="font-medium">{subItem.label}</span>
-                    </button>
+                        "flex items-center justify-center rounded-full transition-all duration-200",
+                        activeItem === subItem.id 
+                          ? "bg-blue-300 text-blue-800" 
+                          : "bg-blue-400/50 text-blue-200"
+                      )}>
+                        <Circle size={12} fill="currentColor" />
+                      </div>
+                      <span className="font-medium" style={{ color: 'white' }}>{subItem.label}</span>
+                    </Link>
                   ))}
                 </div>
               )}
