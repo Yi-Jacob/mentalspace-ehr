@@ -18,7 +18,7 @@ class WebSocketService {
       return;
     }
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:7000';
     
     try {
       this.socket = io(`${backendUrl}/messages`, {
