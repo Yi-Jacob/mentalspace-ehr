@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
@@ -14,16 +15,28 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 
 const TimeTracking: React.FC = () => {
+  const { user } = useAuth();
   const [showTimeEntryModal, setShowTimeEntryModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // TODO: Get current user ID from auth context
+  const currentUserId = user?.id;
 
   const { data: timeEntries, isLoading } = useQuery({
     queryKey: ['time-entries', selectedDate],
     queryFn: async () => {
       return complianceService.getAll(selectedDate);
     },
+  });
+
+  const { data: activeTimeEntry } = useQuery({
+    queryKey: ['active-time-entry', currentUserId],
+    queryFn: async () => {
+      return complianceService.getActiveTimeEntry(currentUserId);
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds to keep status updated
   });
 
   const createTimeEntryMutation = useMutation({
@@ -49,12 +62,11 @@ const TimeTracking: React.FC = () => {
 
   const clockInMutation = useMutation({
     mutationFn: async () => {
-      // TODO: Get current user ID from auth context
-      const userId = 'current-user-id'; // This should come from auth context
-      return complianceService.clockIn(userId);
+      return complianceService.clockIn(currentUserId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
+      queryClient.invalidateQueries({ queryKey: ['active-time-entry'] });
       toast({
         title: 'Success',
         description: 'Clocked in successfully',
@@ -75,6 +87,7 @@ const TimeTracking: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
+      queryClient.invalidateQueries({ queryKey: ['active-time-entry'] });
       toast({
         title: 'Success',
         description: 'Clocked out successfully',
@@ -91,7 +104,7 @@ const TimeTracking: React.FC = () => {
 
   const handleSaveTimeEntry = (formData: FormData) => {
     const entryData = {
-      userId: 'current-user-id', // TODO: Get from auth context
+      userId: currentUserId,
       entryDate: formData.get('entry_date'),
       clockInTime: formData.get('clock_in_time'),
       clockOutTime: formData.get('clock_out_time'),
@@ -137,6 +150,21 @@ const TimeTracking: React.FC = () => {
       />
 
       <div className="space-y-6">
+        {/* Status Indicator */}
+        {activeTimeEntry && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <Clock className="h-5 w-5 text-green-600 animate-pulse" />
+              <div>
+                <h3 className="text-sm font-medium text-green-800">Currently Clocked In</h3>
+                <p className="text-sm text-green-600">
+                  Started at {formatTime(activeTimeEntry.clockInTime)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
@@ -149,14 +177,26 @@ const TimeTracking: React.FC = () => {
           </div>
           
           <div className="flex space-x-2">
-            <Button 
-              onClick={() => clockInMutation.mutate()}
-              disabled={clockInMutation.isPending}
-              className="flex items-center space-x-2"
-            >
-              <Play className="h-4 w-4" />
-              <span>Clock In</span>
-            </Button>
+            {activeTimeEntry ? (
+              <Button 
+                onClick={() => clockOutMutation.mutate(activeTimeEntry.id)}
+                disabled={clockOutMutation.isPending}
+                variant="destructive"
+                className="flex items-center space-x-2"
+              >
+                <Pause className="h-4 w-4" />
+                <span>Clock Out</span>
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => clockInMutation.mutate()}
+                disabled={clockInMutation.isPending}
+                className="flex items-center space-x-2"
+              >
+                <Play className="h-4 w-4" />
+                <span>Clock In</span>
+              </Button>
+            )}
             
             <Dialog open={showTimeEntryModal} onOpenChange={setShowTimeEntryModal}>
               <DialogTrigger asChild>
@@ -338,7 +378,7 @@ const TimeTracking: React.FC = () => {
                         </Button>
                       )}
                       <Button variant="outline" size="sm">
-                        Edit
+                        Approve
                       </Button>
                     </div>
                   </div>
@@ -355,10 +395,20 @@ const TimeTracking: React.FC = () => {
             <p className="text-gray-600 mb-4">
               No time entries for {new Date(selectedDate).toLocaleDateString()}
             </p>
-            <Button onClick={() => clockInMutation.mutate()}>
-              <Play className="h-4 w-4 mr-2" />
-              Clock In
-            </Button>
+            {!activeTimeEntry ? (
+              <Button onClick={() => clockInMutation.mutate()}>
+                <Play className="h-4 w-4 mr-2" />
+                Clock In
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => clockOutMutation.mutate(activeTimeEntry.id)}
+                variant="destructive"
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                Clock Out
+              </Button>
+            )}
           </div>
         )}
       </div>

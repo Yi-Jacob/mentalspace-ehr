@@ -62,31 +62,38 @@ export interface ComplianceMetrics {
 export class ComplianceService {
   private baseUrl = '/compliance';
 
-  // Get all compliance data (generic method)
-  async getAll(filter?: string): Promise<any[]> {
+  // Get all time entries
+  async getAll(date?: string, userId?: string): Promise<any[]> {
     const params = new URLSearchParams();
-    if (filter) params.append('filter', filter);
+    if (date) params.append('date', date);
+    if (userId) params.append('userId', userId);
     
-    const url = `${this.baseUrl}/all${params.toString() ? `?${params.toString()}` : ''}`;
+    const url = `${this.baseUrl}/time-tracking${params.toString() ? `?${params.toString()}` : ''}`;
     const response = await apiClient.get<any[]>(url);
     return response.data;
   }
 
-  // Create new compliance entry
+  // Create new time entry
   async create(data: any): Promise<any> {
-    const response = await apiClient.post(`${this.baseUrl}/create`, data);
+    const response = await apiClient.post(`${this.baseUrl}/time-tracking`, data);
     return response.data;
   }
 
   // Clock in functionality
   async clockIn(userId: string): Promise<any> {
-    const response = await apiClient.post(`${this.baseUrl}/clock-in`, { userId });
+    const response = await apiClient.post(`${this.baseUrl}/time-tracking/clock-in`, { userId });
     return response.data;
   }
 
   // Clock out functionality
   async clockOut(entryId: string): Promise<any> {
-    const response = await apiClient.post(`${this.baseUrl}/clock-out`, { entryId });
+    const response = await apiClient.post(`${this.baseUrl}/time-tracking/${entryId}/clock-out`);
+    return response.data;
+  }
+
+  // Get active time entry for user
+  async getActiveTimeEntry(userId: string): Promise<any> {
+    const response = await apiClient.get(`${this.baseUrl}/time-tracking/active/${userId}`);
     return response.data;
   }
 

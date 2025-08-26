@@ -48,4 +48,9 @@ export class TimeTrackingController {
   async approveTimeEntry(@Param('id') id: string, @Body() approveDto: { approvedBy: string }) {
     return this.timeTrackingService.approveTimeEntry(id, approveDto.approvedBy);
   }
+
+  @Get('active/:userId')
+  async getActiveTimeEntry(@Param('userId') userId: string) {
+    return this.timeTrackingService.getActiveTimeEntry(userId);
+  }
 } 

@@ -737,9 +737,9 @@ model TimeEntry {
   totalHours     Float?    @map("total_hours")
   regularHours   Float?    @map("regular_hours")
   overtimeHours  Float?    @map("overtime_hours")
-  isApproved     Boolean?  @map("is_approved")
+  isApproved     Boolean?  @default(false) @map("is_approved")
   approvedBy     String?   @map("approved_by")
-  approvedAt     DateTime  @default(now()) @map("approved_at")
+  approvedAt     DateTime? @map("approved_at")
   notes          String?
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @default(now()) @map("updated_at")

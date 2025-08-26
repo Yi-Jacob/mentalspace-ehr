@@ -74,6 +74,7 @@ export class TimeTrackingService {
   }
 
   async createTimeEntry(createTimeEntryDto: CreateTimeEntryDto) {
+    console.log(createTimeEntryDto);
     const data: any = {
       ...createTimeEntryDto,
       entryDate: new Date(createTimeEntryDto.entryDate),
@@ -176,9 +177,6 @@ export class TimeTrackingService {
           gte: today,
           lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
         },
-        clockInTime: {
-          not: null,
-        },
         clockOutTime: null,
       },
     });
@@ -191,6 +189,7 @@ export class TimeTrackingService {
       userId,
       entryDate: today,
       clockInTime: new Date(),
+      isApproved: false,
     };
 
     return this.prisma.timeEntry.create({
@@ -253,6 +252,30 @@ export class TimeTrackingService {
           },
         },
         approvedByUser: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getActiveTimeEntry(userId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.prisma.timeEntry.findFirst({
+      where: {
+        userId,
+        entryDate: {
+          gte: today,
+          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        },
+        clockOutTime: null,
+      },
+      include: {
+        user: {
           select: {
             firstName: true,
             lastName: true,
