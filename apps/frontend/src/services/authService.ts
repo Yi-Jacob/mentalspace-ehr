@@ -6,6 +6,7 @@ export interface User {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  roles: string[];
 }
 
 export interface LoginRequest {
@@ -21,6 +22,7 @@ export interface LoginResponse {
     firstName: string;
     lastName: string;
     isActive: boolean;
+    roles: string[];
   };
 }
 

@@ -16,6 +16,12 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
+      include: {
+        userRoles: {
+          where: { isActive: true },
+          select: { role: true }
+        }
+      }
     });
 
     if (!user) {
@@ -32,10 +38,13 @@ export class AuthService {
       throw new UnauthorizedException('Account is deactivated');
     }
 
+    // Extract roles from userRoles
+    const roles = user.userRoles.map(userRole => userRole.role);
+    
     const payload = { 
       email: user.email, 
       sub: user.id,
-      roles: ['CLINICIAN'] // Default role
+      roles: roles
     };
 
     return {
@@ -46,6 +55,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         isActive: user.isActive,
+        roles: roles,
       },
     };
   }
@@ -55,11 +65,20 @@ export class AuthService {
       const payload = this.jwtService.verify(token);
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
+        include: {
+          userRoles: {
+            where: { isActive: true },
+            select: { role: true }
+          }
+        }
       });
 
       if (!user || !user.isActive) {
         return null;
       }
+
+      // Extract roles from userRoles
+      const roles = user.userRoles.map(userRole => userRole.role);
 
       return {
         id: user.id,
@@ -67,6 +86,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         isActive: user.isActive,
+        roles: roles,
       };
     } catch (error) {
       return null;

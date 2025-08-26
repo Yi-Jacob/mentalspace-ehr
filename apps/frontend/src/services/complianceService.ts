@@ -97,6 +97,21 @@ export class ComplianceService {
     return response.data;
   }
 
+  // Approve time entry
+  async approveTimeEntry(entryId: string, approvedBy: string): Promise<any> {
+    const response = await apiClient.post(`${this.baseUrl}/time-tracking/${entryId}/approve`, { approvedBy });
+    return response.data;
+  }
+
+  // Ask for update on time entry
+  async askForUpdateTimeEntry(entryId: string, requestedBy: string, updateNotes?: string): Promise<any> {
+    const response = await apiClient.post(`${this.baseUrl}/time-tracking/${entryId}/ask-for-update`, { 
+      requestedBy, 
+      updateNotes 
+    });
+    return response.data;
+  }
+
   // Get session multipliers
   async getSessionMultipliers(providerId?: string): Promise<any[]> {
     const params = new URLSearchParams();

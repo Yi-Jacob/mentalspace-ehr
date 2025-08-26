@@ -10,34 +10,47 @@ export const USER_STATUS_OPTIONS = [
 
 export type UserStatus = typeof USER_STATUS_OPTIONS[number]['value'];
 
+export const USER_ROLES = {
+  PRACTICE_ADMINISTRATOR: 'Practice Administrator',
+  PRACTICE_SCHEDULER: 'Practice Scheduler',
+  CLINICIAN: 'Clinician',
+  INTERN: 'Intern',
+  ASSISTANT: 'Assistant',
+  ASSOCIATE: 'Associate',
+  SUPERVISOR: 'Supervisor',
+  CLINICAL_ADMINISTRATOR: 'Clinical Administrator',
+  BILLER_FOR_ASSIGNED_PATIENTS_ONLY: 'Biller for Assigned Patients Only',
+  PRACTICE_BILLER: 'Practice Biller'
+}
+
 // User Role Options - Static list based on roleCategories
 export const USER_ROLE_OPTIONS = [
-  { value: 'Practice Administrator', label: 'Practice Administrator' },
-  { value: 'Practice Scheduler', label: 'Practice Scheduler' },
-  { value: 'Clinician', label: 'Clinician' },
-  { value: 'Intern', label: 'Intern / Assistant / Associate' },
-  { value: 'Assistant', label: 'Assistant' },
-  { value: 'Associate', label: 'Associate' },
-  { value: 'Supervisor', label: 'Supervisor' },
-  { value: 'Clinical Administrator', label: 'Clinical Administrator' },
-  { value: 'Biller for Assigned Patients Only', label: 'Biller for Assigned Patients Only' },
-  { value: 'Practice Biller', label: 'Practice Biller' }
+  { value: USER_ROLES.PRACTICE_ADMINISTRATOR, label: 'Practice Administrator' },
+  { value: USER_ROLES.PRACTICE_SCHEDULER, label: 'Practice Scheduler' },
+  { value: USER_ROLES.CLINICIAN, label: 'Clinician' },
+  { value: USER_ROLES.INTERN, label: 'Intern / Assistant / Associate' },
+  { value: USER_ROLES.ASSISTANT, label: 'Assistant' },
+  { value: USER_ROLES.ASSOCIATE, label: 'Associate' },
+  { value: USER_ROLES.SUPERVISOR, label: 'Supervisor' },
+  { value: USER_ROLES.CLINICAL_ADMINISTRATOR, label: 'Clinical Administrator' },
+  { value: USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY, label: 'Biller for Assigned Patients Only' },
+  { value: USER_ROLES.PRACTICE_BILLER, label: 'Practice Biller' }
 ];
 
 export type UserRole = typeof USER_ROLE_OPTIONS[number]['value'];
 
 // Role Descriptions (for tooltips and help text)
 export const ROLE_DESCRIPTIONS = {
-  'Practice Administrator': 'A TherapyNotes Practice Administrator can add and edit TherapyNotes users, change user roles, reset passwords, and set account access settings.',
-  'Practice Scheduler': 'A Scheduler can schedule, reschedule, and cancel appointments for any clinician. They can add, edit, or remove new patients.',
-  'Clinician': 'Clinicians provide services to a client. They can view and edit their own schedule, complete notes and manage records of patients assigned to them.',
-  'Intern': 'The Intern role is similar to a Clinician but with limitations. Interns do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
-  'Assistant': 'The Assistant role is similar to a Clinician but with limitations. Assistants do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
-  'Associate': 'The Associate role is similar to a Clinician but with limitations. Associates do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
-  'Supervisor': 'A Supervisor can be assigned to individual clinicians and interns, granting full access to their supervisees\' patient\'s notes.',
-  'Clinical Administrator': 'A Clinical Administrator must also have the Clinician role. They can access any patient\'s records and can give other clinicians access to any patient records.',
-  'Biller for Assigned Patients Only': 'Clinicians with this role can collect and enter copay information, including by processing patient credit cards.',
-  'Practice Biller': 'A Practice Biller has full billing access to all patients in the practice. They can verify patient insurance, generate and track claims, enter patient and insurance payments, and run billing reports.'
+  [USER_ROLES.PRACTICE_ADMINISTRATOR]: 'A TherapyNotes Practice Administrator can add and edit TherapyNotes users, change user roles, reset passwords, and set account access settings.',
+  [USER_ROLES.PRACTICE_SCHEDULER]: 'A Scheduler can schedule, reschedule, and cancel appointments for any clinician. They can add, edit, or remove new patients.',
+  [USER_ROLES.CLINICIAN]: 'Clinicians provide services to a client. They can view and edit their own schedule, complete notes and manage records of patients assigned to them.',
+  [USER_ROLES.INTERN]: 'The Intern role is similar to a Clinician but with limitations. Interns do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
+  [USER_ROLES.ASSISTANT]: 'The Assistant role is similar to a Clinician but with limitations. Assistants do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
+  [USER_ROLES.ASSOCIATE]: 'The Associate role is similar to a Clinician but with limitations. Associates do not have an NPI and can only bill to insurance under a Supervisor\'s credentials.',
+  [USER_ROLES.SUPERVISOR]: 'A Supervisor can be assigned to individual clinicians and interns, granting full access to their supervisees\' patient\'s notes.',
+  [USER_ROLES.CLINICAL_ADMINISTRATOR]: 'A Clinical Administrator must also have the Clinician role. They can access any patient\'s records and can give other clinicians access to any patient records.',
+  [USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY]: 'Clinicians with this role can collect and enter copay information, including by processing patient credit cards.',
+  [USER_ROLES.PRACTICE_BILLER]: 'A Practice Biller has full billing access to all patients in the practice. They can verify patient insurance, generate and track claims, enter patient and insurance payments, and run billing reports.'
 } as const;
 
 // Static role categories for the RolesSection component
@@ -46,9 +59,9 @@ export const ROLE_CATEGORIES = [
     title: 'Practice Administration',
     items: [
       {
-        id: 'Practice Administrator',
+        id: USER_ROLES.PRACTICE_ADMINISTRATOR,
         label: 'Practice Administrator',
-        description: ROLE_DESCRIPTIONS['Practice Administrator']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.PRACTICE_ADMINISTRATOR]
       }
     ]
   },
@@ -56,9 +69,9 @@ export const ROLE_CATEGORIES = [
     title: 'Scheduling Access',
     items: [
       {
-        id: 'Practice Scheduler',
+        id: USER_ROLES.PRACTICE_SCHEDULER,
         label: 'Practice Scheduler',
-        description: ROLE_DESCRIPTIONS['Practice Scheduler']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.PRACTICE_SCHEDULER]
       }
     ]
   },
@@ -66,25 +79,25 @@ export const ROLE_CATEGORIES = [
     title: 'Clinical Access',
     items: [
       {
-        id: 'Clinician',
+        id: USER_ROLES.CLINICIAN,
         label: 'Clinician',
-        description: ROLE_DESCRIPTIONS['Clinician']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.CLINICIAN]
       },
       {
-        id: 'Intern',
+        id: USER_ROLES.INTERN,
         label: 'Intern',
         displayName: 'Intern / Assistant / Associate',
-        description: ROLE_DESCRIPTIONS['Intern']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.INTERN]
       },
       {
-        id: 'Supervisor',
+        id: USER_ROLES.SUPERVISOR,
         label: 'Supervisor',
-        description: ROLE_DESCRIPTIONS['Supervisor']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.SUPERVISOR]
       },
       {
-        id: 'Clinical Administrator',
+        id: USER_ROLES.CLINICAL_ADMINISTRATOR,
         label: 'Clinical Administrator',
-        description: ROLE_DESCRIPTIONS['Clinical Administrator']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.CLINICAL_ADMINISTRATOR]
       }
     ]
   },
@@ -92,14 +105,14 @@ export const ROLE_CATEGORIES = [
     title: 'Billing Access',
     items: [
       {
-        id: 'Biller for Assigned Patients Only',
+        id: USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
         label: 'Biller for Assigned Patients Only',
-        description: ROLE_DESCRIPTIONS['Biller for Assigned Patients Only']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY]
       },
       {
-        id: 'Practice Biller',
+        id: USER_ROLES.PRACTICE_BILLER,
         label: 'Practice Biller',
-        description: ROLE_DESCRIPTIONS['Practice Biller']
+        description: ROLE_DESCRIPTIONS[USER_ROLES.PRACTICE_BILLER]
       }
     ]
   }
@@ -167,7 +180,7 @@ export const PERMISSION_DESCRIPTIONS = {
 
 // Role-Permission Mapping
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  'Practice Administrator': [
+  [USER_ROLES.PRACTICE_ADMINISTRATOR]: [
     'User Management',
     'Role Management',
     'Password Reset',
@@ -176,10 +189,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Audit Logs',
     'Security Policy Configuration'
   ],
-  'Practice Scheduler': [
+  [USER_ROLES.PRACTICE_SCHEDULER]: [
     'Schedule Management'
   ],
-  'Clinician': [
+  [USER_ROLES.CLINICIAN]: [
     'Schedule Management',
     'Clinical Documentation',
     'Patient Record Management',
@@ -193,7 +206,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Create Contact Notes',
     'Create Miscellaneous Notes'
   ],
-  'Intern': [
+  [USER_ROLES.INTERN]: [
     'Schedule Management',
     'Clinical Documentation',
     'Patient Record Management',
@@ -206,7 +219,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Create Contact Notes',
     'Create Miscellaneous Notes'
   ],
-  'Assistant': [
+  [USER_ROLES.ASSISTANT]: [
     'Schedule Management',
     'Clinical Documentation',
     'Patient Record Management',
@@ -219,7 +232,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Create Contact Notes',
     'Create Miscellaneous Notes'
   ],
-  'Associate': [
+  [USER_ROLES.ASSOCIATE]: [
     'Schedule Management',
     'Clinical Documentation',
     'Patient Record Management',
@@ -232,7 +245,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Create Contact Notes',
     'Create Miscellaneous Notes'
   ],
-  'Supervisor': [
+  [USER_ROLES.SUPERVISOR]: [
     'Clinical Documentation',
     'Patient Record Management',
     'Access Sharing',
@@ -241,7 +254,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Note Reopening',
     'Supervision'
   ],
-  'Clinical Administrator': [
+  [USER_ROLES.CLINICAL_ADMINISTRATOR]: [
     'Schedule Management',
     'Clinical Documentation',
     'Patient Record Management',
@@ -254,7 +267,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Create Contact Notes',
     'Create Miscellaneous Notes'
   ],
-  'Biller for Assigned Patients Only': [
+  [USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY]: [
     'Billing',
     'Claims Management',
     'Payment Entry',
@@ -262,7 +275,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Claims Generation and Tracking',
     'Billing Reports'
   ],
-  'Practice Biller': [
+  [USER_ROLES.PRACTICE_BILLER]: [
     'Billing',
     'Claims Management',
     'Payment Entry',

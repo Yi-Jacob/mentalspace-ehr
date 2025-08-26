@@ -49,6 +49,11 @@ export class TimeTrackingController {
     return this.timeTrackingService.approveTimeEntry(id, approveDto.approvedBy);
   }
 
+  @Post(':id/ask-for-update')
+  async askForUpdateTimeEntry(@Param('id') id: string, @Body() updateDto: { requestedBy: string; updateNotes?: string }) {
+    return this.timeTrackingService.askForUpdateTimeEntry(id, updateDto.requestedBy, updateDto.updateNotes);
+  }
+
   @Get('active/:userId')
   async getActiveTimeEntry(@Param('userId') userId: string) {
     return this.timeTrackingService.getActiveTimeEntry(userId);

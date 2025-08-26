@@ -261,6 +261,44 @@ export class TimeTrackingService {
     });
   }
 
+  async askForUpdateTimeEntry(id: string, requestedBy: string, updateNotes?: string) {
+    const timeEntry = await this.getTimeEntryById(id);
+
+    if (timeEntry.isApproved) {
+      throw new BadRequestException('Cannot request update for an already approved time entry');
+    }
+
+    // Add admin notes to the existing notes
+    const adminNotes = `[Admin Request for Update - ${new Date().toLocaleString()}]\n${updateNotes || 'Please review and update this time entry.'}`;
+    const updatedNotes = timeEntry.notes 
+      ? `${timeEntry.notes}\n\n${adminNotes}` 
+      : adminNotes;
+
+    return this.prisma.timeEntry.update({
+      where: { id },
+      data: {
+        isApproved: false,
+        approvedBy: requestedBy,
+        approvedAt: new Date(),
+        notes: updatedNotes,
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        approvedByUser: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
   async getActiveTimeEntry(userId: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);

@@ -8,15 +8,18 @@ import { Badge } from '@/components/basic/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/basic/dialog';
 import { Label } from '@/components/basic/label';
 import { Textarea } from '@/components/basic/textarea';
-import { Clock, Play, Pause, Plus, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Clock, Play, Pause, Plus, CheckCircle, AlertTriangle, X } from 'lucide-react';
 import { complianceService } from '@/services/complianceService';
 import { useToast } from '@/hooks/use-toast';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
+import { USER_ROLES } from '@/types/enums/staffEnum';
 
 const TimeTracking: React.FC = () => {
   const { user } = useAuth();
   const [showTimeEntryModal, setShowTimeEntryModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedTimeEntry, setSelectedTimeEntry] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -102,6 +105,48 @@ const TimeTracking: React.FC = () => {
     },
   });
 
+  const approveTimeEntryMutation = useMutation({
+    mutationFn: async (entryId: string) => {
+      return complianceService.approveTimeEntry(entryId, user?.id || '');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['time-entries'] });
+      toast({
+        title: 'Success',
+        description: 'Time entry approved successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to approve time entry',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const askForUpdateMutation = useMutation({
+    mutationFn: async ({ entryId, updateNotes }: { entryId: string; updateNotes?: string }) => {
+      return complianceService.askForUpdateTimeEntry(entryId, user?.id || '', updateNotes);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['time-entries'] });
+      setShowRejectModal(false);
+      setSelectedTimeEntry(null);
+      toast({
+        title: 'Success',
+        description: 'Update request sent successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send update request',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleSaveTimeEntry = (formData: FormData) => {
     const entryData = {
       userId: currentUserId,
@@ -114,6 +159,25 @@ const TimeTracking: React.FC = () => {
     };
 
     createTimeEntryMutation.mutate(entryData);
+  };
+
+  const handleApprove = (entryId: string) => {
+    approveTimeEntryMutation.mutate(entryId);
+  };
+
+  const handleAskForUpdate = (entry: any) => {
+    setSelectedTimeEntry(entry);
+    setShowRejectModal(true);
+  };
+
+  const handleAskForUpdateSubmit = (formData: FormData) => {
+    const updateNotes = formData.get('update_notes') as string;
+    if (selectedTimeEntry) {
+      askForUpdateMutation.mutate({
+        entryId: selectedTimeEntry.id,
+        updateNotes: updateNotes || undefined,
+      });
+    }
   };
 
   const formatTime = (timeString: string | null) => {
@@ -140,6 +204,8 @@ const TimeTracking: React.FC = () => {
       </PageLayout>
     );
   }
+
+  console.log(user);
 
   return (
     <PageLayout variant="gradient">
@@ -312,6 +378,13 @@ const TimeTracking: React.FC = () => {
                                 Approved
                               </Badge>
                             </>
+                          ) : entry.notes && entry.notes.includes('[Admin Request for Update') ? (
+                            <>
+                              <AlertTriangle className="h-4 w-4 text-orange-600" />
+                              <Badge className="bg-orange-100 text-orange-800">
+                                Update Requested
+                              </Badge>
+                            </>
                           ) : (
                             <>
                               <AlertTriangle className="h-4 w-4 text-yellow-600" />
@@ -351,7 +424,20 @@ const TimeTracking: React.FC = () => {
 
                       {entry.notes && (
                         <div className="bg-gray-50 p-3 rounded-lg">
-                          <p className="text-gray-700 text-sm">{entry.notes}</p>
+                          <div className="text-gray-700 text-sm whitespace-pre-wrap">
+                            {entry.notes.split('\n').map((line, index) => {
+                              // Check if this line is an admin request
+                              if (line.includes('[Admin Request for Update')) {
+                                return (
+                                  <div key={index} className="bg-yellow-50 border-l-4 border-yellow-400 p-2 my-2 rounded">
+                                    <p className="text-yellow-800 font-medium text-xs mb-1">Admin Request for Update</p>
+                                    <p className="text-yellow-700 text-sm">{line}</p>
+                                  </div>
+                                );
+                              }
+                              return <p key={index}>{line}</p>;
+                            })}
+                          </div>
                         </div>
                       )}
 
@@ -377,9 +463,30 @@ const TimeTracking: React.FC = () => {
                           <span>Clock Out</span>
                         </Button>
                       )}
-                      <Button variant="outline" size="sm">
-                        Approve
-                      </Button>
+                      {user?.roles?.includes(USER_ROLES.PRACTICE_ADMINISTRATOR) && !entry.isApproved && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleApprove(entry.id)}
+                            disabled={approveTimeEntryMutation.isPending}
+                            className="flex items-center space-x-1"
+                          >
+                            <CheckCircle className="h-3 w-3" />
+                            <span>Approve</span>
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleAskForUpdate(entry)}
+                            disabled={askForUpdateMutation.isPending}
+                            className="flex items-center space-x-1"
+                          >
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>Ask for Update</span>
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -411,6 +518,64 @@ const TimeTracking: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* Ask for Update Modal */}
+        <Dialog open={showRejectModal} onOpenChange={setShowRejectModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ask for Update</DialogTitle>
+            </DialogHeader>
+            {selectedTimeEntry && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    <strong>Employee:</strong> {selectedTimeEntry.user?.firstName} {selectedTimeEntry.user?.lastName}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Date:</strong> {new Date(selectedTimeEntry.entryDate).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Time:</strong> {formatTime(selectedTimeEntry.clockInTime)} - {formatTime(selectedTimeEntry.clockOutTime)}
+                  </p>
+                </div>
+                
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAskForUpdateSubmit(new FormData(e.currentTarget));
+                }} className="space-y-4">
+                  <div>
+                    <Label htmlFor="update_notes">Update Request Notes</Label>
+                    <Textarea
+                      name="update_notes"
+                      placeholder="Please provide specific feedback on what needs to be updated in this time entry..."
+                      rows={4}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowRejectModal(false);
+                        setSelectedTimeEntry(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      variant="default"
+                      disabled={askForUpdateMutation.isPending}
+                    >
+                      {askForUpdateMutation.isPending ? 'Sending...' : 'Send Update Request'}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </PageLayout>
   );
