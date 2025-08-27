@@ -297,6 +297,41 @@ class StaffService {
       department: user.staffProfile?.department,
     }));
   }
+
+  // Get all staff profiles for provider selection
+  async getAllStaffProfiles(): Promise<Array<{
+    id: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    isActive: boolean;
+    employeeId?: string;
+    jobTitle?: string;
+    department?: string;
+    npiNumber?: string;
+    licenseNumber?: string;
+    licenseState?: string;
+    status?: string;
+  }>> {
+    const response = await apiClient.get<Array<{
+      id: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      isActive: boolean;
+      employeeId?: string;
+      jobTitle?: string;
+      department?: string;
+      npiNumber?: string;
+      licenseNumber?: string;
+      licenseState?: string;
+      status?: string;
+    }>>('/staff/profiles');
+    
+    return response.data;
+  }
 }
 
 export const staffService = new StaffService(); 

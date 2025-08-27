@@ -22,9 +22,13 @@ export class ProviderCompensationService {
       where,
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
@@ -39,9 +43,13 @@ export class ProviderCompensationService {
       where: { id },
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
@@ -68,9 +76,13 @@ export class ProviderCompensationService {
       data,
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
@@ -94,9 +106,13 @@ export class ProviderCompensationService {
       data,
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
@@ -137,9 +153,13 @@ export class ProviderCompensationService {
       },
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },
@@ -157,9 +177,13 @@ export class ProviderCompensationService {
       },
       include: {
         provider: {
-          select: {
-            firstName: true,
-            lastName: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
       },

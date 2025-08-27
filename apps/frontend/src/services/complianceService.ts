@@ -58,6 +58,31 @@ export interface ComplianceMetrics {
   avg_completion_time: number;
 }
 
+export interface ProviderCompensationConfig {
+  id: string;
+  providerId: string;
+  compensationType: 'session_based' | 'hourly' | 'hybrid';
+  baseSessionRate?: number;
+  baseHourlyRate?: number;
+  experienceTier?: number;
+  isOvertimeEligible?: boolean;
+  eveningDifferential?: number;
+  weekendDifferential?: number;
+  effectiveDate: string;
+  expirationDate?: string;
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  provider?: {
+    id: string;
+    user?: {
+      firstName: string;
+      lastName: string;
+    };
+  };
+}
+
 // Compliance Service
 export class ComplianceService {
   private baseUrl = '/compliance';
@@ -159,6 +184,52 @@ export class ComplianceService {
   // Get compliance metrics for current user
   async getComplianceMetrics(): Promise<ComplianceMetrics> {
     const response = await apiClient.get<ComplianceMetrics>(`${this.baseUrl}/metrics`);
+    return response.data;
+  }
+
+  // Provider Compensation Methods
+  async getProviderCompensations(status?: string, providerId?: string): Promise<ProviderCompensationConfig[]> {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (providerId) params.append('providerId', providerId);
+    
+    const url = `${this.baseUrl}/provider-compensation${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiClient.get<ProviderCompensationConfig[]>(url);
+    return response.data;
+  }
+
+  async getProviderCompensationById(id: string): Promise<ProviderCompensationConfig> {
+    const response = await apiClient.get<ProviderCompensationConfig>(`${this.baseUrl}/provider-compensation/${id}`);
+    return response.data;
+  }
+
+  async createProviderCompensation(data: Partial<ProviderCompensationConfig>): Promise<ProviderCompensationConfig> {
+    const response = await apiClient.post<ProviderCompensationConfig>(`${this.baseUrl}/provider-compensation`, data);
+    return response.data;
+  }
+
+  async updateProviderCompensation(id: string, data: Partial<ProviderCompensationConfig>): Promise<ProviderCompensationConfig> {
+    const response = await apiClient.put<ProviderCompensationConfig>(`${this.baseUrl}/provider-compensation/${id}`, data);
+    return response.data;
+  }
+
+  async deleteProviderCompensation(id: string): Promise<void> {
+    await apiClient.delete(`${this.baseUrl}/provider-compensation/${id}`);
+  }
+
+  async approveProviderCompensation(id: string, reviewedBy: string, reviewNotes?: string): Promise<ProviderCompensationConfig> {
+    const response = await apiClient.post<ProviderCompensationConfig>(`${this.baseUrl}/provider-compensation/${id}/approve`, {
+      reviewedBy,
+      reviewNotes
+    });
+    return response.data;
+  }
+
+  async rejectProviderCompensation(id: string, reviewedBy: string, reviewNotes?: string): Promise<ProviderCompensationConfig> {
+    const response = await apiClient.post<ProviderCompensationConfig>(`${this.baseUrl}/provider-compensation/${id}/reject`, {
+      reviewedBy,
+      reviewNotes
+    });
     return response.data;
   }
 }

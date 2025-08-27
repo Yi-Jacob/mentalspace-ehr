@@ -113,6 +113,51 @@ export class UsersService {
     }));
   }
 
+  /**
+   * Get all staff profiles for provider selection
+   * @returns Array of staff profiles with user information
+   */
+  async getAllStaffProfiles() {
+    const staffProfiles = await this.prisma.staffProfile.findMany({
+      where: {
+        user: {
+          isActive: true
+        }
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            isActive: true,
+          }
+        }
+      },
+      orderBy: [
+        { user: { lastName: 'asc' } },
+        { user: { firstName: 'asc' } }
+      ]
+    });
+
+    return staffProfiles.map(profile => ({
+      id: profile.id,
+      userId: profile.user.id,
+      firstName: profile.user.firstName,
+      lastName: profile.user.lastName,
+      email: profile.user.email,
+      isActive: profile.user.isActive,
+      employeeId: profile.employeeId,
+      jobTitle: profile.jobTitle,
+      department: profile.department,
+      npiNumber: profile.npiNumber,
+      licenseNumber: profile.licenseNumber,
+      licenseState: profile.licenseState,
+      status: profile.status,
+    }));
+  }
+
   // Helper function to safely parse dates
   private parseDate(dateString: string | undefined): Date | undefined {
     if (!dateString) return undefined;

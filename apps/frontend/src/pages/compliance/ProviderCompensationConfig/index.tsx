@@ -8,47 +8,61 @@ import { Badge } from '@/components/basic/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/basic/dialog';
 import { Label } from '@/components/basic/label';
-import { Plus, Edit, Users, DollarSign, Clock } from 'lucide-react';
-import { complianceService } from '@/services/complianceService';
+import { Table, TableColumn } from '@/components/basic/table';
+import { Plus, Edit, Trash2, CheckCircle, XCircle, DollarSign, Users } from 'lucide-react';
+import { complianceService, type ProviderCompensationConfig } from '@/services/complianceService';
+import { staffService } from '@/services/staffService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
+import { USER_ROLES } from '@/types/enums/staffEnum';
 
 const ProviderCompensationConfig: React.FC = () => {
+  const { user } = useAuth();
   const [selectedProvider, setSelectedProvider] = useState<string>('all');
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [editingConfig, setEditingConfig] = useState<any>(null);
+  const [editingConfig, setEditingConfig] = useState<ProviderCompensationConfig | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: providers, isLoading: providersLoading } = useQuery({
-    queryKey: ['providers'],
+  // Check if user is practice administrator
+  const isPracticeAdmin = user?.roles?.includes(USER_ROLES.PRACTICE_ADMINISTRATOR);
+  
+  // For non-admin users, use their staff profile ID
+  const currentStaffProfileId = user?.staffId;
+  const effectiveProviderId = isPracticeAdmin 
+    ? (selectedProvider !== 'all' ? selectedProvider : undefined)
+    : currentStaffProfileId;
+
+  const { data: staffProfiles, isLoading: providersLoading } = useQuery({
+    queryKey: ['staff-profiles'],
     queryFn: async () => {
-      // TODO: Implement providers API
-      return [];
+      return staffService.getAllStaffProfiles();
     },
+    enabled: isPracticeAdmin, // Only fetch if user is practice admin
   });
 
   const { data: compensationConfigs, isLoading } = useQuery({
-    queryKey: ['compensation-configs', selectedProvider],
+    queryKey: ['provider-compensations', effectiveProviderId],
     queryFn: async () => {
-      return complianceService.getAll(selectedProvider !== 'all' ? selectedProvider : undefined);
+      return complianceService.getProviderCompensations(undefined, effectiveProviderId);
     },
   });
 
   const { data: sessionMultipliers } = useQuery({
-    queryKey: ['session-multipliers', selectedProvider],
+    queryKey: ['session-multipliers', effectiveProviderId],
     queryFn: async () => {
-      return complianceService.getSessionMultipliers(selectedProvider !== 'all' ? selectedProvider : undefined);
+      return complianceService.getSessionMultipliers(effectiveProviderId);
     },
   });
 
   const createConfigMutation = useMutation({
     mutationFn: async (configData: any) => {
-      return complianceService.create(configData);
+      return complianceService.createProviderCompensation(configData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['compensation-configs'] });
+      queryClient.invalidateQueries({ queryKey: ['provider-compensations'] });
       setShowConfigModal(false);
       setEditingConfig(null);
       toast({
@@ -65,21 +79,169 @@ const ProviderCompensationConfig: React.FC = () => {
     },
   });
 
+  const updateConfigMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return complianceService.updateProviderCompensation(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['provider-compensations'] });
+      setShowConfigModal(false);
+      setEditingConfig(null);
+      toast({
+        title: 'Success',
+        description: 'Compensation configuration updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update compensation configuration',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const deleteConfigMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return complianceService.deleteProviderCompensation(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['provider-compensations'] });
+      toast({
+        title: 'Success',
+        description: 'Compensation configuration deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete compensation configuration',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleSaveConfig = (formData: FormData) => {
     const configData = {
-      provider_id: formData.get('provider_id'),
-      compensation_type: formData.get('compensation_type'),
-      base_session_rate: parseFloat(formData.get('base_session_rate') as string) || null,
-      base_hourly_rate: parseFloat(formData.get('base_hourly_rate') as string) || null,
-      experience_tier: parseInt(formData.get('experience_tier') as string) || 1,
-      is_overtime_eligible: formData.get('is_overtime_eligible') === 'on',
-      evening_differential: parseFloat(formData.get('evening_differential') as string) || 0,
-      weekend_differential: parseFloat(formData.get('weekend_differential') as string) || 0,
-      effective_date: formData.get('effective_date'),
+      providerId: formData.get('provider_id') as string,
+      compensationType: formData.get('compensation_type') as string,
+      baseSessionRate: parseFloat(formData.get('base_session_rate') as string) || undefined,
+      baseHourlyRate: parseFloat(formData.get('base_hourly_rate') as string) || undefined,
+      experienceTier: parseInt(formData.get('experience_tier') as string) || undefined,
+      isOvertimeEligible: formData.get('is_overtime_eligible') === 'on',
+      eveningDifferential: parseFloat(formData.get('evening_differential') as string) || 0,
+      weekendDifferential: parseFloat(formData.get('weekend_differential') as string) || 0,
+      effectiveDate: formData.get('effective_date') as string,
+      expirationDate: formData.get('expiration_date') as string || undefined,
+      createdBy: user?.id,
     };
 
-    createConfigMutation.mutate(configData);
+    if (editingConfig) {
+      updateConfigMutation.mutate({ id: editingConfig.id, data: configData });
+    } else {
+      createConfigMutation.mutate(configData);
+    }
   };
+
+  const handleEdit = (config: ProviderCompensationConfig) => {
+    setEditingConfig(config);
+    setShowConfigModal(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this compensation configuration?')) {
+      deleteConfigMutation.mutate(id);
+    }
+  };
+
+  // Table columns configuration
+  const columns: TableColumn<ProviderCompensationConfig>[] = [
+    {
+      key: 'provider',
+      header: 'Provider',
+      accessor: (config) => (
+        <div className="font-medium">
+          {config.provider?.user?.firstName} {config.provider?.user?.lastName}
+        </div>
+      ),
+      searchable: true,
+      searchValue: (config) => `${config.provider?.user?.firstName} ${config.provider?.user?.lastName}`,
+    },
+    {
+      key: 'compensationType',
+      header: 'Type',
+      accessor: (config) => (
+        <Badge className="bg-blue-100 text-blue-800">
+          {config.compensationType.replace('_', ' ').toUpperCase()}
+        </Badge>
+      ),
+      searchable: true,
+    },
+    {
+      key: 'rates',
+      header: 'Rates',
+      accessor: (config) => (
+        <div className="text-sm">
+          {config.baseSessionRate && (
+            <div>Session: ${config.baseSessionRate}</div>
+          )}
+          {config.baseHourlyRate && (
+            <div>Hourly: ${config.baseHourlyRate}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'experienceTier',
+      header: 'Experience Tier',
+      accessor: (config) => (
+        <Badge variant="outline">
+          Tier {config.experienceTier || 'N/A'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'differentials',
+      header: 'Differentials',
+      accessor: (config) => (
+        <div className="text-sm">
+          {config.eveningDifferential > 0 && (
+            <div>Evening: +${config.eveningDifferential}/hr</div>
+          )}
+          {config.weekendDifferential > 0 && (
+            <div>Weekend: +${config.weekendDifferential}/hr</div>
+          )}
+          {config.eveningDifferential === 0 && config.weekendDifferential === 0 && (
+            <span className="text-gray-400">None</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'overtime',
+      header: 'Overtime',
+      accessor: (config) => (
+        <Badge className={config.isOvertimeEligible ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+          {config.isOvertimeEligible ? 'Eligible' : 'Not Eligible'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'effectiveDate',
+      header: 'Effective Date',
+      accessor: (config) => new Date(config.effectiveDate).toLocaleDateString(),
+      sortable: true,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: (config) => (
+        <Badge className={config.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+          {config.isActive ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+  ];
 
   if (isLoading || providersLoading) {
     return (
@@ -106,23 +268,33 @@ const ProviderCompensationConfig: React.FC = () => {
         {/* Header Actions */}
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Filter by provider..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Providers</SelectItem>
-                {providers?.map((provider) => (
-                  <SelectItem key={provider.id} value={provider.id}>
-                    {provider.first_name} {provider.last_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isPracticeAdmin && (
+              <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Filter by provider..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Providers</SelectItem>
+                  {staffProfiles?.map((profile) => (
+                    <SelectItem key={profile.id} value={profile.id}>
+                      {profile.firstName} {profile.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {!isPracticeAdmin && (
+              <div className="text-sm text-gray-600">
+                Viewing your compensation configuration
+              </div>
+            )}
           </div>
           
           <Button 
-            onClick={() => setShowConfigModal(true)}
+            onClick={() => {
+              setEditingConfig(null);
+              setShowConfigModal(true);
+            }}
             className="flex items-center space-x-2"
           >
             <Plus className="h-4 w-4" />
@@ -130,71 +302,49 @@ const ProviderCompensationConfig: React.FC = () => {
           </Button>
         </div>
 
-        {/* Compensation Configurations */}
-        <div className="space-y-4">
-          {compensationConfigs?.map((config) => (
-            <Card key={config.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <h4 className="font-semibold text-lg">
-                        {config.provider?.firstName} {config.provider?.lastName}
-                      </h4>
-                      <Badge className="bg-blue-100 text-blue-800">
-                        {config.compensationType}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                      <div>
-                        <strong>Base Session Rate:</strong> ${config.baseSessionRate || 'N/A'}
-                      </div>
-                      <div>
-                        <strong>Base Hourly Rate:</strong> ${config.baseHourlyRate || 'N/A'}
-                      </div>
-                      <div>
-                        <strong>Experience Tier:</strong> {config.experienceTier}
-                      </div>
-                      <div>
-                        <strong>Overtime Eligible:</strong> {config.isOvertimeEligible ? 'Yes' : 'No'}
-                      </div>
-                    </div>
-
-                    {(config.eveningDifferential > 0 || config.weekendDifferential > 0) && (
-                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                        <div>
-                          <strong>Evening Differential:</strong> +${config.eveningDifferential}/hr
-                        </div>
-                        <div>
-                          <strong>Weekend Differential:</strong> +${config.weekendDifferential}/hr
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="text-sm text-gray-600">
-                      <strong>Effective Date:</strong> {new Date(config.effectiveDate).toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        setEditingConfig(config);
-                        setShowConfigModal(true);
-                      }}
-                    >
-                      <Edit className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Compensation Configurations Table */}
+        <Table
+          data={compensationConfigs || []}
+          columns={columns}
+          searchable={true}
+          pagination={true}
+          pageSize={10}
+          actions={[
+            {
+              label: 'Edit',
+              icon: <Edit className="h-4 w-4" />,
+              onClick: handleEdit,
+              variant: 'outline',
+            },
+            {
+              label: 'Delete',
+              icon: <Trash2 className="h-4 w-4" />,
+              onClick: (config) => handleDelete(config.id),
+              variant: 'destructive',
+            },
+          ]}
+          emptyMessage={
+            <div className="text-center py-12">
+              <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No compensation configurations found</h3>
+              <p className="text-gray-600 mb-4">
+                {isPracticeAdmin 
+                  ? (selectedProvider === 'all' 
+                      ? 'No compensation configurations have been set up yet.'
+                      : 'No compensation configuration found for the selected provider.')
+                  : 'You don\'t have any compensation configurations set up yet.'
+                }
+              </p>
+              <Button onClick={() => {
+                setEditingConfig(null);
+                setShowConfigModal(true);
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Configuration
+              </Button>
+            </div>
+          }
+        />
 
         {/* Session Multipliers */}
         {sessionMultipliers && sessionMultipliers.length > 0 && (
@@ -211,9 +361,9 @@ const ProviderCompensationConfig: React.FC = () => {
                           {multiplier.multiplier}x
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600">{multiplier.description}</p>
+                      <p className="text-sm text-gray-600">{multiplier.durationMinutes} minutes</p>
                       <div className="text-sm text-gray-600">
-                        <strong>Effective Date:</strong> {new Date(multiplier.effectiveDate).toLocaleDateString()}
+                        <strong>Status:</strong> {multiplier.isActive ? 'Active' : 'Inactive'}
                       </div>
                     </div>
                   </CardContent>
@@ -222,27 +372,15 @@ const ProviderCompensationConfig: React.FC = () => {
             </div>
           </div>
         )}
-
-        {compensationConfigs?.length === 0 && (
-          <div className="text-center py-12">
-            <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No compensation configurations found</h3>
-            <p className="text-gray-600 mb-4">
-              {selectedProvider === 'all' 
-                ? 'No compensation configurations have been set up yet.'
-                : 'No compensation configuration found for the selected provider.'
-              }
-            </p>
-            <Button onClick={() => setShowConfigModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Configuration
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Configuration Modal */}
-      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+      <Dialog open={showConfigModal} onOpenChange={(open) => {
+        setShowConfigModal(open);
+        if (!open) {
+          setEditingConfig(null);
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
@@ -256,28 +394,39 @@ const ProviderCompensationConfig: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="provider_id">Provider</Label>
-                <Select name="provider_id" defaultValue={editingConfig?.providerId || ''} required>
+                <Select 
+                  name="provider_id" 
+                  defaultValue={editingConfig?.providerId || (isPracticeAdmin ? '' : currentStaffProfileId)} 
+                  required
+                  disabled={!isPracticeAdmin && !!currentStaffProfileId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select provider..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {providers?.map((provider) => (
-                      <SelectItem key={provider.id} value={provider.id}>
-                        {provider.first_name} {provider.last_name}
+                    {isPracticeAdmin ? (
+                      staffProfiles?.map((profile) => (
+                        <SelectItem key={profile.id} value={profile.id}>
+                          {profile.firstName} {profile.lastName}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value={currentStaffProfileId || ''}>
+                        {user?.firstName} {user?.lastName}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
                 <Label htmlFor="compensation_type">Compensation Type</Label>
-                <Select name="compensation_type" defaultValue={editingConfig?.compensationType || 'session'} required>
+                <Select name="compensation_type" defaultValue={editingConfig?.compensationType || 'session_based'} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select type..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="session">Per Session</SelectItem>
+                    <SelectItem value="session_based">Per Session</SelectItem>
                     <SelectItem value="hourly">Hourly</SelectItem>
                     <SelectItem value="hybrid">Hybrid</SelectItem>
                   </SelectContent>
@@ -294,6 +443,7 @@ const ProviderCompensationConfig: React.FC = () => {
                   step="0.01"
                   min="0"
                   defaultValue={editingConfig?.baseSessionRate || ''}
+                  placeholder="Enter session rate"
                 />
               </div>
               
@@ -305,6 +455,7 @@ const ProviderCompensationConfig: React.FC = () => {
                   step="0.01"
                   min="0"
                   defaultValue={editingConfig?.baseHourlyRate || ''}
+                  placeholder="Enter hourly rate"
                 />
               </div>
             </div>
@@ -330,10 +481,19 @@ const ProviderCompensationConfig: React.FC = () => {
                 <Input
                   name="effective_date"
                   type="date"
-                  defaultValue={editingConfig?.effectiveDate ? new Date(editingConfig.effectiveDate).toISOString().split('T')[0] : ''}
+                  defaultValue={editingConfig?.effectiveDate ? new Date(editingConfig.effectiveDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="expiration_date">Expiration Date (Optional)</Label>
+              <Input
+                name="expiration_date"
+                type="date"
+                defaultValue={editingConfig?.expirationDate ? new Date(editingConfig.expirationDate).toISOString().split('T')[0] : ''}
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -345,6 +505,7 @@ const ProviderCompensationConfig: React.FC = () => {
                   step="0.01"
                   min="0"
                   defaultValue={editingConfig?.eveningDifferential || '0'}
+                  placeholder="0.00"
                 />
               </div>
               
@@ -356,6 +517,7 @@ const ProviderCompensationConfig: React.FC = () => {
                   step="0.01"
                   min="0"
                   defaultValue={editingConfig?.weekendDifferential || '0'}
+                  placeholder="0.00"
                 />
               </div>
             </div>
@@ -372,11 +534,24 @@ const ProviderCompensationConfig: React.FC = () => {
             </div>
             
             <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setShowConfigModal(false)}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowConfigModal(false);
+                  setEditingConfig(null);
+                }}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createConfigMutation.isPending}>
-                {createConfigMutation.isPending ? 'Saving...' : 'Save Configuration'}
+              <Button 
+                type="submit" 
+                disabled={createConfigMutation.isPending || updateConfigMutation.isPending}
+              >
+                {(createConfigMutation.isPending || updateConfigMutation.isPending) 
+                  ? 'Saving...' 
+                  : (editingConfig ? 'Update Configuration' : 'Save Configuration')
+                }
               </Button>
             </div>
           </form>

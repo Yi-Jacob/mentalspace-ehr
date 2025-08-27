@@ -7,6 +7,7 @@ export interface User {
   lastName: string;
   isActive: boolean;
   roles: string[];
+  staffId?: string;
 }
 
 export interface LoginRequest {
@@ -23,6 +24,7 @@ export interface LoginResponse {
     lastName: string;
     isActive: boolean;
     roles: string[];
+    staffId?: string;
   };
 }
 
