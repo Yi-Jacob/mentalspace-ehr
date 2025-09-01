@@ -37,4 +37,9 @@ export class ComplianceController {
   ) {
     return this.complianceService.getComplianceReports(parseInt(timeRange), reportType);
   }
+
+  @Get('staff-providers')
+  async getStaffProviders() {
+    return this.complianceService.getStaffProviders();
+  }
 } 

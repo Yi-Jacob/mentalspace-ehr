@@ -403,6 +403,12 @@ export class ComplianceService {
     });
     return response.data;
   }
+
+  // Get list of staff providers (without payment data)
+  async getStaffProviders(): Promise<Array<{ id: string; name: string }>> {
+    const response = await apiClient.get<Array<{ id: string; name: string }>>(`${this.baseUrl}/staff-providers`);
+    return response.data;
+  }
 }
 
 export const complianceService = new ComplianceService(); 

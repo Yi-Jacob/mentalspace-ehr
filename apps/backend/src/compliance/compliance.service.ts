@@ -438,4 +438,32 @@ export class ComplianceService {
       complianceData
     };
   }
+
+  async getStaffProviders() {
+    // Get all users who have staff profiles
+    const staffUsers = await this.prisma.user.findMany({
+      where: {
+        staffId: {
+          not: null,
+        },
+        isActive: true,
+      },
+      include: {
+        staffProfile: {
+          select: {
+            jobTitle: true,
+          },
+        },
+      },
+      orderBy: {
+        firstName: 'asc',
+      },
+    });
+
+    return staffUsers.map(user => ({
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      jobTitle: user.staffProfile?.jobTitle || 'Staff Member',
+    }));
+  }
 } 

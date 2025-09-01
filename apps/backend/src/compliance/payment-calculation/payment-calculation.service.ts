@@ -49,12 +49,13 @@ export class PaymentCalculationService {
   async calculateWeeklyPayment(providerId: string, payPeriodWeek?: Date): Promise<WeeklyPaymentCalculation> {
     const targetPayPeriod = payPeriodWeek || this.calculatePayPeriodWeek(new Date());
     
-    // Get provider information
+    // Get provider information and staff profile
     const provider = await this.prisma.user.findUnique({
       where: { id: providerId },
       select: {
         firstName: true,
         lastName: true,
+        staffId: true, // Use staffId, not staffProfile
       },
     });
 
@@ -62,10 +63,14 @@ export class PaymentCalculationService {
       throw new NotFoundException(`Provider with ID ${providerId} not found`);
     }
 
-    // Get compensation configuration
+    if (!provider.staffId) {
+      throw new NotFoundException(`Provider with ID ${providerId} does not have a staff ID`);
+    }
+
+    // Get compensation configuration using staffId
     const compensationConfig = await this.prisma.providerCompensationConfig.findFirst({
       where: {
-        providerId,
+        providerId: provider.staffId, // Use staffId, not staffProfile.id
         isActive: true,
       },
     });
@@ -293,13 +298,8 @@ export class PaymentCalculationService {
       },
       include: {
         provider: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+          select: {
+            id: true, // This is the StaffProfile ID
           },
         },
       },
@@ -309,10 +309,27 @@ export class PaymentCalculationService {
 
     for (const providerConfig of providers) {
       try {
-        const calculation = await this.calculateWeeklyPayment(providerConfig.providerId, targetPayPeriod);
+        // Find the user that has this staffId
+        const user = await this.prisma.user.findFirst({
+          where: {
+            staffId: providerConfig.provider.id, // provider.id is the StaffProfile ID
+          },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        });
+
+        if (!user) {
+          this.logger.warn(`No user found for staff profile ${providerConfig.provider.id}`);
+          continue;
+        }
+
+        const calculation = await this.calculateWeeklyPayment(user.id, targetPayPeriod);
         
         calculations.push({
-          providerId: calculation.providerId,
+          providerId: user.id, // Use user ID
           providerName: calculation.providerName,
           payPeriodWeek: calculation.payPeriodWeek,
           totalSessions: calculation.totalSessions,
