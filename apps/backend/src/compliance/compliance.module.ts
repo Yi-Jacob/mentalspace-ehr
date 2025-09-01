@@ -11,9 +11,10 @@ import { ProviderCompensationController } from './provider-compensation/provider
 import { ProviderCompensationService } from './provider-compensation/provider-compensation.service';
 import { DeadlineExceptionController } from './deadline-exception/deadline-exception.controller';
 import { DeadlineExceptionService } from './deadline-exception/deadline-exception.service';
+import { PaymentCalculationModule } from './payment-calculation/payment-calculation.module';
 
 @Module({
-  imports: [DatabaseModule, SessionCompletionModule],
+  imports: [DatabaseModule, SessionCompletionModule, PaymentCalculationModule],
   controllers: [
     ComplianceController,
     TimeTrackingController,
@@ -35,6 +36,7 @@ import { DeadlineExceptionService } from './deadline-exception/deadline-exceptio
     ProviderCompensationService,
     DeadlineExceptionService,
     SessionCompletionModule,
+    PaymentCalculationModule,
   ],
 })
 export class ComplianceModule {} 
