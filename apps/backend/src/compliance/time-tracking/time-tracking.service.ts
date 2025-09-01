@@ -7,17 +7,26 @@ import { UpdateTimeEntryDto } from './dto/update-time-entry.dto';
 export class TimeTrackingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllTimeEntries(date?: string, userId?: string) {
+  async getAllTimeEntries(startDate?: string, endDate?: string, userId?: string) {
     const where: any = {};
 
-    if (date) {
-      const startDate = new Date(date);
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 1);
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Set to end of day
       
       where.entryDate = {
-        gte: startDate,
-        lt: endDate,
+        gte: start,
+        lte: end,
+      };
+    } else if (startDate) {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      
+      where.entryDate = {
+        gte: start,
+        lt: end,
       };
     }
 

@@ -20,7 +20,12 @@ const TimeTracking: React.FC = () => {
   const [showTimeEntryModal, setShowTimeEntryModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedTimeEntry, setSelectedTimeEntry] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7); // One week ago
+    return date.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -28,9 +33,9 @@ const TimeTracking: React.FC = () => {
   const currentUserId = user?.id;
 
   const { data: timeEntries, isLoading } = useQuery({
-    queryKey: ['time-entries', selectedDate],
+    queryKey: ['time-entries', startDate, endDate],
     queryFn: async () => {
-      return complianceService.getAll(selectedDate);
+      return complianceService.getAll(startDate, endDate);
     },
   });
 
@@ -147,14 +152,61 @@ const TimeTracking: React.FC = () => {
     },
   });
 
+  const deleteTimeEntryMutation = useMutation({
+    mutationFn: async (entryId: string) => {
+      return complianceService.delete(entryId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['time-entries'] });
+      toast({
+        title: 'Success',
+        description: 'Time entry deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete time entry',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleSaveTimeEntry = (formData: FormData) => {
+    const entryDate = formData.get('entry_date') as string;
+    const clockInTime = formData.get('clock_in_time') as string;
+    const clockOutTime = formData.get('clock_out_time') as string;
+    const breakStartTime = formData.get('break_start_time') as string;
+    const breakEndTime = formData.get('break_end_time') as string;
+
+    // Validation: Clock out time must be after clock in time
+    if (clockInTime && clockOutTime && clockInTime >= clockOutTime) {
+      toast({
+        title: 'Validation Error',
+        description: 'Clock out time must be after clock in time',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validation: Break end time must be after break start time
+    if (breakStartTime && breakEndTime && breakStartTime >= breakEndTime) {
+      toast({
+        title: 'Validation Error',
+        description: 'Break end time must be after break start time',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Combine date with time for clock in/out and break times
     const entryData = {
       userId: currentUserId,
-      entryDate: formData.get('entry_date'),
-      clockInTime: formData.get('clock_in_time'),
-      clockOutTime: formData.get('clock_out_time'),
-      breakStartTime: formData.get('break_start_time') || null,
-      breakEndTime: formData.get('break_end_time') || null,
+      entryDate: entryDate,
+      clockInTime: clockInTime ? `${entryDate}T${clockInTime}` : undefined,
+      clockOutTime: clockOutTime ? `${entryDate}T${clockOutTime}` : undefined,
+      breakStartTime: breakStartTime ? `${entryDate}T${breakStartTime}` : undefined,
+      breakEndTime: breakEndTime ? `${entryDate}T${breakEndTime}` : undefined,
       notes: formData.get('notes') || null,
     };
 
@@ -177,6 +229,12 @@ const TimeTracking: React.FC = () => {
         entryId: selectedTimeEntry.id,
         updateNotes: updateNotes || undefined,
       });
+    }
+  };
+
+  const handleDelete = (entryId: string) => {
+    if (window.confirm('Are you sure you want to delete this time entry? This action cannot be undone.')) {
+      deleteTimeEntryMutation.mutate(entryId);
     }
   };
 
@@ -234,12 +292,26 @@ const TimeTracking: React.FC = () => {
         {/* Quick Actions */}
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-48"
-            />
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="start-date" className="text-sm font-medium">From:</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-40"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="end-date" className="text-sm font-medium">To:</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-40"
+              />
+            </div>
           </div>
           
           <div className="flex space-x-2">
@@ -282,10 +354,11 @@ const TimeTracking: React.FC = () => {
                   <div>
                     <Label htmlFor="entry_date">Entry Date</Label>
                     <Input
+                      id="entry_date"
                       name="entry_date"
                       type="date"
                       required
-                      defaultValue={selectedDate}
+                      defaultValue={new Date().toISOString().split('T')[0]}
                     />
                   </div>
                   
@@ -293,17 +366,37 @@ const TimeTracking: React.FC = () => {
                     <div>
                       <Label htmlFor="clock_in_time">Clock In Time</Label>
                       <Input
+                        id="clock_in_time"
                         name="clock_in_time"
-                        type="datetime-local"
+                        type="time"
                         required
+                        defaultValue="09:00"
+                        onChange={(e) => {
+                          const clockOutInput = document.getElementById('clock_out_time') as HTMLInputElement;
+                          if (clockOutInput && e.target.value && clockOutInput.value && e.target.value >= clockOutInput.value) {
+                            clockOutInput.setCustomValidity('Clock out time must be after clock in time');
+                          } else if (clockOutInput) {
+                            clockOutInput.setCustomValidity('');
+                          }
+                        }}
                       />
                     </div>
                     
                     <div>
                       <Label htmlFor="clock_out_time">Clock Out Time</Label>
                       <Input
+                        id="clock_out_time"
                         name="clock_out_time"
-                        type="datetime-local"
+                        type="time"
+                        defaultValue="17:00"
+                        onChange={(e) => {
+                          const clockInInput = document.getElementById('clock_in_time') as HTMLInputElement;
+                          if (clockInInput && e.target.value && clockInInput.value && clockInInput.value >= e.target.value) {
+                            e.target.setCustomValidity('Clock out time must be after clock in time');
+                          } else {
+                            e.target.setCustomValidity('');
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -312,16 +405,34 @@ const TimeTracking: React.FC = () => {
                     <div>
                       <Label htmlFor="break_start_time">Break Start</Label>
                       <Input
+                        id="break_start_time"
                         name="break_start_time"
-                        type="datetime-local"
+                        type="time"
+                        onChange={(e) => {
+                          const breakEndInput = document.getElementById('break_end_time') as HTMLInputElement;
+                          if (breakEndInput && e.target.value && breakEndInput.value && e.target.value >= breakEndInput.value) {
+                            breakEndInput.setCustomValidity('Break end time must be after break start time');
+                          } else if (breakEndInput) {
+                            breakEndInput.setCustomValidity('');
+                          }
+                        }}
                       />
                     </div>
                     
                     <div>
                       <Label htmlFor="break_end_time">Break End</Label>
                       <Input
+                        id="break_end_time"
                         name="break_end_time"
-                        type="datetime-local"
+                        type="time"
+                        onChange={(e) => {
+                          const breakStartInput = document.getElementById('break_start_time') as HTMLInputElement;
+                          if (breakStartInput && e.target.value && breakStartInput.value && breakStartInput.value >= e.target.value) {
+                            e.target.setCustomValidity('Break end time must be after break start time');
+                          } else {
+                            e.target.setCustomValidity('');
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -329,6 +440,7 @@ const TimeTracking: React.FC = () => {
                   <div>
                     <Label htmlFor="notes">Notes</Label>
                     <Textarea
+                      id="notes"
                       name="notes"
                       placeholder="Any additional notes..."
                     />
@@ -487,6 +599,17 @@ const TimeTracking: React.FC = () => {
                           </Button>
                         </>
                       )}
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDelete(entry.id)}
+                        disabled={deleteTimeEntryMutation.isPending}
+                        className="flex items-center space-x-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="h-3 w-3" />
+                        <span>Delete</span>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -500,7 +623,7 @@ const TimeTracking: React.FC = () => {
             <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No time entries found</h3>
             <p className="text-gray-600 mb-4">
-              No time entries for {new Date(selectedDate).toLocaleDateString()}
+              No time entries for {new Date(startDate).toLocaleDateString()} to {new Date(endDate).toLocaleDateString()}
             </p>
             {!activeTimeEntry ? (
               <Button onClick={() => clockInMutation.mutate()}>
@@ -546,6 +669,7 @@ const TimeTracking: React.FC = () => {
                   <div>
                     <Label htmlFor="update_notes">Update Request Notes</Label>
                     <Textarea
+                      id="update_notes"
                       name="update_notes"
                       placeholder="Please provide specific feedback on what needs to be updated in this time entry..."
                       rows={4}

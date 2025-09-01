@@ -10,8 +10,8 @@ export class TimeTrackingController {
   constructor(private readonly timeTrackingService: TimeTrackingService) {}
 
   @Get()
-  async getAllTimeEntries(@Query('date') date?: string, @Query('userId') userId?: string) {
-    return this.timeTrackingService.getAllTimeEntries(date, userId);
+  async getAllTimeEntries(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string, @Query('userId') userId?: string) {
+    return this.timeTrackingService.getAllTimeEntries(startDate, endDate, userId);
   }
 
   @Get(':id')

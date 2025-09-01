@@ -144,9 +144,10 @@ export class ComplianceService {
   private baseUrl = '/compliance';
 
   // Get all time entries
-  async getAll(date?: string, userId?: string): Promise<any[]> {
+  async getAll(startDate?: string, endDate?: string, userId?: string): Promise<any[]> {
     const params = new URLSearchParams();
-    if (date) params.append('date', date);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
     if (userId) params.append('userId', userId);
     
     const url = `${this.baseUrl}/time-tracking${params.toString() ? `?${params.toString()}` : ''}`;
@@ -158,6 +159,11 @@ export class ComplianceService {
   async create(data: any): Promise<any> {
     const response = await apiClient.post(`${this.baseUrl}/time-tracking`, data);
     return response.data;
+  }
+
+  // Delete time entry
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`${this.baseUrl}/time-tracking/${id}`);
   }
 
   // Clock in functionality
