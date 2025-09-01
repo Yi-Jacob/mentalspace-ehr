@@ -463,7 +463,7 @@ const TimeTracking: React.FC = () => {
         {/* Time Entries List */}
         <div className="space-y-4">
           {timeEntries?.map((entry) => {
-            const totalHours = calculateHours(entry.clockInTime, entry.clockOutTime);
+            const totalHours = entry.totalHours || calculateHours(entry.clockInTime, entry.clockOutTime);
             const isActiveEntry = entry.clockInTime && !entry.clockOutTime;
             
             return (
@@ -508,7 +508,7 @@ const TimeTracking: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm text-gray-600">
                         <div>
                           <strong>Date:</strong> {new Date(entry.entryDate).toLocaleDateString()}
                         </div>
@@ -521,6 +521,21 @@ const TimeTracking: React.FC = () => {
                         <div>
                           <strong>Total Hours:</strong> {totalHours.toFixed(2)}
                         </div>
+                        {entry.regularHours !== undefined && (
+                          <div>
+                            <strong>Regular Hours:</strong> {entry.regularHours.toFixed(2)}
+                          </div>
+                        )}
+                        {entry.eveningHours !== undefined && entry.eveningHours > 0 && (
+                          <div>
+                            <strong>Evening Hours:</strong> {entry.eveningHours.toFixed(2)}
+                          </div>
+                        )}
+                        {entry.weekendHours !== undefined && entry.weekendHours > 0 && (
+                          <div>
+                            <strong>Weekend Hours:</strong> {entry.weekendHours.toFixed(2)}
+                          </div>
+                        )}
                       </div>
 
                       {(entry.breakStartTime || entry.breakEndTime) && (

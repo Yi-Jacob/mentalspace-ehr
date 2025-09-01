@@ -56,6 +56,7 @@ export interface WeeklyPaymentCalculation {
   totalSessions: number;
   totalHours: number;
   totalAmount: number;
+  compensationType: 'session_based' | 'hourly';
   sessions: Array<{
     id: string;
     clientName: string;
@@ -65,11 +66,23 @@ export interface WeeklyPaymentCalculation {
     calculatedAmount: number;
     isNoteSigned: boolean;
     noteSignedAt?: string;
+    // Additional fields for hourly payments
+    regularHours?: number;
+    overtimeHours?: number;
+    eveningHours?: number;
+    weekendHours?: number;
+    baseRate?: number;
+    overtimeRate?: number;
+    eveningDifferential?: number;
+    weekendDifferential?: number;
   }>;
   compensationConfig?: {
     baseSessionRate?: number;
     baseHourlyRate?: number;
     compensationType: string;
+    isOvertimeEligible?: boolean;
+    eveningDifferential?: number;
+    weekendDifferential?: number;
   };
 }
 
@@ -195,6 +208,15 @@ export class ComplianceService {
     const response = await apiClient.post(`${this.baseUrl}/time-tracking/${entryId}/ask-for-update`, { 
       requestedBy, 
       updateNotes 
+    });
+    return response.data;
+  }
+
+  // Update break times for a time entry
+  async updateBreakTimes(entryId: string, breakStartTime?: string, breakEndTime?: string): Promise<any> {
+    const response = await apiClient.put(`${this.baseUrl}/time-tracking/${entryId}/break-times`, {
+      breakStartTime,
+      breakEndTime
     });
     return response.data;
   }

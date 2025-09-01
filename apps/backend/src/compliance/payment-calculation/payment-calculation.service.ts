@@ -8,6 +8,7 @@ export interface WeeklyPaymentCalculation {
   totalSessions: number;
   totalHours: number;
   totalAmount: number;
+  compensationType: 'session_based' | 'hourly';
   sessions: Array<{
     id: string;
     clientName: string;
@@ -17,11 +18,23 @@ export interface WeeklyPaymentCalculation {
     calculatedAmount: number;
     isNoteSigned: boolean;
     noteSignedAt?: Date;
+    // Additional fields for hourly payments
+    regularHours?: number;
+    overtimeHours?: number;
+    eveningHours?: number;
+    weekendHours?: number;
+    baseRate?: number;
+    overtimeRate?: number;
+    eveningDifferential?: number;
+    weekendDifferential?: number;
   }>;
   compensationConfig?: {
     baseSessionRate?: number;
     baseHourlyRate?: number;
     compensationType: string;
+    isOvertimeEligible?: boolean;
+    eveningDifferential?: number;
+    weekendDifferential?: number;
   };
 }
 
@@ -141,9 +154,12 @@ export class PaymentCalculationService {
           entryDate: 'asc',
         },
       });
-
+      console.log('timeEntries', timeEntries);
       totalSessions = timeEntries.length; // For hourly, sessions = time entries
       totalHours = timeEntries.reduce((sum, entry) => sum + (entry.totalHours || 0), 0);
+
+      // Calculate weekly overtime
+      const weeklyOvertimeHours = this.calculateWeeklyOvertime(timeEntries, compensationConfig);
 
       // Calculate payment for each time entry
       sessions = timeEntries.map(entry => {
@@ -159,8 +175,23 @@ export class PaymentCalculationService {
           calculatedAmount,
           isNoteSigned: true, // Time entries are always "signed" when approved
           noteSignedAt: entry.approvedAt,
+          // Additional hourly fields
+          regularHours: entry.regularHours || 0,
+          overtimeHours: weeklyOvertimeHours, // Weekly overtime hours
+          eveningHours: entry.eveningHours || 0,
+          weekendHours: entry.weekendHours || 0,
+          baseRate: compensationConfig.baseHourlyRate,
+          overtimeRate: compensationConfig.isOvertimeEligible ? (compensationConfig.baseHourlyRate || 0) * 1.5 : 0,
+          eveningDifferential: compensationConfig.eveningDifferential,
+          weekendDifferential: compensationConfig.weekendDifferential,
         };
       });
+
+      // Add overtime amount to total
+      if (compensationConfig.isOvertimeEligible && weeklyOvertimeHours > 0) {
+        const overtimeRate = (compensationConfig.baseHourlyRate || 0) * 1.5;
+        totalAmount += weeklyOvertimeHours * overtimeRate;
+      }
     }
 
     return {
@@ -170,11 +201,15 @@ export class PaymentCalculationService {
       totalSessions,
       totalHours,
       totalAmount,
+      compensationType: compensationConfig.compensationType as 'session_based' | 'hourly',
       sessions,
       compensationConfig: {
         baseSessionRate: compensationConfig.baseSessionRate,
         baseHourlyRate: compensationConfig.baseHourlyRate,
         compensationType: compensationConfig.compensationType,
+        isOvertimeEligible: compensationConfig.isOvertimeEligible,
+        eveningDifferential: compensationConfig.eveningDifferential,
+        weekendDifferential: compensationConfig.weekendDifferential,
       },
     };
   }
@@ -203,39 +238,27 @@ export class PaymentCalculationService {
     const hourlyRate = config.baseHourlyRate || 0;
     const totalHours = timeEntry.totalHours || 0;
     const regularHours = timeEntry.regularHours || 0;
-    const overtimeHours = timeEntry.overtimeHours || 0;
+    const eveningHours = timeEntry.eveningHours || 0;
+    const weekendHours = timeEntry.weekendHours || 0;
     
     let totalAmount = 0;
     
-    // Regular hours
-    totalAmount += regularHours * hourlyRate;
+    // Regular hours (excluding evening and weekend hours)
+    const standardHours = regularHours - eveningHours - weekendHours;
+    totalAmount += standardHours * hourlyRate;
     
-    // Overtime hours (if eligible)
-    if (config.isOvertimeEligible && overtimeHours > 0) {
-      const overtimeRate = hourlyRate * 1.5; // Standard overtime rate
-      totalAmount += overtimeHours * overtimeRate;
+    // Evening hours with differential
+    if (config.eveningDifferential && eveningHours > 0) {
+      totalAmount += eveningHours * (hourlyRate + config.eveningDifferential);
+    } else if (eveningHours > 0) {
+      totalAmount += eveningHours * hourlyRate;
     }
-
-    // Apply evening differential if applicable
-    if (config.eveningDifferential) {
-      const clockInTime = new Date(timeEntry.clockInTime);
-      const clockOutTime = timeEntry.clockOutTime ? new Date(timeEntry.clockOutTime) : new Date();
-      
-      // Calculate evening hours (after 6 PM)
-      const eveningHours = this.calculateEveningHours(clockInTime, clockOutTime);
-      if (eveningHours > 0) {
-        totalAmount += (eveningHours * hourlyRate * (config.eveningDifferential / 100));
-      }
-    }
-
-    // Apply weekend differential if applicable
-    if (config.weekendDifferential) {
-      const entryDate = new Date(timeEntry.entryDate);
-      const dayOfWeek = entryDate.getDay(); // 0 = Sunday, 6 = Saturday
-      
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        totalAmount += (totalHours * hourlyRate * (config.weekendDifferential / 100));
-      }
+    
+    // Weekend hours with differential
+    if (config.weekendDifferential && weekendHours > 0) {
+      totalAmount += weekendHours * (hourlyRate + config.weekendDifferential);
+    } else if (weekendHours > 0) {
+      totalAmount += weekendHours * hourlyRate;
     }
 
     return totalAmount;
@@ -258,6 +281,20 @@ export class PaymentCalculationService {
     }
     
     return 0;
+  }
+
+  /**
+   * Calculate weekly overtime hours
+   */
+  private calculateWeeklyOvertime(timeEntries: any[], config: any): number {
+    if (!config.isOvertimeEligible) {
+      return 0;
+    }
+
+    const weeklyRegularHoursLimit = 40; // Standard 40-hour work week
+    const totalWeeklyHours = timeEntries.reduce((sum, entry) => sum + (entry.totalHours || 0), 0);
+    
+    return Math.max(0, totalWeeklyHours - weeklyRegularHoursLimit);
   }
 
   /**

@@ -66,6 +66,8 @@ const PaymentCalculations: React.FC = () => {
     totalSessions: providerCalculation.totalSessions,
     totalHours: providerCalculation.totalHours,
     totalAmount: providerCalculation.totalAmount,
+    totalEveningHours: providerCalculation.sessions?.reduce((sum, session) => sum + (session.eveningHours || 0), 0) || 0,
+    totalWeekendHours: providerCalculation.sessions?.reduce((sum, session) => sum + (session.weekendHours || 0), 0) || 0,
   } : null;
 
   const handleProcessPayment = (providerId: string) => {
@@ -87,7 +89,7 @@ const PaymentCalculations: React.FC = () => {
   const sessionColumns: TableColumn<any>[] = [
     {
       key: 'clientName',
-      header: 'Client',
+      header: providerCalculation?.compensationType === 'hourly' ? 'Entry Type' : 'Client',
       accessor: (item) => <span className="font-medium">{item.clientName}</span>,
       sortable: true,
     },
@@ -99,16 +101,39 @@ const PaymentCalculations: React.FC = () => {
     },
     {
       key: 'sessionType',
-      header: 'Type',
+      header: providerCalculation?.compensationType === 'hourly' ? 'Work Type' : 'Session Type',
       accessor: (item) => item.sessionType,
       sortable: true,
     },
     {
       key: 'durationMinutes',
-      header: 'Duration',
-      accessor: (item) => `${item.durationMinutes} min`,
+      header: providerCalculation?.compensationType === 'hourly' ? 'Hours' : 'Duration',
+      accessor: (item) => providerCalculation?.compensationType === 'hourly' 
+        ? `${(item.durationMinutes / 60).toFixed(2)}h` 
+        : `${item.durationMinutes} min`,
       sortable: true,
     },
+    // Show hourly-specific columns for hourly compensation
+    ...(providerCalculation?.compensationType === 'hourly' ? [
+      {
+        key: 'regularHours',
+        header: 'Regular',
+        accessor: (item) => item.regularHours ? `${item.regularHours.toFixed(2)}h` : '-',
+        sortable: true,
+      },
+      {
+        key: 'eveningHours',
+        header: 'Evening',
+        accessor: (item) => item.eveningHours ? `${item.eveningHours.toFixed(2)}h` : '-',
+        sortable: true,
+      },
+      {
+        key: 'weekendHours',
+        header: 'Weekend',
+        accessor: (item) => item.weekendHours ? `${item.weekendHours.toFixed(2)}h` : '-',
+        sortable: true,
+      },
+    ] : []),
     {
       key: 'calculatedAmount',
       header: 'Amount',
@@ -117,10 +142,13 @@ const PaymentCalculations: React.FC = () => {
     },
     {
       key: 'isNoteSigned',
-      header: 'Status',
+      header: providerCalculation?.compensationType === 'hourly' ? 'Approved' : 'Status',
       accessor: (item) => (
         <Badge variant={item.isNoteSigned ? 'default' : 'destructive'}>
-          {item.isNoteSigned ? 'Signed' : 'Unsigned'}
+          {providerCalculation?.compensationType === 'hourly' 
+            ? (item.isNoteSigned ? 'Approved' : 'Pending')
+            : (item.isNoteSigned ? 'Signed' : 'Unsigned')
+          }
         </Badge>
       ),
     },
@@ -180,7 +208,6 @@ const PaymentCalculations: React.FC = () => {
                     <SelectValue placeholder="Select a provider" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Providers</SelectItem>
                     {providers?.map((provider) => (
                       <SelectItem key={provider.id} value={provider.id}>
                         {provider.name}
@@ -193,39 +220,12 @@ const PaymentCalculations: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Provider Selection Message */}
-        {selectedProvider === 'all' && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Provider</h3>
-                <p className="text-gray-600 mb-4">
-                  Choose a provider from the dropdown above to view their payment calculation for the selected week.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Selected Provider Calculation */}
         {selectedProvider && selectedProvider !== 'all' && (
           <>
             {/* Summary Statistics */}
             {summaryStats && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Provider</p>
-                        <p className="text-2xl font-bold text-blue-600">1</p>
-                      </div>
-                      <Users className="h-8 w-8 text-blue-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
@@ -250,6 +250,34 @@ const PaymentCalculations: React.FC = () => {
                   </CardContent>
                 </Card>
 
+                {providerCalculation?.compensationType === 'hourly' && (
+                  <>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Evening Hours</p>
+                            <p className="text-2xl font-bold text-orange-600">{formatHours(summaryStats.totalEveningHours)}</p>
+                          </div>
+                          <Clock className="h-8 w-8 text-orange-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Weekend Hours</p>
+                            <p className="text-2xl font-bold text-red-600">{formatHours(summaryStats.totalWeekendHours)}</p>
+                          </div>
+                          <Clock className="h-8 w-8 text-red-600" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
+
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
@@ -272,23 +300,6 @@ const PaymentCalculations: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {/* Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-blue-600">Total Sessions</p>
-                        <p className="text-2xl font-bold text-blue-700">{providerCalculation.totalSessions}</p>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <p className="text-sm text-green-600">Total Hours</p>
-                        <p className="text-2xl font-bold text-green-700">{formatHours(providerCalculation.totalHours)}</p>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <p className="text-sm text-purple-600">Total Amount</p>
-                        <p className="text-2xl font-bold text-purple-700">{formatCurrency(providerCalculation.totalAmount)}</p>
-                      </div>
-                    </div>
-
-                    {/* Compensation Config */}
                     {providerCalculation.compensationConfig && (
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <h4 className="font-semibold mb-2">Compensation Configuration</h4>
@@ -306,13 +317,35 @@ const PaymentCalculations: React.FC = () => {
                               <span className="font-medium">Base Hourly Rate:</span> {formatCurrency(providerCalculation.compensationConfig.baseHourlyRate)}
                             </div>
                           )}
+                          {/* Show hourly-specific config for hourly compensation */}
+                          {providerCalculation.compensationType === 'hourly' && providerCalculation.compensationConfig && (
+                            <>
+                              {providerCalculation.compensationConfig.isOvertimeEligible && (
+                                <div>
+                                  <span className="font-medium">Overtime Eligible:</span> Yes
+                                </div>
+                              )}
+                              {providerCalculation.compensationConfig.eveningDifferential && (
+                                <div>
+                                  <span className="font-medium">Evening Differential:</span> {formatCurrency(providerCalculation.compensationConfig.eveningDifferential)}/hr
+                                </div>
+                              )}
+                              {providerCalculation.compensationConfig.weekendDifferential && (
+                                <div>
+                                  <span className="font-medium">Weekend Differential:</span> {formatCurrency(providerCalculation.compensationConfig.weekendDifferential)}/hr
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
 
                     {/* Sessions List */}
                     <div>
-                      <h4 className="font-semibold mb-4">Sessions</h4>
+                      <h4 className="font-semibold mb-4">
+                        {providerCalculation.compensationType === 'hourly' ? 'Time Entries' : 'Sessions'}
+                      </h4>
                       <Table
                         data={providerCalculation.sessions}
                         columns={sessionColumns}

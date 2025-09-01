@@ -54,6 +54,13 @@ export class TimeTrackingController {
     return this.timeTrackingService.askForUpdateTimeEntry(id, updateDto.requestedBy, updateDto.updateNotes);
   }
 
+  @Put(':id/break-times')
+  async updateBreakTimes(@Param('id') id: string, @Body() breakTimesDto: { breakStartTime?: string; breakEndTime?: string }) {
+    const breakStartTime = breakTimesDto.breakStartTime ? new Date(breakTimesDto.breakStartTime) : undefined;
+    const breakEndTime = breakTimesDto.breakEndTime ? new Date(breakTimesDto.breakEndTime) : undefined;
+    return this.timeTrackingService.updateBreakTimes(id, breakStartTime, breakEndTime);
+  }
+
   @Get('active/:userId')
   async getActiveTimeEntry(@Param('userId') userId: string) {
     return this.timeTrackingService.getActiveTimeEntry(userId);
