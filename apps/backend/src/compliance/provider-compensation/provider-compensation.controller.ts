@@ -43,4 +43,9 @@ export class ProviderCompensationController {
   async rejectCompensation(@Param('id') id: string, @Body() rejectDto: { reviewedBy: string; reviewNotes?: string }) {
     return this.providerCompensationService.rejectCompensation(id, rejectDto.reviewedBy, rejectDto.reviewNotes);
   }
+
+  @Put(':id/toggle-active')
+  async toggleActiveStatus(@Param('id') id: string, @Body() toggleDto: { isActive: boolean }) {
+    return this.providerCompensationService.toggleActiveStatus(id, toggleDto.isActive);
+  }
 } 

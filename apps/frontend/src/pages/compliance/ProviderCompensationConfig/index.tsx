@@ -1,15 +1,9 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/basic/button';
-import { Input } from '@/components/basic/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Badge } from '@/components/basic/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/basic/dialog';
-import { Label } from '@/components/basic/label';
+import { Dialog } from '@/components/basic/dialog';
 import { Table, TableColumn } from '@/components/basic/table';
-import { Plus, Edit, Trash2, CheckCircle, XCircle, DollarSign, Users } from 'lucide-react';
+import { Badge } from '@/components/basic/badge';
+import { DollarSign, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { complianceService, type ProviderCompensationConfig } from '@/services/complianceService';
 import { staffService } from '@/services/staffService';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +11,11 @@ import { useAuth } from '@/hooks/useAuth';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import { USER_ROLES } from '@/types/enums/staffEnum';
+import ProviderCompensationModal from '@/pages/compliance/ProviderCompensationConfig/components/ProviderCompensationModal';
+import ProviderCompensationHeader from '@/pages/compliance/ProviderCompensationConfig/components/ProviderCompensationHeader';
+
+import ProviderCompensationEmptyState from '@/pages/compliance/ProviderCompensationConfig/components/ProviderCompensationEmptyState';
+import SessionMultipliers from '@/pages/compliance/ProviderCompensationConfig/components/SessionMultipliers';
 
 const ProviderCompensationConfig: React.FC = () => {
   const { user } = useAuth();
@@ -121,6 +120,26 @@ const ProviderCompensationConfig: React.FC = () => {
     },
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      return complianceService.toggleProviderCompensationActive(id, isActive);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['provider-compensations'] });
+      toast({
+        title: 'Success',
+        description: 'Compensation configuration status updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update compensation configuration status',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleSaveConfig = (formData: FormData) => {
     const configData = {
       providerId: formData.get('provider_id') as string,
@@ -151,6 +170,13 @@ const ProviderCompensationConfig: React.FC = () => {
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this compensation configuration?')) {
       deleteConfigMutation.mutate(id);
+    }
+  };
+
+  const handleToggleActive = (id: string, isActive: boolean) => {
+    const action = isActive ? 'activate' : 'deactivate';
+    if (window.confirm(`Are you sure you want to ${action} this compensation configuration?`)) {
+      toggleActiveMutation.mutate({ id, isActive });
     }
   };
 
@@ -241,6 +267,7 @@ const ProviderCompensationConfig: React.FC = () => {
         </Badge>
       ),
     },
+
   ];
 
   if (isLoading || providersLoading) {
@@ -266,41 +293,16 @@ const ProviderCompensationConfig: React.FC = () => {
 
       <div className="space-y-6">
         {/* Header Actions */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            {isPracticeAdmin && (
-              <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-                <SelectTrigger className="w-64">
-                  <SelectValue placeholder="Filter by provider..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Providers</SelectItem>
-                  {staffProfiles?.map((profile) => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.firstName} {profile.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {!isPracticeAdmin && (
-              <div className="text-sm text-gray-600">
-                Viewing your compensation configuration
-              </div>
-            )}
-          </div>
-          
-          <Button 
-            onClick={() => {
-              setEditingConfig(null);
-              setShowConfigModal(true);
-            }}
-            className="flex items-center space-x-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Configuration</span>
-          </Button>
-        </div>
+        <ProviderCompensationHeader
+          isPracticeAdmin={isPracticeAdmin}
+          selectedProvider={selectedProvider}
+          onProviderChange={setSelectedProvider}
+          staffProfiles={staffProfiles}
+          onAddConfiguration={() => {
+            setEditingConfig(null);
+            setShowConfigModal(true);
+          }}
+        />
 
         {/* Compensation Configurations Table */}
         <Table
@@ -314,64 +316,35 @@ const ProviderCompensationConfig: React.FC = () => {
               label: 'Edit',
               icon: <Edit className="h-4 w-4" />,
               onClick: handleEdit,
-              variant: 'outline',
+              variant: 'outline' as const,
+            },
+            {
+              label: (config) => config.isActive ? 'Deactivate' : 'Activate',
+              icon: (config) => config.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />,
+              onClick: (config) => handleToggleActive(config.id, !config.isActive),
+              variant: (config) => config.isActive ? 'destructive' as const : 'default' as const,
             },
             {
               label: 'Delete',
               icon: <Trash2 className="h-4 w-4" />,
               onClick: (config) => handleDelete(config.id),
-              variant: 'destructive',
+              variant: 'destructive' as const,
             },
           ]}
           emptyMessage={
-            <div className="text-center py-12">
-              <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No compensation configurations found</h3>
-              <p className="text-gray-600 mb-4">
-                {isPracticeAdmin 
-                  ? (selectedProvider === 'all' 
-                      ? 'No compensation configurations have been set up yet.'
-                      : 'No compensation configuration found for the selected provider.')
-                  : 'You don\'t have any compensation configurations set up yet.'
-                }
-              </p>
-              <Button onClick={() => {
+            <ProviderCompensationEmptyState
+              isPracticeAdmin={isPracticeAdmin}
+              selectedProvider={selectedProvider}
+              onAddConfiguration={() => {
                 setEditingConfig(null);
                 setShowConfigModal(true);
-              }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Configuration
-              </Button>
-            </div>
+              }}
+            />
           }
         />
 
         {/* Session Multipliers */}
-        {sessionMultipliers && sessionMultipliers.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Session Multipliers</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sessionMultipliers.map((multiplier) => (
-                <Card key={multiplier.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-semibold">{multiplier.sessionType}</h4>
-                        <Badge className="bg-green-100 text-green-800">
-                          {multiplier.multiplier}x
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">{multiplier.durationMinutes} minutes</p>
-                      <div className="text-sm text-gray-600">
-                        <strong>Status:</strong> {multiplier.isActive ? 'Active' : 'Inactive'}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+        <SessionMultipliers sessionMultipliers={sessionMultipliers || []} />
       </div>
 
       {/* Configuration Modal */}
@@ -381,181 +354,19 @@ const ProviderCompensationConfig: React.FC = () => {
           setEditingConfig(null);
         }
       }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingConfig ? 'Edit Compensation Configuration' : 'Add Compensation Configuration'}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            handleSaveConfig(new FormData(e.currentTarget));
-          }} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="provider_id">Provider</Label>
-                <Select 
-                  name="provider_id" 
-                  defaultValue={editingConfig?.providerId || (isPracticeAdmin ? '' : currentStaffProfileId)} 
-                  required
-                  disabled={!isPracticeAdmin && !!currentStaffProfileId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select provider..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {isPracticeAdmin ? (
-                      staffProfiles?.map((profile) => (
-                        <SelectItem key={profile.id} value={profile.id}>
-                          {profile.firstName} {profile.lastName}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value={currentStaffProfileId || ''}>
-                        {user?.firstName} {user?.lastName}
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="compensation_type">Compensation Type</Label>
-                <Select name="compensation_type" defaultValue={editingConfig?.compensationType || 'session_based'} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="session_based">Per Session</SelectItem>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="base_session_rate">Base Session Rate ($)</Label>
-                <Input
-                  name="base_session_rate"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  defaultValue={editingConfig?.baseSessionRate || ''}
-                  placeholder="Enter session rate"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="base_hourly_rate">Base Hourly Rate ($)</Label>
-                <Input
-                  name="base_hourly_rate"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  defaultValue={editingConfig?.baseHourlyRate || ''}
-                  placeholder="Enter hourly rate"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="experience_tier">Experience Tier</Label>
-                <Select name="experience_tier" defaultValue={editingConfig?.experienceTier?.toString() || '1'}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select tier..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Tier 1 (0-2 years)</SelectItem>
-                    <SelectItem value="2">Tier 2 (3-5 years)</SelectItem>
-                    <SelectItem value="3">Tier 3 (6-10 years)</SelectItem>
-                    <SelectItem value="4">Tier 4 (10+ years)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="effective_date">Effective Date</Label>
-                <Input
-                  name="effective_date"
-                  type="date"
-                  defaultValue={editingConfig?.effectiveDate ? new Date(editingConfig.effectiveDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="expiration_date">Expiration Date (Optional)</Label>
-              <Input
-                name="expiration_date"
-                type="date"
-                defaultValue={editingConfig?.expirationDate ? new Date(editingConfig.expirationDate).toISOString().split('T')[0] : ''}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="evening_differential">Evening Differential ($/hr)</Label>
-                <Input
-                  name="evening_differential"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  defaultValue={editingConfig?.eveningDifferential || '0'}
-                  placeholder="0.00"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="weekend_differential">Weekend Differential ($/hr)</Label>
-                <Input
-                  name="weekend_differential"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  defaultValue={editingConfig?.weekendDifferential || '0'}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_overtime_eligible"
-                name="is_overtime_eligible"
-                defaultChecked={editingConfig?.isOvertimeEligible || false}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="is_overtime_eligible">Eligible for overtime pay</Label>
-            </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  setShowConfigModal(false);
-                  setEditingConfig(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={createConfigMutation.isPending || updateConfigMutation.isPending}
-              >
-                {(createConfigMutation.isPending || updateConfigMutation.isPending) 
-                  ? 'Saving...' 
-                  : (editingConfig ? 'Update Configuration' : 'Save Configuration')
-                }
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
+        <ProviderCompensationModal
+          editingConfig={editingConfig}
+          isPracticeAdmin={isPracticeAdmin}
+          currentStaffProfileId={currentStaffProfileId}
+          staffProfiles={staffProfiles}
+          user={user}
+          onSubmit={handleSaveConfig}
+          onCancel={() => {
+            setShowConfigModal(false);
+            setEditingConfig(null);
+          }}
+          isPending={createConfigMutation.isPending || updateConfigMutation.isPending}
+        />
       </Dialog>
     </PageLayout>
   );

@@ -189,4 +189,27 @@ export class ProviderCompensationService {
       },
     });
   }
+
+  async toggleActiveStatus(id: string, isActive: boolean) {
+    const compensation = await this.getProviderCompensationById(id);
+    
+    return this.prisma.providerCompensationConfig.update({
+      where: { id },
+      data: {
+        isActive,
+      },
+      include: {
+        provider: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 } 

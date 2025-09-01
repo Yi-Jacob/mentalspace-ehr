@@ -404,6 +404,13 @@ export class ComplianceService {
     return response.data;
   }
 
+  async toggleProviderCompensationActive(id: string, isActive: boolean): Promise<ProviderCompensationConfig> {
+    const response = await apiClient.put<ProviderCompensationConfig>(`${this.baseUrl}/provider-compensation/${id}/toggle-active`, {
+      isActive
+    });
+    return response.data;
+  }
+
   // Get list of staff providers (without payment data)
   async getStaffProviders(): Promise<Array<{ id: string; name: string }>> {
     const response = await apiClient.get<Array<{ id: string; name: string }>>(`${this.baseUrl}/staff-providers`);
