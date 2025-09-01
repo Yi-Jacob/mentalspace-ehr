@@ -57,7 +57,7 @@ const SessionCompletionTracking: React.FC = () => {
     appointmentId: '',
     providerId: '',
     clientId: '',
-    sessionType: '',
+    sessionType: 'Individual Therapy',
     durationMinutes: 60,
     sessionDate: new Date().toISOString().split('T')[0],
   });
@@ -98,7 +98,7 @@ const SessionCompletionTracking: React.FC = () => {
         appointmentId: '',
         providerId: '',
         clientId: '',
-        sessionType: '',
+        sessionType: 'Individual Therapy',
         durationMinutes: 60,
         sessionDate: new Date().toISOString().split('T')[0],
       });

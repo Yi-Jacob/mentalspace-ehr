@@ -270,7 +270,6 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
-                <option value="">Select session type</option>
                 <option value="Individual Therapy">Individual Therapy</option>
                 <option value="Group Therapy">Group Therapy</option>
                 <option value="Intake Session">Intake Session</option>
@@ -283,18 +282,16 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
             {/* Duration */}
             <div>
               <label className="block text-sm font-medium mb-1">Duration (minutes) *</label>
-              <select
+              <input
+                type="number"
                 value={formData.durationMinutes}
-                onChange={(e) => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) })}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                readOnly
+                className="w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
                 required
-              >
-                <option value={30}>30 minutes</option>
-                <option value={45}>45 minutes</option>
-                <option value={60}>60 minutes</option>
-                <option value={90}>90 minutes</option>
-                <option value={120}>120 minutes</option>
-              </select>
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Duration is automatically set from the selected appointment
+              </p>
             </div>
 
             {/* Session Date */}

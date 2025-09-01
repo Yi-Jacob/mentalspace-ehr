@@ -100,10 +100,14 @@ export class PaymentCalculationService {
     // Calculate based on compensation type
     if (compensationConfig.compensationType === 'session_based') {
       // Session-based calculation - get sessions from SessionCompletion table
+      console.log('targetPayPeriod', targetPayPeriod);
       const sessionCompletions = await this.prisma.sessionCompletion.findMany({
         where: {
           providerId,
-          payPeriodWeek: targetPayPeriod,
+          sessionDate: {
+            gte: targetPayPeriod,
+            lt: new Date(targetPayPeriod.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days later
+          },
           isNoteSigned: true, // Only signed notes count for payment
         },
         include: {
