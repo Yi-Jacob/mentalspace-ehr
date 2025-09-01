@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateSessionCompletionDto } from './dto/create-session-completion.dto';
 import { UpdateSessionCompletionDto } from './dto/update-session-completion.dto';
 
 @Injectable()
 export class SessionCompletionService {
+  private readonly logger = new Logger(SessionCompletionService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getAllSessionCompletions(status?: string, providerId?: string, clientId?: string) {
@@ -96,6 +98,20 @@ export class SessionCompletionService {
       data.supervisorOverrideAt = new Date(createSessionCompletionDto.supervisorOverrideAt);
     }
 
+    // Calculate pay period week if not provided
+    if (!data.payPeriodWeek) {
+      data.payPeriodWeek = this.calculatePayPeriodWeek(data.sessionDate);
+    }
+
+    // Calculate amount if not provided
+    if (!data.calculatedAmount) {
+      data.calculatedAmount = await this.calculateSessionAmount(
+        createSessionCompletionDto.providerId,
+        createSessionCompletionDto.sessionType,
+        createSessionCompletionDto.durationMinutes
+      );
+    }
+
     return this.prisma.sessionCompletion.create({
       data,
       include: {
@@ -175,6 +191,12 @@ export class SessionCompletionService {
       throw new BadRequestException('Session is locked and cannot be signed');
     }
 
+    // Check if note signing is within deadline
+    const isWithinDeadline = this.isWithinNoteDeadline(sessionCompletion.sessionDate);
+    if (!isWithinDeadline) {
+      throw new BadRequestException('Note signing deadline has passed. Supervisor approval required.');
+    }
+
     return this.prisma.sessionCompletion.update({
       where: { id },
       data: {
@@ -237,6 +259,7 @@ export class SessionCompletionService {
         supervisorOverrideBy: overrideBy,
         supervisorOverrideReason: reason,
         supervisorOverrideAt: new Date(),
+        isLocked: false, // Unlock the session
       },
       include: {
         provider: {
@@ -253,5 +276,329 @@ export class SessionCompletionService {
         },
       },
     });
+  }
+
+  // New methods for comprehensive session management
+
+  async getComplianceDeadlines(providerId: string) {
+    const currentDate = new Date();
+    const payPeriodWeek = this.calculatePayPeriodWeek(currentDate);
+    
+    // Get all sessions for the current pay period
+    const sessions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId,
+        payPeriodWeek,
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const unsignedSessions = sessions.filter(s => !s.isNoteSigned);
+    const signedSessions = sessions.filter(s => s.isNoteSigned);
+
+    return {
+      payPeriodWeek,
+      totalSessions: sessions.length,
+      signedSessions: signedSessions.length,
+      unsignedSessions: unsignedSessions.length,
+      deadline: this.getNoteDeadline(payPeriodWeek),
+      isDeadlinePassed: this.isDeadlinePassed(payPeriodWeek),
+      sessions: {
+        signed: signedSessions,
+        unsigned: unsignedSessions,
+      },
+    };
+  }
+
+  async getPaymentCalculation(providerId: string, payPeriodWeek?: Date) {
+    const targetPayPeriod = payPeriodWeek || this.calculatePayPeriodWeek(new Date());
+    
+    const sessions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId,
+        payPeriodWeek: targetPayPeriod,
+        isNoteSigned: true, // Only signed notes count for payment
+      },
+    });
+
+    const totalHours = sessions.reduce((sum, session) => sum + (session.durationMinutes / 60), 0);
+    const totalAmount = sessions.reduce((sum, session) => sum + (session.calculatedAmount || 0), 0);
+
+    return {
+      payPeriodWeek: targetPayPeriod,
+      totalSessions: sessions.length,
+      totalHours,
+      totalAmount,
+      sessions,
+    };
+  }
+
+  async getProviderDashboard(providerId: string) {
+    const currentDate = new Date();
+    const payPeriodWeek = this.calculatePayPeriodWeek(currentDate);
+    
+    // Get today's sessions
+    const todaySessions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId,
+        sessionDate: {
+          gte: new Date(currentDate.setHours(0, 0, 0, 0)),
+          lt: new Date(currentDate.setHours(23, 59, 59, 999)),
+        },
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Get unsigned notes for current pay period
+    const unsignedNotes = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId,
+        payPeriodWeek,
+        isNoteSigned: false,
+        isLocked: false,
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Get compliance status
+    const compliance = await this.getComplianceDeadlines(providerId);
+
+    return {
+      todaySessions,
+      unsignedNotes,
+      compliance,
+      payPeriodWeek,
+    };
+  }
+
+  async getSessionAnalytics(providerId: string, startDate: Date, endDate: Date) {
+    const sessions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId,
+        sessionDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const totalSessions = sessions.length;
+    const completedSessions = sessions.filter(s => s.isNoteSigned).length;
+    const completionRate = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+    
+    const totalHours = sessions.reduce((sum, session) => sum + (session.durationMinutes / 60), 0);
+    const totalRevenue = sessions.reduce((sum, session) => sum + (session.calculatedAmount || 0), 0);
+
+    // Group by session type
+    const sessionTypeBreakdown = sessions.reduce((acc, session) => {
+      const type = session.sessionType;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      period: { startDate, endDate },
+      totalSessions,
+      completedSessions,
+      completionRate,
+      totalHours,
+      totalRevenue,
+      sessionTypeBreakdown,
+      sessions,
+    };
+  }
+
+  async createFromAppointment(appointmentId: string) {
+    // Get appointment details
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        clients: true,
+        staff: true,
+      },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
+    }
+
+    // Check if session completion already exists
+    const existingSession = await this.prisma.sessionCompletion.findFirst({
+      where: { appointmentId },
+    });
+
+    if (existingSession) {
+      throw new BadRequestException('Session completion already exists for this appointment');
+    }
+
+    // Create session completion
+    const sessionCompletion = await this.createSessionCompletion({
+      appointmentId,
+      providerId: appointment.providerId,
+      clientId: appointment.clientId,
+      sessionType: appointment.appointmentType,
+      durationMinutes: appointment.duration,
+      sessionDate: appointment.startTime.toISOString(),
+    });
+
+    return sessionCompletion;
+  }
+
+  async bulkCreateFromAppointments(appointmentIds: string[]) {
+    const results = [];
+    
+    for (const appointmentId of appointmentIds) {
+      try {
+        const session = await this.createFromAppointment(appointmentId);
+        results.push({ appointmentId, success: true, session });
+      } catch (error) {
+        results.push({ appointmentId, success: false, error: error.message });
+      }
+    }
+
+    return results;
+  }
+
+  // Helper methods
+
+  private calculatePayPeriodWeek(sessionDate: Date): Date {
+    // Pay period runs Sunday to Saturday
+    const date = new Date(sessionDate);
+    const dayOfWeek = date.getDay();
+    const daysToSunday = dayOfWeek === 0 ? 0 : dayOfWeek;
+    
+    const payPeriodStart = new Date(date);
+    payPeriodStart.setDate(date.getDate() - daysToSunday);
+    payPeriodStart.setHours(0, 0, 0, 0);
+    
+    return payPeriodStart;
+  }
+
+  private getNoteDeadline(payPeriodWeek: Date): Date {
+    // Notes must be signed by Sunday 11:59 PM of the pay period week
+    const deadline = new Date(payPeriodWeek);
+    deadline.setDate(payPeriodWeek.getDate() + 6); // Saturday
+    deadline.setHours(23, 59, 59, 999);
+    return deadline;
+  }
+
+  private isDeadlinePassed(payPeriodWeek: Date): boolean {
+    const deadline = this.getNoteDeadline(payPeriodWeek);
+    return new Date() > deadline;
+  }
+
+  private isWithinNoteDeadline(sessionDate: Date): boolean {
+    const payPeriodWeek = this.calculatePayPeriodWeek(sessionDate);
+    const deadline = this.getNoteDeadline(payPeriodWeek);
+    return new Date() <= deadline;
+  }
+
+  private async calculateSessionAmount(providerId: string, sessionType: string, durationMinutes: number): Promise<number> {
+    // Get provider compensation configuration
+    const compensation = await this.prisma.providerCompensationConfig.findFirst({
+      where: {
+        providerId,
+        isActive: true,
+      },
+    });
+
+    if (!compensation) {
+      // Default calculation
+      return (durationMinutes / 60) * 100; // $100 per hour default
+    }
+
+    let baseRate = compensation.baseSessionRate || compensation.baseHourlyRate || 100;
+    
+    // Apply session type multiplier if available
+    const multiplier = await this.prisma.sessionRateMultiplier.findFirst({
+      where: {
+        providerId,
+        sessionType,
+        isActive: true,
+      },
+    });
+
+    if (multiplier) {
+      baseRate *= multiplier.multiplier;
+    }
+
+    // Calculate based on duration
+    const hours = durationMinutes / 60;
+    return baseRate * hours;
+  }
+
+  async getWeeklyComplianceReport(providerId: string, weekStart: Date) {
+    const payPeriodWeek = this.calculatePayPeriodWeek(weekStart);
+    const deadline = this.getNoteDeadline(payPeriodWeek);
+    
+    const sessions = await this.prisma.sessionCompletion.findMany({
+      where: {
+        providerId,
+        payPeriodWeek,
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        sessionDate: 'asc',
+      },
+    });
+
+    const report = {
+      weekStart: payPeriodWeek,
+      deadline,
+      totalSessions: sessions.length,
+      signedSessions: sessions.filter(s => s.isNoteSigned).length,
+      unsignedSessions: sessions.filter(s => !s.isNoteSigned && !s.isLocked).length,
+      lockedSessions: sessions.filter(s => s.isLocked).length,
+      completionRate: sessions.length > 0 ? (sessions.filter(s => s.isNoteSigned).length / sessions.length) * 100 : 0,
+      sessions: sessions.map(session => ({
+        id: session.id,
+        clientName: `${session.client.firstName} ${session.client.lastName}`,
+        sessionDate: session.sessionDate,
+        sessionType: session.sessionType,
+        durationMinutes: session.durationMinutes,
+        isNoteSigned: session.isNoteSigned,
+        isLocked: session.isLocked,
+        noteSignedAt: session.noteSignedAt,
+        calculatedAmount: session.calculatedAmount,
+      })),
+    };
+
+    return report;
   }
 } 

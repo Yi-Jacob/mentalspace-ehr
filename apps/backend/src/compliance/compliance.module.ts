@@ -6,20 +6,18 @@ import { TimeTrackingController } from './time-tracking/time-tracking.controller
 import { TimeTrackingService } from './time-tracking/time-tracking.service';
 import { ComplianceDeadlinesController } from './compliance-deadlines/compliance-deadlines.controller';
 import { ComplianceDeadlinesService } from './compliance-deadlines/compliance-deadlines.service';
-import { SessionCompletionController } from './session-completion/session-completion.controller';
-import { SessionCompletionService } from './session-completion/session-completion.service';
+import { SessionCompletionModule } from './session-completion/session-completion.module';
 import { ProviderCompensationController } from './provider-compensation/provider-compensation.controller';
 import { ProviderCompensationService } from './provider-compensation/provider-compensation.service';
 import { DeadlineExceptionController } from './deadline-exception/deadline-exception.controller';
 import { DeadlineExceptionService } from './deadline-exception/deadline-exception.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, SessionCompletionModule],
   controllers: [
     ComplianceController,
     TimeTrackingController,
     ComplianceDeadlinesController,
-    SessionCompletionController,
     ProviderCompensationController,
     DeadlineExceptionController,
   ],
@@ -27,7 +25,6 @@ import { DeadlineExceptionService } from './deadline-exception/deadline-exceptio
     ComplianceService,
     TimeTrackingService,
     ComplianceDeadlinesService,
-    SessionCompletionService,
     ProviderCompensationService,
     DeadlineExceptionService,
   ],
@@ -35,9 +32,9 @@ import { DeadlineExceptionService } from './deadline-exception/deadline-exceptio
     ComplianceService,
     TimeTrackingService,
     ComplianceDeadlinesService,
-    SessionCompletionService,
     ProviderCompensationService,
     DeadlineExceptionService,
+    SessionCompletionModule,
   ],
 })
 export class ComplianceModule {} 

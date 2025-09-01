@@ -69,19 +69,19 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled':
+      case 'Scheduled':
         return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';
-      case 'confirmed':
+      case 'Confirmed':
         return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300';
-      case 'checked_in':
+      case 'Checked_in':
         return 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300';
-      case 'in_progress':
+      case 'In_progress':
         return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300';
-      case 'completed':
+      case 'Completed':
         return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
-      case 'cancelled':
+      case 'Cancelled':
         return 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300';
-      case 'no_show':
+      case 'No_show':
         return 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300';
       default:
         return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
@@ -172,7 +172,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 Edit Appointment
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => onStatusChange(appointment.id, 'confirmed')}
+                onClick={() => onStatusChange(appointment.id, 'Confirmed')}
                 disabled={appointment.status === 'confirmed'}
                 className="hover:bg-green-50 transition-colors cursor-pointer"
               >
@@ -180,7 +180,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 Mark as Confirmed
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => onStatusChange(appointment.id, 'completed')}
+                onClick={() => onStatusChange(appointment.id, 'Completed')}
                 disabled={appointment.status === 'completed'}
                 className="hover:bg-purple-50 transition-colors cursor-pointer"
               >
