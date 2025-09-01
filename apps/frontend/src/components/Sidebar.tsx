@@ -56,7 +56,6 @@ const menuItems: MenuItem[] = [
       { id: 'all-notes', label: 'All Notes', path: '/notes/all-notes' },
       { id: 'create-note', label: 'Create Note', path: '/notes/create-note' },
       { id: 'pending-approvals', label: 'Pending Approvals', path: '/notes/pending-approvals' },
-      { id: 'note-compliance', label: 'Compliance', path: '/notes/note-compliance' },
     ]
   },
   { 

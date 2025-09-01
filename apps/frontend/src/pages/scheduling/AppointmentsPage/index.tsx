@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import CreateAppointmentModal from '../components/CreateAppointmentModal';
-import AppointmentWaitlist from '../components/AppointmentWaitlist';
 import EditAppointmentModal from '../components/EditAppointmentModal';
 import DeleteAppointmentDialog from '../components/DeleteAppointmentDialog';
 import { useAppointmentMutations } from '../components/hooks/useAppointmentMutations';
@@ -103,8 +102,6 @@ const AppointmentManagement = () => {
           onClearFilters={handleClearFilters}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
             <AppointmentsList
               appointments={appointments}
               isLoading={isLoading}
@@ -112,12 +109,6 @@ const AppointmentManagement = () => {
               onDeleteAppointment={handleDeleteAppointment}
               onStatusChange={handleStatusChange}
             />
-          </div>
-
-          <div>
-            <AppointmentWaitlist />
-          </div>
-        </div>
 
         <CreateAppointmentModal 
           open={showCreateModal}

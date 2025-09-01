@@ -1,8 +1,11 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Calendar } from 'lucide-react';
-import AppointmentCard from './AppointmentCard';
+import { Badge } from '@/components/basic/badge';
+import { Button } from '@/components/basic/button';
+import { Table, TableColumn } from '@/components/basic/table';
+import { Calendar, Clock, User, MapPin, Edit, Eye, Trash2, MoreVertical, CheckCircle, CheckSquare } from 'lucide-react';
+import { format } from 'date-fns';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentsListProps {
   appointments: any[] | undefined;
@@ -19,43 +22,208 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   onDeleteAppointment,
   onStatusChange
 }) => {
+  // Helper function to safely format dates
+  const safeFormatDate = (dateString: string | undefined, formatString: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid Date';
+      return format(date, formatString);
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Date Error';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return 'default';
+      case 'confirmed':
+        return 'default';
+      case 'checked_in':
+        return 'secondary';
+      case 'in_progress':
+        return 'secondary';
+      case 'completed':
+        return 'default';
+      case 'cancelled':
+        return 'destructive';
+      case 'no_show':
+        return 'destructive';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const formatClientName = (appointment: any) => {
+    const clientName = appointment.clients 
+      ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
+      : appointment.first_name && appointment.last_name
+      ? `${appointment.first_name} ${appointment.last_name}`
+      : 'Unknown Client';
+    
+    return (
+      <div className="flex items-center space-x-2">
+        <User className="h-4 w-4 text-blue-500" />
+        <span className="font-medium">{clientName}</span>
+      </div>
+    );
+  };
+
+  const formatAppointmentType = (appointment: any) => {
+    const type = appointment.appointmentType || appointment.appointment_type || 'Unknown Type';
+    return type.replace('_', ' ');
+  };
+
+  const formatDateTime = (appointment: any) => {
+    const startTime = appointment.startTime || appointment.start_time;
+    const duration = appointment.duration;
+    
+    if (!startTime) return 'N/A';
+    
+    const date = safeFormatDate(startTime, 'MMM d, yyyy');
+    const time = safeFormatDate(startTime, 'HH:mm');
+    
+    let endTime = 'N/A';
+    if (startTime && duration) {
+      try {
+        const startDate = new Date(startTime);
+        const endDate = new Date(startDate.getTime() + duration * 60000);
+        endTime = safeFormatDate(endDate.toISOString(), 'HH:mm');
+      } catch (error) {
+        endTime = 'N/A';
+      }
+    }
+    
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center space-x-1">
+          <Calendar className="h-3 w-3 text-green-500" />
+          <span className="text-sm">{date}</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <Clock className="h-3 w-3 text-purple-500" />
+          <span className="text-sm">{time} - {endTime}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const formatStatus = (appointment: any) => {
+    const status = appointment.status || 'scheduled';
+    return (
+      <Badge variant={getStatusColor(status)} className="text-xs">
+        {status.replace('_', ' ')}
+      </Badge>
+    );
+  };
+
+  const formatLocation = (appointment: any) => {
+    if (!appointment.location) return 'Not specified';
+    
+    return (
+      <div className="flex items-center space-x-1">
+        <MapPin className="h-3 w-3 text-pink-500" />
+        <span className="text-sm">{appointment.location}</span>
+      </div>
+    );
+  };
+
+  const tableColumns: TableColumn<any>[] = [
+    {
+      key: 'client',
+      header: 'Client',
+      accessor: formatClientName,
+      sortable: true,
+      searchable: true,
+      searchValue: (appointment) => {
+        const clientName = appointment.clients 
+          ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
+          : appointment.first_name && appointment.last_name
+          ? `${appointment.first_name} ${appointment.last_name}`
+          : 'Unknown Client';
+        return clientName;
+      },
+      width: '20%'
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      accessor: formatAppointmentType,
+      sortable: true,
+      searchable: true,
+      width: '15%'
+    },
+    {
+      key: 'datetime',
+      header: 'Date & Time',
+      accessor: formatDateTime,
+      sortable: true,
+      width: '20%'
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: formatStatus,
+      sortable: true,
+      width: '12%'
+    },
+    {
+      key: 'location',
+      header: 'Location',
+      accessor: formatLocation,
+      sortable: true,
+      searchable: true,
+      width: '15%'
+    },
+    {
+      key: 'notes',
+      header: 'Notes',
+      accessor: (appointment) => appointment.notes || 'No notes',
+      sortable: false,
+      searchable: true,
+      width: '18%'
+    }
+  ];
+
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm">
-      <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-        <CardTitle className="flex items-center space-x-2 text-xl">
-          <Calendar className="h-5 w-5" />
-          <span>Appointments</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-              <div className="text-gray-600 font-medium">Loading appointments...</div>
-            </div>
-          </div>
-        ) : appointments?.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-semibold mb-2">No appointments found</h3>
-            <p className="text-sm">No appointments match your current criteria.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {appointments?.map((appointment) => (
-              <AppointmentCard
-                key={appointment.id}
-                appointment={appointment}
-                onEdit={onEditAppointment}
-                onDelete={onDeleteAppointment}
-                onStatusChange={onStatusChange}
-              />
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <Table
+      data={appointments || []}
+      columns={tableColumns}
+      pageSize={15}
+      pageSizeOptions={[10, 15, 25, 50]}
+      emptyMessage="No appointments found"
+      loading={isLoading}
+      actions={[
+        {
+          label: 'Edit',
+          icon: <Edit className="w-3 h-3" />,
+          onClick: onEditAppointment,
+          variant: 'ghost'
+        },
+        {
+          label: 'Confirm',
+          icon: <CheckCircle className="w-3 h-3" />,
+          onClick: (appointment) => onStatusChange(appointment.id, 'Confirmed'),
+          variant: 'ghost',
+          disabled: (appointment) => appointment.status === 'confirmed'
+        },
+        {
+          label: 'Complete',
+          icon: <CheckSquare className="w-3 h-3" />,
+          onClick: (appointment) => onStatusChange(appointment.id, 'Completed'),
+          variant: 'ghost',
+          disabled: (appointment) => appointment.status === 'completed'
+        },
+        {
+          label: 'Delete',
+          icon: <Trash2 className="w-3 h-3" />,
+          onClick: onDeleteAppointment,
+          variant: 'ghost'
+        }
+      ]}
+    />
   );
 };
 

@@ -17,7 +17,6 @@ import MiscellaneousNoteView from '../pages/notes/MiscellaneousNoteViewPage';
 import PendingApprovals from '@/pages/notes/PendingApprovalPage';
 import AllNotes from '@/pages/notes/AllNotesPage';
 import CreateNotePage from '@/pages/notes/CreateNotePage/index';
-import NoteCompliance from '@/pages/notes/NoteCompliancePage/index';
 import NoteHistory from '@/pages/notes/NoteHistoryPage';
 import NoteHistoryView from '@/pages/notes/NoteHistoryViewPage';
 
@@ -37,10 +36,6 @@ const notesRoutes: RouteObject[] = [
   {
     path: 'pending-approvals',
     element: <PendingApprovals />
-  },
-  {
-    path: 'note-compliance',
-    element: <NoteCompliance />
   },
   {
     path: 'progress-note/:noteId/edit',
