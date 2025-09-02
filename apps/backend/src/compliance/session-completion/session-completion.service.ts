@@ -503,12 +503,104 @@ export class SessionCompletionService {
     return payPeriodStart;
   }
 
-  private getNoteDeadline(payPeriodWeek: Date): Date {
-    // Notes must be signed by Sunday 11:59 PM of the pay period week
-    const deadline = new Date(payPeriodWeek);
-    deadline.setDate(payPeriodWeek.getDate() + 6); // Saturday
+  /**
+   * Calculate note deadline dynamically
+   */
+  getNoteDeadline(sessionDate: Date): Date {
+    const payPeriodStart = this.calculatePayPeriodWeek(sessionDate);
+    const deadline = new Date(payPeriodStart);
+    deadline.setDate(payPeriodStart.getDate() + 6); // Saturday
     deadline.setHours(23, 59, 59, 999);
     return deadline;
+  }
+
+  /**
+   * Get deadline status without separate table
+   */
+  getDeadlineStatus(session: any): {
+    status: 'pending' | 'met' | 'overdue' | 'urgent';
+    deadline: Date;
+    isOverdue: boolean;
+  } {
+    const deadline = this.getNoteDeadline(session.sessionDate);
+    const now = new Date();
+    
+    if (session.isNoteSigned) {
+      return { status: 'met', deadline, isOverdue: false };
+    }
+    
+    if (now > deadline) {
+      return { status: 'overdue', deadline, isOverdue: true };
+    }
+    
+    const hoursUntilDeadline = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (hoursUntilDeadline <= 24) {
+      return { status: 'urgent', deadline, isOverdue: false };
+    }
+    
+    return { status: 'pending', deadline, isOverdue: false };
+  }
+
+  /**
+   * Get all sessions with deadline status
+   */
+  async getSessionsWithDeadlines(providerId?: string) {
+
+    const sessions = await this.prisma.sessionCompletion.findMany({
+      where: providerId ? { providerId } : {},
+      include: { 
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          }
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          }
+        }
+      },
+      orderBy: {
+        sessionDate: 'desc',
+      },
+    });
+
+    return sessions.map(session => ({
+      ...session,
+      deadline: this.getNoteDeadline(session.sessionDate).toISOString(),
+      deadlineStatus: this.getDeadlineStatus(session)
+    }));
+  }
+
+  /**
+   * Mark session as completed (note signed)
+   */
+  async markSessionAsCompleted(id: string) {
+    const session = await this.getSessionCompletionById(id);
+    
+    return this.prisma.sessionCompletion.update({
+      where: { id },
+      data: {
+        isNoteSigned: true,
+        noteSignedAt: new Date(),
+      },
+      include: {
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          }
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          }
+        }
+      },
+    });
   }
 
   private isDeadlinePassed(payPeriodWeek: Date): boolean {

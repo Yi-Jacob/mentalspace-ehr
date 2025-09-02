@@ -19,7 +19,17 @@ export interface SessionCompletion {
   supervisorOverrideBy?: string;
   supervisorOverrideReason?: string;
   supervisorOverrideAt?: string;
+  deadline?: string;
+  deadlineStatus?: {
+    status: 'pending' | 'met' | 'overdue' | 'urgent';
+    deadline: string;
+    isOverdue: boolean;
+  };
   client: {
+    firstName: string;
+    lastName: string;
+  };
+  provider?: {
     firstName: string;
     lastName: string;
   };
@@ -96,6 +106,22 @@ class SessionCompletionService {
   // Sign note for session
   async signNote(id: string, signedBy: string): Promise<SessionCompletion> {
     const response = await apiClient.post<SessionCompletion>(`${this.baseUrl}/${id}/sign-note`, { signedBy });
+    return response.data;
+  }
+
+  // Get sessions with deadlines (for compliance page)
+  async getSessionsWithDeadlines(providerId?: string): Promise<SessionCompletion[]> {
+    const params = new URLSearchParams();
+    if (providerId) params.append('providerId', providerId);
+    
+    const url = `${this.baseUrl}/with-deadlines${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiClient.get<SessionCompletion[]>(url);
+    return response.data;
+  }
+
+  // Mark session as completed (note signed)
+  async markSessionAsCompleted(id: string): Promise<SessionCompletion> {
+    const response = await apiClient.post<SessionCompletion>(`${this.baseUrl}/${id}/mark-completed`, {});
     return response.data;
   }
 

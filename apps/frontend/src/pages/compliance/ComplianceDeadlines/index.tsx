@@ -9,31 +9,36 @@ import { Button } from '@/components/basic/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
-import { complianceService, ComplianceDeadline } from '@/services/complianceService';
+import { sessionCompletionService, SessionCompletion } from '@/services/sessionCompletionService';
 import { format, addDays, isAfter, isBefore, differenceInHours } from 'date-fns';
 
 const ComplianceDeadlines: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [providerFilter, setProviderFilter] = useState<string>('all');
-  const [deadlineTypeFilter, setDeadlineTypeFilter] = useState<string>('all');
   const queryClient = useQueryClient();
 
-  // Get compliance deadlines
-  const { data: deadlines, isLoading } = useQuery({
-    queryKey: ['compliance-deadlines', statusFilter, providerFilter, deadlineTypeFilter],
-    queryFn: () => complianceService.getAllComplianceDeadlines(statusFilter, providerFilter),
+  // Get sessions with deadlines
+  const { data: sessions, isLoading, error } = useQuery({
+    queryKey: ['session-deadlines', statusFilter, providerFilter],
+    queryFn: () => sessionCompletionService.getSessionsWithDeadlines(providerFilter === 'all' ? undefined : providerFilter),
   });
 
-  // Mark deadline as met mutation
-  const markAsMetMutation = useMutation({
-    mutationFn: (deadlineId: string) => complianceService.markDeadlineAsMet(deadlineId),
+  // Filter sessions based on status
+  const filteredSessions = sessions?.filter(session => {
+    if (statusFilter === 'all') return true;
+    return session.deadlineStatus?.status === statusFilter;
+  }) || [];
+
+  // Mark session as completed (note signed)
+  const markAsCompletedMutation = useMutation({
+    mutationFn: (sessionId: string) => sessionCompletionService.markSessionAsCompleted(sessionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['compliance-deadlines'] });
+      queryClient.invalidateQueries({ queryKey: ['session-deadlines'] });
     },
   });
 
-  const handleMarkAsMet = (deadlineId: string) => {
-    markAsMetMutation.mutate(deadlineId);
+  const handleMarkAsCompleted = (sessionId: string) => {
+    markAsCompletedMutation.mutate(sessionId);
   };
 
   const formatDate = (dateString: string) => {
@@ -44,52 +49,29 @@ const ComplianceDeadlines: React.FC = () => {
     return format(new Date(dateString), 'HH:mm');
   };
 
-  const getDeadlineStatus = (deadline: ComplianceDeadline) => {
-    const now = new Date();
-    const deadlineDate = new Date(deadline.deadlineDate);
-    
-    if (deadline.isMet) {
-      return { status: 'met', label: 'Met', variant: 'default' as const };
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'met':
+        return <Badge variant="default"><CheckCircle className="h-3 w-3 mr-1" />Met</Badge>;
+      case 'overdue':
+        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Overdue</Badge>;
+      case 'urgent':
+        return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Due Soon</Badge>;
+      default:
+        return <Badge variant="outline">Pending</Badge>;
     }
-    
-    if (isAfter(now, deadlineDate)) {
-      return { status: 'overdue', label: 'Overdue', variant: 'destructive' as const };
-    }
-    
-    const hoursUntilDeadline = differenceInHours(deadlineDate, now);
-    if (hoursUntilDeadline <= 24) {
-      return { status: 'urgent', label: 'Due Soon', variant: 'destructive' as const };
-    }
-    
-    if (hoursUntilDeadline <= 72) {
-      return { status: 'warning', label: 'Due This Week', variant: 'secondary' as const };
-    }
-    
-    return { status: 'pending', label: 'Upcoming', variant: 'outline' as const };
-  };
-
-  const getReminderStatus = (deadline: ComplianceDeadline) => {
-    const reminders = [];
-    if (deadline.reminderSent24h) reminders.push('24h');
-    if (deadline.reminderSent48h) reminders.push('48h');
-    if (deadline.reminderSent72h) reminders.push('72h');
-    return reminders.length > 0 ? reminders.join(', ') : 'None';
   };
 
   // Calculate summary statistics
-  const summaryStats = deadlines ? {
-    total: deadlines.length,
-    met: deadlines.filter(d => d.isMet).length,
-    overdue: deadlines.filter(d => !d.isMet && isAfter(new Date(), new Date(d.deadlineDate))).length,
-    dueSoon: deadlines.filter(d => {
-      if (d.isMet) return false;
-      const hoursUntilDeadline = differenceInHours(new Date(d.deadlineDate), new Date());
-      return hoursUntilDeadline <= 24 && hoursUntilDeadline > 0;
-    }).length,
+  const summaryStats = filteredSessions ? {
+    total: filteredSessions.length,
+    met: filteredSessions.filter(s => s.deadlineStatus?.status === 'met').length,
+    overdue: filteredSessions.filter(s => s.deadlineStatus?.status === 'overdue').length,
+    dueSoon: filteredSessions.filter(s => s.deadlineStatus?.status === 'urgent').length,
   } : null;
 
   // Define columns for the table
-  const columns: TableColumn<ComplianceDeadline>[] = [
+  const columns: TableColumn<SessionCompletion>[] = [
     {
       key: 'providerName',
       header: 'Provider',
@@ -101,22 +83,43 @@ const ComplianceDeadlines: React.FC = () => {
       sortable: true,
     },
     {
-      key: 'deadlineType',
-      header: 'Type',
+      key: 'clientName',
+      header: 'Client',
+      accessor: (item) => (
+        <span className="font-medium">
+          {item.client ? `${item.client.firstName} ${item.client.lastName}` : 'Unknown'}
+        </span>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'sessionType',
+      header: 'Session Type',
       accessor: (item) => (
         <Badge variant="outline" className="text-xs">
-          {item.deadlineType}
+          {item.sessionType}
         </Badge>
       ),
       sortable: true,
     },
     {
-      key: 'deadlineDate',
+      key: 'sessionDate',
+      header: 'Session Date',
+      accessor: (item) => (
+        <div>
+          <div className="font-medium">{formatDate(item.sessionDate)}</div>
+          <div className="text-xs text-gray-500">{formatTime(item.sessionDate)}</div>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'deadline',
       header: 'Deadline',
       accessor: (item) => (
         <div>
-          <div className="font-medium">{formatDate(item.deadlineDate)}</div>
-          <div className="text-xs text-gray-500">{formatTime(item.deadlineDate)}</div>
+          <div className="font-medium">{item.deadline ? formatDate(item.deadline) : 'N/A'}</div>
+          <div className="text-xs text-gray-500">{item.deadline ? formatTime(item.deadline) : ''}</div>
         </div>
       ),
       sortable: true,
@@ -124,50 +127,16 @@ const ComplianceDeadlines: React.FC = () => {
     {
       key: 'status',
       header: 'Status',
-      accessor: (item) => {
-        const status = getDeadlineStatus(item);
-        return (
-          <Badge variant={status.variant}>
-            {status.status === 'met' && <CheckCircle className="h-3 w-3 mr-1" />}
-            {status.status === 'overdue' && <XCircle className="h-3 w-3 mr-1" />}
-            {status.status === 'urgent' && <AlertTriangle className="h-3 w-3 mr-1" />}
-            {status.label}
-          </Badge>
-        );
-      },
+      accessor: (item) => getStatusBadge(item.deadlineStatus?.status || 'pending'),
       sortable: true,
     },
     {
-      key: 'progress',
-      header: 'Progress',
-      accessor: (item) => {
-        const total = (item.notesPending || 0) + (item.notesCompleted || 0);
-        const completed = item.notesCompleted || 0;
-        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-        
-        return (
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs">
-              <span>{completed}/{total}</span>
-              <span>{percentage}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all"
-                style={{ width: `${percentage}%` }}
-              />
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'reminders',
-      header: 'Reminders',
+      key: 'noteStatus',
+      header: 'Note Status',
       accessor: (item) => (
-        <span className="text-xs text-gray-600">
-          {getReminderStatus(item)}
-        </span>
+        <Badge variant={item.isNoteSigned ? "default" : "secondary"}>
+          {item.isNoteSigned ? 'Signed' : 'Unsigned'}
+        </Badge>
       ),
     },
     {
@@ -175,20 +144,20 @@ const ComplianceDeadlines: React.FC = () => {
       header: 'Actions',
       accessor: (item) => (
         <div className="flex space-x-2">
-          {!item.isMet && (
+          {!item.isNoteSigned && !item.isLocked && (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleMarkAsMet(item.id)}
+              onClick={() => handleMarkAsCompleted(item.id)}
             >
               <CheckCircle className="h-3 w-3 mr-1" />
-              Mark Met
+              Mark Completed
             </Button>
           )}
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => {/* TODO: View details */}}
+            onClick={() => {/* TODO: View session details */}}
           >
             View
           </Button>
@@ -203,11 +172,33 @@ const ComplianceDeadlines: React.FC = () => {
         <PageHeader
           icon={AlertTriangle}
           title="Compliance Deadlines"
-          description="Manage regulatory deadlines and compliance requirements"
+          description="Manage note completion deadlines and compliance requirements"
         />
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading compliance deadlines...</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout variant="gradient">
+        <PageHeader
+          icon={AlertTriangle}
+          title="Compliance Deadlines"
+          description="Manage note completion deadlines and compliance requirements"
+        />
+        <div className="text-center py-12">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading sessions</h3>
+          <p className="text-gray-600 mb-4">
+            {error instanceof Error ? error.message : 'An error occurred while loading sessions.'}
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
         </div>
       </PageLayout>
     );
@@ -218,7 +209,7 @@ const ComplianceDeadlines: React.FC = () => {
       <PageHeader
         icon={AlertTriangle}
         title="Compliance Deadlines"
-        description="Manage regulatory deadlines and compliance requirements"
+        description="Manage note completion deadlines and compliance requirements"
       />
 
       <div className="space-y-6">
@@ -231,7 +222,7 @@ const ComplianceDeadlines: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Status</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -243,6 +234,7 @@ const ComplianceDeadlines: React.FC = () => {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="met">Met</SelectItem>
                     <SelectItem value="overdue">Overdue</SelectItem>
+                    <SelectItem value="urgent">Due Soon</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -254,26 +246,11 @@ const ComplianceDeadlines: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Providers</SelectItem>
-                    {deadlines?.map((deadline) => (
-                      <SelectItem key={deadline.providerId} value={deadline.providerId}>
-                        {deadline.provider ? `${deadline.provider.firstName} ${deadline.provider.lastName}` : 'Unknown'}
+                    {sessions?.map((session) => (
+                      <SelectItem key={session.providerId} value={session.providerId}>
+                        {session.provider ? `${session.provider.firstName} ${session.provider.lastName}` : 'Unknown'}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Deadline Type</label>
-                <Select value={deadlineTypeFilter} onValueChange={setDeadlineTypeFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="note_completion">Note Completion</SelectItem>
-                    <SelectItem value="treatment_plan_review">Treatment Plan Review</SelectItem>
-                    <SelectItem value="supervision">Supervision</SelectItem>
-                    <SelectItem value="training">Training</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -288,7 +265,7 @@ const ComplianceDeadlines: React.FC = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Deadlines</p>
+                    <p className="text-sm font-medium text-gray-600">Total Sessions</p>
                     <p className="text-2xl font-bold text-blue-600">{summaryStats.total}</p>
                   </div>
                   <Calendar className="h-8 w-8 text-blue-600" />
@@ -300,7 +277,7 @@ const ComplianceDeadlines: React.FC = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Met</p>
+                    <p className="text-sm font-medium text-gray-600">Notes Signed</p>
                     <p className="text-2xl font-bold text-green-600">{summaryStats.met}</p>
                   </div>
                   <CheckCircle className="h-8 w-8 text-green-600" />
@@ -334,20 +311,16 @@ const ComplianceDeadlines: React.FC = () => {
           </div>
         )}
 
-        {/* Deadlines Table */}
+        {/* Sessions Table */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Compliance Deadlines</CardTitle>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Deadline
-              </Button>
+              <CardTitle>Note Completion Deadlines</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <Table
-              data={deadlines || []}
+              data={filteredSessions}
               columns={columns}
               sortable
               searchable
@@ -356,17 +329,13 @@ const ComplianceDeadlines: React.FC = () => {
               emptyMessage={
                 <div className="text-center py-12">
                   <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No compliance deadlines found</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions found</h3>
                   <p className="text-gray-600 mb-4">
                     {statusFilter === 'all' 
-                      ? 'No compliance deadlines have been set up yet.'
-                      : `No ${statusFilter} deadlines found with the current filters.`
+                      ? 'No sessions have been scheduled yet.'
+                      : `No ${statusFilter} sessions found with the current filters.`
                     }
                   </p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Deadline
-                  </Button>
                 </div>
               }
             />
