@@ -16,6 +16,7 @@ import ProviderCompensationHeader from '@/pages/compliance/ProviderCompensationC
 
 import ProviderCompensationEmptyState from '@/pages/compliance/ProviderCompensationConfig/components/ProviderCompensationEmptyState';
 import SessionMultipliers from '@/pages/compliance/ProviderCompensationConfig/components/SessionMultipliers';
+import { StaffMember } from '@/types/staffType';
 
 const ProviderCompensationConfig: React.FC = () => {
   const { user } = useAuth();

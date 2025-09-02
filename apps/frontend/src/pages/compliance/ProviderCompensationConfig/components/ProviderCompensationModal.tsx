@@ -5,13 +5,28 @@ import { Label } from '@/components/basic/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/basic/dialog';
 import { type ProviderCompensationConfig } from '@/services/complianceService';
-import { type StaffProfile } from '@/services/staffService';
+
+interface StaffProfileWithNames {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
+  employeeId?: string;
+  jobTitle?: string;
+  department?: string;
+  npiNumber?: string;
+  licenseNumber?: string;
+  licenseState?: string;
+  status?: string;
+}
 
 interface ProviderCompensationModalProps {
   editingConfig: ProviderCompensationConfig | null;
   isPracticeAdmin: boolean;
   currentStaffProfileId?: string;
-  staffProfiles?: StaffProfile[];
+  staffProfiles?: StaffProfileWithNames[];
   user: any;
   onSubmit: (formData: FormData) => void;
   onCancel: () => void;
@@ -59,9 +74,11 @@ const ProviderCompensationModal: React.FC<ProviderCompensationModalProps> = ({
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value={currentStaffProfileId || ''}>
-                    {user?.firstName} {user?.lastName}
-                  </SelectItem>
+                  currentStaffProfileId && (
+                    <SelectItem value={currentStaffProfileId}>
+                      {user?.firstName} {user?.lastName}
+                    </SelectItem>
+                  )
                 )}
               </SelectContent>
             </Select>

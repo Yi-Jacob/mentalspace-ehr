@@ -2,13 +2,28 @@ import React from 'react';
 import { Button } from '@/components/basic/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Plus } from 'lucide-react';
-import { StaffMember } from '@/types/staffType';
+
+interface StaffProfileWithNames {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
+  employeeId?: string;
+  jobTitle?: string;
+  department?: string;
+  npiNumber?: string;
+  licenseNumber?: string;
+  licenseState?: string;
+  status?: string;
+}
 
 interface ProviderCompensationHeaderProps {
   isPracticeAdmin: boolean;
   selectedProvider: string;
   onProviderChange: (value: string) => void;
-  staffProfiles?: StaffMember[];
+  staffProfiles?: StaffProfileWithNames[];
   onAddConfiguration: () => void;
 }
 
