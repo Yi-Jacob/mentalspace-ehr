@@ -33,6 +33,8 @@ jobs:
     - name: Deploy to Windows Server
       run: |
         Write-Host "Starting deployment..." -ForegroundColor Green
+        # Add Git to PATH for this session
+        $env:PATH += ";C:\Program Files\Git\bin"
         Set-Location "C:\mentalspace-ehr"
         git pull origin main
         docker-compose down
