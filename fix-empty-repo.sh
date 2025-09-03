@@ -1,18 +1,19 @@
 #!/bin/bash
 # Quick Fix: Initialize Git Repository on EC2
-# Run this if your mentalspace-ehr folder is empty
+# Run this if your mentalspace-ehr folder is empty or has issues
 
-echo "🔧 Fixing empty mentalspace-ehr directory..."
+echo "🔧 Fixing mentalspace-ehr directory..."
 
 # Navigate to the directory
 cd /home/ec2-user/mentalspace-ehr
 
 # Check if directory is empty or not a git repository
 if [ ! -d ".git" ]; then
-  echo "📥 Directory is not a git repository. Cloning from GitHub..."
+  echo "📥 Directory is not a git repository. Cleaning and cloning from GitHub..."
   
-  # Remove any existing files
+  # Remove all files and hidden files
   rm -rf /home/ec2-user/mentalspace-ehr/*
+  rm -rf /home/ec2-user/mentalspace-ehr/.* 2>/dev/null || true
   
   # Clone the repository
   git clone https://github.com/Yi-Jacob/mentalspace-ehr.git .
