@@ -34,7 +34,17 @@ jobs:
       run: |
         echo "Starting deployment..."
         cd /home/ec2-user/mentalspace-ehr
-        git pull origin main
+        
+        # Check if directory exists and is a git repository
+        if [ ! -d ".git" ]; then
+          echo "Git repository not found. Cloning from GitHub..."
+          rm -rf /home/ec2-user/mentalspace-ehr/*
+          git clone https://github.com/Yi-Jacob/mentalspace-ehr.git .
+        else
+          echo "Git repository found. Pulling latest changes..."
+          git pull origin main
+        fi
+        
         docker-compose down
         docker-compose up -d --build
         echo "Deployment completed!" 

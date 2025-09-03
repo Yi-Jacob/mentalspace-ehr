@@ -39,6 +39,15 @@ cd /home/ec2-user/mentalspace-ehr
 echo "📥 Cloning repository..."
 git clone https://github.com/Yi-Jacob/mentalspace-ehr.git .
 
+# Verify git repository
+echo "🔍 Verifying git repository..."
+if [ -d ".git" ]; then
+  echo "✅ Git repository successfully cloned!"
+else
+  echo "❌ Failed to clone git repository"
+  exit 1
+fi
+
 # Create environment file
 echo "⚙️ Creating environment file..."
 cat > .env << EOF
