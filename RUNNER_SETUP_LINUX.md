@@ -22,8 +22,18 @@ ls -la
 ### 2. Configure the Runner
 
 ```bash
+# First, install .NET Core dependencies (if needed)
+sudo dnf install -y libicu libgcc glibc-langpack-en
+
 # Configure with your token
 ./config.sh --url https://github.com/Yi-Jacob/mentalspace-ehr --token AXCN7RPBBNLPSXFJBB67JUTIXC7PA
+```
+
+**If you get .NET Core dependency errors:**
+```bash
+# Run the dependency fix script
+chmod +x fix-dotnet-dependencies.sh
+./fix-dotnet-dependencies.sh
 ```
 
 ### 3. Run the Runner

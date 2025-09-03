@@ -15,6 +15,10 @@ curl -o actions-runner-linux-x64-2.311.0.tar.gz -L https://github.com/actions/ru
 echo "📦 Extracting runner..."
 tar xzf ./actions-runner-linux-x64-2.311.0.tar.gz
 
+# Install .NET Core dependencies for Amazon Linux 2023
+echo "📦 Installing .NET Core dependencies..."
+sudo dnf install -y libicu libgcc glibc-langpack-en
+
 # List available files
 echo "📁 Available files:"
 ls -la
