@@ -1,0 +1,60 @@
+# Multi-stage build for NestJS backend
+FROM node:20.12.2-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY apps/backend/package*.json ./apps/backend/
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build:backend
+
+# Production stage
+FROM node:20.12.2-alpine AS production
+
+# Create app user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY apps/backend/package*.json ./apps/backend/
+
+# Install only production dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built application
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/scripts ./scripts
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Install netcat for database connectivity check
+RUN apk add --no-cache netcat-openbsd
+
+# Switch to non-root user
+USER nestjs
+
+# Expose port
+EXPOSE 7000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node dist/health.js || exit 1
+
+# Start the application with entrypoint
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
