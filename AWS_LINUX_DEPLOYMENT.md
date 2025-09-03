@@ -152,6 +152,36 @@ git push origin main
 
 ## 🔍 Troubleshooting
 
+### Docker Installation Issues:
+
+If you get "docker-compose not found" or "docker service not found":
+
+**For Amazon Linux 2:**
+```bash
+# Try the updated setup script
+./setup-aws-linux.sh
+```
+
+**For Amazon Linux 2023:**
+```bash
+# Use the alternative setup script
+chmod +x setup-amazon-linux-2023.sh
+./setup-amazon-linux-2023.sh
+```
+
+**Manual Docker Installation:**
+```bash
+# Install Docker manually
+sudo yum install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -a -G docker ec2-user
+
+# Install Docker Compose manually
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
 ### Check Runner Status:
 ```bash
 sudo systemctl status actions.runner.*

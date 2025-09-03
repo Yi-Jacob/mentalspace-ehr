@@ -1,20 +1,20 @@
 #!/bin/bash
-# MentalSpace EHR Setup Script for AWS Linux
-# Run this script on your AWS Linux EC2 instance
+# MentalSpace EHR Setup Script for Amazon Linux 2023
+# Alternative setup script if the main one doesn't work
 
-echo "🚀 Setting up MentalSpace EHR on AWS Linux..."
+echo "🚀 Setting up MentalSpace EHR on Amazon Linux 2023..."
 
 # Update system
 echo "📦 Updating system packages..."
-sudo yum update -y
+sudo dnf update -y
 
 # Install required packages
 echo "📦 Installing required packages..."
-sudo yum install -y git
+sudo dnf install -y git
 
-# Install Docker
+# Install Docker using Amazon Linux 2023 method
 echo "🐳 Installing Docker..."
-sudo yum install -y docker
+sudo dnf install -y docker
 
 # Start and enable Docker
 echo "🐳 Starting Docker service..."
