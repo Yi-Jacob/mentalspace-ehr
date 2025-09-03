@@ -16,11 +16,18 @@ curl -o actions-runner-linux-x64-2.311.0.tar.gz -L https://github.com/actions/ru
 echo "📦 Extracting runner..."
 tar xzf ./actions-runner-linux-x64-2.311.0.tar.gz
 
+# List available files
+echo "📁 Available files in runner directory:"
+ls -la
+
 # Configure the runner
 echo "⚙️ Configuring runner..."
 echo "Please run the following command with your actual token:"
 echo "./config.sh --url https://github.com/Yi-Jacob/mentalspace-ehr --token AXCN7RPBBNLPSXFJBB67JUTIXC7PA"
 echo ""
-echo "After configuration, install as a service with:"
+echo "After configuration, you can run the runner manually with:"
+echo "./run.sh"
+echo ""
+echo "Or install as a systemd service with:"
 echo "sudo ./svc.sh install"
 echo "sudo ./svc.sh start" 
