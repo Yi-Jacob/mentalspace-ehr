@@ -29,6 +29,7 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       VITE_API_TIMEOUT: ${{ secrets.VITE_API_TIMEOUT }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     
     steps:
     - name: Checkout code
@@ -52,18 +53,21 @@ jobs:
           git pull origin main
         fi
         
-        # Create .env file with only essential secrets
-        echo "Creating .env file..."
-        echo "NODE_ENV=production" > .env
-        echo "DATABASE_URL=${DATABASE_URL}" >> .env
-        echo "JWT_SECRET=${JWT_SECRET}" >> .env
-        echo "JWT_EXPIRES_IN=24h" >> .env
-        echo "PORT=7000" >> .env
-        echo "POSTGRES_USER=mentalspace" >> .env
-        echo "POSTGRES_PASSWORD=secure_password" >> .env
-        echo "REDIS_PASSWORD=redis_password" >> .env
-        echo "VITE_API_TIMEOUT=${VITE_API_TIMEOUT}" >> .env
-        chmod 600 .env
+        # Create frontend .env file (no secrets)
+        echo "Creating frontend .env file..."
+        echo "VITE_API_URL=http://localhost:7000" > apps/frontend/.env
+        echo "VITE_API_TIMEOUT=${VITE_API_TIMEOUT}" >> apps/frontend/.env
+        chmod 600 apps/frontend/.env
+        
+        # Create backend .env file (with secrets)
+        echo "Creating backend .env file..."
+        echo "NODE_ENV=production" > apps/backend/.env
+        echo "DATABASE_URL=${DATABASE_URL}" >> apps/backend/.env
+        echo "JWT_SECRET=${JWT_SECRET}" >> apps/backend/.env
+        echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> apps/backend/.env
+        echo "JWT_EXPIRES_IN=24h" >> apps/backend/.env
+        echo "PORT=7000" >> apps/backend/.env
+        chmod 600 apps/backend/.env
         
         echo "Stopping existing containers..."
         docker-compose down

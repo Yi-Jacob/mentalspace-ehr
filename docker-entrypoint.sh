@@ -14,6 +14,12 @@ echo "DB_PORT: $DB_PORT"
 echo "DATABASE_URL: $DATABASE_URL"
 echo "NODE_ENV: $NODE_ENV"
 
+# Copy backend .env file to app directory if it exists
+if [ -f "/app/apps/backend/.env" ]; then
+  echo "Copying backend .env file..."
+  cp /app/apps/backend/.env /app/.env
+fi
+
 # Run database setup if needed
 if [ ! -f /app/.db-initialized ]; then
   echo "Running database initialization..."

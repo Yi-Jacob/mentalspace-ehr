@@ -20,23 +20,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Redis for caching and sessions
-  redis:
-    image: redis:7-alpine
-    container_name: mentalspace-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - mentalspace-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   # Backend API
   backend:
     build:
@@ -46,18 +29,17 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-mentalspace}:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/mentalspace
-      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
       PORT: 7000
       DB_HOST: postgres
       DB_PORT: 5432
+    volumes:
+      - ./apps/backend/.env:/app/apps/backend/.env:ro
     ports:
       - "7000:7000"
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - mentalspace-network
@@ -106,8 +88,6 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:
