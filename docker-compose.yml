@@ -13,8 +13,6 @@ services:
       PORT: 7000
       DB_HOST: database-1-instance-1.cny40qqomphs.us-east-2.rds.amazonaws.com
       DB_PORT: 5432
-    volumes:
-      - ./apps/backend/.env:/app/apps/backend/.env:ro
     ports:
       - "7000:7000"
     networks:

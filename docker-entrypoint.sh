@@ -11,9 +11,19 @@ if [ -f "/app/apps/backend/.env" ]; then
   cp /app/apps/backend/.env /app/.env
 fi
 
-# Run database setup if needed
-if [ ! -f /app/.db-initialized ]; then
-  echo "Running database initialization..."
+# Check if setup script exists
+if [ -f "/app/scripts/setup-db.js" ]; then
+  echo "Setup script found, running database initialization..."
+  node scripts/setup-db.js
+  if [ $? -eq 0 ]; then
+    touch /app/.db-initialized
+    echo "Database initialization completed!"
+  else
+    echo "Database initialization failed!"
+    exit 1
+  fi
+elif [ -f "/app/apps/backend/scripts/setup-db.js" ]; then
+  echo "Setup script found in apps/backend/scripts, running database initialization..."
   node apps/backend/scripts/setup-db.js
   if [ $? -eq 0 ]; then
     touch /app/.db-initialized
@@ -23,7 +33,8 @@ if [ ! -f /app/.db-initialized ]; then
     exit 1
   fi
 else
-  echo "Database already initialized, skipping setup."
+  echo "Setup script not found, skipping database initialization..."
+  touch /app/.db-initialized
 fi
 
 # Start the application
