@@ -14,8 +14,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Navigate to frontend directory and build
+WORKDIR /app/apps/frontend
+
 # Build the application
-RUN npm run build:frontend
+RUN npm run build || (echo "Build failed, checking logs..." && cat npm-debug.log* 2>/dev/null || true && exit 1)
 
 # Production stage with nginx
 FROM nginx:alpine AS production
