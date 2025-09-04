@@ -70,7 +70,7 @@ jobs:
         chmod 600 apps/backend/.env
         
         echo "Stopping existing containers..."
-        docker-compose down
+        docker-compose down --remove-orphans
         
         echo "Building and starting containers..."
         docker-compose up -d --build
@@ -81,10 +81,17 @@ jobs:
         echo "Checking container status..."
         docker ps -a
         
-        echo "Checking backend logs..."
-        docker logs mentalspace-backend --tail=50 || echo "Backend container not found"
+        echo "Checking backend logs (last 100 lines)..."
+        docker logs mentalspace-backend --tail=100 || echo "Backend container not found"
+        
+        echo "Checking backend exit code..."
+        docker inspect mentalspace-backend --format='{{.State.ExitCode}}' || echo "Container not found"
         
         echo "Checking all container logs..."
-        docker-compose logs --tail=50
+        docker-compose logs --tail=100
+        
+        echo "Checking backend .env file content (non-sensitive)..."
+        echo "Backend .env file exists: $(test -f apps/backend/.env && echo 'YES' || echo 'NO')"
+        echo "Backend .env file size: $(wc -c < apps/backend/.env) bytes"
         
         echo "Deployment completed!" 
