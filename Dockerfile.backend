@@ -34,7 +34,7 @@ WORKDIR /app
 COPY apps/backend/package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/dist ./dist
