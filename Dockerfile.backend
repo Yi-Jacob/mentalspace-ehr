@@ -48,9 +48,6 @@ RUN chmod +x /app/docker-entrypoint.sh
 # Install netcat for database connectivity check
 RUN apk add --no-cache netcat-openbsd
 
-# Install Prisma CLI globally for production
-RUN npm install -g prisma
-
 # Switch to non-root user
 USER nestjs
 
