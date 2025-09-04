@@ -1,16 +1,7 @@
 #!/bin/sh
 
-# Wait for database to be ready
-echo "Waiting for database to be ready..."
-while ! nc -z $DB_HOST $DB_PORT; do
-  sleep 1
-done
-echo "Database is ready!"
-
 # Debug: Print environment variables
 echo "Debug: Environment variables:"
-echo "DB_HOST: $DB_HOST"
-echo "DB_PORT: $DB_PORT"
 echo "DATABASE_URL: $DATABASE_URL"
 echo "NODE_ENV: $NODE_ENV"
 

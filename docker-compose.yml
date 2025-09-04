@@ -1,25 +1,4 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: mentalspace-postgres
-    environment:
-      POSTGRES_DB: mentalspace
-      POSTGRES_USER: ${POSTGRES_USER:-mentalspace}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./apps/backend/prisma/migrations:/docker-entrypoint-initdb.d
-    ports:
-      - "5432:5432"
-    networks:
-      - mentalspace-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mentalspace}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   # Backend API
   backend:
     build:
@@ -28,19 +7,16 @@ services:
     container_name: mentalspace-backend
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-mentalspace}:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/mentalspace
+      DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
       PORT: 7000
-      DB_HOST: postgres
+      DB_HOST: database-1-instance-1.cny40qqomphs.us-east-2.rds.amazonaws.com
       DB_PORT: 5432
     volumes:
       - ./apps/backend/.env:/app/apps/backend/.env:ro
     ports:
       - "7000:7000"
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - mentalspace-network
     healthcheck:
@@ -85,10 +61,6 @@ services:
       - backend
     networks:
       - mentalspace-network
-
-volumes:
-  postgres_data:
-    driver: local
 
 networks:
   mentalspace-network:
