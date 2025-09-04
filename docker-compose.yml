@@ -73,7 +73,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend.basic
+      dockerfile: Dockerfile.frontend.simple2
     container_name: mentalspace-frontend
     environment:
       VITE_API_URL: http://localhost:7000
