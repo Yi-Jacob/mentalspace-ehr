@@ -52,13 +52,14 @@ fi
 echo "⚙️ Creating environment file..."
 cat > .env << EOF
 NODE_ENV=production
-DATABASE_URL=postgresql://mentalspace:secure_password@localhost:5432/mentalspace
+DATABASE_URL=your-database-url-here
 JWT_SECRET=your-super-secret-jwt-key-here
 JWT_EXPIRES_IN=24h
 PORT=7000
 POSTGRES_USER=mentalspace
 POSTGRES_PASSWORD=secure_password
 REDIS_PASSWORD=redis_password
+VITE_API_TIMEOUT=60000
 EOF
 
 # Set proper permissions
