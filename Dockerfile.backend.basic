@@ -36,9 +36,9 @@ COPY apps/backend/package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/scripts ./scripts
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
