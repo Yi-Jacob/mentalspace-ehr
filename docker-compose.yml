@@ -43,7 +43,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: Dockerfile.backend.simple
     container_name: mentalspace-backend
     environment:
       NODE_ENV: production
@@ -73,7 +73,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: Dockerfile.frontend.simple
     container_name: mentalspace-frontend
     environment:
       VITE_API_URL: http://localhost:7000
