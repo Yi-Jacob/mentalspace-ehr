@@ -1,0 +1,77 @@
+# Enterprise-level deployment with AWS Secrets Manager
+name: Deploy to Linux EC2 (Enterprise)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests
+      run: npm test
+
+  deploy:
+    needs: test
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main'
+    env:
+      AWS_REGION: us-east-1
+      SECRETS_ARN: ${{ secrets.AWS_SECRETS_ARN }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+      
+    - name: Deploy to Linux Server
+      run: |
+        echo "Starting enterprise deployment..."
+        cd /home/ec2-user/mentalspace-ehr
+        
+        # Pull latest code
+        git pull origin main
+        
+        # Get secrets from AWS Secrets Manager
+        echo "Fetching secrets from AWS Secrets Manager..."
+        SECRETS=$(aws secretsmanager get-secret-value --secret-id $SECRETS_ARN --query SecretString --output text)
+        
+        # Create .env file with AWS secrets
+        echo "Creating .env file with AWS secrets..."
+        cat > .env << EOF
+NODE_ENV=production
+DATABASE_URL=$(echo $SECRETS | jq -r '.DATABASE_URL')
+JWT_SECRET=$(echo $SECRETS | jq -r '.JWT_SECRET')
+JWT_EXPIRES_IN=24h
+PORT=7000
+POSTGRES_USER=$(echo $SECRETS | jq -r '.POSTGRES_USER')
+POSTGRES_PASSWORD=$(echo $SECRETS | jq -r '.POSTGRES_PASSWORD')
+REDIS_PASSWORD=$(echo $SECRETS | jq -r '.REDIS_PASSWORD')
+EOF
+        chmod 600 .env
+        
+        # Deploy with Docker
+        docker-compose down
+        docker-compose up -d --build
+        
+        echo "Enterprise deployment completed!" 
