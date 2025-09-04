@@ -13,8 +13,25 @@ fi
 
 # Skip database setup for production (using AWS RDS)
 echo "Using AWS RDS - skipping database initialization..."
-touch /app/.db-initialized
+
+# Check if dist/main.js exists, if not try apps/backend/dist/main.js
+if [ -f "/app/dist/main.js" ]; then
+  echo "Found main.js in /app/dist/main.js"
+  MAIN_PATH="/app/dist/main.js"
+elif [ -f "/app/apps/backend/dist/main.js" ]; then
+  echo "Found main.js in /app/apps/backend/dist/main.js"
+  MAIN_PATH="/app/apps/backend/dist/main.js"
+else
+  echo "ERROR: main.js not found in expected locations!"
+  echo "Available files in /app:"
+  ls -la /app/
+  echo "Available files in /app/dist:"
+  ls -la /app/dist/ 2>/dev/null || echo "dist directory not found"
+  echo "Available files in /app/apps/backend/dist:"
+  ls -la /app/apps/backend/dist/ 2>/dev/null || echo "apps/backend/dist directory not found"
+  exit 1
+fi
 
 # Start the application
-echo "Starting application..."
-exec node dist/main
+echo "Starting application with: $MAIN_PATH"
+exec node "$MAIN_PATH"
