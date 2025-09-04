@@ -4,13 +4,10 @@ FROM node:20.12.2-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Install yarn for better dependency management
-RUN npm install -g yarn
-
 # Copy frontend files
 COPY apps/frontend/ ./
 
-# Install dependencies using yarn (more reliable for Docker builds)
+# Install dependencies using yarn (already available in node:alpine)
 RUN yarn install --frozen-lockfile
 
 # Build the application
