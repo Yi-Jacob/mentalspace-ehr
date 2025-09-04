@@ -25,6 +25,8 @@ jobs:
     needs: test
     runs-on: self-hosted  # This runs on YOUR Linux Server
     if: github.ref == 'refs/heads/main'
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
     
     steps:
     - name: Checkout code
@@ -45,6 +47,20 @@ jobs:
           echo "Git repository found. Pulling latest changes..."
           git pull origin main
         fi
+        
+        # Create .env file with GitHub Secrets (if available) or defaults
+        echo "Creating .env file..."
+        cat > .env << EOF
+NODE_ENV=production
+DATABASE_URL=postgresql://mentalspace:secure_password@localhost:5432/mentalspace
+JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-here-change-this-in-production}
+JWT_EXPIRES_IN=24h
+PORT=7000
+POSTGRES_USER=mentalspace
+POSTGRES_PASSWORD=secure_password
+REDIS_PASSWORD=redis_password
+EOF
+        chmod 600 .env
         
         docker-compose down
         docker-compose up -d --build
