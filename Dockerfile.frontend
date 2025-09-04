@@ -22,9 +22,9 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create non-root user
-RUN addgroup -g 1001 -S nginx
-RUN adduser -S nginx -u 1001 -G nginx
+# Create non-root user (handle existing group/user)
+RUN addgroup -g 1001 -S nginx 2>/dev/null || true
+RUN adduser -S nginx -u 1001 -G nginx 2>/dev/null || true
 
 # Set proper permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
