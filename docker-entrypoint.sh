@@ -10,7 +10,7 @@ echo "Database is ready!"
 # Run database setup if needed
 if [ ! -f /app/.db-initialized ]; then
   echo "Running database initialization..."
-  node scripts/setup-db.js
+  node apps/backend/scripts/setup-db.js
   if [ $? -eq 0 ]; then
     touch /app/.db-initialized
     echo "Database initialization completed!"
