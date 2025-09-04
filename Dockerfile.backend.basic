@@ -4,14 +4,14 @@ FROM node:20.12.2-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy backend package files
-COPY apps/backend/package*.json ./
+# Copy entire project
+COPY . .
+
+# Navigate to backend directory
+WORKDIR /app/apps/backend
 
 # Install backend dependencies
 RUN npm ci
-
-# Copy backend source code
-COPY apps/backend/ ./
 
 # Generate Prisma client
 RUN npx prisma generate

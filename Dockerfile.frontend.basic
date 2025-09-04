@@ -4,14 +4,14 @@ FROM node:20.12.2-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy frontend package files
-COPY apps/frontend/package*.json ./
+# Copy entire project
+COPY . .
+
+# Navigate to frontend directory
+WORKDIR /app/apps/frontend
 
 # Install frontend dependencies
 RUN npm ci
-
-# Copy frontend source code
-COPY apps/frontend/ ./
 
 # Build the application
 RUN npm run build
@@ -20,7 +20,7 @@ RUN npm run build
 FROM nginx:alpine AS production
 
 # Copy built application
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
