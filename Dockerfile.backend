@@ -1,4 +1,4 @@
-# Multi-stage build for NestJS backend
+﻿# Multi-stage build for NestJS backend
 FROM node:20.12.2-alpine AS builder
 
 # Set working directory
@@ -30,9 +30,8 @@ RUN adduser -S nestjs -u 1001
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY apps/backend/package*.json ./apps/backend/
+# Copy backend package files only
+COPY apps/backend/package*.json ./
 
 # Install production dependencies only
 RUN npm ci --only=production
