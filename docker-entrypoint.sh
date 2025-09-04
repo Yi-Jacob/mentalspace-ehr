@@ -18,9 +18,15 @@ echo "Using AWS RDS - skipping database initialization..."
 if [ -f "/app/dist/main.js" ]; then
   echo "Found main.js in /app/dist/main.js"
   MAIN_PATH="/app/dist/main.js"
+elif [ -f "/app/dist/src/main.js" ]; then
+  echo "Found main.js in /app/dist/src/main.js"
+  MAIN_PATH="/app/dist/src/main.js"
 elif [ -f "/app/apps/backend/dist/main.js" ]; then
   echo "Found main.js in /app/apps/backend/dist/main.js"
   MAIN_PATH="/app/apps/backend/dist/main.js"
+elif [ -f "/app/apps/backend/dist/src/main.js" ]; then
+  echo "Found main.js in /app/apps/backend/dist/src/main.js"
+  MAIN_PATH="/app/apps/backend/dist/src/main.js"
 else
   echo "ERROR: main.js not found in expected locations!"
   echo "Available files in /app:"
@@ -29,6 +35,8 @@ else
   ls -la /app/dist/ 2>/dev/null || echo "dist directory not found"
   echo "Available files in /app/apps/backend/dist:"
   ls -la /app/apps/backend/dist/ 2>/dev/null || echo "apps/backend/dist directory not found"
+  echo "Searching for main.js files recursively:"
+  find /app -name "main.js" -type f 2>/dev/null || echo "No main.js files found"
   exit 1
 fi
 
