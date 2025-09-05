@@ -28,13 +28,15 @@
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_URL=http://3.17.184.2:7000
     container_name: mentalspace-frontend
-    environment:
-      VITE_API_URL: http://3.17.184.2:7000
     # Frontend port handled by nginx
     depends_on:
       backend:
         condition: service_healthy
+    ports:
+      - "80:80"
     networks:
       - mentalspace-network
     healthcheck:
