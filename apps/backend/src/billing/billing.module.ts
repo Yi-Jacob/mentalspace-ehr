@@ -12,8 +12,6 @@ import { ClaimsController } from './claims/claims.controller';
 import { ClaimsService } from './claims/claims.service';
 import { PaymentsController } from './payments/payments.controller';
 import { PaymentsService } from './payments/payments.service';
-import { ReportsController } from './reports/reports.controller';
-import { ReportsService } from './reports/reports.service';
 import { VerificationController } from './verification/verification.controller';
 import { VerificationService } from './verification/verification.service';
 
@@ -26,7 +24,6 @@ import { VerificationService } from './verification/verification.service';
     FeeScheduleController,
     ClaimsController,
     PaymentsController,
-    ReportsController,
     VerificationController,
   ],
   providers: [
@@ -36,7 +33,6 @@ import { VerificationService } from './verification/verification.service';
     FeeScheduleService,
     ClaimsService,
     PaymentsService,
-    ReportsService,
     VerificationService,
   ],
   exports: [
@@ -46,7 +42,6 @@ import { VerificationService } from './verification/verification.service';
     FeeScheduleService,
     ClaimsService,
     PaymentsService,
-    ReportsService,
     VerificationService,
   ],
 })

@@ -102,6 +102,24 @@ export interface InsuranceVerification {
   };
 }
 
+export interface ClaimLineItem {
+  id?: string;
+  serviceDate: string;
+  cptCode: string;
+  modifier1?: string;
+  modifier2?: string;
+  modifier3?: string;
+  modifier4?: string;
+  diagnosisPointer?: number;
+  units: number;
+  chargeAmount: number;
+  allowedAmount?: number;
+  paidAmount?: number;
+  adjustmentAmount?: number;
+  patientResponsibility?: number;
+  lineNote?: string;
+}
+
 export interface Claim {
   id: string;
   claimNumber: string;
@@ -134,6 +152,15 @@ export interface Claim {
   payer?: {
     name: string;
   };
+  provider?: {
+    id: string;
+    email: string;
+    staffProfile?: {
+      formalName: string;
+      jobTitle: string;
+    };
+  };
+  lineItems?: ClaimLineItem[];
 }
 
 export interface Payment {

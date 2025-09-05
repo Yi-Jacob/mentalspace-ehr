@@ -40,6 +40,37 @@ export class ClaimsService {
             name: true,
           },
         },
+        provider: {
+          select: {
+            id: true,
+            email: true,
+            staffProfile: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
+        lineItems: {
+          select: {
+            id: true,
+            serviceDate: true,
+            cptCode: true,
+            modifier1: true,
+            modifier2: true,
+            modifier3: true,
+            modifier4: true,
+            diagnosisPointer: true,
+            units: true,
+            chargeAmount: true,
+            allowedAmount: true,
+            paidAmount: true,
+            adjustmentAmount: true,
+            patientResponsibility: true,
+            lineNote: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -60,6 +91,37 @@ export class ClaimsService {
         payer: {
           select: {
             name: true,
+          },
+        },
+        provider: {
+          select: {
+            id: true,
+            email: true,
+            staffProfile: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
+        lineItems: {
+          select: {
+            id: true,
+            serviceDate: true,
+            cptCode: true,
+            modifier1: true,
+            modifier2: true,
+            modifier3: true,
+            modifier4: true,
+            diagnosisPointer: true,
+            units: true,
+            chargeAmount: true,
+            allowedAmount: true,
+            paidAmount: true,
+            adjustmentAmount: true,
+            patientResponsibility: true,
+            lineNote: true,
           },
         },
       },
@@ -91,6 +153,37 @@ export class ClaimsService {
             name: true,
           },
         },
+        provider: {
+          select: {
+            id: true,
+            email: true,
+            staffProfile: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
+        lineItems: {
+          select: {
+            id: true,
+            serviceDate: true,
+            cptCode: true,
+            modifier1: true,
+            modifier2: true,
+            modifier3: true,
+            modifier4: true,
+            diagnosisPointer: true,
+            units: true,
+            chargeAmount: true,
+            allowedAmount: true,
+            paidAmount: true,
+            adjustmentAmount: true,
+            patientResponsibility: true,
+            lineNote: true,
+          },
+        },
       },
     });
   }
@@ -119,6 +212,37 @@ export class ClaimsService {
         payer: {
           select: {
             name: true,
+          },
+        },
+        provider: {
+          select: {
+            id: true,
+            email: true,
+            staffProfile: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
+        lineItems: {
+          select: {
+            id: true,
+            serviceDate: true,
+            cptCode: true,
+            modifier1: true,
+            modifier2: true,
+            modifier3: true,
+            modifier4: true,
+            diagnosisPointer: true,
+            units: true,
+            chargeAmount: true,
+            allowedAmount: true,
+            paidAmount: true,
+            adjustmentAmount: true,
+            patientResponsibility: true,
+            lineNote: true,
           },
         },
       },

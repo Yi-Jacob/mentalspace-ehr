@@ -1,24 +1,29 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { FileText, Search, Plus, Send, AlertTriangle, CheckCircle } from 'lucide-react';
+import { FileText, Search, Plus, Send, AlertTriangle, CheckCircle, Eye, Edit, Trash2, Upload } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import { billingService } from '@/services/billingService';
+import { Table, TableColumn } from '@/components/basic/table';
+import { billingService, Claim } from '@/services/billingService';
+import ClaimModal from '../components/claims/ClaimModal';
+import { useToast } from '@/hooks/use-toast';
 
 const ClaimsSubmissionPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'submitted' | 'paid' | 'denied' | 'rejected'>('all');
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: claims, isLoading } = useQuery({
+  const { data: claims = [], isLoading } = useQuery({
     queryKey: ['claims', searchTerm, statusFilter],
     queryFn: async () => {
-      // Get all claims and filter on the frontend for now
-      // In a real implementation, you might want to add search and filter parameters to the backend
       const allClaims = await billingService.getAllClaims();
       
       let filteredClaims = allClaims;
@@ -28,7 +33,6 @@ const ClaimsSubmissionPage: React.FC = () => {
       }
 
       if (searchTerm) {
-        // Filter by claim number or client name
         filteredClaims = filteredClaims.filter(c => 
           c.claimNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           c.client?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,6 +41,42 @@ const ClaimsSubmissionPage: React.FC = () => {
       }
 
       return filteredClaims;
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => billingService.deleteClaim(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['claims'] });
+      toast({
+        title: "Success",
+        description: "Claim deleted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete claim",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: (id: string) => billingService.updateClaim(id, { status: 'submitted', submissionDate: new Date().toISOString() }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['claims'] });
+      toast({
+        title: "Success",
+        description: "Claim submitted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to submit claim",
+        variant: "destructive",
+      });
     },
   });
 
@@ -66,6 +106,103 @@ const ClaimsSubmissionPage: React.FC = () => {
         return <FileText className="h-4 w-4 text-blue-600" />;
     }
   };
+
+  const handleCreateClaim = () => {
+    setSelectedClaim(null);
+    setModalMode('create');
+    setShowModal(true);
+  };
+
+  const handleEditClaim = (claim: Claim) => {
+    setSelectedClaim(claim);
+    setModalMode('edit');
+    setShowModal(true);
+  };
+
+  const handleViewClaim = (claim: Claim) => {
+    setSelectedClaim(claim);
+    setModalMode('view');
+    setShowModal(true);
+  };
+
+  const handleDeleteClaim = (claim: Claim) => {
+    if (window.confirm('Are you sure you want to delete this claim?')) {
+      deleteMutation.mutate(claim.id);
+    }
+  };
+
+  const handleSubmitClaim = (claim: Claim) => {
+    if (window.confirm('Are you sure you want to submit this claim?')) {
+      submitMutation.mutate(claim.id);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedClaim(null);
+  };
+
+  // Define table columns
+  const columns: TableColumn<Claim>[] = [
+    {
+      key: 'claimNumber',
+      header: 'Claim Number',
+      accessor: (claim) => `#${claim.claimNumber}`,
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'client',
+      header: 'Patient',
+      accessor: (claim) => `${claim.client?.firstName || ''} ${claim.client?.lastName || ''}`,
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'payer',
+      header: 'Payer',
+      accessor: (claim) => claim.payer?.name || 'N/A',
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'serviceDate',
+      header: 'Service Date',
+      accessor: (claim) => new Date(claim.serviceDate).toLocaleDateString(),
+      sortable: true,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: (claim) => (
+        <div className="flex items-center space-x-2">
+          {getStatusIcon(claim.status || 'draft')}
+          <Badge className={getStatusColor(claim.status || 'draft')}>
+            {claim.status || 'draft'}
+          </Badge>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'totalAmount',
+      header: 'Total Amount',
+      accessor: (claim) => `$${parseFloat(claim.totalAmount.toString()).toFixed(2)}`,
+      sortable: true,
+    },
+    {
+      key: 'paidAmount',
+      header: 'Paid Amount',
+      accessor: (claim) => claim.paidAmount ? `$${parseFloat(claim.paidAmount.toString()).toFixed(2)}` : 'N/A',
+      sortable: true,
+    },
+    {
+      key: 'submissionDate',
+      header: 'Submitted',
+      accessor: (claim) => claim.submissionDate ? new Date(claim.submissionDate).toLocaleDateString() : 'Not submitted',
+      sortable: true,
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -117,109 +254,64 @@ const ClaimsSubmissionPage: React.FC = () => {
             </Select>
           </div>
           
-          <Button className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Create Claim</span>
-          </Button>
-        </div>
-
-        {/* Claims List */}
-        <div className="space-y-4">
-          {claims?.map((claim) => (
-            <Card key={claim.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <h4 className="font-semibold text-lg">
-                        Claim #{claim.claimNumber}
-                      </h4>
-                      <div className="flex items-center space-x-1">
-                        {getStatusIcon(claim.status)}
-                        <Badge className={getStatusColor(claim.status)}>
-                          {claim.status}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                      <div>
-                        <strong>Patient:</strong> {claim.client?.firstName} {claim.client?.lastName}
-                      </div>
-                      <div>
-                        <strong>Provider:</strong> {claim.providerId}
-                      </div>
-                      <div>
-                        <strong>Payer:</strong> {claim.payer?.name}
-                      </div>
-                      <div>
-                        <strong>Service Date:</strong> {new Date(claim.serviceDate).toLocaleDateString()}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <strong>Total Amount:</strong> ${parseFloat(claim.totalAmount.toString()).toFixed(2)}
-                      </div>
-                      <div>
-                        <strong>Paid Amount:</strong> ${parseFloat(claim.paidAmount?.toString() || '0').toFixed(2)}
-                      </div>
-                      <div>
-                        <strong>Patient Responsibility:</strong> ${parseFloat(claim.patientResponsibility?.toString() || '0').toFixed(2)}
-                      </div>
-                      <div>
-                        <strong>Submission Date:</strong> {claim.submissionDate ? new Date(claim.submissionDate).toLocaleDateString() : 'Not submitted'}
-                      </div>
-                    </div>
-
-                    {(claim.denialReason || claim.rejectionReason) && (
-                      <div className="bg-red-50 p-3 rounded-lg">
-                        <div className="flex items-center space-x-2 text-red-800">
-                          <AlertTriangle className="h-4 w-4" />
-                          <span className="font-medium">
-                            {claim.status === 'denied' ? 'Denial Reason:' : 'Rejection Reason:'}
-                          </span>
-                        </div>
-                        <p className="text-red-700 mt-1">
-                          {claim.denialReason || claim.rejectionReason}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                    {claim.status === 'draft' && (
-                      <Button size="sm" className="flex items-center space-x-1">
-                        <Send className="h-3 w-3" />
-                        <span>Submit</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {claims?.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No claims found</h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'No claims match your search criteria.' 
-                : 'Get started by creating your first claim.'
-              }
-            </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Claim
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" className="flex items-center space-x-2">
+              <Upload className="h-4 w-4" />
+              <span>Batch Submit</span>
+            </Button>
+            <Button onClick={handleCreateClaim} className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Create Claim</span>
             </Button>
           </div>
-        )}
+        </div>
+
+        {/* Claims Table */}
+        <Table
+          data={claims}
+          columns={columns}
+          loading={isLoading}
+          searchable={true}
+          pagination={true}
+          pageSize={10}
+          emptyMessage="No claims found. Create your first claim to get started."
+          actions={[
+            { 
+              label: 'View', 
+              icon: <Eye className="h-4 w-4" />, 
+              onClick: handleViewClaim, 
+              variant: 'ghost' 
+            },
+            { 
+              label: 'Edit', 
+              icon: <Edit className="h-4 w-4" />, 
+              onClick: handleEditClaim, 
+              variant: 'ghost' 
+            },
+            { 
+              label: 'Submit', 
+              icon: <Send className="h-4 w-4" />, 
+              onClick: handleSubmitClaim, 
+              variant: 'default',
+              disabled: (claim) => claim.status === 'submitted' || claim.status === 'paid'
+            },
+            { 
+              label: 'Delete', 
+              icon: <Trash2 className="h-4 w-4" />, 
+              onClick: handleDeleteClaim, 
+              variant: 'destructive',
+              disabled: (claim) => claim.status === 'submitted' || claim.status === 'paid'
+            },
+          ]}
+        />
+
+        {/* Claim Modal */}
+        <ClaimModal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          claim={selectedClaim}
+          mode={modalMode}
+        />
       </div>
     </PageLayout>
   );

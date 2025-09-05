@@ -81,8 +81,6 @@ const menuItems: MenuItem[] = [
       { id: 'insurance-verification', label: 'Insurance Verification', path: '/billing/insurance-verification' },
       { id: 'claims-submission', label: 'Claims Submission', path: '/billing/claims-submission' },
       { id: 'payment-processing', label: 'Payment Processing', path: '/billing/payment-processing' },
-      { id: 'revenue-reports', label: 'Revenue Reports', path: '/billing/revenue-reports' },
-      { id: 'billing-reports', label: 'Billing Reports', path: '/billing/billing-reports' },
       { id: 'statement-generation', label: 'Statement Generation', path: '/billing/statement-generation' },
     ]
   },
