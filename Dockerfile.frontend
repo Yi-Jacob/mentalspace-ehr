@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy frontend files
 COPY apps/frontend/ ./
 
+# Accept build arg for Vite (only for build time)
+ARG VITE_API_URL
+
 # Install dependencies using yarn (already available in node:alpine)
 RUN yarn install --frozen-lockfile
 
