@@ -15,7 +15,7 @@ export const ClientBillingTab: React.FC<ClientBillingTabProps> = ({ insuranceInf
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Billing Summary</CardTitle>
+        <CardTitle>Insurances</CardTitle>
       </CardHeader>
       <CardContent>
         {insuranceInfo.length > 0 ? (

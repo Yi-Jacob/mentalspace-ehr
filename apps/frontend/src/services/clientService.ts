@@ -36,8 +36,9 @@ export class ClientService {
 
   private convertInsuranceDtoToForm(dto: InsuranceInfoDto): InsuranceInfo {
     return {
+      payerId: dto.payerId,
       insuranceType: dto.insuranceType,
-      insuranceCompany: dto.insuranceCompany,
+      insuranceCompany: dto.payer?.name || dto.insuranceCompany,
       policyNumber: dto.policyNumber,
       groupNumber: dto.groupNumber || '',
       subscriberName: dto.subscriberName,
@@ -132,9 +133,10 @@ export class ClientService {
   }
 
   // Insurance
-  async getClientInsurance(clientId: string): Promise<InsuranceInfoDto[]> {
+  async getClientInsurance(clientId: string): Promise<InsuranceInfo[]> {
     const response = await apiClient.get<InsuranceInfoDto[]>(`${this.baseUrl}/${clientId}/insurance`);
-    return response.data as InsuranceInfoDto[];
+    const dtos = response.data;
+    return dtos.map(dto => this.convertInsuranceDtoToForm(dto));
   }
 
   async updateClientInsurance(clientId: string, insurance: InsuranceInfo[]): Promise<InsuranceInfo[]> {

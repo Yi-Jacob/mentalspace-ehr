@@ -154,6 +154,7 @@ model Payer {
   payments              Payment[]
   payerContracts        PayerContract[]
   feeSchedules          PayerFeeSchedule[]
+  clientInsurances      ClientInsurance[]
 
   @@map("payers")
 }
@@ -816,6 +817,7 @@ model ProviderCompensationConfig {
 model ClientInsurance {
   id                     String                  @id @default(uuid())
   clientId               String                  @map("client_id")
+  payerId                String?                 @map("payer_id")
   insuranceType          String?                 @map("insurance_type")
   insuranceCompany       String?                 @map("insurance_company")
   policyNumber           String?                 @map("policy_number")
@@ -831,6 +833,7 @@ model ClientInsurance {
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @default(now()) @map("updated_at")
   client                 Client                  @relation(fields: [clientId], references: [id])
+  payer                  Payer?                  @relation(fields: [payerId], references: [id])
   verifications          InsuranceVerification[]
 
   @@map("client_insurance")

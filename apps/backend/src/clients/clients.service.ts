@@ -162,6 +162,15 @@ export class ClientsService {
   async getClientInsurance(clientId: string) {
     return this.prisma.clientInsurance.findMany({
       where: { clientId },
+      include: {
+        payer: {
+          select: {
+            id: true,
+            name: true,
+            payerType: true,
+          },
+        },
+      },
     });
   }
 
@@ -176,6 +185,7 @@ export class ClientsService {
       return this.prisma.clientInsurance.createMany({
         data: insurance.map(ins => ({
           clientId,
+          payerId: ins.payerId || null,
           insuranceType: ins.insuranceType,
           insuranceCompany: ins.insuranceCompany,
           policyNumber: ins.policyNumber,
@@ -288,6 +298,7 @@ export class ClientsService {
         await prisma.clientInsurance.createMany({
           data: insuranceInfo.map(ins => ({
             clientId: client.id,
+            payerId: ins.payerId || null,
             insuranceType: ins.insuranceType,
             insuranceCompany: ins.insuranceCompany,
             policyNumber: ins.policyNumber,
@@ -386,6 +397,7 @@ export class ClientsService {
         await prisma.clientInsurance.createMany({
           data: insuranceInfo.map(ins => ({
             clientId,
+            payerId: ins.payerId || null,
             insuranceType: ins.insuranceType,
             insuranceCompany: ins.insuranceCompany,
             policyNumber: ins.policyNumber,

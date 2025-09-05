@@ -6,7 +6,6 @@ import { ClientInfoTab } from './tabs/ClientInfoTab';
 import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
 import { ClientNotesTab } from './tabs/ClientNotesTab';
 import { ClientBillingTab } from './tabs/ClientBillingTab';
-import { ClientBillingSettingsTab } from './tabs/ClientBillingSettingsTab';
 import ClientMessagesTab from './tabs/ClientMessagesTab';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 
@@ -65,12 +64,6 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
           label: 'Billing',
           icon: CreditCard,
           content: <ClientBillingTab insuranceInfo={insuranceInfo} />
-        },
-        {
-          id: 'settings',
-          label: 'Settings',
-          icon: Settings,
-          content: <ClientBillingSettingsTab insuranceInfo={insuranceInfo} />
         }
       ]}
     />

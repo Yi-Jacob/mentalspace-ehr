@@ -25,6 +25,7 @@ export interface EmergencyContactDto {
 export interface InsuranceInfoDto {
   id?: string;
   clientId: string;
+  payerId?: string;
   insuranceType: InsuranceType;
   insuranceCompany: string;
   policyNumber: string;
@@ -37,6 +38,11 @@ export interface InsuranceInfoDto {
   copayAmount: number;
   deductibleAmount: number;
   createdAt?: string;
+  payer?: {
+    id: string;
+    name: string;
+    payerType: string;
+  };
 }
 
 export interface PrimaryCareProviderDto {
@@ -65,6 +71,7 @@ export interface EmergencyContact {
 }
 
 export interface InsuranceInfo {
+  payerId?: string;
   insuranceType: InsuranceType;
   insuranceCompany: string;
   policyNumber: string;

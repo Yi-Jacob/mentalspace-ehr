@@ -1,13 +1,15 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { InputField } from '@/components/basic/input';
-import { SelectField } from '@/components/basic/select';
+import { SelectField, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { DateInput } from '@/components/basic/date-input';
 import { Button } from '@/components/basic/button';
 import { Trash2 } from 'lucide-react';
 import { InsuranceInfo } from '@/types/clientType';
 import { SUBSCRIBER_RELATIONSHIP_OPTIONS } from '@/types/enums/clientEnum';
 import CategorySection from '@/components/basic/CategorySection';
+import { billingService, Payer } from '@/services/billingService';
 
 interface BillingTabProps {
   insuranceInfo: InsuranceInfo[];
@@ -18,8 +20,15 @@ export const BillingTab: React.FC<BillingTabProps> = ({
   insuranceInfo, 
   setInsuranceInfo 
 }) => {
+  // Fetch payers for the dropdown
+  const { data: payers = [], isLoading: payersLoading, error: payersError } = useQuery({
+    queryKey: ['payers'],
+    queryFn: () => billingService.getAllPayers(),
+  });
+
   const addInsurance = (type: 'Primary' | 'Secondary') => {
     setInsuranceInfo([...insuranceInfo, {
+      payerId: '',
       insuranceType: type,
       insuranceCompany: '',
       policyNumber: '',
@@ -92,12 +101,33 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField
-                  label="Insurance Company"
-                  value={insurance.insuranceCompany}
-                  onChange={(e) => updateInsurance(index, 'insuranceCompany', e.target.value)}
-                  required
-                />
+                <div className="">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Insurance Company *
+                  </label>
+                  <Select 
+                    value={insurance.payerId || 'none'} 
+                    onValueChange={(value) => {
+                      if (value === 'none') {
+                        updateInsurance(index, 'payerId', '');
+                      } else {
+                        updateInsurance(index, 'payerId', value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Insurance Company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Select Insurance Company</SelectItem>
+                      {payers.map(payer => (
+                        <SelectItem key={payer.id} value={payer.id}>
+                          {payer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <InputField
                   label="Policy Number"
