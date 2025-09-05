@@ -1,4 +1,4 @@
-services:
+﻿services:
   # Backend API
   backend:
     build:
@@ -7,9 +7,9 @@ services:
     container_name: mentalspace-backend
     environment:
       NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      DATABASE_URL: 
+      JWT_SECRET: 
+      JWT_EXPIRES_IN: 
       PORT: 7000
       DB_HOST: database-1-instance-1.cny40qqomphs.us-east-2.rds.amazonaws.com
       DB_PORT: 5432
@@ -31,8 +31,7 @@ services:
     container_name: mentalspace-frontend
     environment:
       VITE_API_URL: http://3.17.184.2:7000
-    ports:
-      - "3000:80"
+    # Frontend port handled by nginx
     depends_on:
       backend:
         condition: service_healthy
