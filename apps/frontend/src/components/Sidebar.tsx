@@ -71,7 +71,21 @@ const menuItems: MenuItem[] = [
     ]
   },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
-  { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
+  { 
+    id: 'billing', 
+    label: 'Billing', 
+    icon: CreditCard, 
+    path: '/billing',
+    subItems: [
+      { id: 'payer-management', label: 'Payer Management', path: '/billing/payer-management' },
+      { id: 'insurance-verification', label: 'Insurance Verification', path: '/billing/insurance-verification' },
+      { id: 'claims-submission', label: 'Claims Submission', path: '/billing/claims-submission' },
+      { id: 'payment-processing', label: 'Payment Processing', path: '/billing/payment-processing' },
+      { id: 'revenue-reports', label: 'Revenue Reports', path: '/billing/revenue-reports' },
+      { id: 'billing-reports', label: 'Billing Reports', path: '/billing/billing-reports' },
+      { id: 'statement-generation', label: 'Statement Generation', path: '/billing/statement-generation' },
+    ]
+  },
   { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
   {
     id: 'staff',
@@ -107,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance', 'billing']));
 
   const getActiveItem = () => {
     if (propActiveItem) return propActiveItem;
@@ -130,6 +144,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       }
       // If no specific sub-item matches, return 'notes' for the main notes page
       return 'notes';
+    }
+
+    // Handle billing sub-items
+    if (currentPath.startsWith('/billing')) {
+      for (const item of menuItems) {
+        if (item.id === 'billing' && item.subItems) {
+          const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
+          if (matchedSubItem) {
+            return matchedSubItem.id;
+          }
+        }
+      }
+      // If no specific sub-item matches, return 'billing' for the main billing page
+      return 'billing';
     }
 
     // Handle compliance sub-items
