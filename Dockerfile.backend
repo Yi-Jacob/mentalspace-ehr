@@ -48,8 +48,8 @@ RUN npx prisma generate
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Install netcat and curl for health checks
-RUN apk add --no-cache netcat-openbsd curl
+# Install netcat, curl, and wget for health checks
+RUN apk add --no-cache netcat-openbsd curl wget
 
 # Switch to non-root user
 USER nestjs
