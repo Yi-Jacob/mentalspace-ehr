@@ -44,20 +44,20 @@ services:
       retries: 3
 
   # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: mentalspace-nginx
-    ports:
-      - "443:443"
-      - "3000:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: mentalspace-nginx
+  #   ports:
+  #     - "443:443"
+  #     - "3000:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
 
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - mentalspace-network
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   networks:
+  #     - mentalspace-network
 
 networks:
   mentalspace-network:
