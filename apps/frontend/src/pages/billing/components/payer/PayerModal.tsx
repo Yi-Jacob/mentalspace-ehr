@@ -15,27 +15,28 @@ interface PayerModalProps {
   isOpen: boolean;
   onClose: () => void;
   payer?: any;
+  mode?: 'create' | 'edit' | 'view';
 }
 
-const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
+const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer, mode = 'create' }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
     name: '',
-    payer_type: 'out_of_network',
-    electronic_payer_id: '',
-    address_line_1: '',
-    address_line_2: '',
+    payerType: 'out_of_network',
+    electronicPayerId: '',
+    addressLine1: '',
+    addressLine2: '',
     city: '',
     state: '',
-    zip_code: '',
-    phone_number: '',
-    fax_number: '',
-    contact_person: '',
-    contact_email: '',
+    zipCode: '',
+    phoneNumber: '',
+    faxNumber: '',
+    contactPerson: '',
+    contactEmail: '',
     website: '',
-    requires_authorization: false,
+    requiresAuthorization: false,
     notes: '',
   });
 
@@ -43,37 +44,37 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
     if (payer) {
       setFormData({
         name: payer.name || '',
-        payer_type: payer.payer_type || 'out_of_network',
-        electronic_payer_id: payer.electronic_payer_id || '',
-        address_line_1: payer.address_line_1 || '',
-        address_line_2: payer.address_line_2 || '',
+        payerType: payer.payerType || 'out_of_network',
+        electronicPayerId: payer.electronicPayerId || '',
+        addressLine1: payer.addressLine1 || '',
+        addressLine2: payer.addressLine2 || '',
         city: payer.city || '',
         state: payer.state || '',
-        zip_code: payer.zip_code || '',
-        phone_number: payer.phone_number || '',
-        fax_number: payer.fax_number || '',
-        contact_person: payer.contact_person || '',
-        contact_email: payer.contact_email || '',
+        zipCode: payer.zipCode || '',
+        phoneNumber: payer.phoneNumber || '',
+        faxNumber: payer.faxNumber || '',
+        contactPerson: payer.contactPerson || '',
+        contactEmail: payer.contactEmail || '',
         website: payer.website || '',
-        requires_authorization: payer.requires_authorization || false,
+        requiresAuthorization: payer.requiresAuthorization || false,
         notes: payer.notes || '',
       });
     } else {
       setFormData({
         name: '',
-        payer_type: 'out_of_network',
-        electronic_payer_id: '',
-        address_line_1: '',
-        address_line_2: '',
+        payerType: 'out_of_network',
+        electronicPayerId: '',
+        addressLine1: '',
+        addressLine2: '',
         city: '',
         state: '',
-        zip_code: '',
-        phone_number: '',
-        fax_number: '',
-        contact_person: '',
-        contact_email: '',
+        zipCode: '',
+        phoneNumber: '',
+        faxNumber: '',
+        contactPerson: '',
+        contactEmail: '',
         website: '',
-        requires_authorization: false,
+        requiresAuthorization: false,
         notes: '',
       });
     }
@@ -104,6 +105,29 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (payer) {
+        return billingService.deletePayer(payer.id);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payers'] });
+      toast({
+        title: 'Payer deleted',
+        description: `${payer?.name} has been deleted successfully.`,
+      });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to delete payer: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     saveMutation.mutate(formData);
@@ -113,7 +137,9 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{payer ? 'Edit Payer' : 'Add New Payer'}</DialogTitle>
+          <DialogTitle>
+            {mode === 'view' ? 'View Payer' : payer ? 'Edit Payer' : 'Add New Payer'}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -125,14 +151,16 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
+                disabled={mode === 'view'}
               />
             </div>
 
             <div>
-              <Label htmlFor="payer_type">Payer Type</Label>
+              <Label htmlFor="payerType">Payer Type</Label>
               <Select
-                value={formData.payer_type}
-                onValueChange={(value) => setFormData({ ...formData, payer_type: value })}
+                value={formData.payerType}
+                onValueChange={(value) => setFormData({ ...formData, payerType: value })}
+                disabled={mode === 'view'}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -147,30 +175,33 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
           </div>
 
           <div>
-            <Label htmlFor="electronic_payer_id">Electronic Payer ID</Label>
+            <Label htmlFor="electronicPayerId">Electronic Payer ID</Label>
             <Input
-              id="electronic_payer_id"
-              value={formData.electronic_payer_id}
-              onChange={(e) => setFormData({ ...formData, electronic_payer_id: e.target.value })}
+              id="electronicPayerId"
+              value={formData.electronicPayerId}
+              onChange={(e) => setFormData({ ...formData, electronicPayerId: e.target.value })}
+              disabled={mode === 'view'}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="address_line_1">Address Line 1</Label>
+              <Label htmlFor="addressLine1">Address Line 1</Label>
               <Input
-                id="address_line_1"
-                value={formData.address_line_1}
-                onChange={(e) => setFormData({ ...formData, address_line_1: e.target.value })}
+                id="addressLine1"
+                value={formData.addressLine1}
+                onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
 
             <div>
-              <Label htmlFor="address_line_2">Address Line 2</Label>
+              <Label htmlFor="addressLine2">Address Line 2</Label>
               <Input
-                id="address_line_2"
-                value={formData.address_line_2}
-                onChange={(e) => setFormData({ ...formData, address_line_2: e.target.value })}
+                id="addressLine2"
+                value={formData.addressLine2}
+                onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
           </div>
@@ -182,6 +213,7 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
                 id="city"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
 
@@ -191,56 +223,62 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
                 id="state"
                 value={formData.state}
                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
 
             <div>
-              <Label htmlFor="zip_code">ZIP Code</Label>
+              <Label htmlFor="zipCode">ZIP Code</Label>
               <Input
-                id="zip_code"
-                value={formData.zip_code}
-                onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="phone_number">Phone Number</Label>
-              <Input
-                id="phone_number"
-                value={formData.phone_number}
-                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="fax_number">Fax Number</Label>
-              <Input
-                id="fax_number"
-                value={formData.fax_number}
-                onChange={(e) => setFormData({ ...formData, fax_number: e.target.value })}
+                id="zipCode"
+                value={formData.zipCode}
+                onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="contact_person">Contact Person</Label>
+              <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
-                id="contact_person"
-                value={formData.contact_person}
-                onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
+                id="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
 
             <div>
-              <Label htmlFor="contact_email">Contact Email</Label>
+              <Label htmlFor="faxNumber">Fax Number</Label>
               <Input
-                id="contact_email"
+                id="faxNumber"
+                value={formData.faxNumber}
+                onChange={(e) => setFormData({ ...formData, faxNumber: e.target.value })}
+                disabled={mode === 'view'}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="contactPerson">Contact Person</Label>
+              <Input
+                id="contactPerson"
+                value={formData.contactPerson}
+                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                disabled={mode === 'view'}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contactEmail">Contact Email</Label>
+              <Input
+                id="contactEmail"
                 type="email"
-                value={formData.contact_email}
-                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                value={formData.contactEmail}
+                onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                disabled={mode === 'view'}
               />
             </div>
           </div>
@@ -251,18 +289,20 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
               id="website"
               value={formData.website}
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+              disabled={mode === 'view'}
             />
           </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="requires_authorization"
-              checked={formData.requires_authorization}
+              id="requiresAuthorization"
+              checked={formData.requiresAuthorization}
               onCheckedChange={(checked) => 
-                setFormData({ ...formData, requires_authorization: checked as boolean })
+                setFormData({ ...formData, requiresAuthorization: checked as boolean })
               }
+              disabled={mode === 'view'}
             />
-            <Label htmlFor="requires_authorization">Requires Authorization</Label>
+            <Label htmlFor="requiresAuthorization">Requires Authorization</Label>
           </div>
 
           <div>
@@ -272,16 +312,29 @@ const PayerModal: React.FC<PayerModalProps> = ({ isOpen, onClose, payer }) => {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
+              disabled={mode === 'view'}
             />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {mode === 'view' ? 'Close' : 'Cancel'}
             </Button>
-            <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : (payer ? 'Update' : 'Create')}
-            </Button>
+            {mode === 'view' && payer && (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            )}
+            {mode !== 'view' && (
+              <Button type="submit" disabled={saveMutation.isPending}>
+                {saveMutation.isPending ? 'Saving...' : (payer ? 'Update' : 'Create')}
+              </Button>
+            )}
           </div>
         </form>
       </DialogContent>

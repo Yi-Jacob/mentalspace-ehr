@@ -209,27 +209,27 @@ class BillingService {
   // Payers
   async getAllPayers(search?: string): Promise<Payer[]> {
     const params = search ? { search } : {};
-    const response = await apiClient.get('/billing/payers', { params });
-    return response.data;
+    const response = await apiClient.get('/billing/payer', { params });
+    return response.data as Payer[];
   }
 
   async getPayerById(id: string): Promise<Payer> {
-    const response = await apiClient.get(`/billing/payers/${id}`);
-    return response.data;
+    const response = await apiClient.get(`/billing/payer/${id}`);
+    return response.data as Payer;
   }
 
   async createPayer(payer: Omit<Payer, 'id' | 'createdAt' | 'updatedAt'>): Promise<Payer> {
-    const response = await apiClient.post('/billing/payers', payer);
-    return response.data;
+    const response = await apiClient.post('/billing/payer', payer);
+    return response.data as Payer;
   }
 
   async updatePayer(id: string, payer: Partial<Payer>): Promise<Payer> {
-    const response = await apiClient.put(`/billing/payers/${id}`, payer);
-    return response.data;
+    const response = await apiClient.put(`/billing/payer/${id}`, payer);
+    return response.data as Payer;
   }
 
   async deletePayer(id: string): Promise<void> {
-    await apiClient.delete(`/billing/payers/${id}`);
+    await apiClient.delete(`/billing/payer/${id}`);
   }
 
   // Contracts

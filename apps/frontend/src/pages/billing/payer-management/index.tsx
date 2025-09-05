@@ -1,38 +1,23 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/basic/button';
-import { Input } from '@/components/basic/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Table, TableColumn } from '@/components/basic/table';
 import { Badge } from '@/components/basic/badge';
-import { Building2, Plus, Search, Edit, FileText, DollarSign } from 'lucide-react';
+import { Building2, Plus, Edit, Eye, Trash2 } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import { billingService } from '@/services/billingService';
+import { billingService, Payer } from '@/services/billingService';
 import PayerModal from '../components/payer/PayerModal';
-import ContractModal from '../components/payer/ContractModal';
-import FeeScheduleModal from '../components/payer/FeeScheduleModal';
 
 const PayerManagementPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPayer, setSelectedPayer] = useState<any>(null);
+  const [selectedPayer, setSelectedPayer] = useState<Payer | null>(null);
   const [showPayerModal, setShowPayerModal] = useState(false);
-  const [showContractModal, setShowContractModal] = useState(false);
-  const [showFeeScheduleModal, setShowFeeScheduleModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
 
   const { data: payers, isLoading } = useQuery({
-    queryKey: ['payers', searchTerm],
+    queryKey: ['payers'],
     queryFn: async () => {
-      // Get all payers and filter on the frontend for now
-      // In a real implementation, you might want to add search parameter to the backend
-      const allPayers = await billingService.getAllPayers();
-      
-      if (searchTerm) {
-        return allPayers.filter(p => 
-          p.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      
-      return allPayers;
+      return await billingService.getAllPayers();
     },
   });
 
@@ -62,18 +47,83 @@ const PayerManagementPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <PageLayout variant="simple">
-        <PageHeader
-          icon={Building2}
-          title="Payer Management"
-          description="Manage insurance companies, contracts, and fee schedules"
-        />
-        <div className="text-center py-8">Loading payers...</div>
-      </PageLayout>
-    );
-  }
+  const handleCreatePayer = () => {
+    setSelectedPayer(null);
+    setModalMode('create');
+    setShowPayerModal(true);
+  };
+
+  const handleEditPayer = (payer: Payer) => {
+    setSelectedPayer(payer);
+    setModalMode('edit');
+    setShowPayerModal(true);
+  };
+
+  const handleViewPayer = (payer: Payer) => {
+    setSelectedPayer(payer);
+    setModalMode('view');
+    setShowPayerModal(true);
+  };
+
+  const handleDeletePayer = (payer: Payer) => {
+    setSelectedPayer(payer);
+    setModalMode('view');
+    setShowPayerModal(true);
+  };
+
+  const columns: TableColumn<Payer>[] = [
+    {
+      key: 'name',
+      header: 'Payer Name',
+      accessor: (payer) => payer.name,
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'payerType',
+      header: 'Type',
+      accessor: (payer) => (
+        <Badge className={getPayerTypeColor(payer.payerType)}>
+          {formatPayerType(payer.payerType)}
+        </Badge>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'electronicPayerId',
+      header: 'Payer ID',
+      accessor: (payer) => payer.electronicPayerId || '-',
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'phoneNumber',
+      header: 'Phone',
+      accessor: (payer) => payer.phoneNumber || '-',
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'requiresAuthorization',
+      header: 'Auth Required',
+      accessor: (payer) => (
+        payer.requiresAuthorization ? (
+          <Badge variant="outline" className="text-xs">
+            Yes
+          </Badge>
+        ) : (
+          <span className="text-gray-400">No</span>
+        )
+      ),
+      sortable: true,
+    },
+    {
+      key: 'createdAt',
+      header: 'Created',
+      accessor: (payer) => new Date(payer.createdAt).toLocaleDateString(),
+      sortable: true,
+    },
+  ];
 
   return (
     <PageLayout variant="simple">
@@ -87,111 +137,54 @@ const PayerManagementPage: React.FC = () => {
         {/* Header Actions */}
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search payers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              {payers?.length || 0} Payers
+            </h2>
           </div>
-          <Button onClick={() => setShowPayerModal(true)} className="flex items-center space-x-2">
+          <Button onClick={handleCreatePayer} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Add Payer</span>
           </Button>
         </div>
 
-        {/* Payers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {payers?.map((payer) => (
-            <Card key={payer.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{payer.name}</CardTitle>
-                    <Badge className={getPayerTypeColor(payer.payerType)}>
-                      {formatPayerType(payer.payerType)}
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedPayer(payer);
-                      setShowPayerModal(true);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {payer.electronicPayerId && (
-                  <div className="text-sm text-gray-600">
-                    <strong>Payer ID:</strong> {payer.electronicPayerId}
-                  </div>
-                )}
-                
-                {payer.phoneNumber && (
-                  <div className="text-sm text-gray-600">
-                    <strong>Phone:</strong> {payer.phoneNumber}
-                  </div>
-                )}
+        {/* Payers Table */}
+        <Table
+          data={payers || []}
+          columns={columns}
+          loading={isLoading}
+          searchable={true}
+          pagination={true}
+          pageSize={10}
+          emptyMessage={
+            <div className="text-center py-12">
+              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No payers found</h3>
+              <p className="text-gray-600 mb-4">
+                Get started by adding your first payer.
+              </p>
+              <Button onClick={handleCreatePayer}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Payer
+              </Button>
+            </div>
+          }
+          actions={[
+            {
+              label: 'View',
+              icon: <Eye className="h-4 w-4" />,
+              onClick: handleViewPayer,
+              variant: 'ghost',
+            },
+            {
+              label: 'Edit',
+              icon: <Edit className="h-4 w-4" />,
+              onClick: handleEditPayer,
+              variant: 'ghost',
+            },
+          ]}
+        />
 
-                {payer.requiresAuthorization && (
-                  <Badge variant="outline" className="text-xs">
-                    Requires Authorization
-                  </Badge>
-                )}
-
-                <div className="flex space-x-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedPayer(payer);
-                      setShowContractModal(true);
-                    }}
-                    className="flex items-center space-x-1"
-                  >
-                    <FileText className="h-3 w-3" />
-                    <span>Contracts</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedPayer(payer);
-                      setShowFeeScheduleModal(true);
-                    }}
-                    className="flex items-center space-x-1"
-                  >
-                    <DollarSign className="h-3 w-3" />
-                    <span>Fees</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {payers?.length === 0 && (
-          <div className="text-center py-12">
-            <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No payers found</h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm ? 'No payers match your search criteria.' : 'Get started by adding your first payer.'}
-            </p>
-            <Button onClick={() => setShowPayerModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Payer
-            </Button>
-          </div>
-        )}
-
-        {/* Modals */}
+        {/* Modal */}
         <PayerModal
           isOpen={showPayerModal}
           onClose={() => {
@@ -199,24 +192,7 @@ const PayerManagementPage: React.FC = () => {
             setSelectedPayer(null);
           }}
           payer={selectedPayer}
-        />
-
-        <ContractModal
-          isOpen={showContractModal}
-          onClose={() => {
-            setShowContractModal(false);
-            setSelectedPayer(null);
-          }}
-          payer={selectedPayer}
-        />
-
-        <FeeScheduleModal
-          isOpen={showFeeScheduleModal}
-          onClose={() => {
-            setShowFeeScheduleModal(false);
-            setSelectedPayer(null);
-          }}
-          payer={selectedPayer}
+          mode={modalMode}
         />
       </div>
     </PageLayout>
