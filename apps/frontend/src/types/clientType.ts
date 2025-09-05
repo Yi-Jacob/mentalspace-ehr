@@ -71,6 +71,7 @@ export interface EmergencyContact {
 }
 
 export interface InsuranceInfo {
+  id?: string;
   payerId?: string;
   insuranceType: InsuranceType;
   insuranceCompany: string;

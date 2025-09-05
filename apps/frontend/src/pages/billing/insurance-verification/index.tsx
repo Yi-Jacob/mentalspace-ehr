@@ -1,28 +1,30 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
-import { Badge } from '@/components/basic/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { Shield, Search, Plus, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Shield, Search, Plus, Calendar, AlertCircle, CheckCircle, Clock, Eye, Edit, Trash2 } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
+import { Table, TableColumn } from '@/components/basic/table';
+import { Badge } from '@/components/basic/badge';
 import { clientService } from '@/services/clientService';
-import { billingService } from '@/services/billingService';
+import { billingService, InsuranceVerification } from '@/services/billingService';
 import VerificationModal from '../components/verification/VerificationModal';
+import { useToast } from '@/hooks/use-toast';
 
 const InsuranceVerificationPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'expired'>('all');
-  const [selectedVerification, setSelectedVerification] = useState<any>(null);
+  const [selectedVerification, setSelectedVerification] = useState<InsuranceVerification | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: verifications, isLoading } = useQuery({
+  const { data: verifications = [], isLoading } = useQuery({
     queryKey: ['insurance-verifications', searchTerm, statusFilter],
     queryFn: async () => {
-      // Get all verifications and filter on the frontend for now
-      // In a real implementation, you might want to add search and filter parameters to the backend
       const allVerifications = await billingService.getAllVerifications();
       
       let filteredVerifications = allVerifications;
@@ -32,7 +34,6 @@ const InsuranceVerificationPage: React.FC = () => {
       }
 
       if (searchTerm) {
-        // Filter by client name
         filteredVerifications = filteredVerifications.filter(v => 
           v.client?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           v.client?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -40,6 +41,24 @@ const InsuranceVerificationPage: React.FC = () => {
       }
 
       return filteredVerifications;
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => billingService.deleteVerification(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['insurance-verifications'] });
+      toast({
+        title: "Success",
+        description: "Verification deleted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete verification",
+        variant: "destructive",
+      });
     },
   });
 
@@ -77,6 +96,106 @@ const InsuranceVerificationPage: React.FC = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 7;
   };
+
+  const handleCreateVerification = () => {
+    setSelectedVerification(null);
+    setModalMode('create');
+    setShowModal(true);
+  };
+
+  const handleEditVerification = (verification: InsuranceVerification) => {
+    setSelectedVerification(verification);
+    setModalMode('edit');
+    setShowModal(true);
+  };
+
+  const handleViewVerification = (verification: InsuranceVerification) => {
+    setSelectedVerification(verification);
+    setModalMode('view');
+    setShowModal(true);
+  };
+
+  const handleDeleteVerification = (verification: InsuranceVerification) => {
+    if (window.confirm('Are you sure you want to delete this verification?')) {
+      deleteMutation.mutate(verification.id);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedVerification(null);
+  };
+
+  // Define table columns
+  const columns: TableColumn<InsuranceVerification>[] = [
+    {
+      key: 'client',
+      header: 'Client',
+      accessor: (verification) => `${verification.client?.firstName || ''} ${verification.client?.lastName || ''}`,
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'insurance',
+      header: 'Insurance',
+      accessor: (verification) => verification.insurance?.insuranceCompany || 'N/A',
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'policy',
+      header: 'Policy Number',
+      accessor: (verification) => verification.insurance?.policyNumber || 'N/A',
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: (verification) => (
+        <div className="flex items-center space-x-2">
+          {getStatusIcon(verification.status || 'pending')}
+          <Badge className={getStatusColor(verification.status || 'pending')}>
+            {verification.status || 'pending'}
+          </Badge>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'verificationDate',
+      header: 'Verified Date',
+      accessor: (verification) => new Date(verification.verificationDate).toLocaleDateString(),
+      sortable: true,
+    },
+    {
+      key: 'verifiedBy',
+      header: 'Verified By',
+      accessor: (verification) => verification.verifiedByStaff?.formalName || verification.verifiedBy || 'N/A',
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: 'nextVerification',
+      header: 'Next Verification',
+      accessor: (verification) => {
+        if (!verification.nextVerificationDate) return 'N/A';
+        const isDue = isVerificationDue(verification.nextVerificationDate);
+        return (
+          <div className="flex items-center space-x-2">
+            <span>{new Date(verification.nextVerificationDate).toLocaleDateString()}</span>
+            {isDue && (
+              <Badge variant="destructive" className="text-xs">
+                <Calendar className="h-3 w-3 mr-1" />
+                Due Soon
+              </Badge>
+            )}
+          </div>
+        );
+      },
+      sortable: true,
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -126,127 +245,49 @@ const InsuranceVerificationPage: React.FC = () => {
             </Select>
           </div>
           
-          <Button onClick={() => setShowModal(true)} className="flex items-center space-x-2">
+          <Button onClick={handleCreateVerification} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>New Verification</span>
           </Button>
         </div>
 
-        {/* Verifications List */}
-        <div className="space-y-4">
-          {verifications?.map((verification) => (
-            <Card key={verification.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <h4 className="font-semibold text-lg">
-                        {verification.client?.firstName} {verification.client?.lastName}
-                      </h4>
-                      <div className="flex items-center space-x-1">
-                        {getStatusIcon(verification.status)}
-                        <Badge className={getStatusColor(verification.status)}>
-                          {verification.status}
-                        </Badge>
-                      </div>
-                      {isVerificationDue(verification.nextVerificationDate) && (
-                        <Badge variant="destructive">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          Due Soon
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                      <div>
-                        <strong>Insurance:</strong> {verification.clientInsurance?.insuranceCompany}
-                      </div>
-                      <div>
-                        <strong>Policy:</strong> {verification.clientInsurance?.policyNumber}
-                      </div>
-                      <div>
-                        <strong>Verified:</strong> {new Date(verification.verificationDate).toLocaleDateString()}
-                      </div>
-                      <div>
-                        <strong>By:</strong> {verification.verifiedBy}
-                      </div>
-                    </div>
-
-                    {verification.benefitsVerified && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        {verification.deductibleAmount && (
-                          <div>
-                            <strong>Deductible:</strong> ${verification.deductibleAmount}
-                            {verification.deductibleMet && ` (Met: $${verification.deductibleMet})`}
-                          </div>
-                        )}
-                        {verification.copayAmount && (
-                          <div>
-                            <strong>Copay:</strong> ${verification.copayAmount}
-                          </div>
-                        )}
-                        {verification.outOfPocketMax && (
-                          <div>
-                            <strong>OOP Max:</strong> ${verification.outOfPocketMax}
-                            {verification.outOfPocketMet && ` (Met: $${verification.outOfPocketMet})`}
-                          </div>
-                        )}
-                        {verification.authorizationRequired && (
-                          <div className="flex items-center space-x-1">
-                            <AlertCircle className="h-4 w-4 text-orange-500" />
-                            <span>Auth Required</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {verification.nextVerificationDate && (
-                      <div className="text-sm text-gray-600">
-                        <strong>Next Verification:</strong> {new Date(verification.nextVerificationDate).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedVerification(verification);
-                      setShowModal(true);
-                    }}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {verifications?.length === 0 && (
-          <div className="text-center py-12">
-            <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No verifications found</h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'No verifications match your search criteria.' 
-                : 'Get started by creating your first insurance verification.'
-              }
-            </p>
-            <Button onClick={() => setShowModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Verification
-            </Button>
-          </div>
-        )}
+        {/* Verifications Table */}
+        <Table
+          data={verifications}
+          columns={columns}
+          loading={isLoading}
+          searchable={true}
+          pagination={true}
+          pageSize={10}
+          emptyMessage="No verifications found. Create your first verification to get started."
+          actions={[
+            { 
+              label: 'View', 
+              icon: <Eye className="h-4 w-4" />, 
+              onClick: handleViewVerification, 
+              variant: 'ghost' 
+            },
+            { 
+              label: 'Edit', 
+              icon: <Edit className="h-4 w-4" />, 
+              onClick: handleEditVerification, 
+              variant: 'ghost' 
+            },
+            { 
+              label: 'Delete', 
+              icon: <Trash2 className="h-4 w-4" />, 
+              onClick: handleDeleteVerification, 
+              variant: 'destructive' 
+            },
+          ]}
+        />
 
         {/* Verification Modal */}
         <VerificationModal
           isOpen={showModal}
-          onClose={() => {
-            setShowModal(false);
-            setSelectedVerification(null);
-          }}
+          onClose={handleCloseModal}
           verification={selectedVerification}
+          mode={modalMode}
         />
       </div>
     </PageLayout>

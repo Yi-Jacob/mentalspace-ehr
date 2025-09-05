@@ -36,6 +36,7 @@ export class ClientService {
 
   private convertInsuranceDtoToForm(dto: InsuranceInfoDto): InsuranceInfo {
     return {
+      id: dto.id,
       payerId: dto.payerId,
       insuranceType: dto.insuranceType,
       insuranceCompany: dto.payer?.name || dto.insuranceCompany,

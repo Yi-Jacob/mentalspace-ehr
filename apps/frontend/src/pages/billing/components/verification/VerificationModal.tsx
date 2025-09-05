@@ -18,9 +18,10 @@ interface VerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   verification?: any;
+  mode?: 'create' | 'edit' | 'view';
 }
 
-const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, verification }) => {
+const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, verification, mode = 'create' }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -56,8 +57,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
     queryKey: ['client-insurance', selectedClient],
     queryFn: async () => {
       if (!selectedClient) return [];
-      // This would need to be implemented in the client service
-      return [];
+      return clientService.getClientInsurance(selectedClient);
     },
     enabled: !!selectedClient,
   });
@@ -92,7 +92,6 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
         ...data,
         clientId: selectedClient,
         insuranceId: selectedInsurance,
-        verifiedBy: user?.id,
         deductibleAmount: data.deductibleAmount ? parseFloat(data.deductibleAmount) : null,
         deductibleMet: data.deductibleMet ? parseFloat(data.deductibleMet) : null,
         outOfPocketMax: data.outOfPocketMax ? parseFloat(data.outOfPocketMax) : null,
@@ -168,7 +167,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {verification ? 'Edit Insurance Verification' : 'New Insurance Verification'}
+            {mode === 'view' ? 'View Insurance Verification' : verification ? 'Edit Insurance Verification' : 'New Insurance Verification'}
           </DialogTitle>
         </DialogHeader>
 
@@ -180,7 +179,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
               <Select 
                 value={selectedClient} 
                 onValueChange={setSelectedClient}
-                disabled={!!verification}
+                disabled={!!verification || mode === 'view'}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select client" />
@@ -200,15 +199,15 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
               <Select 
                 value={selectedInsurance} 
                 onValueChange={setSelectedInsurance}
-                disabled={!selectedClient || !!verification}
+                disabled={!selectedClient || !!verification || mode === 'view'}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select insurance" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientInsurance?.map((insurance) => (
-                    <SelectItem key={insurance.id} value={insurance.id}>
-                      {insurance.insurance_company} - {insurance.policy_number}
+                    <SelectItem key={insurance.id || insurance.payerId} value={insurance.id || insurance.payerId || ''}>
+                      {insurance.insuranceCompany} - {insurance.policyNumber}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -226,6 +225,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
                 value={formData.verificationDate}
                 onChange={(e) => setFormData({ ...formData, verificationDate: e.target.value })}
                 required
+                disabled={mode === 'view'}
               />
             </div>
 
@@ -234,6 +234,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
               <Select
                 value={formData.status}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
+                disabled={mode === 'view'}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -419,11 +420,13 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, onClose, 
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {mode === 'view' ? 'Close' : 'Cancel'}
             </Button>
-            <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : (verification ? 'Update' : 'Create')}
-            </Button>
+            {mode !== 'view' && (
+              <Button type="submit" disabled={saveMutation.isPending}>
+                {saveMutation.isPending ? 'Saving...' : (verification ? 'Update' : 'Create')}
+              </Button>
+            )}
           </div>
         </form>
       </DialogContent>

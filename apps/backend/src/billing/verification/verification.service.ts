@@ -2,10 +2,25 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateVerificationDto } from './dto/create-verification.dto';
 import { UpdateVerificationDto } from './dto/update-verification.dto';
+import { Request } from 'express';
 
 @Injectable()
 export class VerificationService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async getCurrentUserStaffProfile(userId: string): Promise<string | null> {
+    const staffProfile = await this.prisma.staffProfile.findFirst({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+    return staffProfile?.id || null;
+  }
 
   async getAllVerifications(status?: string, providerId?: string) {
     const where: any = {};
@@ -31,6 +46,24 @@ export class VerificationService {
           select: {
             insuranceCompany: true,
             policyNumber: true,
+            payer: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        verifiedByStaff: {
+          select: {
+            id: true,
+            formalName: true,
+            jobTitle: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -54,6 +87,24 @@ export class VerificationService {
           select: {
             insuranceCompany: true,
             policyNumber: true,
+            payer: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        verifiedByStaff: {
+          select: {
+            id: true,
+            formalName: true,
+            jobTitle: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -66,13 +117,16 @@ export class VerificationService {
     return verification;
   }
 
-  async createVerification(createVerificationDto: CreateVerificationDto) {
+  async createVerification(createVerificationDto: CreateVerificationDto, userId: string) {
+    const staffProfileId = await this.getCurrentUserStaffProfile(userId);
+    
     return this.prisma.insuranceVerification.create({
       data: {
         ...createVerificationDto,
         verificationDate: new Date(createVerificationDto.verificationDate),
         authorizationExpiry: createVerificationDto.authorizationExpiry ? new Date(createVerificationDto.authorizationExpiry) : null,
         nextVerificationDate: createVerificationDto.nextVerificationDate ? new Date(createVerificationDto.nextVerificationDate) : null,
+        verifiedBy: staffProfileId,
       },
       include: {
         client: {
@@ -85,6 +139,24 @@ export class VerificationService {
           select: {
             insuranceCompany: true,
             policyNumber: true,
+            payer: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        verifiedByStaff: {
+          select: {
+            id: true,
+            formalName: true,
+            jobTitle: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -119,6 +191,24 @@ export class VerificationService {
           select: {
             insuranceCompany: true,
             policyNumber: true,
+            payer: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        verifiedByStaff: {
+          select: {
+            id: true,
+            formalName: true,
+            jobTitle: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
           },
         },
       },

@@ -67,6 +67,15 @@ export interface InsuranceVerification {
   insuranceId: string;
   verificationDate: string;
   verifiedBy?: string;
+  verifiedByStaff?: {
+    id: string;
+    formalName: string;
+    jobTitle: string;
+    user: {
+      id: string;
+      email: string;
+    };
+  };
   status?: string;
   benefitsVerified?: boolean;
   copayAmount?: number;
@@ -87,7 +96,7 @@ export interface InsuranceVerification {
     firstName: string;
     lastName: string;
   };
-  clientInsurance?: {
+  insurance?: {
     insuranceCompany: string;
     policyNumber: string;
   };

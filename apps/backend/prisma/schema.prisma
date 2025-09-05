@@ -538,6 +538,7 @@ model StaffProfile {
   canceledAppointments  Appointment[]                @relation("AppointmentCanceler")
   providerCompensations ProviderCompensationConfig[] @relation("ProviderCompensationProvider")
   user                  User?                        @relation("UserStaffProfile")
+  verifiedInsurances    InsuranceVerification[]
 
   @@map("staff_profiles")
 }
@@ -1020,6 +1021,7 @@ model InsuranceVerification {
   updatedAt             DateTime        @default(now()) @map("updated_at")
   client                Client          @relation(fields: [clientId], references: [id])
   insurance             ClientInsurance @relation(fields: [insuranceId], references: [id])
+  verifiedByStaff       StaffProfile?   @relation(fields: [verifiedBy], references: [id])
 
   @@map("insurance_verifications")
 }
