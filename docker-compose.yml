@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: mentalspace-frontend
     environment:
-      VITE_API_URL: http://localhost:7000
+      VITE_API_URL: http://3.17.184.2:7000
     ports:
       - "80:80"
     depends_on:
