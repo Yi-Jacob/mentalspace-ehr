@@ -29,7 +29,7 @@
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        - VITE_API_URL=http://3.17.184.2:7000
+        - VITE_API_URL=http://3.17.184.2:7000/api
     container_name: mentalspace-frontend
     # Frontend port handled by nginx
     depends_on:

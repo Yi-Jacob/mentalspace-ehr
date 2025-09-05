@@ -7,7 +7,7 @@ export const ENV_CONFIG = {
     debug: import.meta.env.DEV || false,
   },
   api: {
-    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:7000',
+    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:7000/api',
     timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '10000'),
   },
   performance: {
