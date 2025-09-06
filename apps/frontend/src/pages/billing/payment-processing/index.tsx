@@ -1,24 +1,29 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { CreditCard, Search, Plus, DollarSign, Calendar } from 'lucide-react';
+import { CreditCard, Search, Plus, DollarSign, Eye, Edit, Trash2, Receipt } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import { billingService } from '@/services/billingService';
+import { Table, TableColumn } from '@/components/basic/table';
+import { billingService, Payment } from '@/services/billingService';
+import PaymentModal from '../components/payments/PaymentModal';
+import { useToast } from '@/hooks/use-toast';
 
 const PaymentProcessingPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'failed' | 'refunded'>('all');
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: payments, isLoading } = useQuery({
+  const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments', searchTerm, statusFilter],
     queryFn: async () => {
-      // Get all payments and filter on the frontend for now
-      // In a real implementation, you might want to add search and filter parameters to the backend
       const allPayments = await billingService.getAllPayments();
       
       let filteredPayments = allPayments;
@@ -28,7 +33,6 @@ const PaymentProcessingPage: React.FC = () => {
       }
 
       if (searchTerm) {
-        // Filter by payment number or client name
         filteredPayments = filteredPayments.filter(p => 
           p.paymentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           p.client?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,6 +43,53 @@ const PaymentProcessingPage: React.FC = () => {
       return filteredPayments;
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => billingService.deletePayment(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      toast({
+        title: 'Success',
+        description: 'Payment deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete payment',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleCreatePayment = () => {
+    setSelectedPayment(null);
+    setModalMode('create');
+    setShowModal(true);
+  };
+
+  const handleEditPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setModalMode('edit');
+    setShowModal(true);
+  };
+
+  const handleViewPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setModalMode('view');
+    setShowModal(true);
+  };
+
+  const handleDeletePayment = (payment: Payment) => {
+    if (window.confirm(`Are you sure you want to delete payment ${payment.paymentNumber}?`)) {
+      deleteMutation.mutate(payment.id);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedPayment(null);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -55,12 +106,18 @@ const PaymentProcessingPage: React.FC = () => {
     }
   };
 
-  const getPaymentMethodIcon = (method: string) => {
-    switch (method) {
-      case 'credit_card':
-        return <CreditCard className="h-4 w-4" />;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <DollarSign className="h-4 w-4 text-green-600" />;
+      case 'pending':
+        return <CreditCard className="h-4 w-4 text-yellow-600" />;
+      case 'failed':
+        return <CreditCard className="h-4 w-4 text-red-600" />;
+      case 'refunded':
+        return <CreditCard className="h-4 w-4 text-gray-600" />;
       default:
-        return <DollarSign className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -81,18 +138,73 @@ const PaymentProcessingPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <PageLayout variant="simple">
-        <PageHeader
-          icon={CreditCard}
-          title="Payment Processing"
-          description="Process payments and manage patient accounts"
-        />
-        <div className="text-center py-8">Loading payments...</div>
-      </PageLayout>
-    );
-  }
+  const columns: TableColumn<Payment>[] = [
+    { 
+      key: 'paymentNumber', 
+      header: 'Payment Number', 
+      accessor: (p) => `#${p.paymentNumber}`, 
+      sortable: true, 
+      searchable: true 
+    },
+    { 
+      key: 'client', 
+      header: 'Patient', 
+      accessor: (p) => `${p.client?.firstName || ''} ${p.client?.lastName || ''}`, 
+      sortable: true, 
+      searchable: true 
+    },
+    { 
+      key: 'payer', 
+      header: 'Payer', 
+      accessor: (p) => p.payer?.name || 'Patient', 
+      sortable: true, 
+      searchable: true 
+    },
+    { 
+      key: 'claim', 
+      header: 'Claim', 
+      accessor: (p) => p.claim?.claimNumber || 'Direct Payment', 
+      sortable: true, 
+      searchable: true 
+    },
+    { 
+      key: 'paymentDate', 
+      header: 'Payment Date', 
+      accessor: (p) => new Date(p.paymentDate).toLocaleDateString(), 
+      sortable: true 
+    },
+    { 
+      key: 'status', 
+      header: 'Status', 
+      accessor: (p) => (
+        <div className="flex items-center space-x-2">
+          {getStatusIcon(p.status || 'pending')}
+          <Badge className={getStatusColor(p.status || 'pending')}>
+            {p.status || 'pending'}
+          </Badge>
+        </div>
+      ), 
+      sortable: true 
+    },
+    { 
+      key: 'paymentAmount', 
+      header: 'Amount', 
+      accessor: (p) => `$${parseFloat(p.paymentAmount.toString()).toFixed(2)}`, 
+      sortable: true 
+    },
+    { 
+      key: 'netAmount', 
+      header: 'Net Amount', 
+      accessor: (p) => p.netAmount ? `$${parseFloat(p.netAmount.toString()).toFixed(2)}` : 'N/A', 
+      sortable: true 
+    },
+    { 
+      key: 'paymentMethod', 
+      header: 'Method', 
+      accessor: (p) => formatPaymentMethod(p.paymentMethod), 
+      sortable: true 
+    },
+  ];
 
   return (
     <PageLayout variant="simple">
@@ -130,110 +242,35 @@ const PaymentProcessingPage: React.FC = () => {
             </Select>
           </div>
           
-          <Button className="flex items-center space-x-2">
+          <Button onClick={handleCreatePayment} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Process Payment</span>
           </Button>
         </div>
 
-        {/* Payments List */}
-        <div className="space-y-4">
-          {payments?.map((payment) => (
-            <Card key={payment.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <h4 className="font-semibold text-lg">
-                        Payment #{payment.paymentNumber}
-                      </h4>
-                      <Badge className={getStatusColor(payment.status)}>
-                        {payment.status}
-                      </Badge>
-                    </div>
+        {/* Payments Table */}
+        <Table
+          data={payments}
+          columns={columns}
+          loading={isLoading}
+          searchable={true}
+          pagination={true}
+          pageSize={10}
+          emptyMessage="No payments found. Process your first payment to get started."
+          actions={[
+            { label: 'View', icon: <Eye className="h-4 w-4" />, onClick: handleViewPayment, variant: 'ghost' },
+            { label: 'Edit', icon: <Edit className="h-4 w-4" />, onClick: handleEditPayment, variant: 'ghost' },
+            { label: 'Receipt', icon: <Receipt className="h-4 w-4" />, onClick: handleViewPayment, variant: 'ghost', disabled: (p) => p.status !== 'completed' },
+            { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, onClick: handleDeletePayment, variant: 'destructive', disabled: (p) => p.status === 'completed' },
+          ]}
+        />
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                      <div>
-                        <strong>Patient:</strong> {payment.client?.firstName} {payment.client?.lastName}
-                      </div>
-                      <div>
-                        <strong>Claim:</strong> {payment.claim?.claimNumber || 'Direct Payment'}
-                      </div>
-                      <div>
-                        <strong>Payer:</strong> {payment.payer?.name || 'Patient'}
-                      </div>
-                      <div>
-                        <strong>Date:</strong> {new Date(payment.paymentDate).toLocaleDateString()}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <strong>Amount:</strong> ${parseFloat(payment.paymentAmount.toString()).toFixed(2)}
-                      </div>
-                      <div>
-                        <strong>Processing Fee:</strong> ${parseFloat(payment.processingFee?.toString() || '0').toFixed(2)}
-                      </div>
-                      <div>
-                        <strong>Net Amount:</strong> ${parseFloat(payment.netAmount?.toString() || payment.paymentAmount.toString()).toFixed(2)}
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        {getPaymentMethodIcon(payment.paymentMethod)}
-                        <span><strong>Method:</strong> {formatPaymentMethod(payment.paymentMethod)}</span>
-                      </div>
-                    </div>
-
-                    {payment.creditCardLastFour && (
-                      <div className="text-sm text-gray-600">
-                        <strong>Card ending in:</strong> **** {payment.creditCardLastFour}
-                      </div>
-                    )}
-
-                    {payment.referenceNumber && (
-                      <div className="text-sm text-gray-600">
-                        <strong>Reference:</strong> {payment.referenceNumber}
-                      </div>
-                    )}
-
-                    {payment.notes && (
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-gray-700 text-sm">{payment.notes}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                    {payment.status === 'completed' && (
-                      <Button variant="outline" size="sm">
-                        Receipt
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {payments?.length === 0 && (
-          <div className="text-center py-12">
-            <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No payments found</h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'No payments match your search criteria.' 
-                : 'Get started by processing your first payment.'
-              }
-            </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Process Payment
-            </Button>
-          </div>
-        )}
+        <PaymentModal 
+          isOpen={showModal} 
+          onClose={handleCloseModal} 
+          payment={selectedPayment} 
+          mode={modalMode} 
+        />
       </div>
     </PageLayout>
   );

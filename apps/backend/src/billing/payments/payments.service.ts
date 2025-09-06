@@ -45,6 +45,33 @@ export class PaymentsService {
             claimNumber: true,
           },
         },
+        allocations: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+                chargeAmount: true,
+              },
+            },
+          },
+        },
+        adjustments: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+              },
+            },
+            createdBy: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         paymentDate: 'desc',
@@ -70,6 +97,33 @@ export class PaymentsService {
         claim: {
           select: {
             claimNumber: true,
+          },
+        },
+        allocations: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+                chargeAmount: true,
+              },
+            },
+          },
+        },
+        adjustments: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+              },
+            },
+            createdBy: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
           },
         },
       },
@@ -105,6 +159,33 @@ export class PaymentsService {
             claimNumber: true,
           },
         },
+        allocations: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+                chargeAmount: true,
+              },
+            },
+          },
+        },
+        adjustments: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+              },
+            },
+            createdBy: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -137,6 +218,33 @@ export class PaymentsService {
             claimNumber: true,
           },
         },
+        allocations: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+                chargeAmount: true,
+              },
+            },
+          },
+        },
+        adjustments: {
+          include: {
+            claimLineItem: {
+              select: {
+                cptCode: true,
+                serviceDate: true,
+              },
+            },
+            createdBy: {
+              select: {
+                formalName: true,
+                jobTitle: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -145,6 +253,147 @@ export class PaymentsService {
     const payment = await this.getPaymentById(id);
 
     return this.prisma.payment.delete({
+      where: { id },
+    });
+  }
+
+  // Payment Allocation Methods
+  async createPaymentAllocation(paymentId: string, claimLineItemId: string, allocatedAmount: number, allocationType?: string) {
+    return this.prisma.paymentAllocation.create({
+      data: {
+        paymentId,
+        claimLineItemId,
+        allocatedAmount,
+        allocationType,
+      },
+      include: {
+        payment: {
+          select: {
+            paymentNumber: true,
+            paymentAmount: true,
+          },
+        },
+        claimLineItem: {
+          select: {
+            cptCode: true,
+            serviceDate: true,
+            chargeAmount: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updatePaymentAllocation(id: string, allocatedAmount: number, allocationType?: string) {
+    return this.prisma.paymentAllocation.update({
+      where: { id },
+      data: {
+        allocatedAmount,
+        allocationType,
+      },
+      include: {
+        payment: {
+          select: {
+            paymentNumber: true,
+            paymentAmount: true,
+          },
+        },
+        claimLineItem: {
+          select: {
+            cptCode: true,
+            serviceDate: true,
+            chargeAmount: true,
+          },
+        },
+      },
+    });
+  }
+
+  async deletePaymentAllocation(id: string) {
+    return this.prisma.paymentAllocation.delete({
+      where: { id },
+    });
+  }
+
+  // Adjustment Methods
+  async createAdjustment(
+    claimLineItemId: string,
+    sourceType: string,
+    groupCode: string,
+    reasonCode: string,
+    amount: number,
+    reasonText?: string,
+    paymentId?: string,
+    createdById?: string
+  ) {
+    return this.prisma.adjustment.create({
+      data: {
+        claimLineItemId,
+        paymentId,
+        sourceType,
+        groupCode,
+        reasonCode,
+        amount,
+        reasonText,
+        createdById,
+      },
+      include: {
+        claimLineItem: {
+          select: {
+            cptCode: true,
+            serviceDate: true,
+            chargeAmount: true,
+          },
+        },
+        payment: {
+          select: {
+            paymentNumber: true,
+            paymentAmount: true,
+          },
+        },
+        createdBy: {
+          select: {
+            formalName: true,
+            jobTitle: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateAdjustment(id: string, amount: number, reasonText?: string) {
+    return this.prisma.adjustment.update({
+      where: { id },
+      data: {
+        amount,
+        reasonText,
+      },
+      include: {
+        claimLineItem: {
+          select: {
+            cptCode: true,
+            serviceDate: true,
+            chargeAmount: true,
+          },
+        },
+        payment: {
+          select: {
+            paymentNumber: true,
+            paymentAmount: true,
+          },
+        },
+        createdBy: {
+          select: {
+            formalName: true,
+            jobTitle: true,
+          },
+        },
+      },
+    });
+  }
+
+  async deleteAdjustment(id: string) {
+    return this.prisma.adjustment.delete({
       where: { id },
     });
   }

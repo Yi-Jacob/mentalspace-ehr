@@ -539,6 +539,7 @@ model StaffProfile {
   providerCompensations ProviderCompensationConfig[] @relation("ProviderCompensationProvider")
   user                  User?                        @relation("UserStaffProfile")
   verifiedInsurances    InsuranceVerification[]
+  adjustments           Adjustment[]
 
   @@map("staff_profiles")
 }
@@ -648,6 +649,8 @@ model Payment {
   client             Client   @relation(fields: [clientId], references: [id])
   claim              Claim?   @relation(fields: [claimId], references: [id])
   payer              Payer?   @relation(fields: [payerId], references: [id])
+  allocations        PaymentAllocation[]
+  adjustments        Adjustment[]
 
   @@map("payments")
 }
@@ -930,6 +933,8 @@ model ClaimLineItem {
   lineNote              String?  @map("line_note")
   createdAt             DateTime @default(now()) @map("created_at")
   claim                 Claim    @relation(fields: [claimId], references: [id])
+  paymentAllocations    PaymentAllocation[]
+  adjustments           Adjustment[]
 
   @@map("claim_line_items")
 }
@@ -961,8 +966,28 @@ model PaymentAllocation {
   allocatedAmount Float    @map("allocated_amount")
   allocationType  String?  @map("allocation_type")
   createdAt       DateTime @default(now()) @map("created_at")
+  payment         Payment  @relation(fields: [paymentId], references: [id])
+  claimLineItem   ClaimLineItem @relation(fields: [claimLineItemId], references: [id])
 
   @@map("payment_allocations")
+}
+
+model Adjustment {
+  id              String   @id @default(uuid())
+  claimLineItemId String   @map("claim_line_item_id")
+  paymentId       String?  @map("payment_id")
+  sourceType      String   @map("source_type") // 'insurance' or 'practice'
+  groupCode       String   @map("group_code") // 'CO', 'PR', 'OA', 'PI'
+  reasonCode      String   @map("reason_code") // CARC codes
+  amount          Float    @map("amount")
+  reasonText      String?  @map("reason_text")
+  createdById     String?  @map("created_by_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  claimLineItem   ClaimLineItem @relation(fields: [claimLineItemId], references: [id])
+  payment         Payment? @relation(fields: [paymentId], references: [id])
+  createdBy       StaffProfile? @relation(fields: [createdById], references: [id])
+
+  @@map("adjustments")
 }
 
 model SupervisionRelationship {

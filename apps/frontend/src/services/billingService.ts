@@ -192,6 +192,52 @@ export interface Payment {
   claim?: {
     claimNumber: string;
   };
+  allocations?: PaymentAllocation[];
+  adjustments?: Adjustment[];
+}
+
+export interface PaymentAllocation {
+  id: string;
+  paymentId: string;
+  claimLineItemId: string;
+  allocatedAmount: number;
+  allocationType?: string;
+  createdAt: string;
+  payment?: {
+    paymentNumber: string;
+    paymentAmount: number;
+  };
+  claimLineItem?: {
+    cptCode: string;
+    serviceDate: string;
+    chargeAmount: number;
+  };
+}
+
+export interface Adjustment {
+  id: string;
+  claimLineItemId: string;
+  paymentId?: string;
+  sourceType: string; // 'insurance' or 'practice'
+  groupCode: string; // 'CO', 'PR', 'OA', 'PI'
+  reasonCode: string; // CARC codes
+  amount: number;
+  reasonText?: string;
+  createdById?: string;
+  createdAt: string;
+  claimLineItem?: {
+    cptCode: string;
+    serviceDate: string;
+    chargeAmount: number;
+  };
+  payment?: {
+    paymentNumber: string;
+    paymentAmount: number;
+  };
+  createdBy?: {
+    formalName: string;
+    jobTitle: string;
+  };
 }
 
 export interface BillingDashboard {
