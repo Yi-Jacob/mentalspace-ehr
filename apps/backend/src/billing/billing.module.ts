@@ -14,6 +14,8 @@ import { PaymentsController } from './payments/payments.controller';
 import { PaymentsService } from './payments/payments.service';
 import { VerificationController } from './verification/verification.controller';
 import { VerificationService } from './verification/verification.service';
+import { StatementsController } from './statements/statements.controller';
+import { StatementsService } from './statements/statements.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -25,6 +27,7 @@ import { VerificationService } from './verification/verification.service';
     ClaimsController,
     PaymentsController,
     VerificationController,
+    StatementsController,
   ],
   providers: [
     BillingService,
@@ -34,6 +37,7 @@ import { VerificationService } from './verification/verification.service';
     ClaimsService,
     PaymentsService,
     VerificationService,
+    StatementsService,
   ],
   exports: [
     BillingService,
@@ -43,6 +47,7 @@ import { VerificationService } from './verification/verification.service';
     ClaimsService,
     PaymentsService,
     VerificationService,
+    StatementsService,
   ],
 })
 export class BillingModule {} 

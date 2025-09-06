@@ -240,6 +240,61 @@ export interface Adjustment {
   };
 }
 
+export interface StatementLineItem {
+  id: string;
+  statementId: string;
+  claimId?: string;
+  claimLineItemId?: string;
+  serviceDate: string;
+  description: string;
+  cptCode?: string;
+  chargeAmount: number;
+  insurancePayment?: number;
+  adjustmentAmount?: number;
+  patientResponsibility: number;
+  createdAt: string;
+  claim?: {
+    claimNumber: string;
+  };
+  claimLineItem?: {
+    cptCode: string;
+    serviceDate: string;
+    chargeAmount: number;
+  };
+}
+
+export interface PatientStatement {
+  id: string;
+  statementNumber: string;
+  clientId: string;
+  statementDate: string;
+  dueDate: string;
+  totalAmount: number;
+  previousBalance?: number;
+  paymentsReceived?: number;
+  adjustments?: number;
+  currentBalance: number;
+  status?: string;
+  deliveryMethod?: string;
+  emailSentAt?: string;
+  emailOpenedAt?: string;
+  paymentLink?: string;
+  notes?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  client?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  createdByStaff?: {
+    formalName: string;
+    jobTitle: string;
+  };
+  lineItems?: StatementLineItem[];
+}
+
 export interface BillingDashboard {
   totalClaims: number;
   submittedClaims: number;
@@ -474,6 +529,65 @@ class BillingService {
   async getPaymentsReports(timeRange: string = '30'): Promise<{ totalPayments: number; payments: Payment[] }> {
     const response = await apiClient.get(`/billing/reports/payments?timeRange=${timeRange}`);
     return response.data;
+  }
+
+  // Patient Statements
+  async getAllStatements(status?: string, search?: string): Promise<PatientStatement[]> {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
+    
+    const response = await apiClient.get(`/billing/statements?${params.toString()}`);
+    return response.data;
+  }
+
+  async getStatementById(id: string): Promise<PatientStatement> {
+    const response = await apiClient.get(`/billing/statements/${id}`);
+    return response.data;
+  }
+
+  async createStatement(data: Partial<PatientStatement>): Promise<PatientStatement> {
+    const response = await apiClient.post('/billing/statements', data);
+    return response.data;
+  }
+
+  async updateStatement(id: string, data: Partial<PatientStatement>): Promise<PatientStatement> {
+    const response = await apiClient.put(`/billing/statements/${id}`, data);
+    return response.data;
+  }
+
+  async deleteStatement(id: string): Promise<void> {
+    await apiClient.delete(`/billing/statements/${id}`);
+  }
+
+  async markStatementAsSent(id: string): Promise<PatientStatement> {
+    const response = await apiClient.post(`/billing/statements/${id}/send`);
+    return response.data;
+  }
+
+  async markStatementAsOpened(id: string): Promise<PatientStatement> {
+    const response = await apiClient.post(`/billing/statements/${id}/open`);
+    return response.data;
+  }
+
+  async generateStatementNumber(): Promise<{ statementNumber: string }> {
+    const response = await apiClient.get('/billing/statements/generate-number');
+    return response.data;
+  }
+
+  // Statement Line Items
+  async createStatementLineItem(statementId: string, data: Partial<StatementLineItem>): Promise<StatementLineItem> {
+    const response = await apiClient.post(`/billing/statements/${statementId}/line-items`, data);
+    return response.data;
+  }
+
+  async updateStatementLineItem(lineItemId: string, data: Partial<StatementLineItem>): Promise<StatementLineItem> {
+    const response = await apiClient.put(`/billing/statements/line-items/${lineItemId}`, data);
+    return response.data;
+  }
+
+  async deleteStatementLineItem(lineItemId: string): Promise<void> {
+    await apiClient.delete(`/billing/statements/line-items/${lineItemId}`);
   }
 }
 

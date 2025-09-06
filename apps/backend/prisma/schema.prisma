@@ -303,6 +303,7 @@ model Client {
   payments               Payment[]
   insuranceVerifications InsuranceVerification[]
   insurances             ClientInsurance[]
+  patientStatements      PatientStatement[]
   user                   User?                   @relation("UserClient")
 
   @@map("clients")
@@ -423,6 +424,7 @@ model Claim {
   payer                 Payer?          @relation(fields: [payerId], references: [id])
   lineItems             ClaimLineItem[]
   payments              Payment[]
+  statementLineItems    StatementLineItem[]
 
   @@map("claims")
 }
@@ -540,6 +542,7 @@ model StaffProfile {
   user                  User?                        @relation("UserStaffProfile")
   verifiedInsurances    InsuranceVerification[]
   adjustments           Adjustment[]
+  patientStatements     PatientStatement[]
 
   @@map("staff_profiles")
 }
@@ -903,13 +906,16 @@ model PatientStatement {
   currentBalance   Float    @map("current_balance")
   status           String?
   deliveryMethod   String?  @map("delivery_method")
-  emailSentAt      DateTime @default(now()) @map("email_sent_at")
-  emailOpenedAt    DateTime @default(now()) @map("email_opened_at")
+  emailSentAt      DateTime? @map("email_sent_at")
+  emailOpenedAt    DateTime? @map("email_opened_at")
   paymentLink      String?  @map("payment_link")
   notes            String?
   createdBy        String?  @map("created_by")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @default(now()) @map("updated_at")
+  client           Client   @relation(fields: [clientId], references: [id])
+  createdByStaff   StaffProfile? @relation(fields: [createdBy], references: [id])
+  lineItems        StatementLineItem[]
 
   @@map("patient_statements")
 }
@@ -935,6 +941,7 @@ model ClaimLineItem {
   claim                 Claim    @relation(fields: [claimId], references: [id])
   paymentAllocations    PaymentAllocation[]
   adjustments           Adjustment[]
+  statementLineItems    StatementLineItem[]
 
   @@map("claim_line_items")
 }
@@ -1163,6 +1170,7 @@ model StatementLineItem {
   id                    String   @id @default(uuid())
   statementId           String   @map("statement_id")
   claimId               String?  @map("claim_id")
+  claimLineItemId       String?  @map("claim_line_item_id")
   serviceDate           DateTime @default(now()) @map("service_date")
   description           String
   cptCode               String?  @map("cpt_code")
@@ -1171,6 +1179,9 @@ model StatementLineItem {
   adjustmentAmount      Float?   @map("adjustment_amount")
   patientResponsibility Float    @map("patient_responsibility")
   createdAt             DateTime @default(now()) @map("created_at")
+  statement             PatientStatement @relation(fields: [statementId], references: [id])
+  claim                 Claim? @relation(fields: [claimId], references: [id])
+  claimLineItem         ClaimLineItem? @relation(fields: [claimLineItemId], references: [id])
 
   @@map("statement_line_items")
 }
