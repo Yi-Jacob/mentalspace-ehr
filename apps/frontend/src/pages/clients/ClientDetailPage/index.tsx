@@ -136,26 +136,6 @@ const ClientDetailView = () => {
               <Edit className="h-4 w-4" />
               <span>Edit Client</span>
             </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {/* TODO: Implement compose modal */}}
-              className="flex items-center space-x-2"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span>Quick Message</span>
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {/* TODO: Implement new conversation modal */}}
-              className="flex items-center space-x-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span>New Conversation</span>
-            </Button>
           </div>
         }
       />

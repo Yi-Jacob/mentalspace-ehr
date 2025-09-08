@@ -6,7 +6,6 @@ import { ClientInfoTab } from './tabs/ClientInfoTab';
 import { ClientCliniciansTab } from './tabs/ClientCliniciansTab';
 import { ClientNotesTab } from './tabs/ClientNotesTab';
 import { ClientBillingTab } from './tabs/ClientBillingTab';
-import ClientMessagesTab from './tabs/ClientMessagesTab';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 
 interface ClientDetailTabsProps {
@@ -40,12 +39,6 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
               primaryCareProvider={primaryCareProvider}
             />
           )
-        },
-        {
-          id: 'messages',
-          label: 'Messages',
-          icon: MessageSquare,
-          content: <ClientMessagesTab clientId={client.id} />
         },
         {
           id: 'clinicians',

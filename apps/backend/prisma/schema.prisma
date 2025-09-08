@@ -8,57 +8,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-model ReportCache {
-  id         String   @id @default(uuid())
-  cacheKey   String   @map("cache_key")
-  reportType String   @map("report_type")
-  data       Json
-  expiresAt  DateTime @default(now()) @map("expires_at")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  @@map("report_cache")
-}
-
-model SecurityAuditLog {
-  id           String   @id @default(uuid())
-  userId       String?  @map("user_id")
-  sessionId    String?  @map("session_id")
-  action       String
-  resourceType String   @map("resource_type")
-  resourceId   String?  @map("resource_id")
-  ipAddress    String?  @map("ip_address")
-  userAgent    String?  @map("user_agent")
-  details      Json?
-  severity     String?
-  status       String?
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  @@map("security_audit_logs")
-}
-
-model RateLimit {
-  id           String   @id @default(uuid())
-  identifier   String
-  requestCount Int?     @map("request_count")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @default(now()) @map("updated_at")
-
-  @@map("rate_limits")
-}
-
-model DataClassification {
-  id                  String   @id @default(uuid())
-  tableName           String   @map("table_name")
-  columnName          String   @map("column_name")
-  classification      String
-  encryptionRequired  Boolean? @map("encryption_required")
-  retentionPeriodDays Int?     @map("retention_period_days")
-  anonymizationRules  Json?    @map("anonymization_rules")
-  createdAt           DateTime @default(now()) @map("created_at")
-
-  @@map("data_classifications")
-}
-
 model DiagnosisCode {
   id          String   @id @default(uuid())
   code        String
@@ -309,22 +258,6 @@ model Client {
   @@map("clients")
 }
 
-model ClientMedication {
-  id                String    @id @default(uuid())
-  clientId          String    @map("client_id")
-  medicationName    String    @map("medication_name")
-  dosage            String?
-  frequency         String?
-  prescribingDoctor String?   @map("prescribing_doctor")
-  startDate         DateTime  @default(now()) @map("start_date")
-  endDate           DateTime? @map("end_date")
-  isActive          Boolean?  @map("is_active")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @default(now()) @map("updated_at")
-
-  @@map("client_medications")
-}
-
 model Appointment {
   id                 String         @id @default(uuid())
   clientId           String         @map("client_id")
@@ -378,20 +311,6 @@ model ClientPrimaryCareProvider {
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("client_primary_care_providers")
-}
-
-model HipaaAccessLog {
-  id           String   @id @default(uuid())
-  userId       String   @default(uuid()) @map("user_id")
-  patientId    String   @default(uuid()) @map("patient_id")
-  accessType   String   @map("access_type")
-  dataAccessed String?  @map("data_accessed")
-  purpose      String?
-  authorized   Boolean?
-  ipAddress    String?  @map("ip_address")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  @@map("hipaa_access_logs")
 }
 
 model Claim {
@@ -448,33 +367,6 @@ model ComplianceDeadline {
   @@map("compliance_deadlines")
 }
 
-model ClientSubstanceHistory {
-  id            String    @id @default(uuid())
-  clientId      String    @map("client_id")
-  substanceType String    @map("substance_type")
-  frequency     String?
-  amount        String?
-  startDate     DateTime  @default(now()) @map("start_date")
-  endDate       DateTime? @map("end_date")
-  isCurrent     Boolean?  @map("is_current")
-  notes         String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-
-  @@map("client_substance_history")
-}
-
-model AppointmentConflict {
-  id                       String    @id @default(uuid())
-  appointmentId            String    @map("appointment_id")
-  conflictingAppointmentId String    @map("conflicting_appointment_id")
-  conflictType             String    @map("conflict_type")
-  detectedAt               DateTime  @default(now()) @map("detected_at")
-  resolvedAt               DateTime? @map("resolved_at")
-  createdAt                DateTime  @default(now()) @map("created_at")
-
-  @@map("appointment_conflicts")
-}
-
 model UserRole {
   id         String   @id @default(uuid())
   userId     String   @map("user_id")
@@ -485,20 +377,6 @@ model UserRole {
   user       User     @relation(fields: [userId], references: [id])
 
   @@map("user_roles")
-}
-
-model ReportConfiguration {
-  id         String   @id @default(uuid())
-  userId     String   @map("user_id")
-  reportType String   @map("report_type")
-  reportName String   @map("report_name")
-  filters    Json?
-  dateRange  Json?    @map("date_range")
-  isShared   Boolean? @map("is_shared")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @map("updated_at")
-
-  @@map("report_configurations")
 }
 
 model StaffProfile {
@@ -547,21 +425,6 @@ model StaffProfile {
   @@map("staff_profiles")
 }
 
-model ScheduleTemplate {
-  id                     String   @id @default(uuid())
-  templateName           String   @map("template_name")
-  description            String?
-  defaultHoursPerWeek    Float?   @map("default_hours_per_week")
-  maxConsecutiveDays     Int?     @map("max_consecutive_days")
-  minHoursBetweenShifts  Int?     @map("min_hours_between_shifts")
-  preferredShiftPatterns Json?    @map("preferred_shift_patterns")
-  isActive               Boolean? @map("is_active")
-  createdBy              String?  @map("created_by")
-  createdAt              DateTime @default(now()) @map("created_at")
-
-  @@map("schedule_templates")
-}
-
 model QuickAction {
   id          String    @id @default(uuid())
   userId      String    @default(uuid()) @map("user_id")
@@ -590,20 +453,6 @@ model ProductivityGoal {
   @@map("productivity_goals")
 }
 
-model ClientTreatmentHistory {
-  id                  String    @id @default(uuid())
-  clientId            String    @map("client_id")
-  treatmentType       String    @map("treatment_type")
-  providerName        String?
-  startDate           DateTime  @default(now()) @map("start_date")
-  endDate             DateTime? @map("end_date")
-  effectivenessRating Int?      @map("effectiveness_rating")
-  notes               String?
-  createdAt           DateTime  @default(now()) @map("created_at")
-
-  @@map("client_treatment_history")
-}
-
 model ClientPhoneNumber {
   id                String   @id @default(uuid())
   clientId          String   @map("client_id")
@@ -613,21 +462,6 @@ model ClientPhoneNumber {
   createdAt         DateTime @default(now()) @map("created_at")
 
   @@map("client_phone_numbers")
-}
-
-model PatientAccessPermission {
-  id         String    @id @default(uuid())
-  clientId   String    @map("client_id")
-  userId     String    @map("user_id")
-  grantedBy  String?   @map("granted_by")
-  grantedAt  DateTime  @default(now()) @map("granted_at")
-  revokedAt  DateTime? @map("revoked_at")
-  revokedBy  String?   @map("revoked_by")
-  accessType String?   @map("access_type")
-  notes      String?
-  isActive   Boolean?  @map("is_active")
-
-  @@map("patient_access_permissions")
 }
 
 model Payment {
@@ -656,22 +490,6 @@ model Payment {
   adjustments        Adjustment[]
 
   @@map("payments")
-}
-
-model ReportSchedule {
-  id             String   @id @default(uuid())
-  reportConfigId String   @map("report_config_id")
-  scheduleType   String   @map("schedule_type")
-  scheduleTime   String   @map("schedule_time")
-  scheduleDays   Int[]    @map("schedule_days")
-  isActive       Boolean? @map("is_active")
-  lastRunAt      DateTime @default(now()) @map("last_run_at")
-  nextRunAt      DateTime @default(now()) @map("next_run_at")
-  recipients     String[] @map("recipients")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @default(now()) @map("updated_at")
-
-  @@map("report_schedules")
 }
 
 model Certification {
@@ -704,22 +522,6 @@ model AppointmentReminder {
   createdAt         DateTime @default(now()) @map("created_at")
 
   @@map("appointment_reminders")
-}
-
-model ClientDiagnosis {
-  id                   String   @id @default(uuid())
-  clientId             String   @map("client_id")
-  diagnosisCode        String   @map("diagnosis_code")
-  diagnosisDescription String   @map("diagnosis_description")
-  isPrimary            Boolean  @map("is_primary")
-  diagnosedDate        DateTime @default(now()) @map("diagnosed_date")
-  status               String?
-  notes                String?
-  providerName         String?  @map("provider_name")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @default(now()) @map("updated_at")
-
-  @@map("client_diagnoses")
 }
 
 model ClientEmergencyContact {
@@ -844,20 +646,6 @@ model ClientInsurance {
   verifications          InsuranceVerification[]
 
   @@map("client_insurance")
-}
-
-model PayrollPeriod {
-  id          String   @id @default(uuid())
-  periodStart DateTime @default(now()) @map("period_start")
-  periodEnd   DateTime @default(now()) @map("period_end")
-  status      String?
-  totalHours  Float?   @map("total_hours")
-  totalAmount Float?   @map("total_amount")
-  processedBy String?  @map("processed_by")
-  processedAt DateTime @default(now()) @map("processed_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  @@map("payroll_periods")
 }
 
 model SessionRateMultiplier {
@@ -1095,32 +883,6 @@ model PracticeSetting {
   @@map("practice_settings")
 }
 
-model AggregatedMetric {
-  id          String   @id @default(uuid())
-  metricType  String   @map("metric_type")
-  periodType  String   @map("period_type")
-  periodStart DateTime @default(now()) @map("period_start")
-  periodEnd   DateTime @default(now()) @map("period_end")
-  providerId  String?  @map("provider_id")
-  clientId    String?  @map("client_id")
-  metrics     Json     @map("metrics")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
-
-  @@map("aggregated_metrics")
-}
-
-model GoalObjective {
-  id            String   @id @default(uuid())
-  goalId        String   @map("goal_id")
-  objectiveText String   @map("objective_text")
-  isCompleted   Boolean? @map("is_completed")
-  completedDate DateTime @default(now()) @map("completed_date")
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  @@map("goal_objectives")
-}
-
 model TimeTracking {
   id                   String    @id @default(uuid())
   userId               String    @map("user_id")
@@ -1184,33 +946,6 @@ model StatementLineItem {
   claimLineItem         ClaimLineItem? @relation(fields: [claimLineItemId], references: [id])
 
   @@map("statement_line_items")
-}
-
-model NoteCompletionTracking {
-  id                   String   @id @default(uuid())
-  noteId               String   @map("note_id")
-  userId               String   @default(uuid()) @map("user_id")
-  startedAt            DateTime @default(now()) @map("started_at")
-  completedAt          DateTime @default(now()) @map("completed_at")
-  timeSpentMinutes     Int?     @map("time_spent_minutes")
-  completionPercentage Int?     @map("completion_percentage")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @default(now()) @map("updated_at")
-
-  @@map("note_completion_tracking")
-}
-
-model NoteReminder {
-  id           String   @id @default(uuid())
-  providerId   String   @map("provider_id")
-  noteId       String   @map("note_id")
-  reminderType String   @map("reminder_type")
-  dueDate      DateTime @default(now()) @map("due_date")
-  sentAt       DateTime @default(now()) @map("sent_at")
-  isDismissed  Boolean? @map("is_dismissed")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  @@map("note_reminders")
 }
 
 model SessionCompletion {
