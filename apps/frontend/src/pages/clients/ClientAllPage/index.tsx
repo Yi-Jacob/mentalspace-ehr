@@ -88,8 +88,10 @@ const ClientsPage: React.FC = () => {
   };
 
   const formatAssignment = (client: ClientFormData) => {
+    // For now, just show the ID or "Unassigned"
+    // In a real implementation, you'd want to fetch staff names separately
     return client.assignedClinicianId && client.assignedClinicianId !== 'unassigned'
-      ? client.assignedClinicianId
+      ? `Clinician ID: ${client.assignedClinicianId}`
       : 'Unassigned';
   };
 

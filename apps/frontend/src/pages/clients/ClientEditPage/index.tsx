@@ -72,7 +72,11 @@ const ClientEditPage: React.FC = () => {
 
         // Set phone numbers
         if (phoneData && phoneData.length > 0) {
-          setPhoneNumbers(phoneData);
+          setPhoneNumbers(phoneData.map(phone => ({
+            type: phone.phoneType,
+            number: phone.phoneNumber,
+            messagePreference: phone.messagePreference
+          })));
         }
 
         // Set emergency contacts
@@ -89,6 +93,7 @@ const ClientEditPage: React.FC = () => {
         // Set insurance information
         if (insuranceData && insuranceData.length > 0) {
           setInsuranceInfo(insuranceData.map(insurance => ({
+            id: insurance.id, // Include the ID for tracking
             insuranceType: insurance.insuranceType as any,
             insuranceCompany: insurance.insuranceCompany || '',
             policyNumber: insurance.policyNumber || '',

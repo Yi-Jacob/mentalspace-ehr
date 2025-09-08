@@ -31,6 +31,13 @@ export class ClientsController {
     return this.clientsService.getClientsForNotes();
   }
 
+  @Get('staff-profiles')
+  @ApiOperation({ summary: 'Get all staff profiles for clinician assignment' })
+  @ApiResponse({ status: 200, description: 'List of staff profiles' })
+  getStaffProfiles() {
+    return this.clientsService.getStaffProfiles();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a client by id' })
   @ApiResponse({ status: 200, description: 'Client found' })

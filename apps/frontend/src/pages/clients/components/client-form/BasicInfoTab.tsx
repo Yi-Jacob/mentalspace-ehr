@@ -1,18 +1,61 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClientFormData } from '@/types/clientType';
 import { InputField } from '@/components/basic/input';
 import { DateInput } from '@/components/basic/date-input';
 import { TextareaField } from '@/components/basic/textarea';
 import { SelectField } from '@/components/basic/select';
 import CategorySection from '@/components/basic/CategorySection';
+import { staffService } from '@/services/staffService';
 
 interface BasicInfoTabProps {
   formData: ClientFormData;
   setFormData: React.Dispatch<React.SetStateAction<ClientFormData>>;
 }
 
+interface StaffProfileOption {
+  id: string;
+  formalName?: string;
+  user?: {
+    firstName: string;
+    lastName: string;
+  };
+}
+
 export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormData }) => {
+  const [staffProfiles, setStaffProfiles] = useState<StaffProfileOption[]>([]);
+  const [isLoadingStaff, setIsLoadingStaff] = useState(true);
+
+  useEffect(() => {
+    const fetchStaffProfiles = async () => {
+      try {
+        setIsLoadingStaff(true);
+        const profiles = await staffService.getStaffProfilesForAssignment();
+        setStaffProfiles(profiles);
+      } catch (error) {
+        console.error('Error fetching staff profiles:', error);
+        setStaffProfiles([]);
+      } finally {
+        setIsLoadingStaff(false);
+      }
+    };
+
+    fetchStaffProfiles();
+  }, []);
+
+  const getStaffDisplayName = (profile: StaffProfileOption) => {
+    return profile.formalName || 
+      `${profile.user?.firstName || ''} ${profile.user?.lastName || ''}`.trim() ||
+      'Unknown Clinician';
+  };
+
+  const staffOptions = [
+    { value: "unassigned", label: "-- Unassigned --" },
+    ...staffProfiles.map(profile => ({
+      value: profile.id,
+      label: getStaffDisplayName(profile)
+    }))
+  ];
   return (
     <>
       <CategorySection
@@ -74,10 +117,8 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
               value={formData.assignedClinicianId}
               onValueChange={(value) => setFormData(prev => ({ ...prev, assignedClinicianId: value }))}
               placeholder="-- Unassigned --"
-              options={[
-                { value: "unassigned", label: "-- Unassigned --" }
-                // Future: Add clinicians from database
-              ]}
+              options={staffOptions}
+              disabled={isLoadingStaff}
             />
           </div>
         </div>

@@ -35,19 +35,43 @@ const ClientDetailView = () => {
       // Fetch phone numbers
       const phoneData = await clientService.getClientPhoneNumbers(clientId);
       if (phoneData) {
-        setPhoneNumbers(phoneData);
+        setPhoneNumbers(phoneData.map(phone => ({
+          type: phone.phoneType,
+          number: phone.phoneNumber,
+          messagePreference: phone.messagePreference
+        })));
       }
 
       // Fetch emergency contacts
       const contactData = await clientService.getClientEmergencyContacts(clientId);
       if (contactData) {
-        setEmergencyContacts(contactData);
+        setEmergencyContacts(contactData.map(contact => ({
+          name: contact.name,
+          relationship: contact.relationship || '',
+          phoneNumber: contact.phoneNumber || '',
+          email: contact.email || '',
+          isPrimary: contact.isPrimary || false
+        })));
       }
 
       // Fetch insurance information
       const insuranceData = await clientService.getClientInsurance(clientId);
       if (insuranceData) {
-        setInsuranceInfo(insuranceData);
+        setInsuranceInfo(insuranceData.map(insurance => ({
+          id: insurance.id,
+          payerId: insurance.payerId,
+          insuranceType: insurance.insuranceType as any,
+          insuranceCompany: insurance.insuranceCompany || '',
+          policyNumber: insurance.policyNumber || '',
+          groupNumber: insurance.groupNumber || '',
+          subscriberName: insurance.subscriberName || '',
+          subscriberRelationship: insurance.subscriberRelationship || '',
+          subscriberDob: insurance.subscriberDob || '',
+          effectiveDate: insurance.effectiveDate || '',
+          terminationDate: insurance.terminationDate || '',
+          copayAmount: insurance.copayAmount || 0,
+          deductibleAmount: insurance.deductibleAmount || 0
+        })));
       }
 
       // Fetch primary care provider

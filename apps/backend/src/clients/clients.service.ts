@@ -43,7 +43,7 @@ export class ClientsService {
     });
   }
 
-  async findAll() {
+  async findAll(): Promise<any[]> {
     return this.prisma.client.findMany({
       where: {
         isActive: true,
@@ -71,7 +71,7 @@ export class ClientsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<any> {
     const client = await this.prisma.client.findUnique({
       where: { id },
     });
@@ -97,6 +97,27 @@ export class ClientsService {
 
     return this.prisma.client.delete({
       where: { id },
+    });
+  }
+
+  async getStaffProfiles() {
+    return this.prisma.staffProfile.findMany({
+      where: {
+        status: 'active', // Only get active staff
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          lastName: 'asc',
+        },
+      },
     });
   }
 
@@ -175,33 +196,82 @@ export class ClientsService {
   }
 
   async updateClientInsurance(clientId: string, insurance: any[]) {
-    // Delete existing insurance
-    await this.prisma.clientInsurance.deleteMany({
-      where: { clientId },
-    });
-
-    // Create new insurance
-    if (insurance.length > 0) {
-      return this.prisma.clientInsurance.createMany({
-        data: insurance.map(ins => ({
-          clientId,
-          payerId: ins.payerId || null,
-          insuranceType: ins.insuranceType,
-          insuranceCompany: ins.insuranceCompany,
-          policyNumber: ins.policyNumber,
-          groupNumber: ins.groupNumber,
-          subscriberName: ins.subscriberName,
-          subscriberRelationship: ins.subscriberRelationship,
-          subscriberDob: this.convertDate(ins.subscriberDob),
-          effectiveDate: this.convertDate(ins.effectiveDate),
-          terminationDate: this.convertDate(ins.terminationDate),
-          copayAmount: ins.copayAmount,
-          deductibleAmount: ins.deductibleAmount,
-        })),
+    return this.prisma.$transaction(async (prisma) => {
+      // Get existing insurance records
+      const existingInsurance = await prisma.clientInsurance.findMany({
+        where: { clientId },
       });
-    }
 
-    return { count: 0 };
+      // Create maps for tracking
+      const existingMap = new Map(existingInsurance.map(ins => [ins.id, ins]));
+      const incomingMap = new Map(insurance.filter(ins => ins.id).map(ins => [ins.id, ins]));
+
+      // Find records to delete (existing but not in incoming)
+      const toDelete = existingInsurance.filter(ins => !incomingMap.has(ins.id));
+      
+      // Find records to update (existing and in incoming)
+      const toUpdate = insurance.filter(ins => ins.id && existingMap.has(ins.id));
+      
+      // Find records to create (incoming but not existing)
+      const toCreate = insurance.filter(ins => !ins.id || !existingMap.has(ins.id));
+
+      // Delete records that are no longer needed
+      if (toDelete.length > 0) {
+        await prisma.clientInsurance.deleteMany({
+          where: {
+            id: { in: toDelete.map(ins => ins.id) },
+          },
+        });
+      }
+
+      // Update existing records
+      for (const ins of toUpdate) {
+        await prisma.clientInsurance.update({
+          where: { id: ins.id },
+          data: {
+            payerId: ins.payerId || null,
+            insuranceType: ins.insuranceType,
+            insuranceCompany: ins.insuranceCompany,
+            policyNumber: ins.policyNumber,
+            groupNumber: ins.groupNumber,
+            subscriberName: ins.subscriberName,
+            subscriberRelationship: ins.subscriberRelationship,
+            subscriberDob: this.convertDate(ins.subscriberDob),
+            effectiveDate: this.convertDate(ins.effectiveDate),
+            terminationDate: this.convertDate(ins.terminationDate),
+            copayAmount: ins.copayAmount,
+            deductibleAmount: ins.deductibleAmount,
+          },
+        });
+      }
+
+      // Create new records
+      if (toCreate.length > 0) {
+        await prisma.clientInsurance.createMany({
+          data: toCreate.map(ins => ({
+            clientId,
+            payerId: ins.payerId || null,
+            insuranceType: ins.insuranceType,
+            insuranceCompany: ins.insuranceCompany,
+            policyNumber: ins.policyNumber,
+            groupNumber: ins.groupNumber,
+            subscriberName: ins.subscriberName,
+            subscriberRelationship: ins.subscriberRelationship,
+            subscriberDob: this.convertDate(ins.subscriberDob),
+            effectiveDate: this.convertDate(ins.effectiveDate),
+            terminationDate: this.convertDate(ins.terminationDate),
+            copayAmount: ins.copayAmount,
+            deductibleAmount: ins.deductibleAmount,
+          })),
+        });
+      }
+
+      return {
+        deleted: toDelete.length,
+        updated: toUpdate.length,
+        created: toCreate.length,
+      };
+    });
   }
 
   // Primary care provider
@@ -390,28 +460,7 @@ export class ClientsService {
       }
 
       // Update insurance
-      await prisma.clientInsurance.deleteMany({
-        where: { clientId },
-      });
-      if (insuranceInfo.length > 0) {
-        await prisma.clientInsurance.createMany({
-          data: insuranceInfo.map(ins => ({
-            clientId,
-            payerId: ins.payerId || null,
-            insuranceType: ins.insuranceType,
-            insuranceCompany: ins.insuranceCompany,
-            policyNumber: ins.policyNumber,
-            groupNumber: ins.groupNumber,
-            subscriberName: ins.subscriberName,
-            subscriberRelationship: ins.subscriberRelationship,
-            subscriberDob: this.convertDate(ins.subscriberDob),
-            effectiveDate: this.convertDate(ins.effectiveDate),
-            terminationDate: this.convertDate(ins.terminationDate),
-            copayAmount: ins.copayAmount,
-            deductibleAmount: ins.deductibleAmount,
-          })),
-        });
-      }
+      await this.updateClientInsurance(clientId, insuranceInfo);
 
       // Update primary care provider
       await prisma.clientPrimaryCareProvider.deleteMany({

@@ -332,6 +332,27 @@ class StaffService {
     
     return response.data;
   }
+
+  // Get staff profiles for clinician assignment (from clients endpoint)
+  async getStaffProfilesForAssignment(): Promise<Array<{
+    id: string;
+    formalName?: string;
+    user?: {
+      firstName: string;
+      lastName: string;
+    };
+  }>> {
+    const response = await apiClient.get<Array<{
+      id: string;
+      formalName?: string;
+      user?: {
+        firstName: string;
+        lastName: string;
+      };
+    }>>('/clients/staff-profiles');
+    
+    return response.data;
+  }
 }
 
 export const staffService = new StaffService(); 
