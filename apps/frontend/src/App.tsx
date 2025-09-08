@@ -24,7 +24,6 @@ function App() {
               <Suspense fallback={<LoadingSpinner />}>
                 <RouterProvider router={router} />
               </Suspense>
-              
               <Toaster />
               <Sonner />
             </AIChatbotProvider>
