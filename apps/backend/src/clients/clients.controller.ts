@@ -20,7 +20,6 @@ export class ClientsController {
   @ApiOperation({ summary: 'Get all clients' })
   @ApiResponse({ status: 200, description: 'List of all clients' })
   findAll() {
-    console.log('findAll');
     return this.clientsService.findAll();
   }
 

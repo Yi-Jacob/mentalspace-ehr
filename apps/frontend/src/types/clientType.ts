@@ -104,6 +104,19 @@ export interface ClientFormData {
   pronouns: string;
   dateOfBirth: string;
   assignedClinicianId: string;
+  assignedClinician?: {
+    id: string;
+    name: string;
+    formalName?: string;
+    jobTitle?: string;
+    department?: string;
+    clinicianType?: string;
+    licenseNumber?: string;
+    licenseState?: string;
+    npiNumber?: string;
+    phoneNumber?: string;
+    email?: string;
+  } | null;
   // Contact Info
   email: string;
   address1: string;

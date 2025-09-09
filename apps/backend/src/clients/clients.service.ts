@@ -44,7 +44,7 @@ export class ClientsService {
   }
 
   async findAll(): Promise<any[]> {
-    return this.prisma.client.findMany({
+    const clients = await this.prisma.client.findMany({
       where: {
         isActive: true,
       },
@@ -52,6 +52,45 @@ export class ClientsService {
         lastName: 'asc',
       },
     });
+
+    // Get all unique assigned clinician IDs
+    const assignedClinicianIds = clients
+      .map(client => client.assignedClinicianId)
+      .filter((id): id is string => id !== null && id !== undefined);
+
+    // Fetch staff profiles for assigned clinicians
+    const staffProfiles = await this.prisma.staffProfile.findMany({
+      where: {
+        id: { in: assignedClinicianIds },
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Create a map for quick lookup
+    const staffMap = new Map(
+      staffProfiles.map(staff => [
+        staff.id,
+        {
+          id: staff.id,
+          name: `${staff.user?.firstName || ''} ${staff.user?.lastName || ''}`.trim(),
+        },
+      ])
+    );
+
+    // Map clients with staff information
+    return clients.map(client => ({
+      ...client,
+      assignedClinician: client.assignedClinicianId 
+        ? staffMap.get(client.assignedClinicianId) || null
+        : null,
+    }));
   }
 
   async getClientsForNotes() {
@@ -80,7 +119,46 @@ export class ClientsService {
       throw new NotFoundException(`Client with ID ${id} not found`);
     }
 
-    return client;
+    // If client has an assigned clinician, fetch their details
+    if (client.assignedClinicianId) {
+      const staffProfile = await this.prisma.staffProfile.findUnique({
+        where: { id: client.assignedClinicianId },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              middleName: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (staffProfile) {
+        return {
+          ...client,
+          assignedClinician: {
+            id: staffProfile.id,
+            name: `${staffProfile.user?.firstName || ''} ${staffProfile.user?.middleName || ''} ${staffProfile.user?.lastName || ''}`.trim(),
+            formalName: staffProfile.formalName,
+            jobTitle: staffProfile.jobTitle,
+            department: staffProfile.department,
+            clinicianType: staffProfile.clinicianType,
+            licenseNumber: staffProfile.licenseNumber,
+            licenseState: staffProfile.licenseState,
+            npiNumber: staffProfile.npiNumber,
+            phoneNumber: staffProfile.phoneNumber,
+            email: staffProfile.user?.email || null,
+          },
+        };
+      }
+    }
+
+    return {
+      ...client,
+      assignedClinician: null,
+    };
   }
 
   async update(id: string, updateClientDto: UpdateClientDto) {
@@ -214,7 +292,7 @@ export class ClientsService {
       
       // Find records to create (incoming but not existing)
       const toCreate = insurance.filter(ins => !ins.id || !existingMap.has(ins.id));
-
+      
       // Delete records that are no longer needed
       if (toDelete.length > 0) {
         await prisma.clientInsurance.deleteMany({
@@ -223,7 +301,7 @@ export class ClientsService {
           },
         });
       }
-
+      
       // Update existing records
       for (const ins of toUpdate) {
         await prisma.clientInsurance.update({
@@ -420,13 +498,11 @@ export class ClientsService {
         ...clientData,
         dateOfBirth: this.convertDate(clientData.dateOfBirth),
       };
-
       // Update the client
       const client = await prisma.client.update({
         where: { id: clientId },
         data: mappedClientData,
       });
-
       // Update phone numbers
       await prisma.clientPhoneNumber.deleteMany({
         where: { clientId },
@@ -441,7 +517,6 @@ export class ClientsService {
           })),
         });
       }
-
       // Update emergency contacts
       await prisma.clientEmergencyContact.deleteMany({
         where: { clientId },

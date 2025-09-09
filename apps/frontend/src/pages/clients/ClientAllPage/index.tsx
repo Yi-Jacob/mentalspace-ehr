@@ -88,8 +88,30 @@ const ClientsPage: React.FC = () => {
   };
 
   const formatAssignment = (client: ClientFormData) => {
-    // For now, just show the ID or "Unassigned"
-    // In a real implementation, you'd want to fetch staff names separately
+    // Check if we have assignedClinician data with name
+    const clientWithStaff = client as ClientFormData & { 
+      assignedClinician?: { 
+        id: string; 
+        name: string;
+        jobTitle?: string;
+        clinicianType?: string;
+      } | null;
+    };
+    
+    if (clientWithStaff.assignedClinician && clientWithStaff.assignedClinician.name) {
+      const clinician = clientWithStaff.assignedClinician;
+      const title = clinician.jobTitle || clinician.clinicianType || '';
+      return (
+        <div>
+          <div className="font-medium text-gray-900">{clinician.name}</div>
+          {title && (
+            <div className="text-sm text-gray-500">{title}</div>
+          )}
+        </div>
+      );
+    }
+    
+    // Fallback to showing ID if no name available
     return client.assignedClinicianId && client.assignedClinicianId !== 'unassigned'
       ? `Clinician ID: ${client.assignedClinicianId}`
       : 'Unassigned';
