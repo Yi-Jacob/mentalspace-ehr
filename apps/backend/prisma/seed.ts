@@ -111,7 +111,7 @@ async function main() {
       licenseNumber: 'PSY12345',
       licenseState: 'CA',
       department: 'Clinical Services',
-      jobTitle: 'Senior Clinical Psychologist',
+      jobTitle: ['Clinician', 'Supervisor'],
       clinicianType: 'Clinical Psychologist',
       billingRate: 150.00,
       canBillInsurance: true,
@@ -141,7 +141,7 @@ async function main() {
       licenseNumber: 'LCSW78901',
       licenseState: 'CA',
       department: 'Clinical Services',
-      jobTitle: 'Licensed Clinical Social Worker',
+      jobTitle: ['Clinician'],
       clinicianType: 'Licensed Clinical Social Worker',
       billingRate: 120.00,
       canBillInsurance: true,
@@ -171,7 +171,7 @@ async function main() {
       licenseNumber: 'LMFT45678',
       licenseState: 'CA',
       department: 'Clinical Services',
-      jobTitle: 'Licensed Marriage and Family Therapist',
+      jobTitle: ['Clinician'],
       clinicianType: 'Licensed Marriage and Family Therapist',
       billingRate: 130.00,
       canBillInsurance: true,
@@ -216,7 +216,7 @@ async function main() {
             licenseState: staffData.licenseState,
             licenseExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
             department: staffData.department,
-            jobTitle: staffData.jobTitle,
+            jobTitle: staffData.jobTitle.join(', '),
             hireDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
             phoneNumber: staffData.phoneNumber,
             billingRate: staffData.billingRate,
@@ -252,15 +252,16 @@ async function main() {
         });
 
         // Create user role
-        await prisma.userRole.create({
-          data: {
-            userId: user.id,
-            role: staffData.jobTitle,
-            assignedAt: new Date(),
-            isActive: true,
-          }
-        });
-
+        for (const role of staffData.jobTitle) {
+          await prisma.userRole.create({
+            data: {
+              userId: user.id,
+              role: role,
+              assignedAt: new Date(),
+              isActive: true,
+            }
+          });
+        }
         return { user, staffProfile };
       });
 
@@ -422,11 +423,6 @@ async function main() {
     const juniorTherapist1 = createdStaff.find(staff => 
       staff.user.email === 'michael.chen@mentalspace.com'
     );
-    
-    // Find Emily Rodriguez (junior therapist)
-    const juniorTherapist2 = createdStaff.find(staff => 
-      staff.user.email === 'emily.rodriguez@mentalspace.com'
-    );
 
     if (seniorTherapist && juniorTherapist1) {
       await prisma.supervisionRelationship.create({
@@ -439,19 +435,6 @@ async function main() {
         }
       });
       console.log('Supervision relationship created: Dr. Sarah Johnson → Michael Chen');
-    }
-
-    if (seniorTherapist && juniorTherapist2) {
-      await prisma.supervisionRelationship.create({
-        data: {
-          supervisorId: seniorTherapist.user.id,
-          superviseeId: juniorTherapist2.user.id,
-          startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-          status: 'active',
-          notes: 'Bi-weekly supervision focusing on couples therapy and adolescent treatment approaches',
-        }
-      });
-      console.log('Supervision relationship created: Dr. Sarah Johnson → Emily Rodriguez');
     }
     
   } catch (error) {

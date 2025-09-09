@@ -239,6 +239,7 @@ model Client {
   pcpRelease             String?                 @map("pcp_release")
   patientComments        String?                 @map("patient_comments")
   assignedClinicianId    String?                 @map("assigned_clinician_id")
+  assignedClinician      StaffProfile?           @relation("ClientAssignedClinician", fields: [assignedClinicianId], references: [id])
   createdBy              String?                 @map("created_by")
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @default(now()) @map("updated_at")
@@ -421,6 +422,7 @@ model StaffProfile {
   verifiedInsurances    InsuranceVerification[]
   adjustments           Adjustment[]
   patientStatements     PatientStatement[]
+  assignedClients       Client[]                  @relation("ClientAssignedClinician")
 
   @@map("staff_profiles")
 }

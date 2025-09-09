@@ -44,7 +44,7 @@ export class ClientsService {
   }
 
   async findAll(): Promise<any[]> {
-    const clients = await this.prisma.client.findMany({
+    return this.prisma.client.findMany({
       where: {
         isActive: true,
       },
@@ -52,45 +52,128 @@ export class ClientsService {
         lastName: 'asc',
       },
     });
+  }
 
-    // Get all unique assigned clinician IDs
-    const assignedClinicianIds = clients
-      .map(client => client.assignedClinicianId)
-      .filter((id): id is string => id !== null && id !== undefined);
-
-    // Fetch staff profiles for assigned clinicians
-    const staffProfiles = await this.prisma.staffProfile.findMany({
+  // Get clients for admin roles (full access)
+  async findAllForAdmin(): Promise<any[]> {
+    return this.prisma.client.findMany({
       where: {
-        id: { in: assignedClinicianIds },
+        isActive: true,
       },
       include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
+        assignedClinician: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
       },
+      orderBy: {
+        lastName: 'asc',
+      },
+    });
+  }
+
+  // Get clients assigned to a specific clinician
+  async findClientsByClinicianId(clinicianId: string): Promise<any[]> {
+    return this.prisma.client.findMany({
+      where: {
+        isActive: true,
+        assignedClinicianId: clinicianId,
+      },
+      include: {
+        assignedClinician: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        lastName: 'asc',
+      },
+    });
+  }
+
+  // Get clients for supervisor (own clients + supervisee clients)
+  async findClientsForSupervisor(supervisorId: string): Promise<any[]> {
+    // Get supervisee IDs
+    const supervisionRelationships = await this.prisma.supervisionRelationship.findMany({
+      where: {
+        supervisorId: supervisorId,
+        status: 'active',
+      },
+      select: {
+        superviseeId: true,
+      },
     });
 
-    // Create a map for quick lookup
-    const staffMap = new Map(
-      staffProfiles.map(staff => [
-        staff.id,
-        {
-          id: staff.id,
-          name: `${staff.user?.firstName || ''} ${staff.user?.lastName || ''}`.trim(),
+    const superviseeIds = supervisionRelationships.map(rel => rel.superviseeId);
+    
+    // Get staff profile IDs for supervisees
+    const superviseeStaffProfiles = await this.prisma.staffProfile.findMany({
+      where: {
+        user: {
+          id: { in: superviseeIds },
         },
-      ])
-    );
+      },
+      select: {
+        id: true,
+      },
+    });
 
-    // Map clients with staff information
-    return clients.map(client => ({
-      ...client,
-      assignedClinician: client.assignedClinicianId 
-        ? staffMap.get(client.assignedClinicianId) || null
-        : null,
-    }));
+    const superviseeStaffIds = superviseeStaffProfiles.map(staff => staff.id);
+    
+    // Get supervisor's own staff profile ID
+    const supervisorStaffProfile = await this.prisma.staffProfile.findFirst({
+      where: {
+        user: {
+          id: supervisorId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // Combine supervisor's clients with supervisee clients
+    const allStaffIds = superviseeStaffIds;
+    if (supervisorStaffProfile) {
+      allStaffIds.push(supervisorStaffProfile.id);
+    }
+
+    return this.prisma.client.findMany({
+      where: {
+        isActive: true,
+        assignedClinicianId: { in: allStaffIds },
+      },
+      include: {
+        assignedClinician: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        lastName: 'asc',
+      },
+    });
   }
 
   async getClientsForNotes() {
@@ -113,60 +196,46 @@ export class ClientsService {
   async findOne(id: string): Promise<any> {
     const client = await this.prisma.client.findUnique({
       where: { id },
+      include: {
+        assignedClinician: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                middleName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!client) {
       throw new NotFoundException(`Client with ID ${id} not found`);
     }
 
-    // If client has an assigned clinician, fetch their details
-    if (client.assignedClinicianId) {
-      const staffProfile = await this.prisma.staffProfile.findUnique({
-        where: { id: client.assignedClinicianId },
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              middleName: true,
-              email: true,
-            },
-          },
-        },
-      });
-
-      if (staffProfile) {
-        return {
-          ...client,
-          assignedClinician: {
-            id: staffProfile.id,
-            name: `${staffProfile.user?.firstName || ''} ${staffProfile.user?.middleName || ''} ${staffProfile.user?.lastName || ''}`.trim(),
-            formalName: staffProfile.formalName,
-            jobTitle: staffProfile.jobTitle,
-            department: staffProfile.department,
-            clinicianType: staffProfile.clinicianType,
-            licenseNumber: staffProfile.licenseNumber,
-            licenseState: staffProfile.licenseState,
-            npiNumber: staffProfile.npiNumber,
-            phoneNumber: staffProfile.phoneNumber,
-            email: staffProfile.user?.email || null,
-          },
-        };
-      }
-    }
-
-    return {
-      ...client,
-      assignedClinician: null,
-    };
+    return client;
   }
 
   async update(id: string, updateClientDto: UpdateClientDto) {
     await this.findOne(id); // Check if client exists
 
+    // Handle assignedClinician relation properly
+    const { assignedClinicianId, ...otherData } = updateClientDto;
+    const updateData = {
+      ...otherData,
+      assignedClinician: assignedClinicianId 
+        ? { connect: { id: assignedClinicianId } }
+        : assignedClinicianId === null 
+          ? { disconnect: true }
+          : undefined,
+    };
+
     return this.prisma.client.update({
       where: { id },
-      data: updateClientDto,
+      data: updateData,
     });
   }
 
@@ -195,6 +264,20 @@ export class ClientsService {
         user: {
           lastName: 'asc',
         },
+      },
+    });
+  }
+
+  // Get staff profile by user ID
+  async getStaffProfileByUserId(userId: string) {
+    return this.prisma.staffProfile.findFirst({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      select: {
+        id: true,
       },
     });
   }
@@ -493,10 +576,15 @@ export class ClientsService {
     primaryCareProvider: any,
   ) {
     return this.prisma.$transactionWithRetry(async (prisma) => {
-      // Convert date fields
+      // Convert date fields and handle assignedClinician relation
+      const { assignedClinicianId, ...otherClientData } = clientData;
       const mappedClientData = {
-        ...clientData,
+        ...otherClientData,
         dateOfBirth: this.convertDate(clientData.dateOfBirth),
+        // Use relation field syntax for updates
+        assignedClinician: assignedClinicianId 
+          ? { connect: { id: assignedClinicianId } }
+          : { disconnect: true },
       };
       // Update the client
       const client = await prisma.client.update({

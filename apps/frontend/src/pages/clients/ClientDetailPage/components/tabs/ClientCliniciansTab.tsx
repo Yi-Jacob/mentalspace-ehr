@@ -10,8 +10,13 @@ interface ClientCliniciansTabProps {
 export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client }) => {
   const clientWithStaff = client as ClientFormData & { 
     assignedClinician?: { 
-      id: string; 
-      name: string;
+      id: string;
+      user?: {
+        firstName: string;
+        lastName: string;
+        middleName?: string;
+        email?: string;
+      };
       formalName?: string;
       jobTitle?: string;
       department?: string;
@@ -20,7 +25,6 @@ export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client
       licenseState?: string;
       npiNumber?: string;
       phoneNumber?: string;
-      email?: string;
     } | null;
   };
 
@@ -35,6 +39,9 @@ export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client
     }
 
     const clinician = clientWithStaff.assignedClinician;
+    const fullName = clinician.user 
+      ? `${clinician.user.firstName} ${clinician.user.middleName || ''} ${clinician.user.lastName}`.trim()
+      : clinician.formalName || 'Unknown';
     
     return (
       <div className="space-y-4">
@@ -42,7 +49,7 @@ export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client
           <div>
             <label className="text-sm font-medium text-gray-600">Full Name</label>
             <div className="text-lg font-semibold text-gray-900">
-              {clinician.formalName || clinician.name}
+              {fullName}
             </div>
           </div>
           <div>
@@ -90,7 +97,7 @@ export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client
           <div>
             <label className="text-sm font-medium text-gray-600">Email</label>
             <div className="text-gray-900">
-              {clinician.email || 'Not provided'}
+              {clinician.user?.email || 'Not provided'}
             </div>
           </div>
         </div>

@@ -1,11 +1,20 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+
+// Interface for the authenticated user from JWT
+interface AuthenticatedUser {
+  id: string;
+  email: string;
+  roles: string[];
+}
 
 @ApiTags('Clients')
 @Controller('clients')
+@UseGuards(JwtAuthGuard)
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
@@ -19,8 +28,34 @@ export class ClientsController {
   @Get()
   @ApiOperation({ summary: 'Get all clients' })
   @ApiResponse({ status: 200, description: 'List of all clients' })
-  findAll() {
-    return this.clientsService.findAll();
+  async findAll(@Request() req: { user: AuthenticatedUser }) {
+    const user = req.user;
+    // Define role groups
+    const adminRoles = ['Practice Administrator', 'Clinical Administrator', 'Practice Scheduler'];
+    const clinicianRoles = ['Clinician', 'Intern', 'Assistant', 'Associate'];
+    const supervisorRoles = ['Supervisor'];
+    
+    // Check if user has admin roles - full access
+    if (user.roles.some(role => adminRoles.includes(role))) {
+      return this.clientsService.findAllForAdmin();
+    }
+    
+    // Check if user has supervisor role - own clients + supervisee clients
+    if (user.roles.some(role => supervisorRoles.includes(role))) {
+      return this.clientsService.findClientsForSupervisor(user.id);
+    }
+    
+    // Check if user has clinician roles - only assigned clients
+    if (user.roles.some(role => clinicianRoles.includes(role))) {
+      // Get user's staff profile ID
+      const staffProfile = await this.clientsService.getStaffProfileByUserId(user.id);
+      if (staffProfile) {
+        return this.clientsService.findClientsByClinicianId(staffProfile.id);
+      }
+    }
+    
+    // Default: return empty array if no matching roles
+    return [];
   }
 
   @Get('for-notes')

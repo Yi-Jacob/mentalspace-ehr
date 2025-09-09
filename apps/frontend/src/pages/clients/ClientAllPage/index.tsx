@@ -88,22 +88,26 @@ const ClientsPage: React.FC = () => {
   };
 
   const formatAssignment = (client: ClientFormData) => {
-    // Check if we have assignedClinician data with name
+    // Check if we have assignedClinician data
     const clientWithStaff = client as ClientFormData & { 
       assignedClinician?: { 
-        id: string; 
-        name: string;
+        id: string;
+        user?: {
+          firstName: string;
+          lastName: string;
+        };
         jobTitle?: string;
         clinicianType?: string;
       } | null;
     };
     
-    if (clientWithStaff.assignedClinician && clientWithStaff.assignedClinician.name) {
+    if (clientWithStaff.assignedClinician && clientWithStaff.assignedClinician.user) {
       const clinician = clientWithStaff.assignedClinician;
+      const name = `${clinician.user.firstName} ${clinician.user.lastName}`;
       const title = clinician.jobTitle || clinician.clinicianType || '';
       return (
         <div>
-          <div className="font-medium text-gray-900">{clinician.name}</div>
+          <div className="font-medium text-gray-900">{name}</div>
           {title && (
             <div className="text-sm text-gray-500">{title}</div>
           )}
