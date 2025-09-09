@@ -72,7 +72,7 @@ const ClientSelectionSection: React.FC<ClientSelectionSectionProps> = ({
                 value={client.id}
                 className="hover:bg-blue-50 transition-colors"
               >
-                {client.first_name} {client.last_name}
+                {client.firstName} {client.lastName}
               </SelectItem>
             ))
           ) : (

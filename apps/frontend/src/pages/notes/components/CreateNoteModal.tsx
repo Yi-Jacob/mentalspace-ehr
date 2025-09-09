@@ -26,7 +26,7 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
   const { data: clients } = useQuery({
     queryKey: ['clients-for-notes'],
     queryFn: async () => {
-      return clientService.getClients();
+      return clientService.getClientsForNotes();
     },
     enabled: isOpen,
   });

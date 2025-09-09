@@ -114,7 +114,7 @@ const menuItems: MenuItem[] = [
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
@@ -259,18 +259,65 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
         </div>
       </div>
 
+      {/* User Info and Sign Out Section */}
+      <div className="p-3 border-b border-blue-700 flex-shrink-0">
+        {!isCollapsed ? (
+          <div className="px-3 py-2 bg-slate-700/40 rounded-lg border border-slate-600/30">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="text-white text-sm font-medium">
+                  {user ? `${user.firstName} ${user.lastName}` : 'User'}
+                </div>
+                <div className="text-slate-300 text-xs">
+                  {user?.roles?.[0] || 'Staff'}
+                </div>
+              </div>
+              
+              {/* Sign Out Button */}
+              <Button
+                onClick={signOut}
+                variant="ghost"
+                className="flex items-center justify-center p-2 text-slate-300 hover:bg-red-500/20 hover:text-red-300 rounded-lg transition-all duration-200 ml-2"
+                title="Sign Out"
+              >
+                <LogOut size={16} />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center space-y-2">
+            {/* User Avatar/Initials */}
+            <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-medium text-sm border border-slate-500/30">
+              {user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : 'U'}
+            </div>
+            
+            {/* Sign Out Button */}
+            <Button
+              onClick={signOut}
+              variant="ghost"
+              className="w-full flex items-center justify-center px-2 py-3 text-slate-300 hover:bg-red-500/20 hover:text-red-300 rounded-xl transition-all duration-200"
+              title="Sign Out"
+            >
+              <div className="flex items-center justify-center rounded-lg transition-all duration-200 w-8 h-8 bg-red-500/20 text-red-300">
+                <LogOut size={16} />
+              </div>
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Collapse Button */}
       <div className="px-3 py-4 flex-shrink-0">
         <Button
           variant="ghost"
           onClick={toggleSidebar}
           className={cn(
-            "w-full bg-blue-700/50 text-blue-200 hover:bg-blue-600 hover:text-white rounded-xl transition-all duration-200 group",
-            "border border-blue-600/30 shadow-sm hover:shadow-md",
-            "focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-blue-900",
-            "focus:outline-none focus:bg-blue-600 focus:text-white",
+            "w-full bg-slate-700/50 text-slate-200 hover:bg-slate-600 hover:text-white rounded-xl transition-all duration-200 group",
+            "border border-slate-600/30 shadow-sm hover:shadow-md",
+            "focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-blue-900",
+            "focus:outline-none focus:bg-slate-600 focus:text-white",
             isCollapsed ? "justify-center" : "justify-between",
-            isCollapsed ? "hover:border-blue-500/50" : "hover:border-blue-500/50"
+            isCollapsed ? "hover:border-slate-500/50" : "hover:border-slate-500/50"
           )}
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
@@ -422,27 +469,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-blue-700 flex-shrink-0">
-        <Button
-          onClick={signOut}
-          variant="ghost"
-          className={cn(
-            "w-full flex items-center space-x-3 px-3 py-2.5 text-blue-200 hover:bg-red-500/20 hover:text-red-300 rounded-xl transition-all duration-200",
-            isCollapsed && "justify-center space-x-0 px-2 py-3"
-          )}
-          title={isCollapsed ? "Sign Out" : undefined}
-        >
-          <div className={cn(
-            "flex items-center justify-center rounded-lg transition-all duration-200",
-            isCollapsed ? "w-10 h-10" : "w-8 h-8",
-            "bg-red-500/20 text-red-300"
-          )}>
-            <LogOut size={isCollapsed ? 18 : 16} />
-          </div>
-          {!isCollapsed && <span className="font-medium text-sm">Sign Out</span>}
-        </Button>
-      </div>
     </div>
     </>
   );

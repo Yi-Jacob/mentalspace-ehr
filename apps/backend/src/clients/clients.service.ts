@@ -1,7 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+
+/**
+ * Interface representing client data returned for note creation workflows.
+ * Contains minimal client information optimized for note and messaging features.
+ */
+export interface ClientNoteData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 @Injectable()
 export class ClientsService {
@@ -176,21 +187,66 @@ export class ClientsService {
     });
   }
 
-  async getClientsForNotes() {
-    return this.prisma.client.findMany({
-      where: {
-        isActive: true,
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-      },
-      orderBy: {
-        lastName: 'asc',
-      },
-    });
+  /**
+   * Retrieves clients assigned to the specified clinician for notes and messaging purposes.
+   * 
+   * This method filters clients based on the authenticated user's staff profile ID,
+   * ensuring that clinicians only see clients assigned to them. The method performs
+   * the following operations:
+   * 1. Validates the user ID parameter
+   * 2. Retrieves the staff profile associated with the user
+   * 3. Queries for active clients assigned to that staff profile
+   * 4. Returns a minimal client dataset optimized for note creation workflows
+   * 
+   * @param userId - The unique identifier of the authenticated user
+   * @returns Promise<ClientNoteData[]> - Array of client data for notes, sorted by last name
+   * @throws {Error} When userId is invalid or database operation fails
+   * 
+   * @example
+   * ```typescript
+   * const clients = await clientsService.getClientsForNotes('user-123');
+   * // Returns: [{ id: 'client-1', firstName: 'John', lastName: 'Doe', email: 'john@example.com' }]
+   * ```
+   */
+  async getClientsForNotes(userId: string): Promise<ClientNoteData[]> {
+    // Input validation
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      throw new Error('Invalid user ID provided for client retrieval');
+    }
+
+    try {
+      // Retrieve the staff profile associated with the user
+      const staffProfile = await this.getStaffProfileByUserId(userId.trim());
+      
+      if (!staffProfile) {
+        // User doesn't have an associated staff profile - return empty array
+        // This is a valid scenario for users without clinical roles
+        return [];
+      }
+
+      // Query for active clients assigned to this clinician
+      const clients = await this.prisma.client.findMany({
+        where: {
+          isActive: true,
+          assignedClinicianId: staffProfile.id,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+        orderBy: {
+          lastName: 'asc',
+        },
+      });
+
+      return clients;
+    } catch (error) {
+      // Log the error for debugging purposes
+      console.error(`Error retrieving clients for notes for user ${userId}:`, error);
+      throw new Error(`Failed to retrieve assigned clients: ${error.message}`);
+    }
   }
 
   async findOne(id: string): Promise<any> {

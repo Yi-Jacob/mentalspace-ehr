@@ -74,13 +74,13 @@ export class ClientService {
   }
 
   // Get clients for notes and messages
-  async getClientsForNotes(): Promise<{ id: string; first_name: string; last_name: string; email: string }[]> {
+  async getClientsForNotes(): Promise<{ id: string; firstName: string; lastName: string; email: string }[]> {
     const response = await apiClient.get<{ id: string; firstName: string; lastName: string; email?: string }[]>(`${this.baseUrl}/for-notes`);
     const clients = response.data;
     return clients.map(client => ({
       id: client.id,
-      first_name: client.firstName,
-      last_name: client.lastName,
+      firstName: client.firstName,
+      lastName: client.lastName,
       email: client.email || '',
     }));
   }
