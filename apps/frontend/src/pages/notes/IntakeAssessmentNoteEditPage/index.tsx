@@ -72,7 +72,6 @@ const IntakeAssessmentForm = () => {
   }, []);
 
   const handleSave = async (isDraft: boolean) => {
-    console.log('handleSave called with isDraft:', isDraft, 'formData:', formData);
     await saveNoteMutation.mutateAsync({ data: formData, isDraft: false });
   };
 

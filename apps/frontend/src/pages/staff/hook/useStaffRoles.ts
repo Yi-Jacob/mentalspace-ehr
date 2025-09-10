@@ -13,7 +13,6 @@ export const useStaffRoles = () => {
   const { data: userRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ['current-user-roles'],
     queryFn: async () => {
-      console.log('Fetching user roles...');
       
       try {
         const data = await staffService.getCurrentUserRoles();

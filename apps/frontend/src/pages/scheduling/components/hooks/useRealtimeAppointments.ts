@@ -6,8 +6,6 @@ export const useRealtimeAppointments = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log('Setting up polling for appointments');
-    
     // Set up polling every 30 seconds to refresh appointment data
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });

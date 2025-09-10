@@ -78,7 +78,6 @@ export const useAddStaffSubmit = () => {
 
     try {
       await createStaffMember(staffData);
-      console.log('Staff member created successfully');
       navigate('/staff');
     } catch (error) {
       console.error('Error creating staff member:', error);

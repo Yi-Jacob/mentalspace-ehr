@@ -115,9 +115,7 @@ export interface PerformanceMetric {
 class StaffService {
   async createStaff(input: CreateStaffInput): Promise<any> {
     try {
-      console.log('createStaff - input:', input);
       const response = await apiClient.post<any>('/staff', input);
-      console.log('createStaff - response:', response.data.passwordResetUrl);
       alert(response.data.passwordResetUrl);
       return response.data;
     } catch (error) {
@@ -129,7 +127,6 @@ class StaffService {
   async getAllStaff(): Promise<StaffMember[]> {
     try {
       const response = await apiClient.get<StaffMember[]>('/staff');
-      console.log('getAllStaff - response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching staff:', error);
@@ -140,7 +137,6 @@ class StaffService {
   async getStaff(id: string): Promise<StaffMember> {
     try {
       const response = await apiClient.get<StaffMember>(`/staff/${id}`);
-      console.log('getStaff - response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching staff member:', error);

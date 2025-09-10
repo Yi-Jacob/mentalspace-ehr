@@ -20,7 +20,6 @@ export const useConflictDetection = ({
   return useQuery({
     queryKey: ['appointment-conflicts', { appointmentId, providerId, clientId, startTime, endTime }],
     queryFn: async () => {
-      console.log('Checking for conflicts:', { appointmentId, providerId, clientId, startTime, endTime });
       
       if (!clientId || !startTime || !endTime) {
         return { conflicts: [], hasConflicts: false };

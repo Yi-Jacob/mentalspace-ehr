@@ -22,8 +22,6 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const { data: cptCodes = [] } = useCptCodes();
 
-  console.log('ClientOverviewSection - clientData:', clientData);
-
   // Get primary phone number
   const primaryPhone = clientData?.phone_numbers?.find(
     (phone: any) => phone.phone_type === 'Mobile' || phone.phone_type === 'Home' || phone.phone_type === 'Work' || phone.phone_type === 'Other'

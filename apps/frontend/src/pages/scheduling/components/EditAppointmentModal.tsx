@@ -167,14 +167,11 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
 
       // If recurring rule data was updated, include it in the request
       if (recurringRuleData && appointment.recurringRuleId) {
-        console.log('Including recurring rule data in update:', recurringRuleData);
         updateData.recurringPattern = recurringRuleData.recurringPattern;
         updateData.recurringTimeSlots = recurringRuleData.recurringTimeSlots;
         updateData.isBusinessDayOnly = recurringRuleData.isBusinessDayOnly;
         updateData.recurringEndDate = recurringRuleData.recurringEndDate;
       }
-
-      console.log('Final update data being sent:', updateData);
 
       const result = await updateAppointment.mutateAsync(updateData);
       

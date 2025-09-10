@@ -135,11 +135,9 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
         <RecurringSection
           recurring_period={formData.recurring_period}
           onRecurringPeriodChange={(value) => {
-            console.log(value);
             updateFormData('recurring_period', value)
           }}
           onRecurringDataChange={(recurringData) => {
-            console.log(recurringData);
             const recurringDataString = JSON.stringify(recurringData);
             // Store in a way that doesn't interfere with the existing form structure
             (formData as any)._recurringData = recurringDataString;

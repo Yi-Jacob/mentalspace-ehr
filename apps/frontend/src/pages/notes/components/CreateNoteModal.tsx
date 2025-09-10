@@ -33,12 +33,7 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    console.log('=== MODAL SUBMIT ===');
-    console.log('Selected client ID:', selectedClientId);
-    console.log('Note type:', noteType);
-    console.log('Create mutation available:', !!createNoteMutation);
-    
+
     if (!selectedClientId || !noteType) {
       toast({
         title: 'Missing information',
@@ -52,7 +47,6 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
     const structuredNotes = ['intake', 'progress_note', 'treatment_plan', 'cancellation_note', 'contact_note', 'consultation_note', 'miscellaneous_note'];
     
     if (structuredNotes.includes(noteType) && createNoteMutation) {
-      console.log('Creating structured note type:', noteType, 'for client:', selectedClientId);
       createNoteMutation.mutate({ clientId: selectedClientId, noteType });
       return;
     }
@@ -67,7 +61,6 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
       return;
     }
 
-    console.log('Creating unstructured note type:', noteType, 'for client:', selectedClientId);
     createNoteMutation?.mutate({ clientId: selectedClientId, noteType });
   };
 

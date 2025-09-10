@@ -35,7 +35,6 @@ export const useAppointmentMutations = () => {
 
   const updateAppointment = useMutation({
     mutationFn: async (data: UpdateAppointmentData) => {
-      console.log('Updating appointment:', data);
       
       // Validate required fields
       if (!data.id) {
@@ -100,7 +99,6 @@ export const useAppointmentMutations = () => {
 
   const deleteAppointment = useMutation({
     mutationFn: async (appointmentId: string) => {
-      console.log('Deleting appointment:', appointmentId);
       
       if (!appointmentId) {
         throw new Error('Appointment ID is required');
@@ -128,7 +126,6 @@ export const useAppointmentMutations = () => {
 
   const updateAppointmentStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AppointmentStatusValue }) => {
-      console.log('Updating appointment status:', { id, status });
       
       if (!id || !status) {
         throw new Error('Appointment ID and status are required');

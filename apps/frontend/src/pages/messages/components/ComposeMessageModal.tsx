@@ -79,7 +79,6 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
   const { data: allUsers, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['all-users-for-compose'],
     queryFn: async () => {
-      console.log('Fetching all users for compose message...');
       return staffService.getAllUsers();
     },
     enabled: open, // Only fetch when modal is open

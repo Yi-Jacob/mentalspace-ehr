@@ -26,7 +26,6 @@ const PresentingProblemSection: React.FC<PresentingProblemSectionProps> = ({
           label="Presenting Problem *"
           value={formData.presentingProblem || ''}
           onChange={(value) => {
-            console.log('Input value:', value); // Debug log
             updateFormData({ presentingProblem: value });
           }}
           validation={z.string().min(10, 'Presenting problem must be at least 10 characters')}
