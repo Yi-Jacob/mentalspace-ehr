@@ -67,7 +67,6 @@ const menuItems: MenuItem[] = [
       { id: 'calendar', label: 'Calendar', path: '/scheduling/calendar' },
       { id: 'appointments', label: 'Appointments', path: '/scheduling/appointments' },
       { id: 'work-schedule', label: 'Work Schedule', path: '/scheduling/work-schedule' },
-      { id: 'scheduling-settings', label: 'Settings', path: '/scheduling/settings' },
     ]
   },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
@@ -84,7 +83,6 @@ const menuItems: MenuItem[] = [
       { id: 'statement-generation', label: 'Statement Generation', path: '/billing/statement-generation' },
     ]
   },
-  { id: 'reports', label: 'Reports', icon: BarChart3, path: '/reports' },
   {
     id: 'staff',
     label: 'Staff',
@@ -110,7 +108,6 @@ const menuItems: MenuItem[] = [
       { id: 'deadlines', label: 'Deadlines', path: '/compliance/deadlines' }
     ]
   },
-  { id: 'settings', label: 'Practice Settings', icon: Settings, path: '/settings' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {

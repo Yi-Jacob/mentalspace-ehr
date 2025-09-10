@@ -2,7 +2,6 @@ import { RouteObject } from 'react-router-dom';
 import CalendarView from '@/pages/scheduling/CalendarPage';
 import AppointmentManagement from '@/pages/scheduling/AppointmentsPage';
 import WorkScheduleManagement from '@/pages/scheduling/WorkSchedulePage';
-import SchedulingSettings from '@/pages/scheduling/SchedulingSettingsPage';
 
 const schedulingRoutes: RouteObject[] = [
   {
@@ -14,9 +13,6 @@ const schedulingRoutes: RouteObject[] = [
   },{
     path: 'work-schedule',
     element: <WorkScheduleManagement />,
-  },{
-    path: 'settings',
-    element: <SchedulingSettings />,
   }, {
     path: 'calendar',
     element: <CalendarView />,

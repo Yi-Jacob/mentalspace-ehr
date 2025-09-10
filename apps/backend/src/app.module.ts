@@ -12,10 +12,8 @@ import { BillingModule } from './billing/billing.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { MessagesModule } from './messages/messages.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
-import { ReportsModule } from './reports/reports.module';
 import { ProductivityGoalsModule } from './productivity-goals/productivity-goals.module';
 import { TrainingRecordsModule } from './training-records/training-records.module';
-import { PracticeSettingsModule } from './practice-settings/practice-settings.module';
 import { QuickActionsModule } from './quick-actions/quick-actions.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { AIChatbotModule } from './ai-chatbot/ai-chatbot.module';
@@ -48,10 +46,8 @@ import { HealthModule } from './health/health.module';
     ComplianceModule,
     MessagesModule,
     SchedulingModule,
-    ReportsModule,
     ProductivityGoalsModule,
     TrainingRecordsModule,
-    PracticeSettingsModule,
     QuickActionsModule,
     PermissionsModule,
     AIChatbotModule,

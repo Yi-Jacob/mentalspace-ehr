@@ -351,17 +351,6 @@ export class ComplianceService {
     await apiClient.delete(`${this.baseUrl}/deadlines/${id}`);
   }
 
-  // Get compliance reports
-  async getComplianceReports(timeRange: number = 30, reportType: string = 'overview'): Promise<ComplianceReport> {
-    const params = new URLSearchParams({
-      timeRange: timeRange.toString(),
-      reportType
-    });
-    
-    const response = await apiClient.get<ComplianceReport>(`${this.baseUrl}/reports?${params.toString()}`);
-    return response.data;
-  }
-
   // Get compliance dashboard
   async getComplianceDashboard(): Promise<any> {
     const response = await apiClient.get(`${this.baseUrl}/dashboard`);

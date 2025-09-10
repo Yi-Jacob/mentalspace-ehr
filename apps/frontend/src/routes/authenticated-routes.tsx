@@ -8,10 +8,8 @@ import notesRoutes from './notes-routes';
 import schedulingRoutes from './scheduling-routes';
 import messageRoutes from './message-routes';
 import billingRoutes from './billing-routes';
-import reportsRoutes from './reports-routes';
 import staffRoutes from './staff-routes';
 import complianceRoutes from './compliance-routes';
-import practiceSettingRoutes from './practice-setting-routes';
 
 const authenticatedRoutes: RouteObject[] = [
   // Dashboard (index route)
@@ -44,11 +42,6 @@ const authenticatedRoutes: RouteObject[] = [
     path: 'billing',
     children: billingRoutes,
   },
-  // Reports
-  {
-    path: 'reports',
-    children: reportsRoutes,
-  },
   // Staff
   {
     path: 'staff',
@@ -58,11 +51,6 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'compliance',
     children: complianceRoutes,
-  },
-  // Practice Settings
-  {
-    path: 'settings',
-    children: practiceSettingRoutes,
   },
   {
     path: '*',
