@@ -7,6 +7,7 @@ import { Button } from '@/components/basic/button';
 import { RadioGroup, RadioGroupItem } from '@/components/basic/radio-group';
 import { X } from 'lucide-react';
 import { RiskFactorQuickButtons } from './RiskFactorQuickButtons';
+import { AreaOfRiskOption } from '@/types/enums/notesEnum';
 
 interface RiskArea {
   areaOfRisk: string;
@@ -24,7 +25,7 @@ interface RiskAreaCardProps {
   index: number;
   onUpdate: (index: number, updates: Partial<RiskArea>) => void;
   onRemove: (index: number) => void;
-  areaOfRiskOptions: string[];
+  areaOfRiskOptions: AreaOfRiskOption[];
 }
 
 export const RiskAreaCard: React.FC<RiskAreaCardProps> = ({
@@ -60,9 +61,9 @@ export const RiskAreaCard: React.FC<RiskAreaCardProps> = ({
             <SelectValue placeholder="Select area of risk..." />
           </SelectTrigger>
           <SelectContent className="bg-white">
-            {areaOfRiskOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
+            {areaOfRiskOptions?.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>

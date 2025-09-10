@@ -45,7 +45,9 @@ export const useNoteCreation = () => {
       
       // Navigate based on note type with detailed logging
       let targetRoute = '';
-      if (data.noteType === 'progress_note') {
+      if (data.noteType === 'intake') {
+        targetRoute = `/notes/intake/${data.id}/edit`;
+      } else if (data.noteType === 'progress_note') {
         targetRoute = `/notes/progress-note/${data.id}/edit`;
       } else if (data.noteType === 'treatment_plan') {
         targetRoute = `/notes/treatment-plan/${data.id}/edit`;

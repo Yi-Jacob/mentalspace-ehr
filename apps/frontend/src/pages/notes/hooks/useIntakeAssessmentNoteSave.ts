@@ -43,8 +43,7 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
       
       return await executeWithRetry(async () => {
         const finalData = { ...formData, ...data };
-        
-        if (finalData.isFinalized && !isDraft) {
+        if (!isDraft) {
           // If finalizing, first save the content, then sign the note
           console.log('Finalizing note - saving content first');
           
@@ -92,7 +91,7 @@ export const useSaveNote = (noteId: string | undefined, formData: IntakeFormData
       // Navigate back to documentation page
       if (!isDraft || isFinalized) {
         setTimeout(() => {
-          navigate('/');
+          navigate('/notes/all-notes');
         }, 2000);
       }
     },

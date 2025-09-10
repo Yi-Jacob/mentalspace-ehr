@@ -441,10 +441,92 @@ async function main() {
     console.error('Error creating supervision relationships:', error);
   }
 
+  // Create sample diagnosis codes
+  console.log('Creating sample diagnosis codes...');
+  
+  const sampleDiagnoses = [
+    {
+      code: 'F32.9',
+      description: 'Major depressive disorder, single episode, unspecified',
+      category: 'Mood Disorders',
+    },
+    {
+      code: 'F41.1',
+      description: 'Generalized anxiety disorder',
+      category: 'Anxiety Disorders',
+    },
+    {
+      code: 'F43.10',
+      description: 'Post-traumatic stress disorder, unspecified',
+      category: 'Trauma and Stressor-Related Disorders',
+    },
+    {
+      code: 'F33.9',
+      description: 'Major depressive disorder, recurrent, unspecified',
+      category: 'Mood Disorders',
+    },
+    {
+      code: 'F40.10',
+      description: 'Social anxiety disorder, unspecified',
+      category: 'Anxiety Disorders',
+    },
+    {
+      code: 'F31.9',
+      description: 'Bipolar disorder, unspecified',
+      category: 'Mood Disorders',
+    },
+    {
+      code: 'F90.9',
+      description: 'Attention-deficit hyperactivity disorder, unspecified type',
+      category: 'Neurodevelopmental Disorders',
+    },
+    {
+      code: 'F84.0',
+      description: 'Autism spectrum disorder',
+      category: 'Neurodevelopmental Disorders',
+    },
+    {
+      code: 'F50.9',
+      description: 'Eating disorder, unspecified',
+      category: 'Feeding and Eating Disorders',
+    },
+    {
+      code: 'F60.9',
+      description: 'Personality disorder, unspecified',
+      category: 'Personality Disorders',
+    },
+  ];
+
+  try {
+    for (const diagnosis of sampleDiagnoses) {
+      // Check if diagnosis code already exists
+      const existingDiagnosis = await prisma.diagnosisCode.findFirst({
+        where: { code: diagnosis.code }
+      });
+
+      if (!existingDiagnosis) {
+        await prisma.diagnosisCode.create({
+          data: {
+            code: diagnosis.code,
+            description: diagnosis.description,
+            category: diagnosis.category,
+            isActive: true,
+          }
+        });
+        console.log(`Created diagnosis code: ${diagnosis.code} - ${diagnosis.description}`);
+      } else {
+        console.log(`Diagnosis code ${diagnosis.code} already exists, skipping...`);
+      }
+    }
+  } catch (error) {
+    console.error('Error creating diagnosis codes:', error);
+  }
+
   console.log('Database seeding completed successfully!');
   console.log(`Created ${createdStaff.length} additional staff members`);
   console.log(`Created ${createdClients.length} clients with user records`);
   console.log('Created supervision relationships');
+  console.log('Created sample diagnosis codes');
 }
 
 main()

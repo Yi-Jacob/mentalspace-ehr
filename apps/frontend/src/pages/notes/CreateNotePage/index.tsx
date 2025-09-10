@@ -50,13 +50,6 @@ const CreateNoteGrid: React.FC<CreateNoteGridProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-          Create New Notes
-        </h2>
-        <p className="text-gray-600">Choose the type of clinical note you'd like to create</p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {noteTypes.map((noteType, index) => {
           const IconComponent = noteType.icon;

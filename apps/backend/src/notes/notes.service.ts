@@ -451,7 +451,7 @@ export class NotesService {
     if (existingNote.status === NoteStatus.LOCKED) {
       throw new BadRequestException('Cannot sign a locked note');
     }
-
+    console.log('signing note', id, signedBy, NoteStatus.SIGNED);
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {

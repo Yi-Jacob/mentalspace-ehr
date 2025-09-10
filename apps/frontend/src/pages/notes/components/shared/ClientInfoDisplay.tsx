@@ -4,9 +4,17 @@ import { ClientInfo } from '@/types/noteType';
 
 interface ClientInfoDisplayProps {
   clientData?: ClientInfo;
+  intakeDate?: string;
+  primaryPhone?: string;
+  primaryEmail?: string;
+  primaryInsurance?: string;
+  phoneNumbers?: Array<{ value: string; label: string }>;
+  insuranceOptions?: Array<{ value: string; label: string }>;
 }
 
-const ClientInfoDisplay: React.FC<ClientInfoDisplayProps> = ({ clientData }) => {
+const ClientInfoDisplay: React.FC<ClientInfoDisplayProps> = ({ 
+  clientData
+}) => {
   if (!clientData) {
     return (
       <div className="bg-blue-50 p-6 rounded-lg">

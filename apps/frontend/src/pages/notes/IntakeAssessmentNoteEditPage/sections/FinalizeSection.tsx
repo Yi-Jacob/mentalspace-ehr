@@ -61,7 +61,6 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
     
     // Update form data with signature information
     const signatureData = {
-      isFinalized: true,
       signedBy: user?.email || 'Current User',
       signedAt: new Date().toISOString(),
       signature: `${user?.email || 'Current User'} - ${new Date().toLocaleString()}`,

@@ -123,7 +123,6 @@ export interface IntakeFormData {
   strengthsCoping: string;
   primaryDiagnosis: string;
   secondaryDiagnoses: string[];
-  isFinalized: boolean;
   signature: string;
   signedBy: string;
   signedAt: string;
