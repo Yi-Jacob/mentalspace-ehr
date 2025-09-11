@@ -14,8 +14,7 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import { Calendar, Plus } from 'lucide-react';
 import { AppointmentTypeValue } from '@/types/scheduleType';
-
-type AppointmentStatus = 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
+import { AppointmentStatus } from '@/types/enums/scheduleEnum';
 type AppointmentType = AppointmentTypeValue;
 type AppointmentTypeFilter = AppointmentTypeValue | 'all';
 
@@ -102,13 +101,13 @@ const AppointmentManagement = () => {
           onClearFilters={handleClearFilters}
         />
 
-            <AppointmentsList
-              appointments={appointments}
-              isLoading={isLoading}
-              onEditAppointment={handleEditAppointment}
-              onDeleteAppointment={handleDeleteAppointment}
-              onStatusChange={handleStatusChange}
-            />
+        <AppointmentsList
+          appointments={appointments}
+          isLoading={isLoading}
+          onEditAppointment={handleEditAppointment}
+          onDeleteAppointment={handleDeleteAppointment}
+          onStatusChange={handleStatusChange}
+        />
 
         <CreateAppointmentModal 
           open={showCreateModal}

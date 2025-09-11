@@ -24,6 +24,13 @@ import {
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+// Interface for the authenticated user from JWT
+interface AuthenticatedUser {
+  id: string;
+  email: string;
+  roles: string[];
+}
+
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('scheduling')
@@ -36,8 +43,8 @@ export class SchedulingController {
   }
 
   @Get('appointments')
-  findAll(@Query() query: QueryAppointmentsDto) {
-    return this.schedulingService.findAll(query);
+  findAll(@Query() query: QueryAppointmentsDto, @Request() req: { user: AuthenticatedUser }) {
+    return this.schedulingService.findAll(query, req.user);
   }
 
   @Get('appointments/:id')

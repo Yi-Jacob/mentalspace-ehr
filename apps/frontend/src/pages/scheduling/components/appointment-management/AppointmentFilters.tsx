@@ -5,10 +5,8 @@ import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Search, Filter } from 'lucide-react';
-import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentType, AppointmentStatus } from '@/types/enums/scheduleEnum';
 import { AppointmentTypeValue } from '@/types/scheduleType';
-
-type AppointmentStatus = 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
 
 interface AppointmentFiltersProps {
   searchTerm: string;
@@ -54,13 +52,14 @@ const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
             </SelectTrigger>
             <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="checked_in">Checked In</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="no_show">No Show</SelectItem>
+              <SelectItem value={AppointmentStatus.SCHEDULED}>Scheduled</SelectItem>
+              <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmed</SelectItem>
+              <SelectItem value={AppointmentStatus.CHECKED_IN}>Checked In</SelectItem>
+              <SelectItem value={AppointmentStatus.IN_PROGRESS}>In Progress</SelectItem>
+              <SelectItem value={AppointmentStatus.COMPLETED}>Completed</SelectItem>
+              <SelectItem value={AppointmentStatus.CANCELLED}>Cancelled</SelectItem>
+              <SelectItem value={AppointmentStatus.NO_SHOW}>No Show</SelectItem>
+              <SelectItem value={AppointmentStatus.RESCHEDULED}>Rescheduled</SelectItem>
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={onTypeFilterChange}>

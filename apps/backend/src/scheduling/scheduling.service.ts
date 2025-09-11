@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { UserTypeService } from '../common/user-type.service';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class SchedulingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private userTypeService: UserTypeService,
+  ) {}
 
   async createAppointment(createAppointmentDto: CreateAppointmentDto, userId: string) {
     const { clientId, startTime, duration, recurringPattern, recurringTimeSlots, recurringEndDate, isBusinessDayOnly } = createAppointmentDto;
@@ -214,9 +218,36 @@ export class SchedulingService {
     return day >= 1 && day <= 5; // Monday = 1, Friday = 5
   }
 
-  async findAll(query: QueryAppointmentsDto) {
+  async findAll(query: QueryAppointmentsDto, user?: { id: string; email: string; roles: string[] }) {
     const where: any = {};
+    // Role-based access control
+    if (user) {
+      // Define role groups
+      const adminRoles = ['Practice Administrator', 'Clinical Administrator', 'Practice Scheduler'];
 
+      // Check if user has admin roles - full access
+      if (user.roles.some(role => adminRoles.includes(role))) {
+        // Admin users can see all appointments - no additional filtering needed
+      } else {
+        // Check if user is a client
+        const client = await this.userTypeService.getClientByUserId(user.id);
+        if (client) {
+          // Client can only see their own appointments
+          where.clientId = client.id;
+        } else {
+          // Check if user is staff
+          const staffProfile = await this.userTypeService.getStaffProfileByUserId(user.id);
+          if (staffProfile) {
+            where.providerId = user.id;
+          } else {
+            // If user is neither client nor staff, return empty result
+            return [];
+          }
+        }
+      }
+    }
+
+    // Apply query filters
     if (query.clientId) {
       where.clientId = query.clientId;
     }

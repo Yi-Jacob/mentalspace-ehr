@@ -6,7 +6,7 @@ import { Button } from '@/components/basic/button';
 import { Clock, MapPin, User, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Appointment } from '@/services/schedulingService';
-import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentType, AppointmentStatus } from '@/types/enums/scheduleEnum';
 
 
 interface AppointmentCardProps {
@@ -20,20 +20,22 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled':
+      case AppointmentStatus.SCHEDULED:
         return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';
-      case 'confirmed':
+      case AppointmentStatus.CONFIRMED:
         return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300';
-      case 'checked_in':
+      case AppointmentStatus.CHECKED_IN:
         return 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300';
-      case 'in_progress':
+      case AppointmentStatus.IN_PROGRESS:
         return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300';
-      case 'completed':
+      case AppointmentStatus.COMPLETED:
         return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
-      case 'cancelled':
+      case AppointmentStatus.CANCELLED:
         return 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300';
-      case 'no_show':
+      case AppointmentStatus.NO_SHOW:
         return 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300';
+      case AppointmentStatus.RESCHEDULED:
+        return 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300';
       default:
         return 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300';
     }

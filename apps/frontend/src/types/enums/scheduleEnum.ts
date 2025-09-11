@@ -10,11 +10,12 @@ export enum AppointmentType {
 }
 
 export enum AppointmentStatus {
-  PENDING = 'Pending',
-  SCHEDULED = 'Scheduled',
-  CONFIRMED = 'Confirmed',
-  CHECKED_IN = 'Checked In',
-  CANCELLED = 'Cancelled',
-  COMPLETED = 'Completed',
-  NO_SHOW = 'No Show',
+  SCHEDULED = 'scheduled',
+  CONFIRMED = 'confirmed',
+  CHECKED_IN = 'checked_in',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  NO_SHOW = 'no_show',
+  RESCHEDULED = 'rescheduled',
 }

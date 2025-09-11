@@ -6,6 +6,7 @@ import { Table, TableColumn } from '@/components/basic/table';
 import { Calendar, Clock, User, MapPin, Edit, Eye, Trash2, MoreVertical, CheckCircle, CheckSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { AppointmentTypeValue } from '@/types/scheduleType';
+import { AppointmentStatus } from '@/types/enums/scheduleEnum';
 
 interface AppointmentsListProps {
   appointments: any[] | undefined;
@@ -37,20 +38,22 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'scheduled':
+      case AppointmentStatus.SCHEDULED:
         return 'default';
-      case 'confirmed':
+      case AppointmentStatus.CONFIRMED:
         return 'default';
-      case 'checked_in':
+      case AppointmentStatus.CHECKED_IN:
         return 'secondary';
-      case 'in_progress':
+      case AppointmentStatus.IN_PROGRESS:
         return 'secondary';
-      case 'completed':
+      case AppointmentStatus.COMPLETED:
         return 'default';
-      case 'cancelled':
+      case AppointmentStatus.CANCELLED:
         return 'destructive';
-      case 'no_show':
+      case AppointmentStatus.NO_SHOW:
         return 'destructive';
+      case AppointmentStatus.RESCHEDULED:
+        return 'secondary';
       default:
         return 'secondary';
     }
@@ -111,7 +114,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   };
 
   const formatStatus = (appointment: any) => {
-    const status = appointment.status || 'scheduled';
+    const status = appointment.status || AppointmentStatus.SCHEDULED;
     return (
       <Badge variant={getStatusColor(status)} className="text-xs">
         {status.replace('_', ' ')}
@@ -205,16 +208,16 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         {
           label: 'Confirm',
           icon: <CheckCircle className="w-3 h-3" />,
-          onClick: (appointment) => onStatusChange(appointment.id, 'Confirmed'),
+          onClick: (appointment) => onStatusChange(appointment.id, AppointmentStatus.CONFIRMED),
           variant: 'ghost',
-          disabled: (appointment) => appointment.status === 'confirmed'
+          disabled: (appointment) => appointment.status === AppointmentStatus.CONFIRMED
         },
         {
           label: 'Complete',
           icon: <CheckSquare className="w-3 h-3" />,
-          onClick: (appointment) => onStatusChange(appointment.id, 'Completed'),
+          onClick: (appointment) => onStatusChange(appointment.id, AppointmentStatus.COMPLETED),
           variant: 'ghost',
-          disabled: (appointment) => appointment.status === 'completed'
+          disabled: (appointment) => appointment.status === AppointmentStatus.COMPLETED
         },
         {
           label: 'Delete',
