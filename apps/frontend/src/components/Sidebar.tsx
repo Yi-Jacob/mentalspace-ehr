@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -132,6 +132,7 @@ const menuItems: MenuItem[] = [
 const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
   const { signOut, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance', 'billing', 'audit']));
@@ -313,7 +314,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
         {!isCollapsed ? (
           <div className="px-3 py-2 bg-slate-700/40 rounded-lg border border-slate-600/30">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
+              <div 
+                className="flex-1 cursor-pointer hover:bg-slate-600/30 rounded-lg p-2 -m-2 transition-all duration-200"
+                onClick={() => navigate('/my-profile')}
+                title="View Profile"
+              >
                 <div className="text-white text-sm font-medium">
                   {user ? `${user.firstName} ${user.lastName}` : 'User'}
                 </div>
@@ -335,8 +340,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
           </div>
         ) : (
           <div className="flex flex-col items-center space-y-2">
-            {/* User Avatar/Initials */}
-            <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-medium text-sm border border-slate-500/30">
+            {/* User Avatar/Initials - Clickable */}
+            <div 
+              className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-medium text-sm border border-slate-500/30 cursor-pointer hover:bg-slate-500 transition-all duration-200"
+              onClick={() => navigate('/my-profile')}
+              title="View Profile"
+            >
               {user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : 'U'}
             </div>
             

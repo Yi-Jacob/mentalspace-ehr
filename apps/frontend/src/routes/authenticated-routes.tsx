@@ -12,6 +12,7 @@ import staffRoutes from './staff-routes';
 import usersRoutes from './users-routes';
 import complianceRoutes from './compliance-routes';
 import auditRoutes from './audit-routes';
+import MyProfilePage from '../pages/MyProfilePage';
 
 const authenticatedRoutes: RouteObject[] = [
   // Dashboard (index route)
@@ -63,6 +64,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'audit',
     children: auditRoutes,
+  },
+  // My Profile
+  {
+    path: 'my-profile',
+    element: <MyProfilePage />,
   },
   {
     path: '*',

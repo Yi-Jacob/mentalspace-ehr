@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Param } from '@nestjs/common';
+import { Controller, Get, Post, Param, Put, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @ApiTags('Users')
 @Controller('users')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -36,4 +38,18 @@ export class UsersController {
     return this.usersService.deactivateUser(id);
   }
 
-} 
+  @Get('profile')
+  @ApiOperation({ summary: 'Get current user profile with relationships' })
+  @ApiResponse({ status: 200, description: 'User profile with supervisor/supervisee and client relationships' })
+  getMyProfile(@GetUser() user: any) {
+    return this.usersService.getMyProfile(user.id);
+  }
+
+  @Put('profile')
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, description: 'User profile updated successfully' })
+  updateMyProfile(@GetUser() user: any, @Body() updateData: any) {
+    return this.usersService.updateMyProfile(user.id, updateData);
+  } 
+
+}

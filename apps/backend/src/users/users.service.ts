@@ -241,4 +241,302 @@ export class UsersService {
 
     return supervisionRelationships.map(rel => rel.superviseeId);
   }
+
+  // Get current user's profile with relationships
+  async getMyProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        staffProfile: {
+          include: {
+            assignedClients: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                preferredName: true,
+                email: true,
+              }
+            }
+          }
+        },
+        client: {
+          include: {
+            assignedClinician: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  }
+                }
+              }
+            }
+          }
+        },
+        userRoles: {
+          where: { isActive: true }
+        },
+        licenses: true,
+        supervisionAsSupervisor: {
+          where: { status: 'active' },
+          include: {
+            supervisee: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                staffProfile: {
+                  select: {
+                    jobTitle: true,
+                    department: true,
+                  }
+                }
+              }
+            }
+          }
+        },
+        supervisionAsSupervisee: {
+          where: { status: 'active' },
+          include: {
+            supervisor: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                staffProfile: {
+                  select: {
+                    jobTitle: true,
+                    department: true,
+                  }
+                }
+              }
+            }
+          }
+        },
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Transform data to use camelCase
+    const profile = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      middleName: user.middleName,
+      suffix: user.suffix,
+      email: user.email,
+      userName: user.userName,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      userType: user.staffId ? 'staff' : user.clientId ? 'client' : 'unknown',
+      roles: user.userRoles.map(role => role.role),
+      
+      // Staff profile fields (if user is staff)
+      ...(user.staffProfile && {
+        employeeId: user.staffProfile.employeeId,
+        npiNumber: user.staffProfile.npiNumber,
+        licenseNumber: user.staffProfile.licenseNumber,
+        licenseState: user.staffProfile.licenseState,
+        licenseExpiryDate: user.staffProfile.licenseExpiryDate,
+        department: user.staffProfile.department,
+        jobTitle: user.staffProfile.jobTitle,
+        hireDate: user.staffProfile.hireDate,
+        phoneNumber: user.staffProfile.phoneNumber,
+        billingRate: user.staffProfile.billingRate,
+        canBillInsurance: user.staffProfile.canBillInsurance,
+        status: user.staffProfile.status,
+        notes: user.staffProfile.notes,
+        userComments: user.staffProfile.userComments,
+        mobilePhone: user.staffProfile.mobilePhone,
+        workPhone: user.staffProfile.workPhone,
+        homePhone: user.staffProfile.homePhone,
+        canReceiveText: user.staffProfile.canReceiveText,
+        address1: user.staffProfile.address1,
+        address2: user.staffProfile.address2,
+        city: user.staffProfile.city,
+        state: user.staffProfile.state,
+        zipCode: user.staffProfile.zipCode,
+        formalName: user.staffProfile.formalName,
+        clinicianType: user.staffProfile.clinicianType,
+        supervisionType: user.staffProfile.supervisionType,
+        // Assigned clients
+        assignedClients: user.staffProfile.assignedClients.map(client => ({
+          id: client.id,
+          firstName: client.firstName,
+          lastName: client.lastName,
+          preferredName: client.preferredName,
+          email: client.email,
+        })),
+      }),
+      
+      // Client fields (if user is client)
+      ...(user.client && {
+        clientId: user.client.id,
+        dateOfBirth: user.client.dateOfBirth,
+        preferredName: user.client.preferredName,
+        pronouns: user.client.pronouns,
+        administrativeSex: user.client.administrativeSex,
+        genderIdentity: user.client.genderIdentity,
+        sexualOrientation: user.client.sexualOrientation,
+        address1: user.client.address1,
+        address2: user.client.address2,
+        timezone: user.client.timezone,
+        race: user.client.race,
+        ethnicity: user.client.ethnicity,
+        languages: user.client.languages,
+        maritalStatus: user.client.maritalStatus,
+        employmentStatus: user.client.employmentStatus,
+        religiousAffiliation: user.client.religiousAffiliation,
+        smokingStatus: user.client.smokingStatus,
+        appointmentReminders: user.client.appointmentReminders,
+        hipaaSigned: user.client.hipaaSigned,
+        pcpRelease: user.client.pcpRelease,
+        patientComments: user.client.patientComments,
+        assignedClinicianId: user.client.assignedClinicianId,
+        // Assigned staff/clinician
+        assignedClinician: user.client.assignedClinician ? {
+          id: user.client.assignedClinician.id,
+          firstName: user.client.assignedClinician.user.firstName,
+          lastName: user.client.assignedClinician.user.lastName,
+          email: user.client.assignedClinician.user.email,
+          jobTitle: user.client.assignedClinician.jobTitle,
+          department: user.client.assignedClinician.department,
+        } : null,
+      }),
+      
+      // Supervision relationships
+      supervisors: user.supervisionAsSupervisee.map(rel => ({
+        id: rel.supervisor.id,
+        firstName: rel.supervisor.firstName,
+        lastName: rel.supervisor.lastName,
+        email: rel.supervisor.email,
+        jobTitle: rel.supervisor.staffProfile?.jobTitle,
+        department: rel.supervisor.staffProfile?.department,
+        startDate: rel.startDate,
+        endDate: rel.endDate,
+        status: rel.status,
+      })),
+      
+      supervisees: user.supervisionAsSupervisor.map(rel => ({
+        id: rel.supervisee.id,
+        firstName: rel.supervisee.firstName,
+        lastName: rel.supervisee.lastName,
+        email: rel.supervisee.email,
+        jobTitle: rel.supervisee.staffProfile?.jobTitle,
+        department: rel.supervisee.staffProfile?.department,
+        startDate: rel.startDate,
+        endDate: rel.endDate,
+        status: rel.status,
+      })),
+      
+      licenses: user.licenses.map(license => ({
+        id: license.id,
+        staffId: license.staffId,
+        licenseType: license.licenseType,
+        licenseNumber: license.licenseNumber,
+        licenseExpirationDate: license.licenseExpirationDate.toISOString().split('T')[0],
+        licenseStatus: license.licenseStatus,
+        licenseState: license.licenseState,
+        issuedBy: license.issuedBy,
+        createdAt: license.createdAt.toISOString(),
+        updatedAt: license.updatedAt.toISOString(),
+      })),
+    };
+
+    return profile;
+  }
+
+  // Update current user's profile
+  async updateMyProfile(userId: string, updateData: any) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        staffProfile: true,
+        client: true,
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Update user basic info
+    const userUpdateData: any = {};
+    if (updateData.firstName !== undefined) userUpdateData.firstName = updateData.firstName;
+    if (updateData.lastName !== undefined) userUpdateData.lastName = updateData.lastName;
+    if (updateData.middleName !== undefined) userUpdateData.middleName = updateData.middleName;
+    if (updateData.suffix !== undefined) userUpdateData.suffix = updateData.suffix;
+    if (updateData.email !== undefined) userUpdateData.email = updateData.email;
+    if (updateData.userName !== undefined) userUpdateData.userName = updateData.userName;
+
+    if (Object.keys(userUpdateData).length > 0) {
+      userUpdateData.updatedAt = new Date();
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: userUpdateData,
+      });
+    }
+
+    // Update staff profile if user is staff
+    if (user.staffId && user.staffProfile) {
+      const staffUpdateData: any = {};
+      const staffFields = [
+        'phoneNumber', 'mobilePhone', 'workPhone', 'homePhone', 'canReceiveText',
+        'address1', 'address2', 'city', 'state', 'zipCode', 'formalName',
+        'clinicianType', 'supervisionType', 'userComments', 'notes'
+      ];
+
+      staffFields.forEach(field => {
+        if (updateData[field] !== undefined) {
+          staffUpdateData[field] = updateData[field];
+        }
+      });
+
+      if (Object.keys(staffUpdateData).length > 0) {
+        staffUpdateData.updatedAt = new Date();
+        await this.prisma.staffProfile.update({
+          where: { id: user.staffId },
+          data: staffUpdateData,
+        });
+      }
+    }
+
+    // Update client profile if user is client
+    if (user.clientId && user.client) {
+      const clientUpdateData: any = {};
+      const clientFields = [
+        'preferredName', 'pronouns', 'administrativeSex', 'genderIdentity',
+        'sexualOrientation', 'address1', 'address2', 'timezone', 'race',
+        'ethnicity', 'languages', 'maritalStatus', 'employmentStatus',
+        'religiousAffiliation', 'smokingStatus', 'appointmentReminders',
+        'patientComments'
+      ];
+
+      clientFields.forEach(field => {
+        if (updateData[field] !== undefined) {
+          clientUpdateData[field] = updateData[field];
+        }
+      });
+
+      if (Object.keys(clientUpdateData).length > 0) {
+        clientUpdateData.updatedAt = new Date();
+        await this.prisma.client.update({
+          where: { id: user.clientId },
+          data: clientUpdateData,
+        });
+      }
+    }
+
+    // Return updated profile
+    return this.getMyProfile(userId);
+  }
 } 
