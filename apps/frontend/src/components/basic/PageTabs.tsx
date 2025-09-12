@@ -45,6 +45,7 @@ const PageTabs: React.FC<PageTabsProps> = ({
 }) => {
   const getGridCols = () => {
     const count = items.length;
+    if (count <= 2) return 'grid-cols-2';
     if (count <= 3) return 'grid-cols-3';
     if (count <= 4) return 'grid-cols-4';
     if (count <= 5) return 'grid-cols-5';

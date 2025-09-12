@@ -9,7 +9,8 @@ import AddExceptionModal from '../components/AddExceptionModal';
 import DeleteExceptionModal from '../components/DeleteExceptionModal';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import { Calendar, Plus } from 'lucide-react';
+import PageTabs from '@/components/basic/PageTabs';
+import { Calendar, Plus, Clock, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const WorkScheduleManagement = () => {
@@ -124,7 +125,7 @@ const WorkScheduleManagement = () => {
 
   return (
     <>
-      <PageLayout variant="gradient">
+      <PageLayout variant="simple">
         <PageHeader
           icon={Calendar}
           title="Work Schedule Management"
@@ -149,24 +150,38 @@ const WorkScheduleManagement = () => {
           }
         />
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ScheduleCard
-              schedules={schedules || []}
-              isLoading={schedulesLoading}
-              dayMapping={dayMapping}
-              getStatusColor={getStatusColor}
-              onEditSchedule={handleEditSchedule}
-            />
-
-            <ExceptionCard
-              exceptions={exceptions || []}
-              isLoading={exceptionsLoading}
-              onEditException={handleEditException}
-              onDeleteException={handleDeleteException}
-            />
-          </div>
-        </div>
+        <PageTabs
+          defaultValue="schedules"
+          items={[
+            {
+              id: 'schedules',
+              label: 'Schedules',
+              icon: Clock,
+              content: (
+                <ScheduleCard
+                  schedules={schedules || []}
+                  isLoading={schedulesLoading}
+                  dayMapping={dayMapping}
+                  getStatusColor={getStatusColor}
+                  onEditSchedule={handleEditSchedule}
+                />
+              )
+            },
+            {
+              id: 'exceptions',
+              label: 'Exceptions',
+              icon: AlertTriangle,
+              content: (
+                <ExceptionCard
+                  exceptions={exceptions || []}
+                  isLoading={exceptionsLoading}
+                  onEditException={handleEditException}
+                  onDeleteException={handleDeleteException}
+                />
+              )
+            }
+          ]}
+        />
       </PageLayout>
 
       <AddScheduleModal 
