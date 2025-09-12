@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
+import { LoadingState } from '@/components/basic/loading-state';
+import EmptyState from '@/components/EmptyState';
 import { Calendar, Clock, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ScheduleException } from '@/services/schedulingService';
@@ -22,43 +24,16 @@ const ExceptionCard: React.FC<ExceptionCardProps> = ({
   onDeleteException,
 }) => {
   if (isLoading) {
-    return (
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-pink-50/30 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <Calendar className="h-5 w-5" />
-            <span>Schedule Exceptions</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent"></div>
-              <div className="text-gray-600 font-medium">Loading exceptions...</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <LoadingState count={3} />;
   }
 
   if (exceptions?.length === 0) {
     return (
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-pink-50/30 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <Calendar className="h-5 w-5" />
-            <span>Schedule Exceptions</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center py-12 text-gray-500">
-            <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-semibold mb-2">No schedule exceptions</h3>
-            <p className="text-sm">Add holidays, time off, or special hours</p>
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState
+        title="No schedule exceptions"
+        description="Add holidays, time off, or special hours"
+        icon={Calendar}
+      />
     );
   }
 

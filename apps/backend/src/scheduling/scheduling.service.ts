@@ -745,14 +745,11 @@ export class SchedulingService {
     };
   }
 
-  async getProviderSchedules(providerId?: string) {
-    const where: any = {};
-    if (providerId) {
-      where.providerId = providerId;
-    }
-
+  async getProviderSchedules(providerId: string) {
     return this.prisma.providerSchedule.findMany({
-      where,
+      where: {
+        providerId: providerId,
+      },
       orderBy: [
         { dayOfWeek: 'asc' },
         { startTime: 'asc' },
@@ -760,8 +757,11 @@ export class SchedulingService {
     });
   }
 
-  async getScheduleExceptions() {
+  async getScheduleExceptions(providerId: string) {
     return this.prisma.scheduleException.findMany({
+      where: {
+        providerId: providerId,
+      },
       orderBy: {
         exceptionDate: 'asc',
       },

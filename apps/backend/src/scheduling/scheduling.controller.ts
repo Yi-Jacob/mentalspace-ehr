@@ -109,13 +109,15 @@ export class SchedulingController {
   }
 
   @Get('schedules')
-  getProviderSchedules(@Query('providerId') providerId?: string) {
-    return this.schedulingService.getProviderSchedules(providerId);
+  getProviderSchedules(@Query('providerId') providerId: string, @Request() req) {
+    const userId = req.user?.id;
+    return this.schedulingService.getProviderSchedules(providerId || userId);
   }
 
   @Get('schedules/exceptions')
-  getScheduleExceptions() {
-    return this.schedulingService.getScheduleExceptions();
+  getScheduleExceptions(@Query('providerId') providerId: string, @Request() req) {
+    const userId = req.user?.id;
+    return this.schedulingService.getScheduleExceptions(providerId || userId);
   }
 
   @Post('schedules/exceptions')

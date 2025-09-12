@@ -252,8 +252,9 @@ class SchedulingService {
     return response.data;
   }
 
-  async getScheduleExceptions(): Promise<ScheduleException[]> {
-    const response = await apiClient.get<ScheduleException[]>('/scheduling/schedules/exceptions');
+  async getScheduleExceptions(providerId?: string): Promise<ScheduleException[]> {
+    const queryParams = providerId ? `?providerId=${providerId}` : '';
+    const response = await apiClient.get<ScheduleException[]>(`/scheduling/schedules/exceptions${queryParams}`);
     return response.data;
   }
 

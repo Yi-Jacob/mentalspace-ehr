@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -8,10 +8,7 @@ import {
   Calendar,
   MessageSquare,
   CreditCard,
-  BarChart3,
-  UserPlus,
   Shield,
-  Settings,
   Stethoscope,
   LogOut,
   Menu,
@@ -26,6 +23,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSidebarContext } from '@/hooks/useSidebarContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/basic/button';
+import { filterMenuItemsByRole } from '@/utils/menuPermissions';
+import { UserRole } from '@/types/enums/staffEnum';
 
 interface SidebarProps {
   activeItem?: string;
@@ -121,11 +120,16 @@ const menuItems: MenuItem[] = [
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
   const { signOut, user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance', 'billing']));
+
+  // Filter menu items based on user role
+  const accessibleMenuItems = useMemo(() => {
+    const userRole = user?.roles?.[0] as UserRole | undefined;
+    return filterMenuItemsByRole(menuItems, userRole || null);
+  }, [user?.roles]);
 
   const getActiveItem = () => {
     if (propActiveItem) return propActiveItem;
@@ -138,7 +142,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
     // Handle notes sub-items
     if (currentPath.startsWith('/notes')) {
-      for (const item of menuItems) {
+      for (const item of accessibleMenuItems) {
         if (item.id === 'notes' && item.subItems) {
           const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
           if (matchedSubItem) {
@@ -152,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
     // Handle billing sub-items
     if (currentPath.startsWith('/billing')) {
-      for (const item of menuItems) {
+      for (const item of accessibleMenuItems) {
         if (item.id === 'billing' && item.subItems) {
           const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
           if (matchedSubItem) {
@@ -166,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
     // Handle users sub-items
     if (currentPath.startsWith('/users')) {
-      for (const item of menuItems) {
+      for (const item of accessibleMenuItems) {
         if (item.id === 'users' && item.subItems) {
           const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
           if (matchedSubItem) {
@@ -180,7 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
     // Handle compliance sub-items
     if (currentPath.startsWith('/compliance')) {
-      for (const item of menuItems) {
+      for (const item of accessibleMenuItems) {
         if (item.id === 'compliance' && item.subItems) {
           const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
           if (matchedSubItem) {
@@ -192,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       return 'compliance-overview';
     }
 
-    for (const item of menuItems) {
+    for (const item of accessibleMenuItems) {
       if (item.subItems) {
         const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
         if (matchedSubItem) {
@@ -201,7 +205,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       }
     }
 
-    const matchedItem = menuItems.find(item => currentPath.startsWith(item.path) && item.path !== '/');
+    const matchedItem = accessibleMenuItems.find(item => currentPath.startsWith(item.path) && item.path !== '/');
     return matchedItem?.id || 'dashboard';
   };
 
@@ -358,7 +362,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
 
       {/* Navigation - Scrollable */}
       <nav className="flex-1 px-3 space-y-1 overflow-y-auto overflow-x-hidden min-h-0 sidebar-scrollbar">
-        {menuItems.map((item) => {
+        {accessibleMenuItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = activeItem === item.id || (item.subItems && item.subItems.some(subItem => activeItem === subItem.id));
           const isExpanded = expandedItems.has(item.id);

@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
+import { LoadingState } from '@/components/basic/loading-state';
+import EmptyState from '@/components/EmptyState';
 import { Clock, Calendar, Edit, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ProviderSchedule } from '@/services/schedulingService';
@@ -33,43 +35,16 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   }, [schedules]);
 
   if (isLoading) {
-    return (
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <Clock className="h-5 w-5" />
-            <span>Weekly Schedule</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
-              <div className="text-gray-600 font-medium">Loading schedules...</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <LoadingState count={3} />;
   }
 
   if (sortedSchedules?.length === 0) {
     return (
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center space-x-2 text-xl">
-            <Clock className="h-5 w-5" />
-            <span>Weekly Schedule</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center py-12 text-gray-500">
-            <Clock className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-semibold mb-2">No weekly schedule set</h3>
-            <p className="text-sm">Add your regular working hours to get started</p>
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState
+        title="No weekly schedule set"
+        description="Add your regular working hours to get started"
+        icon={Clock}
+      />
     );
   }
 
