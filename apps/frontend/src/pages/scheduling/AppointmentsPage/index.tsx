@@ -74,7 +74,7 @@ const AppointmentManagement = () => {
   };
 
   return (
-    <PageLayout variant="gradient">
+    <PageLayout variant="simple">
       <PageHeader
         icon={Calendar}
         title="Appointment Management"

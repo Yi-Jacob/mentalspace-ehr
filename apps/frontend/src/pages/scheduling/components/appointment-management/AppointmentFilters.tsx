@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
@@ -28,14 +27,7 @@ const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
   onClearFilters
 }) => {
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-r from-white to-blue-50/50 backdrop-blur-sm">
-      <CardHeader className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-t-lg">
-        <CardTitle className="flex items-center space-x-2 text-xl">
-          <Filter className="h-5 w-5" />
-          <span>Filters & Search</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
+    
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative group">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -87,8 +79,6 @@ const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
             Clear Filters
           </Button>
         </div>
-      </CardContent>
-    </Card>
   );
 };
 
