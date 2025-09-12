@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -20,6 +21,8 @@ import { DatabaseModule } from './database/database.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { HealthModule } from './health/health.module';
+import { AuditModule } from './audit/audit.module';
+import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor';
 
 @Module({
   imports: [
@@ -50,8 +53,15 @@ import { HealthModule } from './health/health.module';
     PermissionsModule,
     AIChatbotModule,
     HealthModule,
+    AuditModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditLogInterceptor,
+    },
+  ],
 })
 export class AppModule {} 

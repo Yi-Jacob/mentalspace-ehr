@@ -11,6 +11,7 @@ import billingRoutes from './billing-routes';
 import staffRoutes from './staff-routes';
 import usersRoutes from './users-routes';
 import complianceRoutes from './compliance-routes';
+import auditRoutes from './audit-routes';
 
 const authenticatedRoutes: RouteObject[] = [
   // Dashboard (index route)
@@ -57,6 +58,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'compliance',
     children: complianceRoutes,
+  },
+  // Audit
+  {
+    path: 'audit',
+    children: auditRoutes,
   },
   {
     path: '*',

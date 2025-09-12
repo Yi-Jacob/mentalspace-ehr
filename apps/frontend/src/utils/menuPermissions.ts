@@ -228,6 +228,26 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
     ]
   },
 
+  // Audit - accessible only to practice administrators and clinical administrators
+  'audit': {
+    roles: [
+      USER_ROLES.PRACTICE_ADMINISTRATOR,
+      USER_ROLES.CLINICAL_ADMINISTRATOR
+    ]
+  },
+  'audit-logs': {
+    roles: [
+      USER_ROLES.PRACTICE_ADMINISTRATOR,
+      USER_ROLES.CLINICAL_ADMINISTRATOR
+    ]
+  },
+  'audit-stats': {
+    roles: [
+      USER_ROLES.PRACTICE_ADMINISTRATOR,
+      USER_ROLES.CLINICAL_ADMINISTRATOR
+    ]
+  },
+
   // Compliance - accessible to administrators and clinical staff
   'compliance': {
     roles: [

@@ -1058,3 +1058,30 @@ model NoteHistory {
   @@index([version], map: "idx_note_history_version")
   @@map("note_history")
 }
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  userEmail     String    @map("user_email")
+  userRole      String?   @map("user_role")
+  action        String    // 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'ACCESS'
+  resource      String    // Table/entity name (e.g., 'ClinicalNote', 'Client', 'User')
+  resourceId    String?   @map("resource_id") // ID of the affected resource
+  description   String    // What happened
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  deviceType    String?   @map("device_type") // 'desktop' | 'mobile' | 'tablet' | 'unknown'
+  browser       String?   // Browser name (Chrome, Firefox, Safari, etc.)
+  os            String?   // Operating system (Windows, macOS, iOS, Android, etc.)
+  oldValues     Json?     @map("old_values") // Previous values for updates
+  newValues     Json?     @map("new_values") // New values for creates/updates
+  createdAt     DateTime  @default(now()) @map("created_at")
+  
+  // Essential indexes for HIPAA compliance queries
+  @@index([userId], map: "idx_audit_log_user_id")
+  @@index([action], map: "idx_audit_log_action")
+  @@index([resource], map: "idx_audit_log_resource")
+  @@index([createdAt], map: "idx_audit_log_created_at")
+  @@index([deviceType], map: "idx_audit_log_device_type")
+  @@map("audit_logs")
+}

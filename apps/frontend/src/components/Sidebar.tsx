@@ -16,7 +16,8 @@ import {
   ChevronDown,
   ChevronRight,
   Home,
-  Circle
+  Circle,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -103,6 +104,16 @@ const menuItems: MenuItem[] = [
       { id: 'users-permissions', label: 'Permissions', path: '/users/permissions' },
     ]
   },
+  {
+    id: 'audit',
+    label: 'Audit',
+    icon: Activity,
+    path: '/audit',
+    subItems: [
+      { id: 'audit-logs', label: 'Audit Logs', path: '/audit/logs' },
+      { id: 'audit-stats', label: 'Statistics', path: '/audit/stats' },
+    ]
+  },
   { 
     id: 'compliance', 
     label: 'Compliance', 
@@ -123,7 +134,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const location = useLocation();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance', 'billing']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance', 'billing', 'audit']));
 
   // Filter menu items based on user role
   const accessibleMenuItems = useMemo(() => {
@@ -194,6 +205,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       }
       // If no specific sub-item matches, return 'compliance-overview' for the main compliance page
       return 'compliance-overview';
+    }
+
+    // Handle audit sub-items
+    if (currentPath.startsWith('/audit')) {
+      for (const item of accessibleMenuItems) {
+        if (item.id === 'audit' && item.subItems) {
+          const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
+          if (matchedSubItem) {
+            return matchedSubItem.id;
+          }
+        }
+      }
+      // If no specific sub-item matches, return 'audit-logs' for the main audit page
+      return 'audit-logs';
     }
 
     for (const item of accessibleMenuItems) {
