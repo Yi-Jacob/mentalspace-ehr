@@ -13,8 +13,6 @@ import { ComplianceModule } from './compliance/compliance.module';
 import { MessagesModule } from './messages/messages.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
 import { ProductivityGoalsModule } from './productivity-goals/productivity-goals.module';
-import { TrainingRecordsModule } from './training-records/training-records.module';
-import { QuickActionsModule } from './quick-actions/quick-actions.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { AIChatbotModule } from './ai-chatbot/ai-chatbot.module';
 import { DatabaseModule } from './database/database.module';
@@ -47,8 +45,6 @@ import { HealthModule } from './health/health.module';
     MessagesModule,
     SchedulingModule,
     ProductivityGoalsModule,
-    TrainingRecordsModule,
-    QuickActionsModule,
     PermissionsModule,
     AIChatbotModule,
     HealthModule,
