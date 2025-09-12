@@ -9,6 +9,7 @@ import schedulingRoutes from './scheduling-routes';
 import messageRoutes from './message-routes';
 import billingRoutes from './billing-routes';
 import staffRoutes from './staff-routes';
+import usersRoutes from './users-routes';
 import complianceRoutes from './compliance-routes';
 
 const authenticatedRoutes: RouteObject[] = [
@@ -46,6 +47,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'staff',
     children: staffRoutes,
+  },
+  // Users
+  {
+    path: 'users',
+    children: usersRoutes,
   },
   // Compliance
   {

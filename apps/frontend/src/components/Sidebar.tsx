@@ -89,10 +89,18 @@ const menuItems: MenuItem[] = [
     icon: Stethoscope,
     path: '/staff',
     subItems: [
-      { id: 'staff-list', label: 'All Staff', path: '/staff' },
+      { id: 'staff-list', label: 'Staffs', path: '/staff' },
       { id: 'staff-supervision', label: 'Supervision', path: '/staff/supervision' },
-      { id: 'staff-roles', label: 'Roles', path: '/staff/roles' },
-      { id: 'staff-permissions', label: 'Permissions', path: '/staff/permissions' },
+    ]
+  },
+  {
+    id: 'users',
+    label: 'Users',
+    icon: Users,
+    path: '/users',
+    subItems: [
+      { id: 'users-roles', label: 'Roles', path: '/users/roles' },
+      { id: 'users-permissions', label: 'Permissions', path: '/users/permissions' },
     ]
   },
   { 
@@ -153,6 +161,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       }
       // If no specific sub-item matches, return 'billing' for the main billing page
       return 'billing';
+    }
+
+    // Handle users sub-items
+    if (currentPath.startsWith('/users')) {
+      for (const item of menuItems) {
+        if (item.id === 'users' && item.subItems) {
+          const matchedSubItem = item.subItems.find(subItem => currentPath === subItem.path);
+          if (matchedSubItem) {
+            return matchedSubItem.id;
+          }
+        }
+      }
+      // If no specific sub-item matches, return 'users' for the main users page
+      return 'users';
     }
 
     // Handle compliance sub-items

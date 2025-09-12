@@ -2,10 +2,8 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { schedulingService, ScheduleException, ProviderSchedule } from '@/services/schedulingService';
-import WorkScheduleHeader from '../components/work-schedule/WorkScheduleHeader';
 import ScheduleCard from '../components/work-schedule/ScheduleCard';
 import ExceptionCard from '../components/work-schedule/ExceptionCard';
-import ScheduleStatsOverview from '../components/work-schedule/ScheduleStatsOverview';
 import AddScheduleModal from '../components/AddScheduleModal';
 import AddExceptionModal from '../components/AddExceptionModal';
 import DeleteExceptionModal from '../components/DeleteExceptionModal';
@@ -168,11 +166,6 @@ const WorkScheduleManagement = () => {
               onDeleteException={handleDeleteException}
             />
           </div>
-
-          <ScheduleStatsOverview
-            schedules={schedules || []}
-            exceptions={exceptions || []}
-          />
         </div>
       </PageLayout>
 
