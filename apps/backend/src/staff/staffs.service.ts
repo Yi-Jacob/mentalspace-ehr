@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class UsersService {
+export class StaffsService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
@@ -299,8 +299,9 @@ export class UsersService {
   }
 
   async findAll() {
-    console.log('findAll - fetching all staff members');
-    const users = await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany({
+      where: { staffId: { not: null } }
+    });
     
     // Get related data separately since relationships aren't defined
     const usersWithDetails = await Promise.all(
@@ -327,7 +328,6 @@ export class UsersService {
       })
     );
     
-    console.log(`Found ${usersWithDetails.length} staff members`);
     return usersWithDetails;
   }
 

@@ -195,24 +195,6 @@ class StaffService {
     return response.data;
   }
 
-  // Set default password
-  async setDefaultPassword(userId: string): Promise<any> {
-    const response = await apiClient.post(`/staff/${userId}/set-default-password`);
-    return response.data;
-  }
-
-  // Activate user
-  async activateUser(userId: string): Promise<any> {
-    const response = await apiClient.post(`/staff/${userId}/activate`);
-    return response.data;
-  }
-
-  // Deactivate user
-  async deactivateUser(userId: string): Promise<any> {
-    const response = await apiClient.post(`/staff/${userId}/deactivate`);
-    return response.data;
-  }
-
   // Performance Metrics
   async getPerformanceMetrics(userId?: string): Promise<PerformanceMetric[]> {
     const params = userId ? { userId } : {};

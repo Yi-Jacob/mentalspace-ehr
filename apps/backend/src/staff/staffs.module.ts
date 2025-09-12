@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { StaffsController } from './staffs.controller';
+import { StaffsService } from './staffs.service';
 import { SupervisionRelationshipsController } from './supervision-relationships.controller';
 import { SupervisionRelationshipsService } from './supervision-relationships.service';
 import { LicensesController } from './licenses.controller';
@@ -10,8 +10,8 @@ import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [UsersController, SupervisionRelationshipsController, LicensesController],
-  providers: [UsersService, SupervisionRelationshipsService, LicensesService],
-  exports: [UsersService, SupervisionRelationshipsService, LicensesService],
+  controllers: [StaffsController, SupervisionRelationshipsController, LicensesController],
+  providers: [StaffsService, SupervisionRelationshipsService, LicensesService],
+  exports: [StaffsService, SupervisionRelationshipsService, LicensesService],
 })
-export class UsersModule {} 
+export class StaffsModule {} 

@@ -5,7 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ClientsModule } from './clients/clients.module';
-import { UsersModule } from './staff/users.module';
+import { StaffsModule } from './staff/staffs.module';
+import { UsersModule } from './users/users.module';
 import { NotesModule } from './notes/notes.module';
 import { DiagnosesModule } from './diagnoses/diagnoses.module';
 import { BillingModule } from './billing/billing.module';
@@ -36,6 +37,7 @@ import { HealthModule } from './health/health.module';
     ValidationModule,
     LoggerModule,
     AuthModule,
+    StaffsModule,
     UsersModule,
     ClientsModule,
     NotesModule,

@@ -4,11 +4,10 @@ import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Plus, Stethoscope, Edit, UserMinus, Eye, Star, Users, AlertCircle, Key, UserCheck, UserX } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
-import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
+import { useUsersManagement } from './hook/useUsersManagement';
 import { useStaffRoles } from '@/pages/staff/hook/useStaffRoles';
-import { StaffMember, UserRole } from '@/types/staffType';
 import { Table, TableColumn } from '@/components/basic/table';
-import { staffService } from '@/services/staffService';
+import { usersService, UserType } from '@/services/usersService';
 import { useToast } from '@/hooks/use-toast';
 import ConfirmationModal from '@/components/basic/confirmation-modal';
 import PageLayout from '@/components/basic/PageLayout';
@@ -18,15 +17,26 @@ const StaffPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-  const { staffMembers, isLoading, error, refetchStaff } = useStaffManagement();
+  const [selectedStaff, setSelectedStaff] = useState<UserType | null>(null);
+  const { staffMembers, isLoading, error, refetchStaff } = useUsersManagement();
   const { hasRole } = useStaffRoles();
+
+  // Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: 'default' | 'destructive';
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   const canManageStaff = hasRole('Practice Administrator');
 
-  const handleAddTeamMember = () => {
-    navigate('/staff/create');
-  };
 
   // Handle URL parameter for selected staff member
   useEffect(() => {
@@ -64,15 +74,6 @@ const StaffPage: React.FC = () => {
           icon={Stethoscope}
           title="Staff Management"
           description="Manage your team with style and efficiency"
-          action={
-            <Button 
-              onClick={handleAddTeamMember}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Create Staff
-            </Button>
-          }
         />
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -85,7 +86,7 @@ const StaffPage: React.FC = () => {
   }
 
   // Define table columns
-  const columns: TableColumn<StaffMember>[] = [
+  const columns: TableColumn<UserType>[] = [
     {
       key: 'avatar',
       header: '',
@@ -150,33 +151,16 @@ const StaffPage: React.FC = () => {
       className: 'text-center'
     },
     {
-      key: 'roles',
-      header: 'Roles',
-      accessor: (staff) => {
-        const roles = staff.roles || [];
-        const displayRoles = roles.slice(0, 2);
-        const hasMore = roles.length > 2;
-        
+      key: 'userType',
+      header: 'User Type',
+      accessor: (user) => {
         return (
           <div className="flex flex-wrap gap-1">
-            {displayRoles.map((role) => (
-              <Badge key={role} variant="outline" className="text-xs">
-                {role}
-              </Badge>
-            ))}
-            {hasMore && (
-              <Badge variant="outline" className="text-xs">
-                ...
-              </Badge>
-            )}
-            {roles.length === 0 && (
-              <span className="text-gray-400 text-sm">No roles assigned</span>
-            )}
+           {user.clientId ? 'Client' : 'Staff'}
           </div>
         );
       },
-      searchValue: (staff) => (staff.roles || []).join(' '),
-      sortable: false,
+      sortable: true,
       searchable: true
     }
   ];
@@ -184,34 +168,80 @@ const StaffPage: React.FC = () => {
   // Define table actions
   const actions = [
     {
-      label: 'View Details',
-      icon: <Eye className="h-4 w-4" />,
-      onClick: (staff: StaffMember) => navigate(`/staff/${staff.id}`),
+      label: 'Set Default Password',
+      icon: <Key className="h-4 w-4" />,
+      onClick: (staff: UserType) => {
+        setConfirmationModal({
+          isOpen: true,
+          title: 'Set Default Password',
+          description: `Are you sure you want to set a default password for ${staff.firstName} ${staff.lastName}? This will reset their current password.`,
+          onConfirm: async () => {
+            try {
+              await usersService.setDefaultPassword(staff.id);
+              toast({
+                title: 'Default password set',
+                description: `Default password for ${staff.firstName} ${staff.lastName} has been set.`,
+              });
+              refetchStaff();
+            } catch (err) {
+              toast({
+                title: 'Error setting default password',
+                description: `Failed to set default password for ${staff.firstName} ${staff.lastName}.`,
+                variant: 'destructive',
+              });
+            }
+          },
+          variant: 'destructive'
+        });
+      },
       variant: 'ghost' as const
     },
     {
-      label: 'Edit Staff',
-      icon: <Edit className="h-4 w-4" />,
-      onClick: (staff: StaffMember) => navigate(`/staff/${staff.id}/edit`),
-      variant: 'ghost' as const
-    },
+      label: staff => staff.isActive ? 'Deactivate Staff' : 'Activate Staff',
+      icon: staff => staff.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />,
+      onClick: async (staff: UserType) => {
+        try {
+          if (staff.isActive) {
+            await usersService.deactivateUser(staff.id);
+          } else {
+            await usersService.activateUser(staff.id);
+          }
+          toast({
+            title: staff.isActive ? 'Staff deactivated' : 'Staff activated',
+            description: `Staff ${staff.isActive ? 'deactivated' : 'activated'}.`,
+          });
+          refetchStaff();
+        } catch (err) {
+          toast({
+            title: staff.isActive ? 'Error deactivating staff' : 'Error activating staff',
+            description: `Failed to ${staff.isActive ? 'deactivate' : 'activate'} staff ${staff.firstName} ${staff.lastName}.`,
+            variant: 'destructive',
+          });
+        }
+      },
+      variant: staff => staff.isActive ? 'destructive' as const : 'default' as const
+    }
   ];
+
+  // Define bulk actions (if needed)
+  const bulkActions = canManageStaff ? [
+    {
+      label: 'Deactivate Selected',
+      icon: <UserMinus className="h-4 w-4" />,
+      onClick: (selectedStaff: UserType[]) => {
+        // Handle bulk deactivation
+        console.log('Deactivating staff:', selectedStaff);
+      },
+      variant: 'destructive' as const
+    }
+  ] : [];
 
   return (
     <PageLayout variant="gradient">
       <PageHeader
         icon={Stethoscope}
-        title="Staff Management"
-        description="Manage your team with style and efficiency"
-        action={
-          <Button 
-            onClick={handleAddTeamMember}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Create Staff
-          </Button>
-        }
+        title="Users Management"
+        description="Manage your users with style and efficiency"
       />
 
       <div className="space-y-6">
@@ -240,6 +270,19 @@ const StaffPage: React.FC = () => {
           }
           loading={isLoading}
           actions={actions}
+          bulkActions={bulkActions}
+        />
+
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          onClose={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={confirmationModal.onConfirm}
+          title={confirmationModal.title}
+          description={confirmationModal.description}
+          variant={confirmationModal.variant}
+          confirmText="Confirm"
+          cancelText="Cancel"
         />
       </div>
     </PageLayout>

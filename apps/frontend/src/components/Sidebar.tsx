@@ -99,6 +99,7 @@ const menuItems: MenuItem[] = [
     icon: Users,
     path: '/users',
     subItems: [
+      { id: 'users-list', label: 'Users', path: '/users' },
       { id: 'users-roles', label: 'Roles', path: '/users/roles' },
       { id: 'users-permissions', label: 'Permissions', path: '/users/permissions' },
     ]
