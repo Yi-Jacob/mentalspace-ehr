@@ -3,7 +3,7 @@ import { IntakeFormData } from '@/types/noteType';
 import FormErrorBoundary from '@/components/FormErrorBoundary';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
 import { SelectField } from '@/components/basic/select';
-import { useCptCodes } from '@/hooks/useCptCodes';
+import { CPT_CODES } from '@/types/enums/notesEnum';
 
 interface ClientOverviewSectionProps {
   formData: IntakeFormData;
@@ -16,7 +16,6 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
-  const { data: cptCodes = [] } = useCptCodes();
   
   // Set initial values if not already set
   useEffect(() => {
@@ -49,7 +48,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
               label="CPT Code"
               value={formData.cptCode}
               onValueChange={(value) => updateFormData({ cptCode: value })}
-              options={cptCodes}
+              options={CPT_CODES}
               placeholder="Select CPT code"
               required
             />

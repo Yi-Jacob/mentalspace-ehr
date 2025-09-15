@@ -12,6 +12,7 @@ import { clientService } from '@/services/clientService';
 import { billingService, Claim, Payer } from '@/services/billingService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { CPT_CODES } from '@/types/enums/notesEnum';
 
 interface ClaimLineItem {
   id?: string;
@@ -74,13 +75,6 @@ const ClaimModal: React.FC<ClaimModalProps> = ({ isOpen, onClose, claim, mode = 
     queryKey: ['payers'],
     queryFn: async () => {
       return billingService.getAllPayers();
-    },
-  });
-
-  const { data: cptCodes } = useQuery({
-    queryKey: ['cpt-codes'],
-    queryFn: async () => {
-      return billingService.getCptCodes();
     },
   });
 
@@ -485,9 +479,9 @@ const ClaimModal: React.FC<ClaimModalProps> = ({ isOpen, onClose, claim, mode = 
                           <SelectValue placeholder="Select CPT" />
                         </SelectTrigger>
                         <SelectContent>
-                          {cptCodes?.map((cpt) => (
-                            <SelectItem key={cpt.code} value={cpt.code}>
-                              {cpt.code} - {cpt.description}
+                          {CPT_CODES?.map((cpt) => (
+                            <SelectItem key={cpt.value} value={cpt.value}>
+                              {cpt.value} - {cpt.label}
                             </SelectItem>
                           ))}
                         </SelectContent>

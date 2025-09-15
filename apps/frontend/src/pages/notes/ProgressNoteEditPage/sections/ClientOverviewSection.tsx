@@ -2,10 +2,10 @@
 import React from 'react';
 import { InputField } from '@/components/basic/input';
 import { ProgressNoteFormData } from '@/types/noteType';
-import { useCptCodes } from '@/hooks/useCptCodes';
 import { LOCATION_OPTIONS, PARTICIPANT_OPTIONS } from '@/types/enums/notesEnum';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
+import { CPT_CODES } from '@/types/enums/notesEnum';
 
 interface ClientOverviewSectionProps {
   formData: ProgressNoteFormData;
@@ -18,7 +18,6 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
-  const { data: cptCodes = [] } = useCptCodes();
 
   const calculateDuration = (start: string, end: string) => {
     if (!start || !end) return 0;
@@ -54,7 +53,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <InputField
           id="sessionDate"
-          label="Session Date *"
+          label="Session Date"
           type="date"
           value={formData.sessionDate}
           onChange={(e) => updateFormData({ sessionDate: e.target.value })}
@@ -65,7 +64,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
           label="Service Code"
           value={formData.serviceCode}
           onChange={(value) => updateFormData({ serviceCode: value })}
-          options={cptCodes}
+          options={CPT_CODES}
           placeholder="Search service codes..."
           required
         />
@@ -74,7 +73,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <InputField
           id="startTime"
-          label="Start Time *"
+          label="Start Time"
           type="time"
           value={formData.startTime}
           onChange={(e) => handleTimeChange('startTime', e.target.value)}
@@ -83,7 +82,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
 
         <InputField
           id="endTime"
-          label="End Time *"
+          label="End Time"
           type="time"
           value={formData.endTime}
           onChange={(e) => handleTimeChange('endTime', e.target.value)}

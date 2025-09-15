@@ -2,7 +2,6 @@ export { useAuth } from './useAuth';
 export { useSidebarContext } from './useSidebarContext';
 export { useClientInsurance } from './useClientInsurance';
 export { useClientPhoneNumbers } from './useClientPhoneNumbers';
-export { useCptCodes } from './useCptCodes';
 export { useComplianceMetrics } from './useComplianceMetrics';
 export { useProductivityGoals } from './useProductivityGoals';
 export { usePerformanceTracking } from './usePerformanceTracking';

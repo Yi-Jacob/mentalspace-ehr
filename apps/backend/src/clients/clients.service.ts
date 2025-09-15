@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, InternalServerError
 import { PrismaService } from '../database/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import * as bcrypt from 'bcryptjs';
 
 /**
  * Interface representing client data returned for note creation workflows.
@@ -36,10 +37,14 @@ export class ClientsService {
         data: createClientDto,
       });
 
+      // Hash the default password
+      const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+
       // Create a user record for the client
       const clientUser = await prisma.user.create({
         data: {
           email: createClientDto.email || `client.${client.id}@example.com`,
+          password: hashedPassword,
           firstName: createClientDto.firstName,
           lastName: createClientDto.lastName,
           middleName: createClientDto.middleName,
@@ -540,10 +545,14 @@ export class ClientsService {
         data: mappedClientData,
       });
 
+      // Hash the default password
+      const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+
       // Create a user record for the client
       const clientUser = await prisma.user.create({
         data: {
           email: clientData.email || `client.${client.id}@example.com`,
+          password: hashedPassword,
           firstName: clientData.firstName,
           lastName: clientData.lastName,
           middleName: clientData.middleName,

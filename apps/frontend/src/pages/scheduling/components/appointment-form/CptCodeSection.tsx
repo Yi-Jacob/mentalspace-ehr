@@ -41,7 +41,6 @@ const CptCodeSection: React.FC<CptCodeSectionProps> = ({
 
   const availableCptCodes = useMemo(() => {
     const category = getCptCodeCategory(appointmentType);
-    console.log('CPT Code Category:', category, 'Available codes:', CPT_CODES_BY_TYPE[category]);
     return CPT_CODES_BY_TYPE[category] || [];
   }, [appointmentType]);
 

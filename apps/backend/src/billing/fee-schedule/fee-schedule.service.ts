@@ -103,17 +103,6 @@ export class FeeScheduleService {
     });
   }
 
-  async getCptCodes() {
-    return this.prisma.cptCode.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: {
-        code: 'asc',
-      },
-    });
-  }
-
   async approveFeeSchedule(id: string, reviewedBy: string, reviewNotes?: string) {
     const feeSchedule = await this.getFeeScheduleById(id);
     

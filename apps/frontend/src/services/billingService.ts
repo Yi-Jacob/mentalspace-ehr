@@ -421,11 +421,6 @@ class BillingService {
     await apiClient.delete(`/billing/fee-schedules/${id}`);
   }
 
-  async getCptCodes(): Promise<CptCode[]> {
-    const response = await apiClient.get('/billing/fee-schedules/cpt-codes');
-    return response.data;
-  }
-
   // Verifications
   async getAllVerifications(clientId?: string): Promise<InsuranceVerification[]> {
     const params = clientId ? { clientId } : {};

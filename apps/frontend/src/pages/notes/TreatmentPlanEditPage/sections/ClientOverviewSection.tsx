@@ -6,7 +6,7 @@ import FormErrorBoundary from '@/components/FormErrorBoundary';
 import { validationSchemas, sanitizeInput } from '@/utils/validation';
 import ClientInfoDisplay from '../../components/shared/ClientInfoDisplay';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
-import { useCptCodes } from '@/hooks/useCptCodes';
+import { CPT_CODES } from '@/types/enums/notesEnum';
 
 interface ClientOverviewSectionProps {
   formData: TreatmentPlanFormData;
@@ -20,7 +20,6 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
   clientData,
 }) => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const { data: cptCodes = [] } = useCptCodes();
 
   // Get primary phone number
   const primaryPhone = clientData?.phone_numbers?.find(
@@ -125,7 +124,7 @@ const ClientOverviewSection: React.FC<ClientOverviewSectionProps> = ({
               label="CPT Code"
               value={formData.cptCode || ''}
               onChange={(value) => updateFormData({ cptCode: value })}
-              options={cptCodes}
+              options={CPT_CODES}
               placeholder="Search CPT codes..."
               required
             />

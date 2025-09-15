@@ -125,16 +125,6 @@ model PayerContract {
   @@map("payer_contracts")
 }
 
-model CptCode {
-  id          String   @id @default(uuid())
-  code        String
-  description String
-  isActive    Boolean  @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  @@map("cpt_codes")
-}
-
 model PayerFeeSchedule {
   id             String    @id @default(uuid())
   payerId        String    @map("payer_id")
