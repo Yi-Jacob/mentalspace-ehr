@@ -539,4 +539,56 @@ export class UsersService {
     // Return updated profile
     return this.getMyProfile(userId);
   }
+
+  // Update current user's password
+  async updatePassword(userId: string, passwordData: { currentPassword: string; newPassword: string; confirmPassword: string }) {
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+    // Validate input
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      throw new BadRequestException('All password fields are required');
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('New password and confirmation password do not match');
+    }
+
+    if (newPassword.length < 8) {
+      throw new BadRequestException('New password must be at least 8 characters long');
+    }
+
+    // Get user with password
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, password: true, email: true }
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { 
+        password: hashedNewPassword,
+        updatedAt: new Date()
+      },
+    });
+
+    return {
+      message: 'Password updated successfully',
+      userId: user.id,
+      email: user.email
+    };
+  }
 } 

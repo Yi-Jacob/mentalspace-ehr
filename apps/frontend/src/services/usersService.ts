@@ -219,6 +219,20 @@ class UsersService {
       throw error;
     }
   }
+
+  async updatePassword(passwordData: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<{ message: string; userId: string; email: string }> {
+    try {
+      const response = await apiClient.put<{ message: string; userId: string; email: string }>('/users/password', passwordData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      throw error;
+    }
+  }
 }
 
 export const usersService = new UsersService(); 

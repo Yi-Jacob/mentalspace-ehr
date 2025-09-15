@@ -50,6 +50,14 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'User profile updated successfully' })
   updateMyProfile(@GetUser() user: any, @Body() updateData: any) {
     return this.usersService.updateMyProfile(user.id, updateData);
+  }
+
+  @Put('password')
+  @ApiOperation({ summary: 'Update current user password' })
+  @ApiResponse({ status: 200, description: 'Password updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid current password or password mismatch' })
+  updatePassword(@GetUser() user: any, @Body() passwordData: any) {
+    return this.usersService.updatePassword(user.id, passwordData);
   } 
 
 }

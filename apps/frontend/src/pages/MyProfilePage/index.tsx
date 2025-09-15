@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Edit, Mail, Phone, MapPin, Calendar, Shield, Users, Stethoscope, Clock, Award } from 'lucide-react';
+import { User, Edit, Mail, Phone, MapPin, Calendar, Shield, Users, Stethoscope, Clock, Award, Lock } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -17,6 +17,13 @@ const MyProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<UpdateProfileData>({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -103,6 +110,57 @@ const MyProfilePage: React.FC = () => {
 
   const handleInputChange = (field: keyof UpdateProfileData, value: string | boolean) => {
     setEditData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePasswordChange = () => {
+    setIsChangingPassword(true);
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setPasswordError(null);
+  };
+
+  const handlePasswordInputChange = (field: keyof typeof passwordData, value: string) => {
+    setPasswordData(prev => ({ ...prev, [field]: value }));
+    setPasswordError(null);
+  };
+
+  const handlePasswordSave = async () => {
+    try {
+      setIsLoading(true);
+      setPasswordError(null);
+      
+      // Validate passwords match
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        setPasswordError('New password and confirmation password do not match');
+        return;
+      }
+
+      await usersService.updatePassword(passwordData);
+      setIsChangingPassword(false);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (err: any) {
+      setPasswordError(err.response?.data?.message || 'Failed to update password');
+      console.error('Error updating password:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setIsChangingPassword(false);
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setPasswordError(null);
   };
 
   if (isLoading && !profile) {
@@ -755,6 +813,90 @@ const MyProfilePage: React.FC = () => {
                 <label className="text-sm font-medium text-gray-700">Last Updated</label>
                 <p className="mt-1 text-gray-900">{new Date(profile.updatedAt).toLocaleDateString()}</p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Password Change */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Lock className="h-5 w-5" />
+                <span>Change Password</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isChangingPassword ? (
+                <>
+                  {passwordError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-600">{passwordError}</p>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Current Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your current password"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">New Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => handlePasswordInputChange('newPassword', e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your new password"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
+                      <input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => handlePasswordInputChange('confirmPassword', e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Confirm your new password"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      onClick={handlePasswordCancel}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handlePasswordSave}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={isLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                    >
+                      {isLoading ? 'Updating...' : 'Update Password'}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-3">
+                    Keep your account secure by updating your password regularly.
+                  </p>
+                  <Button
+                    onClick={handlePasswordChange}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
