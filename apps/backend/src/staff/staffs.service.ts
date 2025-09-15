@@ -223,11 +223,12 @@ export class StaffsService {
           },
         });
 
+        const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
         // 2. Create user with reference to staff profile
         const user = await prisma.user.create({
           data: {
             email: createUserDto.email,
-            password: null, // No password set initially
+            password: hashedPassword, // No password set initially
             firstName: createUserDto.firstName,
             lastName: createUserDto.lastName,
             middleName: createUserDto.middleName,

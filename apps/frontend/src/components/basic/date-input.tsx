@@ -28,8 +28,8 @@ export const DateInput: React.FC<DateInputProps> = ({
   placeholder = "MM/DD/YYYY",
   required = false,
   disabled = false,
-  minDate = new Date("1900-01-01"),
-  maxDate = new Date(),
+  minDate,
+  maxDate,
   className = ""
 }) => {
   // Convert database format (YYYY-MM-DD) to display format (M/D/YYYY) for initial value
@@ -107,7 +107,9 @@ export const DateInput: React.FC<DateInputProps> = ({
       parsedDate = parse(inputValue, 'M/d/yy', new Date());
     }
     
-    if (parsedDate && isValid(parsedDate) && parsedDate <= maxDate && parsedDate >= minDate) {
+    if (parsedDate && isValid(parsedDate) && 
+        (!maxDate || parsedDate <= maxDate) && 
+        (!minDate || parsedDate >= minDate)) {
       // Create database format using local date components
       const year = parsedDate.getFullYear();
       const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
@@ -154,7 +156,10 @@ export const DateInput: React.FC<DateInputProps> = ({
               mode="single"
               selected={dateValue}
               onSelect={handleDateChange}
-              disabled={(date) => date > maxDate || date < minDate}
+              disabled={(date) => 
+                (maxDate && date > maxDate) || 
+                (minDate && date < minDate)
+              }
               initialFocus
               className="pointer-events-auto"
             />

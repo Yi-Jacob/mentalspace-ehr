@@ -144,7 +144,7 @@ export class UsersService {
   async setDefaultPassword(userId: string) {
     const user = await this.findOne(userId);
     
-    const defaultPassword = this.configService.get<string>('DEFAULT_USER_PASSWORD', 'ChangeMe123!');
+    const defaultPassword = this.configService.get<string>('DEFAULT_USER_PASSWORD', 'mentalspacePassword123!');
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
     const updatedUser = await this.prisma.user.update({

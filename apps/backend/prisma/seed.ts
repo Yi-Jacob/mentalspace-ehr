@@ -15,7 +15,7 @@ async function main() {
     console.log('Default user already exists, skipping...');
   } else {
     // Hash the password
-    const hashedPassword = await bcrypt.hash('0p;/)P:?', 12);
+    const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
 
     try {
       // Use Prisma transaction to ensure data consistency (following users.service pattern)
@@ -100,7 +100,7 @@ async function main() {
   const additionalStaff = [
     {
       email: 'dr.sarah.johnson@mentalspace.com',
-      password: 'SecurePass123!',
+      password: 'mentalspacePassword123!',
       firstName: 'Sarah',
       lastName: 'Johnson',
       middleName: 'Elizabeth',
@@ -130,7 +130,7 @@ async function main() {
     },
     {
       email: 'michael.chen@mentalspace.com',
-      password: 'SecurePass123!',
+      password: 'mentalspacePassword123!',
       firstName: 'Michael',
       lastName: 'Chen',
       middleName: 'David',
@@ -160,7 +160,7 @@ async function main() {
     },
     {
       email: 'emily.rodriguez@mentalspace.com',
-      password: 'SecurePass123!',
+      password: 'mentalspacePassword123!',
       firstName: 'Emily',
       lastName: 'Rodriguez',
       middleName: 'Maria',
@@ -386,10 +386,13 @@ async function main() {
           data: clientData
         });
 
+        const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+
         // Create a user record for the client
         const clientUser = await prisma.user.create({
           data: {
             email: clientData.email || `client.${client.id}@example.com`,
+            password: hashedPassword,
             firstName: clientData.firstName,
             lastName: clientData.lastName,
             middleName: clientData.middleName,

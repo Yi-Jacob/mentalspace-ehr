@@ -20,7 +20,7 @@ try {
   console.log('');
   console.log('📧 Default user created:');
   console.log('   Email: example@gmail.com');
-  console.log('   Password: 0p;/)P:?');
+  console.log('   Password: mentalspacePassword123!');
   console.log('   Role: Practice Administrator');
   console.log('');
   console.log('📋 Sample data created:');
