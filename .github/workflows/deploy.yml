@@ -55,7 +55,7 @@ jobs:
         
         # Create frontend .env file (no secrets)
         echo "Creating frontend .env file..."
-        echo "VITE_API_URL=http://3.17.184.2:7000/api" > apps/frontend/.env
+        echo "VITE_API_URL=http://3.147.75.218:7000/api" > apps/frontend/.env
         echo "VITE_API_TIMEOUT=${VITE_API_TIMEOUT}" >> apps/frontend/.env
         chmod 600 apps/frontend/.env
         
