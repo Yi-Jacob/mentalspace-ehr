@@ -8,12 +8,14 @@ interface FormErrors {
   date?: string;
   title?: string;
   description?: string;
+  cptCode?: string;
   general?: string;
 }
 
 interface AppointmentFormData {
   client_id: string;
   appointment_type: AppointmentTypeValue;
+  cptCode: string;
   title: string;
   description: string;
   date: string;
@@ -33,6 +35,9 @@ export const useFormValidation = () => {
 
     if (!formData.client_id.trim()) {
       newErrors.client_id = 'Client selection is required';
+    }
+    if (!formData.cptCode.trim()) {
+      newErrors.cptCode = 'CPT code selection is required';
     }
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required';

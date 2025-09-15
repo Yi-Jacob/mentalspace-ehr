@@ -79,6 +79,7 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
       const appointmentData = {
         clientId: formData.client_id,
         appointmentType: formData.appointment_type,
+        cptCode: formData.cptCode || undefined,
         title: formData.title || undefined,
         description: formData.description || undefined,
         startTime: new Date(`${formData.date}T${formData.start_time}`).toISOString(),
@@ -87,7 +88,7 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
         roomNumber: formData.room_number || undefined,
         ...recurringData
       };
-
+      console.log('appointmentData', appointmentData);
       // Send to backend - the backend will handle creating all recurring appointments
       await mutation.mutateAsync(appointmentData);
     } catch (error) {

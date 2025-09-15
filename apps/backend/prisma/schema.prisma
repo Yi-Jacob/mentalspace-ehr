@@ -264,6 +264,7 @@ model Appointment {
   clientId           String         @map("client_id")
   providerId         String         @map("provider_id")
   appointmentType    String         @map("appointment_type")
+  cptCode            String?        @map("cpt_code")
   title              String?
   description        String?
   startTime          DateTime       @map("start_time")

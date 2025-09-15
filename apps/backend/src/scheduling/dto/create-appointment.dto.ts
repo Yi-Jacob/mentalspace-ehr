@@ -59,6 +59,10 @@ export class CreateAppointmentDto {
 
   @IsOptional()
   @IsString()
+  cptCode?: string;
+
+  @IsOptional()
+  @IsString()
   title?: string;
 
   @IsOptional()

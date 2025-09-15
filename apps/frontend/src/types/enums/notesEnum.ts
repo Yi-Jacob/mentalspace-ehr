@@ -143,6 +143,158 @@ export const CPT_CODES: CptCodeOption[] = [
   }
 ];
 
+// CPT codes organized by appointment type
+export const CPT_CODES_BY_TYPE: Record<string, CptCodeOption[]> = {
+  'therapy intake': [
+    {
+      value: '021701',
+      label: '021701 - Private Pay - Therapy Intake',
+      description: 'Private Pay - Therapy Intake',
+      category: 'Therapy Intake'
+    },
+    {
+      value: '021702',
+      label: '021702 - Subscription Private Pay - Therapy Intake',
+      description: 'Subscription Private Pay - Therapy Intake',
+      category: 'Therapy Intake'
+    },
+    {
+      value: '90791',
+      label: '90791 - Psychiatric Diagnostic Evaluation',
+      description: 'Comprehensive psychiatric evaluation without medical services',
+      category: 'Therapy Intake'
+    },
+    {
+      value: '96156',
+      label: '96156 - Assessment or reassessment (60 minutes)',
+      description: 'Assessment or reassessment (60 minutes)',
+      category: 'Therapy Intake'
+    }
+  ],
+  'therapy session': [
+    {
+      value: '90834',
+      label: '90834 - Psychotherapy, 45 min',
+      description: 'Individual psychotherapy, 45 minutes with patient',
+      category: 'Therapy Session'
+    },
+    {
+      value: '021703',
+      label: '021703 - Private Pay - Therapy Session',
+      description: 'Private Pay - Therapy Session',
+      category: 'Therapy Session'
+    },
+    {
+      value: '021704',
+      label: '021704 - Subscription Private Pay - 30 Min Therapy Session',
+      description: 'Subscription Private Pay - 30 Min Therapy Session',
+      category: 'Therapy Session'
+    },
+    {
+      value: '90832',
+      label: '90832 - Psychotherapy, 30 minutes',
+      description: 'Individual psychotherapy, 30 minutes with patient',
+      category: 'Therapy Session'
+    },
+    {
+      value: '90837',
+      label: '90837 - Psychotherapy, 60 minutes',
+      description: 'Individual psychotherapy, 60 minutes with patient',
+      category: 'Therapy Session'
+    },
+    {
+      value: '90839',
+      label: '90839 - Psychotherapy for crisis; first 60 minutes',
+      description: 'Psychotherapy for crisis; first 60 minutes',
+      category: 'Therapy Session'
+    },
+    {
+      value: '90846',
+      label: '90846 - Family psychotherapy (without patient present)',
+      description: 'Family psychotherapy (conjoint psychotherapy) (without patient present)',
+      category: 'Therapy Session'
+    },
+    {
+      value: '90847',
+      label: '90847 - Family psychotherapy (with patient present)',
+      description: 'Family psychotherapy (conjoint psychotherapy) (with patient present)',
+      category: 'Therapy Session'
+    },
+    {
+      value: '90853',
+      label: '90853 - Group psychotherapy',
+      description: 'Group psychotherapy (other than of a multiple-family group)',
+      category: 'Therapy Session'
+    },
+    {
+      value: '96158',
+      label: '96158 - Intervention individual, 30 minutes',
+      description: 'Intervention individual, 30 minutes',
+      category: 'Therapy Session'
+    },
+    {
+      value: '99404',
+      label: '99404 - Transitional care management services',
+      description: 'Transitional care management services',
+      category: 'Therapy Session'
+    },
+    {
+      value: 'H0004',
+      label: 'H0004 - Behavioral health counseling and therapy',
+      description: 'Behavioral health counseling and therapy',
+      category: 'Therapy Session'
+    },
+    {
+      value: 'H2011',
+      label: 'H2011 - Crisis intervention',
+      description: 'Crisis intervention',
+      category: 'Therapy Session'
+    },
+    {
+      value: 'H2014',
+      label: 'H2014 - Family training',
+      description: 'Family training',
+      category: 'Therapy Session'
+    },
+    {
+      value: 'H2015',
+      label: 'H2015 - Comprehensive Community Support Services CSS',
+      description: 'Comprehensive Community Support Services CSS',
+      category: 'Therapy Session'
+    }
+  ],
+  'consultation': [
+    {
+      value: '90000',
+      label: '90000 - Consultation - Coaching',
+      description: 'Consultation - Coaching',
+      category: 'Consultation'
+    },
+    {
+      value: '90001',
+      label: '90001 - Consultation Intake - Coaching',
+      description: 'Consultation Intake - Coaching',
+      category: 'Consultation'
+    }
+  ],
+  'group therapy': [
+    {
+      value: '90853',
+      label: '90853 - Group Therapy',
+      description: 'Group psychotherapy (other than of a multiple-family group)',
+      category: 'Group Therapy'
+    }
+  ],
+  'psychological evaluation': [
+    {
+      value: '96136',
+      label: '96136 - Psychological test administration and scoring, first 30m',
+      description: 'Psychological test administration and scoring, first 30 minutes',
+      category: 'Psychological Evaluation'
+    }
+  ]
+};
+
 // ============================================================================
 // CANCELLATION NOTE ENUMS
 // ============================================================================

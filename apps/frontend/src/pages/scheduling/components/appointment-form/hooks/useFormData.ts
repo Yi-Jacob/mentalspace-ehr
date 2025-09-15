@@ -7,6 +7,7 @@ import { AppointmentTypeValue } from '@/types/scheduleType';
 interface AppointmentFormData {
   client_id: string;
   appointment_type: AppointmentTypeValue;
+  cptCode: string;
   title: string;
   description: string;
   date: string;
@@ -26,6 +27,7 @@ export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) 
   const [formData, setFormData] = useState<AppointmentFormData>({
     client_id: '',
     appointment_type: AppointmentType.THERAPY_SESSION,
+    cptCode: '',
     title: '',
     description: '',
     date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
@@ -50,13 +52,24 @@ export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) 
   }, [selectedDate, selectedTime]);
 
   const updateFormData = (field: keyof AppointmentFormData, value: string | number | boolean | Date) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Reset CPT code when appointment type changes
+      if (field === 'appointment_type') {
+        newData.cptCode = '';
+      }
+      
+      console.log('Form data updated:', field, value, newData);
+      return newData;
+    });
   };
 
   const resetForm = () => {
     setFormData({
       client_id: '',
       appointment_type: AppointmentType.THERAPY_SESSION,
+      cptCode: '',
       title: '',
       description: '',
       date: format(new Date(), 'yyyy-MM-dd'),

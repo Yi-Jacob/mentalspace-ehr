@@ -10,6 +10,7 @@ interface AppointmentData {
   appointmentType: AppointmentTypeValue;
   title?: string | null;
   description?: string | null;
+  cptCode?: string | null;
   location?: string | null;
   roomNumber?: string | null;
   startTime: string;
@@ -34,6 +35,7 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
       return await schedulingService.createAppointment({
         clientId: appointmentData.clientId,
         appointmentType: appointmentData.appointmentType,
+        cptCode: appointmentData.cptCode || undefined,
         title: appointmentData.title || undefined,
         description: appointmentData.description || undefined,
         location: appointmentData.location || undefined,

@@ -3,6 +3,7 @@ import React from 'react';
 import ClientSelectionSection from './ClientSelectionSection';
 import DateTimeSection from './DateTimeSection';
 import AppointmentTypeSection from './AppointmentTypeSection';
+import CptCodeSection from './CptCodeSection';
 import LocationSection from './LocationSection';
 import DurationSection from './DurationSection';
 import RecurringSection from './RecurringSection';
@@ -12,6 +13,7 @@ import { AppointmentTypeValue } from '@/types/scheduleType';
 interface AppointmentFormData {
   client_id: string;
   appointment_type: AppointmentTypeValue;
+  cptCode: string;
   title: string;
   description: string;
   date: string;
@@ -29,6 +31,7 @@ interface FormErrors {
   date?: string;
   title?: string;
   description?: string;
+  cptCode?: string;
   general?: string;
 }
 
@@ -69,6 +72,13 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
           <AppointmentTypeSection
             appointmentType={formData.appointment_type}
             onAppointmentTypeChange={(value) => updateFormData('appointment_type', value)}
+          />
+
+          <CptCodeSection
+            appointmentType={formData.appointment_type}
+            cptCode={formData.cptCode}
+            onCptCodeChange={(value) => updateFormData('cptCode', value)}
+            error={errors.cptCode}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

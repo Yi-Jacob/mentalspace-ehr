@@ -28,6 +28,7 @@ export interface CreateAppointmentData {
   appointmentType: AppointmentTypeValue;
   title?: string;
   description?: string;
+  cptCode?: string;
   startTime: string;
   duration: number;
   location?: string;
