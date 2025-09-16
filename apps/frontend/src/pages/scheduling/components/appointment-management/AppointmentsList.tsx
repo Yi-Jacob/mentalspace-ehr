@@ -156,14 +156,22 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       accessor: formatAppointmentType,
       sortable: true,
       searchable: true,
-      width: '15%'
+      width: '12%'
+    },
+    {
+      key: 'cptCode',
+      header: 'CPT Code',
+      accessor: (appointment) => appointment.cptCode || 'N/A',
+      sortable: true,
+      searchable: true,
+      width: '10%'
     },
     {
       key: 'datetime',
       header: 'Date & Time',
       accessor: formatDateTime,
       sortable: true,
-      width: '20%'
+      width: '18%'
     },
     {
       key: 'status',
@@ -182,8 +190,18 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     },
     {
       key: 'notes',
-      header: 'Notes',
-      accessor: (appointment) => appointment.notes || 'No notes',
+      header: 'Associated Note',
+      accessor: (appointment) => {
+        if (appointment.note) {
+          return (
+            <div className="flex items-center space-x-1">
+              <span className="text-sm font-medium">{appointment.note.title}</span>
+              <span className="text-xs text-gray-500">({appointment.note.noteType})</span>
+            </div>
+          );
+        }
+        return 'No note';
+      },
       sortable: false,
       searchable: true,
       width: '18%'

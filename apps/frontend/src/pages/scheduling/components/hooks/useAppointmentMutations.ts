@@ -10,12 +10,15 @@ interface UpdateAppointmentData {
   appointment_type?: AppointmentTypeValue;
   title?: string;
   description?: string;
+  cptCode?: string;
   start_time?: string;
   end_time?: string;
   status?: AppointmentStatusValue;
   client_id?: string;
   location?: string;
   room_number?: string;
+  noteId?: string;
+  isTelehealth?: boolean;
   duration?: number;
   // Recurring appointment fields
   recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -46,9 +49,12 @@ export const useAppointmentMutations = () => {
         title: data.title,
         description: data.description,
         appointmentType: data.appointment_type,
+        cptCode: data.cptCode,
         status: data.status,
         location: data.location,
         roomNumber: data.room_number,
+        noteId: data.noteId,
+        isTelehealth: data.isTelehealth,
         startTime: data.start_time,
         duration: data.duration,
         clientId: data.client_id

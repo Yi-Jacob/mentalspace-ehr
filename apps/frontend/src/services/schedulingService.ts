@@ -6,6 +6,7 @@ export interface Appointment {
   clientId: string;
   providerId: string;
   appointmentType: AppointmentTypeValue;
+  cptCode?: string;
   title?: string;
   description?: string;
   startTime: string;
@@ -13,6 +14,8 @@ export interface Appointment {
   status: string;
   location?: string;
   roomNumber?: string;
+  noteId?: string;
+  isTelehealth: boolean;
   recurringRuleId?: string;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +23,12 @@ export interface Appointment {
     id: string;
     firstName: string;
     lastName: string;
+  };
+  note?: {
+    id: string;
+    title: string;
+    noteType: string;
+    status: string;
   };
 }
 
@@ -33,6 +42,8 @@ export interface CreateAppointmentData {
   duration: number;
   location?: string;
   roomNumber?: string;
+  noteId?: string;
+  isTelehealth?: boolean;
   // Recurring appointment fields
   recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   recurringTimeSlots?: TimeSlot[];
@@ -43,10 +54,13 @@ export interface UpdateAppointmentData {
   id: string;
   title?: string;
   description?: string;
+  cptCode?: string;
   startTime?: string;
   duration?: number;
   location?: string;
   roomNumber?: string;
+  noteId?: string;
+  isTelehealth?: boolean;
   status?: string;
 }
 

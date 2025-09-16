@@ -7,11 +7,13 @@ import { useConflictDetection } from './hooks/useConflictDetection';
 import EditRecurringRuleModal from './edit-appointment-modal/EditRecurringRuleModal';
 import { AppointmentTypeValue, AppointmentStatusValue, getAppointmentTypeOptions, getAppointmentStatusOptions } from '@/types/scheduleType';
 import { Button } from '@/components/basic/button';
-import { Calendar, Settings, User, Clock, MapPin, FileText, Save, X } from 'lucide-react';
+import { Calendar, Settings, User, Clock, MapPin, FileText, Save, X, Video } from 'lucide-react';
 import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Textarea } from '@/components/basic/textarea';
+import { Checkbox } from '@/components/basic/checkbox';
+import NoteSelectionSection from './appointment-form/NoteSelectionSection';
 
 interface Appointment {
   id: string;
@@ -19,16 +21,24 @@ interface Appointment {
   clientId?: string;
   providerId?: string;
   appointmentType?: AppointmentTypeValue;
+  cptCode?: string;
   startTime?: string;
   duration?: number;
   status?: string;
   location?: string;
   roomNumber?: string;
-  notes?: string;
+  noteId?: string;
+  isTelehealth?: boolean;
   recurringRuleId?: string;
   clients?: {
     firstName: string;
     lastName: string;
+  };
+  note?: {
+    id: string;
+    title: string;
+    noteType: string;
+    status: string;
   };
   recurringRule?: {
     id: string;
@@ -66,6 +76,9 @@ interface FormData {
   duration: number;
   client_id: string;
   description: string;
+  cptCode: string;
+  noteId: string;
+  isTelehealth: boolean;
 }
 
 const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
@@ -83,7 +96,10 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     start_time: '',
     duration: 60,
     client_id: '',
-    description: ''
+    description: '',
+    cptCode: '',
+    noteId: '',
+    isTelehealth: false
   });
 
   const [showEditRecurringModal, setShowEditRecurringModal] = useState(false);
@@ -123,7 +139,10 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
           start_time: format(startDate, 'HH:mm'),
           duration: duration,
           client_id: appointment.clientId || appointment.client_id || '',
-          description: appointment.title || ''
+          description: appointment.title || '',
+          cptCode: appointment.cptCode || '',
+          noteId: appointment.noteId || '',
+          isTelehealth: appointment.isTelehealth || false
         });
       }
     }
@@ -144,7 +163,7 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     endTime: endDateTime
   });
 
-  const handleFormDataChange = (field: keyof FormData, value: string | number) => {
+  const handleFormDataChange = (field: keyof FormData, value: string | number | boolean) => {
     setFormData({ ...formData, [field]: value });
   };
 
@@ -162,7 +181,10 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
         start_time: startDateTime,
         duration: formData.duration,
         client_id: formData.client_id,
-        description: formData.description
+        description: formData.description,
+        cptCode: formData.cptCode,
+        noteId: formData.noteId,
+        isTelehealth: formData.isTelehealth
       };
 
       // If recurring rule data was updated, include it in the request
@@ -328,6 +350,16 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
                   </div>
 
                   <div>
+                    <Label htmlFor="cptCode">CPT Code</Label>
+                    <Input
+                      id="cptCode"
+                      value={formData.cptCode}
+                      onChange={(e) => handleFormDataChange('cptCode', e.target.value)}
+                      placeholder="Enter CPT code"
+                    />
+                  </div>
+
+                  <div>
                     <Label htmlFor="status">Status</Label>
                     <Select
                       value={formData.status}
@@ -445,10 +477,33 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
                       placeholder="Enter room number"
                     />
                   </div>
+
+                  {/* Note Selection */}
+                  <NoteSelectionSection
+                    clientId={formData.client_id}
+                    value={formData.noteId}
+                    onChange={(value) => handleFormDataChange('noteId', value)}
+                  />
+
+                  {/* Telehealth */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center space-x-2 text-gray-700 font-medium">
+                      <Video className="h-4 w-4 text-blue-500" />
+                      <span>Appointment Type</span>
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="isTelehealth"
+                        checked={formData.isTelehealth}
+                        onCheckedChange={(checked) => handleFormDataChange('isTelehealth', checked as boolean)}
+                      />
+                      <Label htmlFor="isTelehealth" className="text-sm text-gray-600">
+                        This is a telehealth appointment
+                      </Label>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-
             </div>
 
             {/* Action Buttons */}

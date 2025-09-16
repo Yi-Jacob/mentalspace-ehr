@@ -5,11 +5,11 @@ import DateTimeSection from './DateTimeSection';
 import AppointmentDetailsSection from './AppointmentDetailsSection';
 import RecurringSection from './RecurringSection';
 import { format } from 'date-fns';
-import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue } from '@/types/scheduleType';
 
 interface AppointmentFormData {
   client_id: string;
-  appointment_type: AppointmentType;
+  appointment_type: AppointmentTypeValue;
   cptCode: string;
   title: string;
   description: string;
@@ -18,6 +18,8 @@ interface AppointmentFormData {
   duration_minutes: number;
   location: string;
   room_number: string;
+  noteId: string;
+  isTelehealth: boolean;
   recurring_period: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
   recurring_rule_id?: string;
 }
@@ -77,6 +79,11 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
         roomNumber={formData.room_number}
         onLocationChange={(value) => updateFormData('location', value)}
         onRoomNumberChange={(value) => updateFormData('room_number', value)}
+        clientId={formData.client_id}
+        noteId={formData.noteId}
+        onNoteIdChange={(value) => updateFormData('noteId', value)}
+        isTelehealth={formData.isTelehealth}
+        onTelehealthChange={(value) => updateFormData('isTelehealth', value)}
       />
 
       {/* Date & Time */}

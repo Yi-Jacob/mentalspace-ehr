@@ -85,6 +85,14 @@ export class CreateAppointmentDto {
 
   @IsOptional()
   @IsUUID()
+  noteId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isTelehealth?: boolean;
+
+  @IsOptional()
+  @IsUUID()
   createdBy?: string;
 
   // Recurring appointment fields

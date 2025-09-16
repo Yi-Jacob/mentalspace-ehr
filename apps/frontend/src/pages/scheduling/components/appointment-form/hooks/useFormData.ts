@@ -15,6 +15,8 @@ interface AppointmentFormData {
   duration_minutes: number;
   location: string;
   room_number: string;
+  noteId: string;
+  isTelehealth: boolean;
   recurring_period: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 }
 
@@ -35,6 +37,8 @@ export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) 
     duration_minutes: 60,
     location: '',
     room_number: '',
+    noteId: '',
+    isTelehealth: false,
     recurring_period: 'none'
   });
 
@@ -77,6 +81,8 @@ export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) 
       duration_minutes: 60,
       location: '',
       room_number: '',
+      noteId: '',
+      isTelehealth: false,
       recurring_period: 'none'
     });
   };

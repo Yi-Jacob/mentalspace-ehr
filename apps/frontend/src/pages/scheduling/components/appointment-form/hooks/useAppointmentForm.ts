@@ -86,6 +86,8 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: Us
         duration: formData.duration_minutes,
         location: formData.location || undefined,
         roomNumber: formData.room_number || undefined,
+        noteId: formData.noteId || undefined,
+        isTelehealth: formData.isTelehealth,
         ...recurringData
       };
       console.log('appointmentData', appointmentData);

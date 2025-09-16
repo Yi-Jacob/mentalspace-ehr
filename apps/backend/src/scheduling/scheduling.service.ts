@@ -56,6 +56,8 @@ export class SchedulingService {
         status: AppointmentStatus.SCHEDULED,
         location: createAppointmentDto.location,
         roomNumber: createAppointmentDto.roomNumber,
+        noteId: createAppointmentDto.noteId,
+        isTelehealth: createAppointmentDto.isTelehealth ?? false,
         recurringRuleId: null,
         createdBy: createAppointmentDto.createdBy || userId,
       },
@@ -111,6 +113,8 @@ export class SchedulingService {
         status: AppointmentStatus.SCHEDULED,
         location: createAppointmentDto.location,
         roomNumber: createAppointmentDto.roomNumber,
+        noteId: createAppointmentDto.noteId,
+        isTelehealth: createAppointmentDto.isTelehealth ?? false,
         recurringRuleId: recurringRule.id, // Assign the ID of the newly created recurring rule
         createdBy: userId,
       };
@@ -283,6 +287,14 @@ export class SchedulingService {
             lastName: true,
           },
         },
+        note: {
+          select: {
+            id: true,
+            title: true,
+            noteType: true,
+            status: true,
+          },
+        },
         recurringRule: {
           select: {
             id: true,
@@ -321,6 +333,14 @@ export class SchedulingService {
             id: true,
             firstName: true,
             lastName: true,
+          },
+        },
+        note: {
+          select: {
+            id: true,
+            title: true,
+            noteType: true,
+            status: true,
           },
         },
         recurringRule: {
@@ -367,15 +387,19 @@ export class SchedulingService {
       // First, update the current appointment with basic details (title, description, etc.)
       // This ensures the new recurring appointments have the updated information
       if (updateAppointmentDto.title || updateAppointmentDto.description || updateAppointmentDto.location || 
-          updateAppointmentDto.roomNumber || updateAppointmentDto.appointmentType || updateAppointmentDto.duration) {
+          updateAppointmentDto.roomNumber || updateAppointmentDto.appointmentType || updateAppointmentDto.duration ||
+          updateAppointmentDto.cptCode || updateAppointmentDto.noteId || updateAppointmentDto.isTelehealth !== undefined) {
         await this.prisma.appointment.update({
           where: { id },
           data: {
             title: updateAppointmentDto.title,
             description: updateAppointmentDto.description,
             appointmentType: updateAppointmentDto.appointmentType,
+            cptCode: updateAppointmentDto.cptCode,
             location: updateAppointmentDto.location,
             roomNumber: updateAppointmentDto.roomNumber,
+            noteId: updateAppointmentDto.noteId,
+            isTelehealth: updateAppointmentDto.isTelehealth,
             duration: updateAppointmentDto.duration,
             updatedAt: new Date()
           }
@@ -567,6 +591,8 @@ export class SchedulingService {
         status: AppointmentStatus.SCHEDULED,
         location: updatedAppointmentData?.location || existingAppointment.location,
         roomNumber: updatedAppointmentData?.roomNumber || existingAppointment.roomNumber,
+        noteId: updatedAppointmentData?.noteId || existingAppointment.noteId,
+        isTelehealth: updatedAppointmentData?.isTelehealth ?? existingAppointment.isTelehealth ?? false,
         recurringRuleId: ruleId,
         createdBy: existingAppointment.createdBy,
       };

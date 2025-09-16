@@ -13,6 +13,8 @@ interface AppointmentData {
   cptCode?: string | null;
   location?: string | null;
   roomNumber?: string | null;
+  noteId?: string | null;
+  isTelehealth?: boolean;
   startTime: string;
   duration: number;
   // Recurring appointment fields
@@ -40,6 +42,8 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         description: appointmentData.description || undefined,
         location: appointmentData.location || undefined,
         roomNumber: appointmentData.roomNumber || undefined,
+        noteId: appointmentData.noteId || undefined,
+        isTelehealth: appointmentData.isTelehealth,
         startTime: appointmentData.startTime,
         duration: appointmentData.duration,
         recurringPattern: appointmentData.recurringPattern,

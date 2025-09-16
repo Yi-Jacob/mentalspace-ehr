@@ -4,11 +4,13 @@ import { Input } from '@/components/basic/input';
 import { TextareaField } from '@/components/basic/textarea';
 import { SelectField } from '@/components/basic/select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
-import { FileText, Clock, MapPin, Calendar, FileEdit } from 'lucide-react';
+import { Checkbox } from '@/components/basic/checkbox';
+import { FileText, Clock, MapPin, Calendar, FileEdit, Video } from 'lucide-react';
 import { getAppointmentTypeOptions } from '@/types/scheduleType';
 import { AppointmentTypeValue } from '@/types/scheduleType';
 import { AppointmentType } from '@/types/enums/scheduleEnum';
 import { CPT_CODES_BY_TYPE } from '@/types/enums/notesEnum';
+import NoteSelectionSection from './NoteSelectionSection';
 
 interface AppointmentDetailsSectionProps {
   // Appointment Type
@@ -37,6 +39,15 @@ interface AppointmentDetailsSectionProps {
   roomNumber: string;
   onLocationChange: (location: string) => void;
   onRoomNumberChange: (roomNumber: string) => void;
+  
+  // Note Selection
+  clientId: string;
+  noteId: string;
+  onNoteIdChange: (noteId: string) => void;
+  
+  // Telehealth
+  isTelehealth: boolean;
+  onTelehealthChange: (isTelehealth: boolean) => void;
 }
 
 const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
@@ -56,7 +67,12 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
   location,
   roomNumber,
   onLocationChange,
-  onRoomNumberChange
+  onRoomNumberChange,
+  clientId,
+  noteId,
+  onNoteIdChange,
+  isTelehealth,
+  onTelehealthChange
 }) => {
   const appointmentTypes = getAppointmentTypeOptions();
 
@@ -84,7 +100,7 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
   };
 
   const availableCptCodes = useMemo(() => {
-    const category = getCptCodeCategory(appointmentType);
+    const category = getCptCodeCategory(appointmentType as AppointmentType);
     return CPT_CODES_BY_TYPE[category] || [];
   }, [appointmentType]);
 
@@ -241,6 +257,31 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
                 className="bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Note Selection */}
+        <NoteSelectionSection
+          clientId={clientId}
+          value={noteId}
+          onChange={onNoteIdChange}
+        />
+
+        {/* Telehealth */}
+        <div className="space-y-2">
+          <Label className="flex items-center space-x-2 text-gray-700 font-medium">
+            <Video className="h-4 w-4 text-blue-500" />
+            <span>Appointment Type</span>
+          </Label>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isTelehealth"
+              checked={isTelehealth}
+              onCheckedChange={(checked) => onTelehealthChange(checked as boolean)}
+            />
+            <Label htmlFor="isTelehealth" className="text-sm text-gray-600">
+              This is a telehealth appointment
+            </Label>
           </div>
         </div>
       </div>

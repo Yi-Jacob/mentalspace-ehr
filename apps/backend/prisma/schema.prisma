@@ -262,6 +262,8 @@ model Appointment {
   status             String         @map("status")
   location           String?
   roomNumber         String?        @map("room_number")
+  noteId             String?        @map("note_id")
+  isTelehealth       Boolean        @default(false) @map("is_telehealth")
   recurringRuleId    String?        @map("recurring_rule_id")
   createdBy          String?        @map("created_by")
   cancelledBy        String?        @map("cancelled_by")
@@ -272,6 +274,7 @@ model Appointment {
   updatedAt          DateTime       @default(now()) @map("updated_at")
   clients            Client         @relation(fields: [clientId], references: [id])
   staff              StaffProfile   @relation(fields: [providerId], references: [id])
+  note               ClinicalNote?  @relation(fields: [noteId], references: [id])
   recurringRule      RecurringRule? @relation(fields: [recurringRuleId], references: [id])
   createdByStaff     StaffProfile?  @relation("AppointmentCreator", fields: [createdBy], references: [id])
   canceledByStaff    StaffProfile?  @relation("AppointmentCanceler", fields: [cancelledBy], references: [id])
@@ -591,6 +594,7 @@ model ClinicalNote {
   client      Client        @relation(fields: [clientId], references: [id])
   provider    User          @relation("ClinicalNoteProvider", fields: [providerId], references: [id])
   noteHistory NoteHistory[]
+  appointments Appointment[]
 
   @@map("clinical_notes")
 }
