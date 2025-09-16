@@ -76,12 +76,6 @@ export class NoteEntity {
   signedBy?: string;
 
   @ApiProperty({ required: false })
-  approvedAt?: Date;
-
-  @ApiProperty({ required: false })
-  approvedBy?: string;
-
-  @ApiProperty({ required: false })
   coSignedAt?: Date;
 
   @ApiProperty({ required: false })

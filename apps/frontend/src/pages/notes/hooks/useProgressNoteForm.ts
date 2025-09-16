@@ -150,8 +150,7 @@ export const useProgressNoteForm = (noteId?: string) => {
   };
 
   const handleSave = async (isDraft: boolean) => {
-    console.log('handleSave called with isDraft:', isDraft, 'formData:', formData);
-    await saveNoteMutation.mutateAsync({ data: formData, isDraft:true });
+    await saveNoteMutation.mutateAsync({ data: formData, isDraft:isDraft });
     setLastSaved(new Date());
     setHasUnsavedChanges(false);
   };

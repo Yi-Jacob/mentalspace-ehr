@@ -26,12 +26,6 @@ export class NoteService {
     return response.data;
   }
 
-  // Get pending approvals
-  async getPendingApprovals(): Promise<Note[]> {
-    const response = await apiClient.get<Note[]>(`${this.baseUrl}/pending-approvals`);
-    return response.data;
-  }
-
   // Create new note
   async createNote(data: CreateNoteRequest): Promise<Note> {
     const response = await apiClient.post<Note>(this.baseUrl, data);

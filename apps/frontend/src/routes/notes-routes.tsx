@@ -14,7 +14,6 @@ import ConsultationNoteForm from '../pages/notes/ConsultationNoteEditPage';
 import ConsultationNoteView from '../pages/notes/ConsultationNoteViewPage';
 import MiscellaneousNoteForm from '../pages/notes/MiscellaneousNoteEditPage';
 import MiscellaneousNoteView from '../pages/notes/MiscellaneousNoteViewPage';
-import PendingApprovals from '@/pages/notes/PendingApprovalPage';
 import AllNotes from '@/pages/notes/AllNotesPage';
 import CreateNotePage from '@/pages/notes/CreateNotePage/index';
 import NoteHistory from '@/pages/notes/NoteHistoryPage';
@@ -32,10 +31,6 @@ const notesRoutes: RouteObject[] = [
   {
     path: 'create-note',
     element: <CreateNotePage />
-  },
-  {
-    path: 'pending-approvals',
-    element: <PendingApprovals />
   },
   {
     path: 'progress-note/:noteId/edit',

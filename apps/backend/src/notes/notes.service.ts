@@ -63,7 +63,7 @@ export class NotesService {
     return this.mapToEntity(note);
   }
 
-  async findAll(queryDto: QueryNotesDto): Promise<{ notes: NoteEntity[]; total: number }> {
+  async findAll(queryDto: QueryNotesDto, userId?: string, userRoles?: string[]): Promise<{ notes: NoteEntity[]; total: number }> {
     const { page = 1, limit = 10, clientId, noteType, status } = queryDto;
     const skip = (page - 1) * limit;
 
@@ -71,6 +71,20 @@ export class NotesService {
     if (clientId) where.clientId = clientId;
     if (noteType) where.noteType = noteType;
     if (status) where.status = status;
+
+    // Define role groups
+    const adminRoles = ['Practice Administrator', 'Clinical Administrator'];
+    
+    // Check if user has admin roles - full access to all notes
+    if (userRoles && userRoles.some(role => adminRoles.includes(role))) {
+      // Admin users can see all notes, no additional filtering needed
+    } else if (userId) {
+      // Non-admin users: include notes from supervisees
+      const superviseeIds = await this.getSuperviseeIds(userId);
+      where.providerId = {
+        in: [userId, ...superviseeIds]
+      };
+    }
 
     const [notes, total] = await Promise.all([
       this.prisma.clinicalNote.findMany({
@@ -196,41 +210,6 @@ export class NotesService {
     };
   }
 
-  async findPendingApprovals(): Promise<NoteEntity[]> {
-    const notes = await this.prisma.clinicalNote.findMany({
-      where: {
-        status: NoteStatus.PENDING_REVIEW
-      },
-      orderBy: { updatedAt: 'asc' },
-      include: {
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            dateOfBirth: true,
-            email: true,
-            address1: true,
-            address2: true,
-            city: true,
-            state: true,
-            zipCode: true,
-            genderIdentity: true,
-          }
-        },
-        provider: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        }
-      }
-    });
-
-    return notes.map(note => this.mapToEntity(note));
-  }
-
   async updateNote(id: string, updateNoteDto: UpdateNoteDto): Promise<NoteEntity> {
     const existingNote = await this.prisma.clinicalNote.findUnique({
       where: { id },
@@ -244,8 +223,8 @@ export class NotesService {
       throw new BadRequestException('Cannot update a locked note');
     }
 
-    if (existingNote.status === NoteStatus.SIGNED) {
-      throw new BadRequestException('Cannot update a signed note. Create an addendum instead.');
+    if (existingNote.status === NoteStatus.ACCEPTED) {
+      throw new BadRequestException('Cannot update an accepted note. Create an addendum instead.');
     }
 
     // Get the next version number
@@ -316,8 +295,8 @@ export class NotesService {
       throw new BadRequestException('Cannot update a locked note');
     }
 
-    if (existingNote.status === NoteStatus.SIGNED) {
-      throw new BadRequestException('Cannot update a signed note. Create an addendum instead.');
+    if (existingNote.status === NoteStatus.ACCEPTED) {
+      throw new BadRequestException('Cannot update an accepted note. Create an addendum instead.');
     }
 
     // Get the next version number
@@ -391,53 +370,6 @@ export class NotesService {
     });
   }
 
-  async submitForReview(id: string): Promise<NoteEntity> {
-    const existingNote = await this.prisma.clinicalNote.findUnique({
-      where: { id },
-    });
-
-    if (!existingNote) {
-      throw new NotFoundException(`Note with ID ${id} not found`);
-    }
-
-    if (existingNote.status !== NoteStatus.DRAFT) {
-      throw new BadRequestException('Only draft notes can be submitted for review');
-    }
-
-    const note = await this.prisma.clinicalNote.update({
-      where: { id },
-      data: {
-        status: NoteStatus.PENDING_REVIEW,
-        updatedAt: new Date(),
-      },
-      include: {
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            dateOfBirth: true,
-            email: true,
-            address1: true,
-            address2: true,
-            city: true,
-            state: true,
-            zipCode: true,
-            genderIdentity: true,
-          }
-        },
-        provider: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        }
-      }
-    });
-
-    return this.mapToEntity(note);
-  }
 
   async signNote(id: string, signedBy: string): Promise<NoteEntity> {
     const existingNote = await this.prisma.clinicalNote.findUnique({
@@ -451,11 +383,21 @@ export class NotesService {
     if (existingNote.status === NoteStatus.LOCKED) {
       throw new BadRequestException('Cannot sign a locked note');
     }
-    console.log('signing note', id, signedBy, NoteStatus.SIGNED);
+
+    if (existingNote.status !== NoteStatus.DRAFT) {
+      throw new BadRequestException('Only draft notes can be signed');
+    }
+
+    // Check if the provider is a supervisor of anyone
+    const superviseeIds = await this.getSuperviseeIds(existingNote.providerId);
+    
+    // Determine the next status based on whether provider has supervisees
+    const nextStatus = superviseeIds.length > 0 ? NoteStatus.PENDING_CO_SIGN : NoteStatus.ACCEPTED;
+
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {
-        status: NoteStatus.SIGNED,
+        status: nextStatus,
         signedBy,
         signedAt: new Date(),
         updatedAt: new Date(),
@@ -498,14 +440,20 @@ export class NotesService {
       throw new NotFoundException(`Note with ID ${id} not found`);
     }
 
-    if (existingNote.status !== NoteStatus.SIGNED) {
-      throw new BadRequestException('Only signed notes can be marked for co-signature');
+    if (existingNote.status !== NoteStatus.PENDING_CO_SIGN) {
+      throw new BadRequestException('Only notes pending co-signature can be co-signed');
+    }
+
+    // Verify that the co-signer is a supervisor of the note provider
+    const superviseeIds = await this.getSuperviseeIds(coSignedBy);
+    if (!superviseeIds.includes(existingNote.providerId)) {
+      throw new BadRequestException('You can only co-sign notes from your supervisees');
     }
 
     const note = await this.prisma.clinicalNote.update({
       where: { id },
       data: {
-        status: NoteStatus.PENDING_REVIEW,
+        status: NoteStatus.ACCEPTED,
         coSignedBy,
         coSignedAt: new Date(),
         updatedAt: new Date(),
@@ -666,6 +614,24 @@ export class NotesService {
     };
   }
 
+  private async getSuperviseeIds(supervisorId: string): Promise<string[]> {
+    const supervisionRelationships = await this.prisma.supervisionRelationship.findMany({
+      where: {
+        supervisorId,
+        status: 'active',
+        OR: [
+          { endDate: null },
+          { endDate: { gt: new Date() } }
+        ]
+      },
+      select: {
+        superviseeId: true
+      }
+    });
+
+    return supervisionRelationships.map(rel => rel.superviseeId);
+  }
+
   private mapToEntity(note: any): NoteEntity {
     return {
       id: note.id,
@@ -677,8 +643,6 @@ export class NotesService {
       status: note.status,
       signedAt: note.signedAt,
       signedBy: note.signedBy,
-      approvedAt: note.approvedAt,
-      approvedBy: note.approvedBy,
       coSignedAt: note.coSignedAt,
       coSignedBy: note.coSignedBy,
       lockedAt: note.lockedAt,

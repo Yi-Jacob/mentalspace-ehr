@@ -583,8 +583,6 @@ model ClinicalNote {
   status      String?       @map("status")
   signedAt    DateTime      @default(now()) @map("signed_at")
   signedBy    String?       @map("signed_by")
-  approvedAt  DateTime      @default(now()) @map("approved_at")
-  approvedBy  String?       @map("approved_by")
   coSignedAt  DateTime      @default(now()) @map("co_signed_at")
   coSignedBy  String?       @map("co_signed_by")
   lockedAt    DateTime      @default(now()) @map("locked_at")

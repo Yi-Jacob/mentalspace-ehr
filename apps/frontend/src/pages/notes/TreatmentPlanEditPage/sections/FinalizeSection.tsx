@@ -8,6 +8,7 @@ import { InputField } from '@/components/basic/input';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { TreatmentPlanFormData } from '@/types/noteType';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FinalizeSectionProps {
   formData: TreatmentPlanFormData;
@@ -24,6 +25,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   isLoading = false,
   clientData,
 }) => {
+  const { user } = useAuth();
   // Check if all required sections are complete
   const checkSectionCompletion = () => {
     const requiredSections = [
@@ -84,7 +86,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
     const now = new Date().toISOString();
     updateFormData({
       isFinalized: true,
-      signedBy: formData.signature,
+      signedBy: user?.id || '',
       signedAt: now,
     });
 

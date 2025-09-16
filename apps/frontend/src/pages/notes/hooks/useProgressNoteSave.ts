@@ -29,9 +29,7 @@ export const useSaveProgressNote = (noteId: string | undefined, formData: Progre
       
       return await executeWithRetry(async () => {
         const finalData = { ...formData, ...data };
-        const status: NoteStatus = isDraft ? 'draft' :'signed';
-        
-        console.log('Saving progress note with status:', status, 'isDraft:', isDraft, 'data:', finalData);
+        const status:NoteStatus = isDraft ? 'draft' :'pending_co_sign';
         
         const updateData = {
           content: finalData,

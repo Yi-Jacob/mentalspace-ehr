@@ -31,14 +31,11 @@ const formatNoteType = (noteType: string): string => {
 // Helper function to get status badge variant
 const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
-    case 'signed':
     case 'accepted':
       return 'default';
     case 'draft':
       return 'secondary';
-    case 'rejected':
-      return 'destructive';
-    case 'pending_review':
+    case 'pending_co_sign':
       return 'outline';
     case 'locked':
       return 'secondary';
@@ -261,7 +258,7 @@ const NotesList = () => {
       icon: <UserCheck className="h-4 w-4" />,
       onClick: (note: Note) => handleCoSign(note.id),
       variant: 'ghost' as const,
-      disabled: (note: Note) => note.status === 'locked' || note.status === 'signed',
+      disabled: (note: Note) => note.status !== 'pending_co_sign',
     },
   ];
 

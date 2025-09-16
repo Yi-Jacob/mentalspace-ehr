@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { CheckCircle } from 'lucide-react';
 import { ProgressNoteFormData } from '@/types/noteType';
+import { useAuth } from '@/hooks/useAuth';
 import CompletionStatus from './finalize/CompletionStatus';
 import ProgressNoteSummary from './finalize/ProgressNoteSummary';
 import FinalizationForm from './finalize/FinalizationForm';
@@ -23,6 +24,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   isLoading = false,
   clientData,
 }) => {
+  const { user } = useAuth();
   // Check if all required sections are complete
   const checkSectionCompletion = () => {
     const requiredSections = [
@@ -82,9 +84,9 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
 
     const now = new Date().toISOString();
     updateFormData({
-      isFinalized: true,
-      signedBy: formData.signature,
+      signedBy: user?.id || '',
       signedAt: now,
+      signature: `${formData.signature || 'Current User'} - ${new Date().toLocaleString()}`,
     });
 
     if (onSave) {

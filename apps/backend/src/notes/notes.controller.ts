@@ -16,6 +16,13 @@ import { NotesService } from './notes.service';
 import { CreateNoteDto, UpdateNoteDto, QueryNotesDto } from './dto';
 import { NoteEntity } from './entities/note.entity';
 
+// Interface for the authenticated user from JWT
+interface AuthenticatedUser {
+  id: string;
+  email: string;
+  roles: string[];
+}
+
 @ApiTags('notes')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -33,15 +40,8 @@ export class NotesController {
   @Get()
   @ApiOperation({ summary: 'Get all notes with pagination and filtering' })
   @ApiResponse({ status: 200, description: 'Notes retrieved successfully' })
-  async findAll(@Query() queryDto: QueryNotesDto) {
-    return this.notesService.findAll(queryDto);
-  }
-
-  @Get('pending-approvals')
-  @ApiOperation({ summary: 'Get all notes pending approval' })
-  @ApiResponse({ status: 200, description: 'Pending approvals retrieved successfully', type: [NoteEntity] })
-  async findPendingApprovals(): Promise<NoteEntity[]> {
-    return this.notesService.findPendingApprovals();
+  async findAll(@Query() queryDto: QueryNotesDto, @Request() req: { user: AuthenticatedUser }) {
+    return this.notesService.findAll(queryDto, req.user.id, req.user.roles);
   }
 
   @Get(':id')
@@ -79,12 +79,6 @@ export class NotesController {
     return this.notesService.deleteNote(id);
   }
 
-  @Patch(':id/submit')
-  @ApiOperation({ summary: 'Submit note for review' })
-  @ApiResponse({ status: 200, description: 'Note submitted for review successfully', type: NoteEntity })
-  async submitForReview(@Param('id') id: string): Promise<NoteEntity> {
-    return this.notesService.submitForReview(id);
-  }
 
   @Patch(':id/sign')
   @ApiOperation({ summary: 'Sign a note' })
