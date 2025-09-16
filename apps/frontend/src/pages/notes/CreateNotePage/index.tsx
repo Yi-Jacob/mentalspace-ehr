@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Plus, Clock, Zap } from 'lucide-react';
-import { noteTypes } from '../components/config/noteTypes';
+import { NOTE_TYPES } from '@/types/enums/notesEnum';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import CreateNoteModal from '../components/CreateNoteModal';
@@ -51,7 +51,7 @@ const CreateNoteGrid: React.FC<CreateNoteGridProps> = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {noteTypes.map((noteType, index) => {
+        {NOTE_TYPES.map((noteType, index) => {
           const IconComponent = noteType.icon;
           const gradient = getCardGradient(index);
           const estimatedTime = getEstimatedTime(noteType.type);

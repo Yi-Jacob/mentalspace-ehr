@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Plus, Edit, Trash2, Eye, Lock, Unlock, UserCheck } from 'lucide-react';
-import EmptyNotesState from '../components/notes/EmptyNotesState';
+import EmptyState from '@/components/EmptyState';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LoadingWithError from '@/components/LoadingWithError';
@@ -294,7 +294,13 @@ const NotesList = () => {
             loadingComponent={<LoadingSpinner />}
           >
             {filteredNotes.length === 0 && !isLoading ? (
-              <EmptyNotesState />
+              <EmptyState
+                title="No notes found"
+                description="No clinical notes match your current filters."
+                actionLabel="Create New Note"
+                onAction={handleCreateNote}
+                icon={FileText}
+              />
             ) : (
               <Table
                 data={filteredNotes}
