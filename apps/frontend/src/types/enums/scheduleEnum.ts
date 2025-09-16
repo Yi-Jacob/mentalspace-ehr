@@ -1,5 +1,5 @@
 export enum AppointmentType {
-  INITIAL_CONSULTATION = 'Initial Consultation',
+  INTAKE_SESSION = 'Intake session',
   FOLLOW_UP = 'Follow-up',
   THERAPY_SESSION = 'Therapy Session',
   GROUP_THERAPY = 'Group Therapy',

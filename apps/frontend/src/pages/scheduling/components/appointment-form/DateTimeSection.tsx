@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { Label } from '@/components/basic/label';
-import { Input } from '@/components/basic/input';
 import { Button } from '@/components/basic/button';
 import { Calendar, Clock, AlertCircle, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
+import { DateInput } from '@/components/basic/date-input';
 import TimePickerGrid from './TimePickerGrid';
 
 interface DateTimeSectionProps {
@@ -26,8 +26,19 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
   errors
 }) => {
   const [showTimeGrid, setShowTimeGrid] = useState(false);
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const dateValue = format(date, 'yyyy-MM-dd');
+  const today = new Date();
+  
+  // Convert Date to string format for DateInput (YYYY-MM-DD)
+  const dateString = format(date, 'yyyy-MM-dd');
+
+  const handleDateChange = (dateString: string) => {
+    if (dateString) {
+      const newDate = new Date(dateString);
+      if (!isNaN(newDate.getTime())) {
+        onDateChange(newDate);
+      }
+    }
+  };
 
   const handleTimeSelect = (time: string) => {
     onStartTimeChange(time);
@@ -41,35 +52,15 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Date */}
         <div className="space-y-3">
-          <Label htmlFor="date" className="flex items-center space-x-2 text-gray-700 font-semibold">
-            <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg text-white shadow-md">
-              <Calendar className="h-4 w-4" />
-            </div>
-            <span>Date *</span>
-          </Label>
-          <div className="relative group">
-            <Input
-              id="date"
-              type="date"
-              value={dateValue}
-              min={today}
-              onChange={(e) => {
-                const newDate = new Date(e.target.value);
-                if (!isNaN(newDate.getTime())) {
-                  onDateChange(newDate);
-                }
-              }}
-              className={`bg-gradient-to-r from-white to-blue-50/50 border-2 border-blue-200/60 
-                focus:border-blue-500 focus:bg-white focus:shadow-lg focus:shadow-blue-100/50 
-                transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md 
-                hover:border-blue-300 rounded-xl text-gray-700 font-medium
-                ${errors?.date ? 'border-red-400 focus:border-red-500 bg-red-50/30' : ''}
-              `}
-              aria-describedby={errors?.date ? 'date-error' : undefined}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 rounded-xl 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-          </div>
+          <DateInput
+            id="date"
+            label="Date"
+            value={dateString}
+            onChange={handleDateChange}
+            required={true}
+            minDate={today}
+            placeholder="MM/DD/YYYY"
+          />
           {errors?.date && (
             <div id="date-error" className="text-sm text-red-600 flex items-center space-x-2 animate-fade-in">
               <AlertCircle className="h-4 w-4" />
@@ -80,36 +71,28 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
 
         {/* Time */}
         <div className="space-y-3">
-          <Label className="flex items-center space-x-2 text-gray-700 font-semibold">
-            <div className="p-1.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg text-white shadow-md">
-              <Clock className="h-4 w-4" />
-            </div>
-            <span>Start Time *</span>
+          <Label htmlFor="time" className="flex items-center space-x-2">
+            Start Time *
           </Label>
-          <div className="relative group">
+          <div className="relative">
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowTimeGrid(!showTimeGrid)}
-              className={`w-full justify-between bg-gradient-to-r from-white to-purple-50/50 
-                border-2 border-purple-200/60 hover:border-purple-400 hover:bg-purple-50/70 
-                focus:border-purple-500 focus:bg-white focus:shadow-lg focus:shadow-purple-100/50 
-                transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md 
-                rounded-xl text-gray-700 font-medium h-12
-                ${errors?.start_time ? 'border-red-400 focus:border-red-500 bg-red-50/30' : ''}
-                ${showTimeGrid ? 'border-purple-500 shadow-lg shadow-purple-100/50 scale-[1.02]' : ''}
+              className={`w-full justify-between h-10 px-3 py-2 text-small rounded-md border border-input bg-background 
+                ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                ${errors?.start_time ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                ${showTimeGrid ? 'ring-2 ring-ring ring-offset-2' : ''}
               `}
             >
-              <span className={startTime ? 'text-gray-800' : 'text-gray-500'}>{displayTime}</span>
-              <ChevronDown className={`h-4 w-4 opacity-60 transition-transform duration-300 ${
-                showTimeGrid ? 'rotate-180 text-purple-600' : ''}
+              <span>{displayTime}</span>
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                showTimeGrid ? 'rotate-180' : ''}
               `} />
             </Button>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-xl 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             {showTimeGrid && (
-              <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border-2 border-purple-200 
-                rounded-xl shadow-2xl shadow-purple-100/50 animate-scale-in backdrop-blur-sm">
+              <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-background border border-input
+                rounded-md shadow-lg">
                 <TimePickerGrid
                   selectedTime={startTime}
                   onTimeSelect={handleTimeSelect}
@@ -118,7 +101,7 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
             )}
           </div>
           {errors?.start_time && (
-            <div className="text-sm text-red-600 flex items-center space-x-2 animate-fade-in">
+            <div className="text-sm text-red-600 flex items-center space-x-2">
               <AlertCircle className="h-4 w-4" />
               <span>{errors.start_time}</span>
             </div>

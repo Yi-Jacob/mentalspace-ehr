@@ -43,7 +43,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case AppointmentType.INITIAL_CONSULTATION:
+      case AppointmentType.INTAKE_SESSION:
         return 'bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-800 border-indigo-300';
       case AppointmentType.FOLLOW_UP:
         return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';

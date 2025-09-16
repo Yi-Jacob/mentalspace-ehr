@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 
 export const useAppointmentModal = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 

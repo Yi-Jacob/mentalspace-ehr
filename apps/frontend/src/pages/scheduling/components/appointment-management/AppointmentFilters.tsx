@@ -60,7 +60,7 @@ const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
             </SelectTrigger>
             <SelectContent className="bg-white border-0 shadow-2xl backdrop-blur-sm">
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value={AppointmentType.INITIAL_CONSULTATION}>Initial Consultation</SelectItem>
+              <SelectItem value={AppointmentType.INTAKE_SESSION}>Intake session</SelectItem>
               <SelectItem value={AppointmentType.FOLLOW_UP}>Follow-up</SelectItem>
               <SelectItem value={AppointmentType.THERAPY_SESSION}>Therapy Session</SelectItem>
               <SelectItem value={AppointmentType.GROUP_THERAPY}>Group Therapy</SelectItem>

@@ -56,7 +56,7 @@ const Dashboard = () => {
   ];
 
   const upcomingAppointments = [
-    { time: "3:00 PM", client: "Emma Wilson", type: "Initial Consultation" },
+    { time: "3:00 PM", client: "Emma Wilson", type: "Intake session" },
     { time: "4:00 PM", client: "James Rodriguez", type: "Follow-up Session" },
     { time: "5:00 PM", client: "Maria Garcia", type: "Therapy Session" }
   ];

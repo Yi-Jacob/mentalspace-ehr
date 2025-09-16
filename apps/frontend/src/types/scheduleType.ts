@@ -11,7 +11,7 @@ export const getAppointmentTypeValues = (): AppointmentTypeValue[] => {
 // Helper function to get appointment type options for select components
 export const getAppointmentTypeOptions = () => {
   return [
-    { value: AppointmentType.INITIAL_CONSULTATION, label: 'Initial Consultation' },
+    { value: AppointmentType.INTAKE_SESSION, label: 'Intake Session' },
     { value: AppointmentType.FOLLOW_UP, label: 'Follow-up' },
     { value: AppointmentType.THERAPY_SESSION, label: 'Therapy Session' },
     { value: AppointmentType.GROUP_THERAPY, label: 'Group Therapy' },
@@ -30,7 +30,6 @@ export const getAppointmentStatusValues = (): AppointmentStatusValue[] => {
 // Helper function to get appointment status options for select components
 export const getAppointmentStatusOptions = () => {
   return [
-    { value: AppointmentStatus.PENDING, label: 'Pending' },
     { value: AppointmentStatus.SCHEDULED, label: 'Scheduled' },
     { value: AppointmentStatus.CONFIRMED, label: 'Confirmed' },
     { value: AppointmentStatus.CHECKED_IN, label: 'Checked In' },

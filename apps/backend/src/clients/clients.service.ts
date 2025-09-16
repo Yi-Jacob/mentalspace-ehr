@@ -213,13 +213,35 @@ export class ClientsService {
    * // Returns: [{ id: 'client-1', firstName: 'John', lastName: 'Doe', email: 'john@example.com' }]
    * ```
    */
-  async getClientsForNotes(userId: string): Promise<ClientNoteData[]> {
+  async getClientsForNotes(userId: string, userRoles?: string[]): Promise<ClientNoteData[]> {
     // Input validation
     if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
       throw new Error('Invalid user ID provided for client retrieval');
     }
 
     try {
+      // Define admin roles (same as in controller)
+      const adminRoles = ['Practice Administrator', 'Clinical Administrator', 'Practice Scheduler'];
+      
+      // Check if user has admin roles - return all active clients
+      if (userRoles && userRoles.some(role => adminRoles.includes(role))) {
+        const clients = await this.prisma.client.findMany({
+          where: {
+            isActive: true,
+          },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+          orderBy: {
+            lastName: 'asc',
+          },
+        });
+        return clients;
+      }
+
       // Retrieve the staff profile associated with the user
       const staffProfile = await this.getStaffProfileByUserId(userId.trim());
       

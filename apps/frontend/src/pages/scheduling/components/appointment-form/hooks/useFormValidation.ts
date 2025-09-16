@@ -39,12 +39,6 @@ export const useFormValidation = () => {
     if (!formData.cptCode.trim()) {
       newErrors.cptCode = 'CPT code selection is required';
     }
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    }
     if (!formData.date) {
       newErrors.date = 'Date is required';
     }

@@ -63,7 +63,7 @@ export class ClientsController {
   @ApiResponse({ status: 200, description: 'List of clients for notes' })
   async getClientsForNotes(@Request() req: { user: AuthenticatedUser }) {
     const user = req.user;
-    return this.clientsService.getClientsForNotes(user.id);
+    return this.clientsService.getClientsForNotes(user.id, user.roles);
   }
 
   @Get('staff-profiles')
