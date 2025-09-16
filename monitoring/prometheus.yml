@@ -18,17 +18,3 @@ scrape_configs:
       - targets: ['node-exporter:9100']
     scrape_interval: 5s
     metrics_path: /metrics
-
-  # Backend application metrics (if you add metrics endpoint later)
-  - job_name: 'backend'
-    static_configs:
-      - targets: ['backend:7000']
-    metrics_path: /metrics
-    scrape_interval: 30s
-
-  # Frontend application metrics (if you add metrics endpoint later)
-  - job_name: 'frontend'
-    static_configs:
-      - targets: ['frontend:80']
-    metrics_path: /metrics
-    scrape_interval: 30s
