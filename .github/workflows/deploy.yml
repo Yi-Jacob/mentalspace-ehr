@@ -94,4 +94,14 @@ jobs:
         echo "Backend .env file exists: $(test -f apps/backend/.env && echo 'YES' || echo 'NO')"
         echo "Backend .env file size: $(wc -c < apps/backend/.env) bytes"
         
+        echo "Checking monitoring services status..."
+        docker ps --filter "name=mentalspace-prometheus" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+        docker ps --filter "name=mentalspace-grafana" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+        docker ps --filter "name=mentalspace-node-exporter" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+        
+        echo "Monitoring services accessible at:"
+        echo "- Prometheus: http://3.147.75.218:9090"
+        echo "- Grafana: http://3.147.75.218:3000 (admin/admin123)"
+        echo "- Node Exporter: http://3.147.75.218:9100"
+        
         echo "Deployment completed!" 
