@@ -1,15 +1,9 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
-import ProgressNoteForm from '../pages/notes/ProgressNoteEditPage';
-import IntakeAssessmentForm from '../pages/notes/IntakeAssessmentNoteEditPage';
-import TreatmentPlanForm from '../pages/notes/TreatmentPlanEditPage';
-import CancellationNoteForm from '../pages/notes/CancellationNoteEditPage';
-import ContactNoteForm from '../pages/notes/ContactNoteEditPage';
-import ConsultationNoteForm from '../pages/notes/ConsultationNoteEditPage';
-import MiscellaneousNoteForm from '../pages/notes/MiscellaneousNoteEditPage';
 import AllNotes from '@/pages/notes/AllNotesPage';
 import CreateNotePage from '@/pages/notes/CreateNotePage/index';
 import NoteViewPage from '@/pages/notes/NoteViewPage';
+import NoteEditPage from '@/pages/notes/NoteEditPage';
 import NoteHistory from '@/pages/notes/NoteHistoryPage';
 import NoteHistoryView from '@/pages/notes/NoteHistoryViewPage';
 
@@ -31,34 +25,10 @@ const notesRoutes: RouteObject[] = [
     path: 'view/:noteId',
     element: <NoteViewPage />,
   },
-  // Edit routes (keeping existing structure for now)
+  // Consolidated edit route
   {
-    path: 'progress-note/:noteId/edit',
-    element: <ProgressNoteForm />,
-  },
-  {
-    path: 'intake/:noteId/edit',
-    element: <IntakeAssessmentForm />,
-  },
-  {
-    path: 'treatment-plan/:noteId/edit',
-    element: <TreatmentPlanForm />,
-  },
-  {
-    path: 'cancellation-note/:noteId/edit',
-    element: <CancellationNoteForm />,
-  },
-  {
-    path: 'contact-note/:noteId/edit',
-    element: <ContactNoteForm />,
-  },
-  {
-    path: 'consultation-note/:noteId/edit',
-    element: <ConsultationNoteForm />,
-  },
-  {
-    path: 'miscellaneous-note/:noteId/edit',
-    element: <MiscellaneousNoteForm />,
+    path: 'edit/:noteId',
+    element: <NoteEditPage />,
   },
   // Note History
   {

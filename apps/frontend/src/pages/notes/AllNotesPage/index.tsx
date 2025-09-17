@@ -67,40 +67,8 @@ const NotesList = () => {
   const filteredNotes = notesResponse?.notes || [];
 
   const handleEdit = (id: string) => {
-    // Find the note by ID to get the note type
-    const note = filteredNotes.find(n => n.id === id);
-    if (note) {
-      // Use specific edit routes based on note type
-      switch (note.noteType) {
-        case 'progress_note':
-          navigate(`/notes/progress-note/${id}/edit`);
-          break;
-        case 'intake':
-          navigate(`/notes/intake/${id}/edit`);
-          break;
-        case 'treatment_plan':
-          navigate(`/notes/treatment-plan/${id}/edit`);
-          break;
-        case 'cancellation_note':
-          navigate(`/notes/cancellation-note/${id}/edit`);
-          break;
-        case 'contact_note':
-          navigate(`/notes/contact-note/${id}/edit`);
-          break;
-        case 'consultation_note':
-          navigate(`/notes/consultation-note/${id}/edit`);
-          break;
-        case 'miscellaneous_note':
-          navigate(`/notes/miscellaneous-note/${id}/edit`);
-          break;
-        default:
-          // Fallback to generic route if note not found
-          navigate(`/notes/note/${id}/edit`);
-      }
-    } else {
-      // Fallback to generic route if note not found
-      navigate(`/notes/note/${id}/edit`);
-    }
+    // Use the unified edit route for all note types
+    navigate(`/notes/edit/${id}`);
   };
 
   const handleDelete = async (id: string) => {

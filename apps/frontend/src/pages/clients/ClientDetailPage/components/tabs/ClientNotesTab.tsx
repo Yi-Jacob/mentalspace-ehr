@@ -41,33 +41,8 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   };
 
   const handleEditNote = (note: any) => {
-    // Use specific edit routes based on note type
-    switch (note.noteType) {
-      case 'progress_note':
-        navigate(`/notes/progress-note/${note.id}/edit`);
-        break;
-      case 'intake':
-        navigate(`/notes/intake/${note.id}/edit`);
-        break;
-      case 'treatment_plan':
-        navigate(`/notes/treatment-plan/${note.id}/edit`);
-        break;
-      case 'cancellation_note':
-        navigate(`/notes/cancellation-note/${note.id}/edit`);
-        break;
-      case 'contact_note':
-        navigate(`/notes/contact-note/${note.id}/edit`);
-        break;
-      case 'consultation_note':
-        navigate(`/notes/consultation-note/${note.id}/edit`);
-        break;
-      case 'miscellaneous_note':
-        navigate(`/notes/miscellaneous-note/${note.id}/edit`);
-        break;
-      default:
-        // Fallback to generic route
-        navigate(`/notes/note/${note.id}/edit`);
-    }
+    // Use the unified edit route for all note types
+    navigate(`/notes/edit/${note.id}`);
   };
 
   if (isLoading) {
