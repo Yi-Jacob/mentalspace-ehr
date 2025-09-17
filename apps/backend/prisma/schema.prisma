@@ -590,7 +590,9 @@ model ClinicalNote {
   coSignedAt  DateTime      @default(now()) @map("co_signed_at")
   coSignedBy  String?       @map("co_signed_by")
   lockedAt    DateTime?     @default(now()) @map("locked_at")
+  lockedBy    String?       @map("locked_by")
   unlockedAt  DateTime?     @default(now()) @map("unlocked_at")
+  unlockedBy  String?       @map("unlocked_by")
   version     Int?
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @default(now()) @map("updated_at")
