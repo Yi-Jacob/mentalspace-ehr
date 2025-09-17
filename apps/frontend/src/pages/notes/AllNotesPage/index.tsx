@@ -15,7 +15,6 @@ import { Badge } from '@/components/basic/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { noteService } from '@/services/noteService';
 import { Note } from '@/types/noteType';
-import { getNoteRoute } from '@/utils/routingUtils';
 
 type FilterNoteStatus = 'all' | Note['status'];
 type FilterNoteType = 'all' | Note['noteType'];
@@ -28,21 +27,7 @@ const formatNoteType = (noteType: string): string => {
     .join(' ');
 };
 
-// Helper function to get status badge variant
-const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  switch (status) {
-    case 'accepted':
-      return 'default';
-    case 'draft':
-      return 'secondary';
-    case 'pending_co_sign':
-      return 'outline';
-    case 'locked':
-      return 'secondary';
-    default:
-      return 'outline';
-  }
-};
+// Helper function to get status badge varian
 
 // Helper function to format date
 const formatDate = (dateString: string): string => {
@@ -85,8 +70,33 @@ const NotesList = () => {
     // Find the note by ID to get the note type
     const note = filteredNotes.find(n => n.id === id);
     if (note) {
-      const editRoute = getNoteRoute(note, true);
-      navigate(editRoute);
+      // Use specific edit routes based on note type
+      switch (note.noteType) {
+        case 'progress_note':
+          navigate(`/notes/progress-note/${id}/edit`);
+          break;
+        case 'intake':
+          navigate(`/notes/intake/${id}/edit`);
+          break;
+        case 'treatment_plan':
+          navigate(`/notes/treatment-plan/${id}/edit`);
+          break;
+        case 'cancellation_note':
+          navigate(`/notes/cancellation-note/${id}/edit`);
+          break;
+        case 'contact_note':
+          navigate(`/notes/contact-note/${id}/edit`);
+          break;
+        case 'consultation_note':
+          navigate(`/notes/consultation-note/${id}/edit`);
+          break;
+        case 'miscellaneous_note':
+          navigate(`/notes/miscellaneous-note/${id}/edit`);
+          break;
+        default:
+          // Fallback to generic route if note not found
+          navigate(`/notes/note/${id}/edit`);
+      }
     } else {
       // Fallback to generic route if note not found
       navigate(`/notes/note/${id}/edit`);
@@ -105,15 +115,8 @@ const NotesList = () => {
   };
 
   const handleView = (id: string) => {
-    // Find the note by ID to get the note type
-    const note = filteredNotes.find(n => n.id === id);
-    if (note) {
-      const viewRoute = getNoteRoute(note, false);
-      navigate(viewRoute);
-    } else {
-      // Fallback to generic route if note not found
-      navigate(`/notes/note/${id}`);
-    }
+    // Use the consolidated view route for all note types
+    navigate(`/notes/view/${id}`);
   };
 
   const handleCoSign = async (id: string) => {
@@ -187,7 +190,19 @@ const NotesList = () => {
       key: 'status',
       header: 'Status',
       accessor: (note) => (
-        <Badge variant={getStatusBadgeVariant(note.status)} className="text-xs">
+        <Badge 
+          className={`text-xs font-medium ${
+            note.status === 'accepted' 
+              ? 'bg-green-100 text-green-800 border-green-200' 
+              : note.status === 'draft'
+              ? 'bg-blue-100 text-blue-800 border-blue-200'
+              : note.status === 'pending_co_sign'
+              ? 'bg-orange-100 text-orange-800 border-orange-200'
+              : note.status === 'locked'
+              ? 'bg-red-100 text-red-800 border-red-200'
+              : 'bg-gray-100 text-gray-800 border-gray-200'
+          }`}
+        >
           {note.status.replace('_', ' ').toUpperCase()}
         </Badge>
       ),

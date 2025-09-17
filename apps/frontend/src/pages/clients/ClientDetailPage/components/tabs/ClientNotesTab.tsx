@@ -8,7 +8,6 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
-import { getNoteRoute } from '@/utils/routingUtils';
 import { ClientFormData } from '@/types/clientType';
 import { LoadingState } from '@/components/basic/loading-state';
 import { EmptyState } from '@/components/basic/empty-state';
@@ -37,13 +36,38 @@ export const ClientNotesTab: React.FC<ClientNotesTabProps> = ({ client }) => {
   };
 
   const handleViewNote = (note: any) => {
-    const viewRoute = getNoteRoute(note, false);
-    navigate(viewRoute);
+    // Use the consolidated view route for all note types
+    navigate(`/notes/view/${note.id}`);
   };
 
   const handleEditNote = (note: any) => {
-    const editRoute = getNoteRoute(note, true);
-    navigate(editRoute);
+    // Use specific edit routes based on note type
+    switch (note.noteType) {
+      case 'progress_note':
+        navigate(`/notes/progress-note/${note.id}/edit`);
+        break;
+      case 'intake':
+        navigate(`/notes/intake/${note.id}/edit`);
+        break;
+      case 'treatment_plan':
+        navigate(`/notes/treatment-plan/${note.id}/edit`);
+        break;
+      case 'cancellation_note':
+        navigate(`/notes/cancellation-note/${note.id}/edit`);
+        break;
+      case 'contact_note':
+        navigate(`/notes/contact-note/${note.id}/edit`);
+        break;
+      case 'consultation_note':
+        navigate(`/notes/consultation-note/${note.id}/edit`);
+        break;
+      case 'miscellaneous_note':
+        navigate(`/notes/miscellaneous-note/${note.id}/edit`);
+        break;
+      default:
+        // Fallback to generic route
+        navigate(`/notes/note/${note.id}/edit`);
+    }
   };
 
   if (isLoading) {

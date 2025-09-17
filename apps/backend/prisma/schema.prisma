@@ -39,6 +39,10 @@ model User {
   claims                        Claim[]                      @relation("ClaimProvider")
   complianceDeadlines           ComplianceDeadline[]         @relation("ComplianceDeadlineProvider")
   clinicalNotes                 ClinicalNote[]               @relation("ClinicalNoteProvider")
+  signedNotes                   ClinicalNote[]               @relation("ClinicalNoteSigner")
+  coSignedNotes                 ClinicalNote[]               @relation("ClinicalNoteCoSigner")
+  lockedNotes                   ClinicalNote[]               @relation("ClinicalNoteLocker")
+  unlockedNotes                 ClinicalNote[]               @relation("ClinicalNoteUnlocker")
 
   conversations                 Conversation[]               @relation("ConversationTherapist")
   clientConversations          Conversation[]                @relation("ConversationClient")
@@ -585,12 +589,17 @@ model ClinicalNote {
   signedBy    String?       @map("signed_by")
   coSignedAt  DateTime      @default(now()) @map("co_signed_at")
   coSignedBy  String?       @map("co_signed_by")
-  lockedAt    DateTime      @default(now()) @map("locked_at")
+  lockedAt    DateTime?     @default(now()) @map("locked_at")
+  unlockedAt  DateTime?     @default(now()) @map("unlocked_at")
   version     Int?
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @default(now()) @map("updated_at")
   client      Client        @relation(fields: [clientId], references: [id])
   provider    User          @relation("ClinicalNoteProvider", fields: [providerId], references: [id])
+  signer      User?         @relation("ClinicalNoteSigner", fields: [signedBy], references: [id])
+  coSigner    User?         @relation("ClinicalNoteCoSigner", fields: [coSignedBy], references: [id])
+  locker      User?         @relation("ClinicalNoteLocker", fields: [lockedBy], references: [id])
+  unlocker    User?         @relation("ClinicalNoteUnlocker", fields: [unlockedBy], references: [id])
   noteHistory NoteHistory[]
   appointments Appointment[]
 

@@ -85,6 +85,15 @@ export class NoteEntity {
   lockedAt?: Date;
 
   @ApiProperty({ required: false })
+  lockedBy?: string;
+
+  @ApiProperty({ required: false })
+  unlockedAt?: Date;
+
+  @ApiProperty({ required: false })
+  unlockedBy?: string;
+
+  @ApiProperty({ required: false })
   version?: number;
 
   @ApiProperty()

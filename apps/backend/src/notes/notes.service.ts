@@ -44,6 +44,34 @@ export class NotesService {
             firstName: true,
             lastName: true,
           }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
         }
       }
     });
@@ -146,6 +174,34 @@ export class NotesService {
           }
         },
         provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
           select: {
             id: true,
             firstName: true,
@@ -259,6 +315,34 @@ export class NotesService {
             firstName: true,
             lastName: true,
           }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
         }
       }
     });
@@ -328,6 +412,34 @@ export class NotesService {
           }
         },
         provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
           select: {
             id: true,
             firstName: true,
@@ -424,6 +536,34 @@ export class NotesService {
             firstName: true,
             lastName: true,
           }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
         }
       }
     });
@@ -480,6 +620,34 @@ export class NotesService {
             firstName: true,
             lastName: true,
           }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
         }
       }
     });
@@ -487,7 +655,7 @@ export class NotesService {
     return this.mapToEntity(note);
   }
 
-  async lockNote(id: string): Promise<NoteEntity> {
+  async lockNote(id: string, lockedBy?: string): Promise<NoteEntity> {
     const existingNote = await this.prisma.clinicalNote.findUnique({
       where: { id },
     });
@@ -501,6 +669,7 @@ export class NotesService {
       data: {
         status: NoteStatus.LOCKED,
         lockedAt: new Date(),
+        lockedBy: lockedBy || null,
         updatedAt: new Date(),
       },
       include: {
@@ -520,6 +689,34 @@ export class NotesService {
           }
         },
         provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
           select: {
             id: true,
             firstName: true,
@@ -532,7 +729,7 @@ export class NotesService {
     return this.mapToEntity(note);
   }
 
-  async unlockNote(id: string): Promise<NoteEntity> {
+  async unlockNote(id: string, unlockedBy?: string): Promise<NoteEntity> {
     const existingNote = await this.prisma.clinicalNote.findUnique({
       where: { id },
     });
@@ -545,6 +742,8 @@ export class NotesService {
       where: { id },
       data: {
         status: NoteStatus.DRAFT,
+        unlockedAt: new Date(),
+        unlockedBy: unlockedBy || null,
         updatedAt: new Date(),
       },
       include: {
@@ -564,6 +763,34 @@ export class NotesService {
           }
         },
         provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        signer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        coSigner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        locker: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        unlocker: {
           select: {
             id: true,
             firstName: true,
@@ -642,10 +869,13 @@ export class NotesService {
       noteType: note.noteType,
       status: note.status,
       signedAt: note.signedAt,
-      signedBy: note.signedBy,
+      signedBy: note.signer ? `${note.signer.firstName} ${note.signer.lastName}` : note.signedBy,
       coSignedAt: note.coSignedAt,
-      coSignedBy: note.coSignedBy,
+      coSignedBy: note.coSigner ? `${note.coSigner.firstName} ${note.coSigner.lastName}` : note.coSignedBy,
       lockedAt: note.lockedAt,
+      lockedBy: note.locker ? `${note.locker.firstName} ${note.locker.lastName}` : note.lockedBy,
+      unlockedAt: note.unlockedAt,
+      unlockedBy: note.unlocker ? `${note.unlocker.firstName} ${note.unlocker.lastName}` : note.unlockedBy,
       version: note.version,
       createdAt: note.createdAt,
       updatedAt: note.updatedAt,
