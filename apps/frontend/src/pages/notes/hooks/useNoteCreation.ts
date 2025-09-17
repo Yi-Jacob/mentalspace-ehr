@@ -44,24 +44,8 @@ export const useNoteCreation = () => {
       console.log('Note type for navigation:', data.noteType);
       
       // Navigate based on note type with detailed logging
-      let targetRoute = '';
-      if (data.noteType === 'intake') {
-        targetRoute = `/notes/intake/${data.id}/edit`;
-      } else if (data.noteType === 'progress_note') {
-        targetRoute = `/notes/progress-note/${data.id}/edit`;
-      } else if (data.noteType === 'treatment_plan') {
-        targetRoute = `/notes/treatment-plan/${data.id}/edit`;
-      } else if (data.noteType === 'cancellation_note') {
-        targetRoute = `/notes/cancellation-note/${data.id}/edit`;
-      } else if (data.noteType === 'contact_note') {
-        targetRoute = `/notes/contact-note/${data.id}/edit`;
-      } else if (data.noteType === 'consultation_note') {
-        targetRoute = `/notes/consultation-note/${data.id}/edit`;
-      } else if (data.noteType === 'miscellaneous_note') {
-        targetRoute = `/notes/miscellaneous-note/${data.id}/edit`;
-      } else {
-        targetRoute = `/notes/note/${data.id}/edit`;
-      }
+      // Use the unified edit route for all note types
+      const targetRoute = `/notes/edit/${data.id}`;
       
       console.log('Navigating to:', targetRoute);
       navigate(targetRoute);

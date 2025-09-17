@@ -2,8 +2,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Target } from 'lucide-react';
-import { useTreatmentPlanForm } from '../hooks/useTreatmentPlanForm';
-import { SECTIONS } from './constants/sections';
+import { useUnifiedNote } from '../hooks/useUnifiedNote';
+import { NOTE_TYPE_CONFIGS } from '../config/noteTypeConfigs';
 import SectionStyleNoteEditLayout from '../components/layout/MultiSectionNoteEditLayout';
 
 const TreatmentPlanForm = () => {
@@ -24,14 +24,14 @@ const TreatmentPlanForm = () => {
     handlePrevious,
     handleSectionClick,
     handleSaveDraft,
-  } = useTreatmentPlanForm(noteId);
+  } = useUnifiedNote(noteId, NOTE_TYPE_CONFIGS.treatment_plan);
 
   return (
     <SectionStyleNoteEditLayout
       title="Treatment Plan"
       description="Complete treatment plan for client"
       icon={Target}
-      sections={SECTIONS}
+      sections={NOTE_TYPE_CONFIGS.treatment_plan.sections}
       currentSection={currentSection}
       formData={formData}
       updateFormData={updateFormData}

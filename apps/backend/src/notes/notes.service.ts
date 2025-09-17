@@ -500,11 +500,11 @@ export class NotesService {
       throw new BadRequestException('Only draft notes can be signed');
     }
 
-    // Check if the provider is a supervisor of anyone
-    const superviseeIds = await this.getSuperviseeIds(existingNote.providerId);
+    // Check if the provider has supervisors (is a supervisee)
+    const supervisorIds = await this.getSupervisorIds(existingNote.providerId);
     
-    // Determine the next status based on whether provider has supervisees
-    const nextStatus = superviseeIds.length > 0 ? NoteStatus.PENDING_CO_SIGN : NoteStatus.ACCEPTED;
+    // Determine the next status based on whether provider has supervisors
+    const nextStatus = supervisorIds.length > 0 ? NoteStatus.PENDING_CO_SIGN : NoteStatus.ACCEPTED;
 
     const note = await this.prisma.clinicalNote.update({
       where: { id },
@@ -857,6 +857,24 @@ export class NotesService {
     });
 
     return supervisionRelationships.map(rel => rel.superviseeId);
+  }
+
+  private async getSupervisorIds(superviseeId: string): Promise<string[]> {
+    const supervisionRelationships = await this.prisma.supervisionRelationship.findMany({
+      where: {
+        superviseeId,
+        status: 'active',
+        OR: [
+          { endDate: null },
+          { endDate: { gt: new Date() } }
+        ]
+      },
+      select: {
+        supervisorId: true
+      }
+    });
+
+    return supervisionRelationships.map(rel => rel.supervisorId);
   }
 
   private mapToEntity(note: any): NoteEntity {

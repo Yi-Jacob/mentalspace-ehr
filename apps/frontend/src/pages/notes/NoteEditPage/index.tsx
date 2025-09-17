@@ -95,19 +95,7 @@ const NoteEditPage = () => {
   })();
 
   return (
-    <div className="container mx-auto py-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <noteTypeConfig.icon className="h-5 w-5" />
-            Edit {noteTypeConfig.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {NoteEditComponent}
-        </CardContent>
-      </Card>
-    </div>
+    <div> {NoteEditComponent} </div>
   );
 };
 

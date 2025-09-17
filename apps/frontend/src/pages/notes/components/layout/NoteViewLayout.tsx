@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
-import { ArrowLeft, Edit, History } from 'lucide-react';
+import { ArrowLeft, Edit, History, LucideIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -11,7 +11,7 @@ import { Note } from '@/types/noteType';
 interface NoteViewLayoutProps {
   note: Note;
   noteType: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   title: string;
   children: React.ReactNode;
   className?: string;
@@ -69,24 +69,8 @@ const NoteViewLayout: React.FC<NoteViewLayoutProps> = ({
     : `Provider ID: ${note.providerId}`;
 
   const getEditPath = () => {
-    switch (noteType) {
-      case 'contact_note':
-        return `/notes/contact-note/${note.id}/edit`;
-      case 'cancellation_note':
-        return `/notes/cancellation-note/${note.id}/edit`;
-      case 'progress_note':
-        return `/notes/progress-note/${note.id}/edit`;
-      case 'intake':
-        return `/notes/intake/${note.id}/edit`;
-      case 'treatment_plan':
-        return `/notes/treatment-plan/${note.id}/edit`;
-      case 'consultation_note':
-        return `/notes/consultation-note/${note.id}/edit`;
-      case 'miscellaneous_note':
-        return `/notes/miscellaneous-note/${note.id}/edit`;
-      default:
-        return `/notes/${note.id}/edit`;
-    }
+    // Use the unified edit route for all note types
+    return `/notes/edit/${note.id}`;
   };
 
   return (

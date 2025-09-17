@@ -33,6 +33,9 @@ export interface Note {
   coSignedAt?: string;
   coSignedBy?: string;
   lockedAt?: string;
+  lockedBy?: string;
+  unlockedAt?: string;
+  unlockedBy?: string;
   version?: number;
   createdAt: string;
   updatedAt: string;
