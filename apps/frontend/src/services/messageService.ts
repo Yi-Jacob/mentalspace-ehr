@@ -196,6 +196,12 @@ export class MessageService {
     const response = await apiClient.put<ConversationData>(`${this.baseUrl}/conversations/${id}/participants`, data);
     return response.data;
   }
+
+  // Get conversations for a specific client
+  async getClientConversations(clientId: string): Promise<ConversationData[]> {
+    const response = await apiClient.get<ConversationData[]>(`${this.baseUrl}/conversations/client/${clientId}`);
+    return response.data;
+  }
 }
 
 export const messageService = new MessageService(); 

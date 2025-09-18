@@ -289,7 +289,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
       <div className="p-4 border-b border-blue-700 flex-shrink-0">
         <div className="flex items-center justify-center">
           {!isCollapsed ? (
-            <div className="flex items-center space-x-3">
+            <div 
+              className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              onClick={() => navigate('/')}
+              title="Go to Dashboard"
+            >
               <img
                 src="/lovable-uploads/767e6203-d61c-4e71-b71b-e30eef1420da.png"
                 alt="MentalSpace Logo"
@@ -297,7 +301,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
               />
             </div>
           ) : (
-            <div className="flex items-center justify-center">
+            <div 
+              className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              onClick={() => navigate('/')}
+              title="Go to Dashboard"
+            >
               <img
                 src="/lovable-uploads/767e6203-d61c-4e71-b71b-e30eef1420da.png"
                 alt="MentalSpace Logo"

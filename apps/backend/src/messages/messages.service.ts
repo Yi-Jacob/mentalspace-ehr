@@ -9,7 +9,7 @@ export class MessagesService {
   constructor(
     private prisma: PrismaService,
     private messagesEventsService: MessagesEventsService,
-  ) {}
+  ) { }
 
   // Get all conversations for a user (both individual and group)
   async getConversations(userId: string) {
@@ -196,7 +196,7 @@ export class MessagesService {
       throw new NotFoundException('One or more participants not found');
     }
 
-        // Create conversation and participants in a transaction
+    // Create conversation and participants in a transaction
     return this.prisma.$transactionWithRetry(async (prisma) => {
       const conversation = await prisma.conversation.create({
         data: {
@@ -397,7 +397,7 @@ export class MessagesService {
 
     // Broadcast new message to all participants via WebSocket
     this.messagesEventsService.emitNewMessage(createMessageDto.conversationId, message);
-    
+
     return message;
   }
 
@@ -858,5 +858,99 @@ export class MessagesService {
 
       return updatedConversation;
     });
+  }
+
+  // Get conversations for a specific client
+  async getClientConversations(clientId: string, userId: string) {
+    const cleintUserId = await this.prisma.user.findUnique({
+      where: {
+        clientId: clientId,
+      },
+    });
+    const conversations = await this.prisma.conversation.findMany({
+      where: {
+        OR: [
+          // Individual conversations between this staff and client
+          {
+            clientId: cleintUserId.id,
+            therapistId: userId,
+            type: 'individual'
+          },
+          // Group conversations where both staff and client are participants
+          {
+            type: 'group',
+            AND: [
+              {
+                participants: {
+                  some: {
+                    userId,
+                    leftAt: null,
+                  },
+                },
+              },
+              {
+                participants: {
+                  some: {
+                    user: {
+                      id: cleintUserId.id
+                    },
+                    leftAt: null,
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        therapist: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        participants: {
+          where: {
+            leftAt: null,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        messages: {
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+        },
+      },
+      orderBy: {
+        lastMessageAt: 'desc',
+      },
+    });
+    return conversations;
   }
 } 

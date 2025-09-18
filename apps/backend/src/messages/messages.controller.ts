@@ -171,4 +171,14 @@ export class MessagesController {
     const userId = req.user.id;
     return this.messagesService.updateGroupConversationParticipants(id, userId, updateGroupParticipantsDto.participantIds);
   }
+
+  // Get conversations for a specific client
+  @Get('conversations/client/:clientId')
+  async getClientConversations(
+    @Param('clientId') clientId: string,
+    @Request() req
+  ) {
+    const userId = req.user.id;
+    return this.messagesService.getClientConversations(clientId, userId);
+  }
 } 

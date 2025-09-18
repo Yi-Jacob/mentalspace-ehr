@@ -10,7 +10,6 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
-import { ClientQuickInfo } from './components/ClientQuickInfo';
 import ClientDetailTabs from './components/ClientDetailTabs';
 
 const ClientDetailView = () => {
@@ -163,9 +162,6 @@ const ClientDetailView = () => {
           </div>
         }
       />
-
-      <ClientQuickInfo client={client} />
-
       <ClientDetailTabs
         client={client}
         phoneNumbers={phoneNumbers}
