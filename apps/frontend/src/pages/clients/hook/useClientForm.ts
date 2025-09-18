@@ -12,7 +12,6 @@ export const useClientForm = () => {
     preferredName: '',
     pronouns: '',
     dateOfBirth: '',
-    assignedClinicianId: 'unassigned',
     // Contact Info
     email: '',
     address1: '',
@@ -67,7 +66,6 @@ export const useClientForm = () => {
       preferredName: '',
       pronouns: '',
       dateOfBirth: '',
-      assignedClinicianId: 'unassigned',
       email: '',
       address1: '',
       address2: '',

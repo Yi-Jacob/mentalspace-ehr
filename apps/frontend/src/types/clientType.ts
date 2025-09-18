@@ -103,20 +103,55 @@ export interface ClientFormData {
   preferredName: string;
   pronouns: string;
   dateOfBirth: string;
-  assignedClinicianId: string;
-  assignedClinician?: {
+  clinicians?: {
     id: string;
-    name: string;
-    formalName?: string;
-    jobTitle?: string;
-    department?: string;
-    clinicianType?: string;
-    licenseNumber?: string;
-    licenseState?: string;
-    npiNumber?: string;
-    phoneNumber?: string;
-    email?: string;
-  } | null;
+    clientId: string;
+    clinicianId: string;
+    assignedAt: string;
+    assignedBy?: string;
+    clinician: {
+      id: string;
+      employeeId?: string;
+      npiNumber?: string;
+      licenseNumber?: string;
+      licenseState?: string;
+      licenseExpiryDate?: string;
+      department?: string;
+      jobTitle?: string;
+      hireDate?: string;
+      terminationDate?: string;
+      phoneNumber?: string;
+      emergencyContactName?: string;
+      emergencyContactPhone?: string;
+      supervisorId?: string;
+      billingRate?: number;
+      canBillInsurance?: boolean;
+      status?: string;
+      notes?: string;
+      createdAt?: string;
+      updatedAt?: string;
+      address1?: string;
+      address2?: string;
+      canReceiveText?: boolean;
+      city?: string;
+      clinicianType?: string;
+      formalName?: string;
+      homePhone?: string;
+      mobilePhone?: string;
+      state?: string;
+      supervisionType?: string;
+      userComments?: string;
+      workPhone?: string;
+      zipCode?: string;
+      user: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        middleName?: string;
+        email: string;
+      };
+    };
+  }[];
   // Contact Info
   email: string;
   address1: string;

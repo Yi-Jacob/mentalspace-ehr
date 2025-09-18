@@ -74,10 +74,10 @@ export class CreateClientDto {
   @IsDateString()
   dateOfBirth?: string;
 
-  @ApiPropertyOptional({ description: 'Assigned clinician ID' })
+  @ApiPropertyOptional({ description: 'List of assigned clinician IDs' })
   @IsOptional()
-  @IsString()
-  assignedClinicianId?: string;
+  @IsString({ each: true })
+  assignedClinicianIds?: string[];
 
   // Contact Info
   @ApiPropertyOptional({ description: 'Email address of the client' })

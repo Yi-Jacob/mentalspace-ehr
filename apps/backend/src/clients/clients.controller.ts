@@ -197,4 +197,39 @@ export class ClientsController {
       data.primaryCareProvider,
     );
   }
+
+  @Post(':id/clinicians/:clinicianId')
+  @ApiOperation({ summary: 'Assign clinician to client' })
+  @ApiResponse({ status: 201, description: 'Clinician assigned successfully' })
+  @ApiResponse({ status: 404, description: 'Client or clinician not found' })
+  @ApiResponse({ status: 409, description: 'Clinician already assigned' })
+  assignClinician(
+    @Param('id') clientId: string,
+    @Param('clinicianId') clinicianId: string,
+    @Request() req: any,
+  ) {
+    return this.clientsService.addClinicianToClient(
+      clientId,
+      clinicianId,
+      req.user?.id,
+    );
+  }
+
+  @Delete(':id/clinicians/:clinicianId')
+  @ApiOperation({ summary: 'Remove clinician from client' })
+  @ApiResponse({ status: 200, description: 'Clinician removed successfully' })
+  @ApiResponse({ status: 404, description: 'Assignment not found' })
+  removeClinician(
+    @Param('id') clientId: string,
+    @Param('clinicianId') clinicianId: string,
+  ) {
+    return this.clientsService.removeClinicianFromClient(clientId, clinicianId);
+  }
+
+  @Get(':id/clinicians')
+  @ApiOperation({ summary: 'Get all clinicians assigned to client' })
+  @ApiResponse({ status: 200, description: 'List of assigned clinicians' })
+  getClientClinicians(@Param('id') clientId: string) {
+    return this.clientsService.getClientClinicians(clientId);
+  }
 }

@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Stethoscope } from 'lucide-react';
 import { ClientFormData } from '@/types/clientType';
 
 interface ClientCliniciansTabProps {
@@ -9,98 +9,112 @@ interface ClientCliniciansTabProps {
 
 export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client }) => {
   const clientWithStaff = client as ClientFormData & { 
-    assignedClinician?: { 
+    clinicians?: { 
       id: string;
-      user?: {
-        firstName: string;
-        lastName: string;
-        middleName?: string;
-        email?: string;
+      clinician: {
+        id: string;
+        formalName?: string;
+        jobTitle?: string;
+        department?: string;
+        clinicianType?: string;
+        licenseNumber?: string;
+        licenseState?: string;
+        npiNumber?: string;
+        phoneNumber?: string;
+        user: {
+          firstName: string;
+          lastName: string;
+          middleName?: string;
+          email: string;
+        };
       };
-      formalName?: string;
-      jobTitle?: string;
-      department?: string;
-      clinicianType?: string;
-      licenseNumber?: string;
-      licenseState?: string;
-      npiNumber?: string;
-      phoneNumber?: string;
-    } | null;
+    }[];
   };
 
   const formatClinicianInfo = () => {
-    if (!clientWithStaff.assignedClinician) {
+    if (!clientWithStaff.clinicians || clientWithStaff.clinicians.length === 0) {
       return (
         <div className="text-center py-8">
-          <div className="text-gray-500 text-lg mb-2">No Clinician Assigned</div>
-          <div className="text-sm text-gray-400">This client has not been assigned to a clinician yet.</div>
+          <div className="text-gray-500 text-lg mb-2">No Clinicians Assigned</div>
+          <div className="text-sm text-gray-400">This client has not been assigned to any clinicians yet.</div>
         </div>
       );
     }
 
-    const clinician = clientWithStaff.assignedClinician;
-    const fullName = clinician.user 
-      ? `${clinician.user.firstName} ${clinician.user.middleName || ''} ${clinician.user.lastName}`.trim()
-      : clinician.formalName || 'Unknown';
-    
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="text-sm font-medium text-gray-600">Full Name</label>
-            <div className="text-lg font-semibold text-gray-900">
-              {fullName}
+      <div className="space-y-6">
+        {clientWithStaff.clinicians.map((assignment) => {
+          const clinician = assignment.clinician;
+          const fullName = clinician.formalName || 
+            `${clinician.user.firstName} ${clinician.user.middleName || ''} ${clinician.user.lastName}`.trim();
+          return (
+            <div key={assignment.id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{fullName}</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    {clinician.jobTitle && (
+                      <div>
+                        <span className="font-medium text-gray-600">Title:</span>
+                        <span className="ml-2 text-gray-900">{clinician.jobTitle}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.department && (
+                      <div>
+                        <span className="font-medium text-gray-600">Department:</span>
+                        <span className="ml-2 text-gray-900">{clinician.department}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.clinicianType && (
+                      <div>
+                        <span className="font-medium text-gray-600">Type:</span>
+                        <span className="ml-2 text-gray-900">{clinician.clinicianType}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.licenseNumber && (
+                      <div>
+                        <span className="font-medium text-gray-600">License #:</span>
+                        <span className="ml-2 text-gray-900">{clinician.licenseNumber}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.licenseState && (
+                      <div>
+                        <span className="font-medium text-gray-600">License State:</span>
+                        <span className="ml-2 text-gray-900">{clinician.licenseState}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.npiNumber && (
+                      <div>
+                        <span className="font-medium text-gray-600">NPI #:</span>
+                        <span className="ml-2 text-gray-900">{clinician.npiNumber}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.phoneNumber && (
+                      <div>
+                        <span className="font-medium text-gray-600">Phone:</span>
+                        <span className="ml-2 text-gray-900">{clinician.phoneNumber}</span>
+                      </div>
+                    )}
+                    
+                    {clinician.user.email && (
+                      <div>
+                        <span className="font-medium text-gray-600">Email:</span>
+                        <span className="ml-2 text-gray-900">{clinician.user.email}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Professional Title</label>
-            <div className="text-gray-900">
-              {clinician.jobTitle || 'Not specified'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Department</label>
-            <div className="text-gray-900">
-              {clinician.department || 'Not specified'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Clinician Type</label>
-            <div className="text-gray-900">
-              {clinician.clinicianType || 'Not specified'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">License Number</label>
-            <div className="text-gray-900 font-mono">
-              {clinician.licenseNumber || 'Not provided'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">License State</label>
-            <div className="text-gray-900">
-              {clinician.licenseState || 'Not specified'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">NPI Number</label>
-            <div className="text-gray-900 font-mono">
-              {clinician.npiNumber || 'Not provided'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Phone Number</label>
-            <div className="text-gray-900">
-              {clinician.phoneNumber || 'Not provided'}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Email</label>
-            <div className="text-gray-900">
-              {clinician.user?.email || 'Not provided'}
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     );
   };
@@ -108,10 +122,10 @@ export const ClientCliniciansTab: React.FC<ClientCliniciansTabProps> = ({ client
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Assigned Clinician</CardTitle>
-        <p className="text-sm text-gray-600">
-          Professional information for the clinician assigned to this client
-        </p>
+        <CardTitle className="flex items-center space-x-2">
+          <Stethoscope className="h-5 w-5" />
+          <span>Assigned Clinicians</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {formatClinicianInfo()}

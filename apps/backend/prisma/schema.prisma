@@ -59,7 +59,6 @@ model User {
   paymentCalculationProcessings PaymentCalculation[]         @relation("PaymentCalculationProcessedBy")
   performanceMetrics            PerformanceMetric[]          @relation("PerformanceMetricUser")
   performanceMetricReviews      PerformanceMetric[]          @relation("PerformanceMetricReviewer")
-  trainingRecords               TrainingRecord[]             @relation("UserTrainingRecords")
   passwordResetTokens           PasswordResetToken[]
   supervisionAsSupervisor       SupervisionRelationship[]    @relation("SupervisionSupervisor")
   supervisionAsSupervisee       SupervisionRelationship[]    @relation("SupervisionSupervisee")
@@ -144,25 +143,6 @@ model PayerFeeSchedule {
   @@map("payer_fee_schedules")
 }
 
-model TrainingRecord {
-  id                   String    @id @default(uuid())
-  userId               String    @map("user_id")
-  trainingTitle        String    @map("training_title")
-  trainingType         String    @map("training_type")
-  providerOrganization String?   @map("provider_organization")
-  completionDate       DateTime? @map("completion_date")
-  expiryDate           DateTime? @map("expiry_date")
-  hoursCompleted       Float?
-  certificateNumber    String?   @map("certificate_number")
-  status               String?
-  notes                String?
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @default(now()) @map("updated_at")
-  user                 User      @relation("UserTrainingRecords", fields: [userId], references: [id])
-
-  @@map("training_records")
-}
-
 model PerformanceMetric {
   id                String    @id @default(uuid())
   userId            String    @map("user_id")
@@ -202,6 +182,20 @@ model PaymentCalculation {
   @@map("payment_calculations")
 }
 
+model ClientClinician {
+  id          String   @id @default(uuid())
+  clientId    String   @map("client_id")
+  clinicianId String   @map("clinician_id")
+  assignedAt  DateTime @default(now()) @map("assigned_at")
+  assignedBy  String?  @map("assigned_by")
+  
+  client      Client       @relation("ClientClinicians", fields: [clientId], references: [id], onDelete: Cascade)
+  clinician   StaffProfile @relation("ClinicianClients", fields: [clinicianId], references: [id], onDelete: Cascade)
+  
+  @@unique([clientId, clinicianId])
+  @@map("client_clinicians")
+}
+
 model Client {
   id                     String                  @id @default(uuid())
   firstName              String                  @map("first_name")
@@ -232,8 +226,6 @@ model Client {
   hipaaSigned            Boolean?                @map("hipaa_signed")
   pcpRelease             String?                 @map("pcp_release")
   patientComments        String?                 @map("patient_comments")
-  assignedClinicianId    String?                 @map("assigned_clinician_id")
-  assignedClinician      StaffProfile?           @relation("ClientAssignedClinician", fields: [assignedClinicianId], references: [id])
   createdBy              String?                 @map("created_by")
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @default(now()) @map("updated_at")
@@ -249,6 +241,7 @@ model Client {
   insurances             ClientInsurance[]
   patientStatements      PatientStatement[]
   user                   User?                   @relation("UserClient")
+  clinicians             ClientClinician[]       @relation("ClientClinicians")
 
   @@map("clients")
 }
@@ -420,24 +413,9 @@ model StaffProfile {
   verifiedInsurances    InsuranceVerification[]
   adjustments           Adjustment[]
   patientStatements     PatientStatement[]
-  assignedClients       Client[]                  @relation("ClientAssignedClinician")
+  clients               ClientClinician[]         @relation("ClinicianClients")
 
   @@map("staff_profiles")
-}
-
-model QuickAction {
-  id          String    @id @default(uuid())
-  userId      String    @default(uuid()) @map("user_id")
-  actionType  String    @map("action_type")
-  title       String
-  description String?
-  priority    Int?
-  dueDate     DateTime  @default(now()) @map("due_date")
-  completed   Boolean?
-  completedAt DateTime? @map("completed_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  @@map("quick_actions")
 }
 
 model ProductivityGoal {

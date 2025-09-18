@@ -77,13 +77,17 @@ export class ClientsService {
         isActive: true,
       },
       include: {
-        assignedClinician: {
+        clinicians: {
           include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
+            clinician: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
               },
             },
           },
@@ -100,16 +104,24 @@ export class ClientsService {
     return this.prisma.client.findMany({
       where: {
         isActive: true,
-        assignedClinicianId: clinicianId,
+        clinicians: {
+          some: {
+            clinicianId: clinicianId,
+          },
+        },
       },
       include: {
-        assignedClinician: {
+        clinicians: {
           include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
+            clinician: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
               },
             },
           },
@@ -171,16 +183,24 @@ export class ClientsService {
     return this.prisma.client.findMany({
       where: {
         isActive: true,
-        assignedClinicianId: { in: allStaffIds },
+        clinicians: {
+          some: {
+            clinicianId: { in: allStaffIds },
+          },
+        },
       },
       include: {
-        assignedClinician: {
+        clinicians: {
           include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
+            clinician: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
               },
             },
           },
@@ -255,7 +275,11 @@ export class ClientsService {
       const clients = await this.prisma.client.findMany({
         where: {
           isActive: true,
-          assignedClinicianId: staffProfile.id,
+          clinicians: {
+            some: {
+              clinicianId: staffProfile.id,
+            },
+          },
         },
         select: {
           id: true,
@@ -280,14 +304,18 @@ export class ClientsService {
     const client = await this.prisma.client.findUnique({
       where: { id },
       include: {
-        assignedClinician: {
+        clinicians: {
           include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                middleName: true,
-                email: true,
+            clinician: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
+                    email: true,
+                  },
+                },
               },
             },
           },
@@ -305,20 +333,35 @@ export class ClientsService {
   async update(id: string, updateClientDto: UpdateClientDto) {
     await this.findOne(id); // Check if client exists
 
-    // Handle assignedClinician relation properly
-    const { assignedClinicianId, ...otherData } = updateClientDto;
-    const updateData = {
-      ...otherData,
-      assignedClinician: assignedClinicianId 
-        ? { connect: { id: assignedClinicianId } }
-        : assignedClinicianId === null 
-          ? { disconnect: true }
-          : undefined,
-    };
+    // Handle assignedClinicianIds relation properly
+    const { assignedClinicianIds, ...otherData } = updateClientDto;
+    
+    return this.prisma.$transaction(async (prisma) => {
+      // Update basic client data
+      const updatedClient = await prisma.client.update({
+        where: { id },
+        data: otherData,
+      });
 
-    return this.prisma.client.update({
-      where: { id },
-      data: updateData,
+      // Handle clinician assignments if provided
+      if (assignedClinicianIds !== undefined) {
+        // Remove all existing clinician assignments
+        await prisma.clientClinician.deleteMany({
+          where: { clientId: id },
+        });
+
+        // Add new clinician assignments
+        if (assignedClinicianIds.length > 0) {
+          await prisma.clientClinician.createMany({
+            data: assignedClinicianIds.map(clinicianId => ({
+              clientId: id,
+              clinicianId: clinicianId,
+            })),
+          });
+        }
+      }
+
+      return updatedClient;
     });
   }
 
@@ -663,21 +706,36 @@ export class ClientsService {
     primaryCareProvider: any,
   ) {
     return this.prisma.$transactionWithRetry(async (prisma) => {
-      // Convert date fields and handle assignedClinician relation
-      const { assignedClinicianId, ...otherClientData } = clientData;
+      // Convert date fields and handle assignedClinicianIds relation
+      const { assignedClinicianIds, ...otherClientData } = clientData;
       const mappedClientData = {
         ...otherClientData,
         dateOfBirth: this.convertDate(clientData.dateOfBirth),
-        // Use relation field syntax for updates
-        assignedClinician: assignedClinicianId 
-          ? { connect: { id: assignedClinicianId } }
-          : { disconnect: true },
       };
+      
       // Update the client
       const client = await prisma.client.update({
         where: { id: clientId },
         data: mappedClientData,
       });
+
+      // Handle clinician assignments if provided
+      if (assignedClinicianIds !== undefined) {
+        // Remove all existing clinician assignments
+        await prisma.clientClinician.deleteMany({
+          where: { clientId: clientId },
+        });
+
+        // Add new clinician assignments
+        if (assignedClinicianIds.length > 0) {
+          await prisma.clientClinician.createMany({
+            data: assignedClinicianIds.map(clinicianId => ({
+              clientId: clientId,
+              clinicianId: clinicianId,
+            })),
+          });
+        }
+      }
       // Update phone numbers
       await prisma.clientPhoneNumber.deleteMany({
         where: { clientId },
@@ -734,5 +792,113 @@ export class ClientsService {
       maxWait: 10000, // 10 seconds
       maxRetries: 3,
     });
+  }
+
+  async addClinicianToClient(clientId: string, clinicianId: string, assignedBy?: string) {
+    const existingAssignment = await this.prisma.clientClinician.findUnique({
+      where: {
+        clientId_clinicianId: {
+          clientId,
+          clinicianId: clinicianId,
+        },
+      },
+    });
+
+    if (existingAssignment) {
+      throw new Error('Clinician is already assigned to this client');
+    }
+
+    // Verify that the clinician exists
+    const clinician = await this.prisma.staffProfile.findUnique({
+      where: { id: clinicianId },
+    });
+
+    if (!clinician) {
+      throw new Error('Clinician not found');
+    }
+
+    const assignment = await this.prisma.clientClinician.create({
+      data: {
+        clientId,
+        clinicianId: clinicianId,
+        assignedBy,
+      },
+      include: {
+        clinician: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return assignment;
+  }
+
+  async removeClinicianFromClient(clientId: string, clinicianId: string) {
+    const assignment = await this.prisma.clientClinician.findUnique({
+      where: {
+        clientId_clinicianId: {
+          clientId,
+          clinicianId: clinicianId,
+        },
+      },
+    });
+
+    if (!assignment) {
+      throw new Error('Clinician assignment not found');
+    }
+
+    return this.prisma.clientClinician.delete({
+      where: {
+        clientId_clinicianId: {
+          clientId,
+          clinicianId: clinicianId,
+        },
+      },
+    });
+  }
+
+  async getClientClinicians(clientId: string) {
+    const assignments = await this.prisma.clientClinician.findMany({
+      where: { clientId },
+      include: {
+        clinician: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        assignedAt: 'desc',
+      },
+    });
+
+    return assignments.map(assignment => ({
+      id: assignment.id,
+      clientId: assignment.clientId,
+      clinicianId: assignment.clinicianId,
+      assignedAt: assignment.assignedAt.toISOString(),
+      assignedBy: assignment.assignedBy,
+      clinician: {
+        id: assignment.clinician.id,
+        user: assignment.clinician.user,
+        jobTitle: assignment.clinician.jobTitle,
+        department: assignment.clinician.department,
+      },
+    }));
   }
 }

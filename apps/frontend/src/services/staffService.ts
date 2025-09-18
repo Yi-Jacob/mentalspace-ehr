@@ -311,6 +311,45 @@ class StaffService {
     return response.data;
   }
 
+  // Get all available staff profiles for clinician assignment
+  async getAvailableStaffProfiles(): Promise<Array<{
+    id: string;
+    staffId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    isActive: boolean;
+    employeeId?: string;
+    jobTitle?: string;
+    department?: string;
+    formalName?: string;
+    clinicianType?: string;
+    npiNumber?: string;
+    licenseNumber?: string;
+    licenseState?: string;
+    status?: string;
+  }>> {
+    const response = await apiClient.get<Array<{
+      id: string;
+      staffId: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      isActive: boolean;
+      employeeId?: string;
+      jobTitle?: string;
+      department?: string;
+      formalName?: string;
+      clinicianType?: string;
+      npiNumber?: string;
+      licenseNumber?: string;
+      licenseState?: string;
+      status?: string;
+    }>>('/staff/profiles/available');
+    
+    return response.data;
+  }
+
   // Get staff profiles for clinician assignment (from clients endpoint)
   async getStaffProfilesForAssignment(): Promise<Array<{
     id: string;

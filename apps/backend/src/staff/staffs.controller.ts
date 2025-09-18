@@ -39,6 +39,13 @@ export class StaffsController {
     return this.staffsService.getAllStaffProfiles();
   }
 
+  @Get('profiles/available')
+  @ApiOperation({ summary: 'Get all available staff profiles for clinician assignment' })
+  @ApiResponse({ status: 200, description: 'List of all available staff profiles' })
+  getAvailableStaffProfiles() {
+    return this.staffsService.getAvailableStaffProfiles();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiResponse({ status: 200, description: 'User found' })

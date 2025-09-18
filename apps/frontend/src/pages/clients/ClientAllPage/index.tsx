@@ -88,37 +88,44 @@ const ClientsPage: React.FC = () => {
   };
 
   const formatAssignment = (client: ClientFormData) => {
-    // Check if we have assignedClinician data
+    // Check if we have clinicians data from the new structure
     const clientWithStaff = client as ClientFormData & { 
-      assignedClinician?: { 
+      clinicians?: { 
         id: string;
-        user?: {
-          firstName: string;
-          lastName: string;
+        clinician: {
+          id: string;
+          jobTitle?: string;
+          clinicianType?: string;
+          user: {
+            firstName: string;
+            lastName: string;
+            email: string;
+          };
         };
-        jobTitle?: string;
-        clinicianType?: string;
-      } | null;
+      }[];
     };
     
-    if (clientWithStaff.assignedClinician && clientWithStaff.assignedClinician.user) {
-      const clinician = clientWithStaff.assignedClinician;
-      const name = `${clinician.user.firstName} ${clinician.user.lastName}`;
-      const title = clinician.jobTitle || clinician.clinicianType || '';
+    if (clientWithStaff.clinicians && clientWithStaff.clinicians.length > 0) {
       return (
         <div>
-          <div className="font-medium text-gray-900">{name}</div>
-          {title && (
-            <div className="text-sm text-gray-500">{title}</div>
-          )}
+          {clientWithStaff.clinicians.map((assignment, index) => (
+            <div key={assignment.id} className={index > 0 ? "mt-1" : ""}>
+              <div className="font-medium text-gray-900">
+                {assignment.clinician.user.firstName} {assignment.clinician.user.lastName}
+              </div>
+              {(assignment.clinician.jobTitle || assignment.clinician.clinicianType) && (
+                <div className="text-sm text-gray-500">
+                  {assignment.clinician.jobTitle || assignment.clinician.clinicianType}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       );
     }
     
-    // Fallback to showing ID if no name available
-    return client.assignedClinicianId && client.assignedClinicianId !== 'unassigned'
-      ? `Clinician ID: ${client.assignedClinicianId}`
-      : 'Unassigned';
+    // No clinicians assigned
+    return 'Unassigned';
   };
 
   const tableColumns: TableColumn<ClientFormData>[] = [

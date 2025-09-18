@@ -123,7 +123,6 @@ export class UsersService {
         hipaaSigned: user.client.hipaaSigned,
         pcpRelease: user.client.pcpRelease,
         patientComments: user.client.patientComments,
-        assignedClinicianId: user.client.assignedClinicianId,
       }),
       licenses: user.licenses.map(license => ({
         id: license.id,
@@ -249,27 +248,35 @@ export class UsersService {
       include: {
         staffProfile: {
           include: {
-            assignedClients: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                preferredName: true,
-                email: true,
+            clients: {
+              include: {
+                client: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    preferredName: true,
+                    email: true,
+                  }
+                }
               }
             }
           }
         },
         client: {
           include: {
-            assignedClinician: {
+            clinicians: {
               include: {
-                user: {
-                  select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    email: true,
+                clinician: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                      }
+                    }
                   }
                 }
               }
@@ -369,12 +376,12 @@ export class UsersService {
         clinicianType: user.staffProfile.clinicianType,
         supervisionType: user.staffProfile.supervisionType,
         // Assigned clients
-        assignedClients: user.staffProfile.assignedClients.map(client => ({
-          id: client.id,
-          firstName: client.firstName,
-          lastName: client.lastName,
-          preferredName: client.preferredName,
-          email: client.email,
+        assignedClients: user.staffProfile.clients.map(rel => ({
+          id: rel.client.id,
+          firstName: rel.client.firstName,
+          lastName: rel.client.lastName,
+          preferredName: rel.client.preferredName,
+          email: rel.client.email,
         })),
       }),
       
@@ -401,16 +408,15 @@ export class UsersService {
         hipaaSigned: user.client.hipaaSigned,
         pcpRelease: user.client.pcpRelease,
         patientComments: user.client.patientComments,
-        assignedClinicianId: user.client.assignedClinicianId,
-        // Assigned staff/clinician
-        assignedClinician: user.client.assignedClinician ? {
-          id: user.client.assignedClinician.id,
-          firstName: user.client.assignedClinician.user.firstName,
-          lastName: user.client.assignedClinician.user.lastName,
-          email: user.client.assignedClinician.user.email,
-          jobTitle: user.client.assignedClinician.jobTitle,
-          department: user.client.assignedClinician.department,
-        } : null,
+        // Assigned staff/clinicians
+        assignedClinicians: user.client.clinicians.map(rel => ({
+          id: rel.clinician.id,
+          firstName: rel.clinician.user.firstName,
+          lastName: rel.clinician.user.lastName,
+          email: rel.clinician.user.email,
+          jobTitle: rel.clinician.jobTitle,
+          department: rel.clinician.department,
+        })),
       }),
       
       // Supervision relationships

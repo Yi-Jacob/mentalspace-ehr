@@ -721,26 +721,30 @@ const MyProfilePage: React.FC = () => {
           )}
 
           {/* Assigned Clinician (for clients) */}
-          {profile.userType === 'client' && profile.assignedClinician && (
+          {profile.userType === 'client' && profile.assignedClinicians && profile.assignedClinicians.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Stethoscope className="h-5 w-5" />
-                  <span>Assigned Clinician</span>
+                  <span>Assigned Clinicians</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium text-gray-900">
-                    {profile.assignedClinician.firstName} {profile.assignedClinician.lastName}
-                  </p>
-                  <p className="text-sm text-gray-600">{profile.assignedClinician.email}</p>
-                  {profile.assignedClinician.jobTitle && (
-                    <p className="text-sm text-gray-500">{profile.assignedClinician.jobTitle}</p>
-                  )}
-                  {profile.assignedClinician.department && (
-                    <p className="text-sm text-gray-500">{profile.assignedClinician.department}</p>
-                  )}
+                <div className="space-y-4">
+                  {profile.assignedClinicians.map((clinician) => (
+                    <div key={clinician.id} className="p-3 bg-gray-50 rounded-lg">
+                      <p className="font-medium text-gray-900">
+                        {clinician.firstName} {clinician.lastName}
+                      </p>
+                      <p className="text-sm text-gray-600">{clinician.email}</p>
+                      {clinician.jobTitle && (
+                        <p className="text-sm text-gray-500">{clinician.jobTitle}</p>
+                      )}
+                      {clinician.department && (
+                        <p className="text-sm text-gray-500">{clinician.department}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

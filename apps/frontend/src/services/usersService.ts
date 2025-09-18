@@ -84,15 +84,15 @@ export interface UserProfile {
   hipaaSigned?: boolean;
   pcpRelease?: string;
   patientComments?: string;
-  assignedClinicianId?: string;
-  assignedClinician?: {
+  assignedClinicianIds?: string[];
+  assignedClinicians?: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
     jobTitle?: string;
     department?: string;
-  };
+  }[];
   
   // Supervision relationships
   supervisors: Array<{

@@ -43,6 +43,22 @@ const ClientEditPage: React.FC = () => {
     }
   });
 
+  // Function to refresh client data
+  const refreshClientData = async () => {
+    if (!clientId) return;
+    
+    try {
+      const clientData = await clientService.getClient(clientId);
+      setClient(clientData);
+      setFormData({
+        ...clientData,
+        dateOfBirth: clientData.dateOfBirth || ''
+      });
+    } catch (error) {
+      console.error('Error refreshing client data:', error);
+    }
+  };
+
   // Load client data when component mounts
   useEffect(() => {
     const loadClientData = async () => {
@@ -209,6 +225,7 @@ const ClientEditPage: React.FC = () => {
           setInsuranceInfo={setInsuranceInfo}
           primaryCareProvider={primaryCareProvider}
           setPrimaryCareProvider={setPrimaryCareProvider}
+          onDataChange={refreshClientData}
         />
       </div>
     </PageLayout>

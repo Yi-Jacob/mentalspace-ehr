@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PageTabs from '@/components/basic/PageTabs';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
+import { ClinicianAssignmentTab } from './client-form/ClinicianAssignmentTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
 import { DemographicsTab } from './client-form/DemographicsTab';
 import { BillingTab } from './client-form/BillingTab';
@@ -18,6 +19,7 @@ interface ClientFormProps {
   setInsuranceInfo: (info: InsuranceInfo[]) => void;
   primaryCareProvider: PrimaryCareProvider | null;
   setPrimaryCareProvider: (provider: PrimaryCareProvider | null) => void;
+  onDataChange?: () => void;
 }
 
 const ClientForm: React.FC<ClientFormProps> = ({
@@ -31,10 +33,11 @@ const ClientForm: React.FC<ClientFormProps> = ({
   setInsuranceInfo,
   primaryCareProvider,
   setPrimaryCareProvider,
+  onDataChange,
 }) => {
   const [currentTab, setCurrentTab] = useState('basic');
   
-  const tabOrder = ['basic', 'contact', 'demographics', 'billing', 'settings'];
+  const tabOrder = ['basic', 'clinicians', 'contact', 'demographics', 'billing', 'settings'];
   
   const handleNext = () => {
     const currentIndex = tabOrder.indexOf(currentTab);
@@ -71,6 +74,15 @@ const ClientForm: React.FC<ClientFormProps> = ({
           content: (
             <div className="space-y-4">
               <BasicInfoTab formData={formData} setFormData={setFormData} />
+            </div>
+          )
+        },
+        {
+          id: 'clinicians',
+          label: 'Clinicians',
+          content: (
+            <div className="space-y-4">
+              <ClinicianAssignmentTab formData={formData} onDataChange={onDataChange} />
             </div>
           )
         },
