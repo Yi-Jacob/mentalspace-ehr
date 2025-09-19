@@ -203,6 +203,11 @@ class SchedulingService {
     return response.data;
   }
 
+  async getClientAppointments(clientId: string): Promise<Appointment[]> {
+    const response = await apiClient.get<Appointment[]>(`/scheduling/appointments/client/${clientId}`);
+    return response.data;
+  }
+
   async getAppointment(id: string): Promise<Appointment> {
     const response = await apiClient.get<Appointment>(`/scheduling/appointments/${id}`);
     return response.data;

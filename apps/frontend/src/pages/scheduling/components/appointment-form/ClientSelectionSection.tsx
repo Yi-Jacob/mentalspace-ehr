@@ -10,12 +10,16 @@ interface ClientSelectionSectionProps {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  disabled?: boolean;
+  preselectedClientName?: string;
 }
 
 const ClientSelectionSection: React.FC<ClientSelectionSectionProps> = ({
   value,
   onChange,
-  error
+  error,
+  disabled = false,
+  preselectedClientName
 }) => {
   const { data: clients, isLoading, error: queryError } = useQuery({
     queryKey: ['clients'],
@@ -47,15 +51,21 @@ const ClientSelectionSection: React.FC<ClientSelectionSectionProps> = ({
       <Select 
         value={value} 
         onValueChange={onChange}
-        disabled={isLoading}
+        disabled={isLoading || disabled}
       >
         <SelectTrigger 
           className={`bg-white/70 border-gray-200 focus:border-blue-400 transition-all duration-200 ${
             error ? 'border-red-400 focus:border-red-400' : ''
-          }`}
+          } ${disabled ? 'bg-gray-50 cursor-not-allowed' : ''}`}
           aria-describedby={error ? 'client-error' : undefined}
         >
-          <SelectValue placeholder={isLoading ? "Loading clients..." : "Select a client"} />
+          <SelectValue placeholder={
+            disabled && preselectedClientName 
+              ? preselectedClientName 
+              : isLoading 
+                ? "Loading clients..." 
+                : "Select a client"
+          } />
         </SelectTrigger>
         <SelectContent className="bg-white border-0 shadow-2xl max-h-60">
           {isLoading ? (

@@ -15,13 +15,17 @@ interface CreateAppointmentModalProps {
   onOpenChange: (open: boolean) => void;
   selectedDate?: Date | null;
   selectedTime?: string | null;
+  preselectedClientId?: string;
+  preselectedClientName?: string;
 }
 
 const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   open,
   onOpenChange,
   selectedDate,
-  selectedTime
+  selectedTime,
+  preselectedClientId,
+  preselectedClientName
 }) => {
   const { 
     formData, 
@@ -37,7 +41,8 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
       resetForm();
     },
     selectedDate,
-    selectedTime
+    selectedTime,
+    preselectedClientId
   });
 
   const startDateTime = formData.date && formData.start_time 
@@ -101,6 +106,8 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
                 formData={formData}
                 updateFormData={updateFormData}
                 errors={errors}
+                preselectedClientId={preselectedClientId}
+                preselectedClientName={preselectedClientName}
               />
             </form>
           </div>

@@ -47,6 +47,11 @@ export class SchedulingController {
     return this.schedulingService.findAll(query, req.user);
   }
 
+  @Get('appointments/client/:clientId')
+  getClientAppointments(@Param('clientId') clientId: string, @Request() req: { user: AuthenticatedUser }) {
+    return this.schedulingService.getClientAppointments(clientId, req.user);
+  }
+
   @Get('appointments/:id')
   findOne(@Param('id') id: string) {
     return this.schedulingService.findOne(id);

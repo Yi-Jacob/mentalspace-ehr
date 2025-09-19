@@ -38,12 +38,16 @@ interface CreateAppointmentFormContentProps {
   formData: AppointmentFormData;
   updateFormData: (field: keyof AppointmentFormData, value: string | number | boolean | Date) => void;
   errors: FormErrors;
+  preselectedClientId?: string;
+  preselectedClientName?: string;
 }
 
 const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> = ({
   formData,
   updateFormData,
-  errors
+  errors,
+  preselectedClientId,
+  preselectedClientName
 }) => {
   return (
     <div className="space-y-10">
@@ -57,6 +61,8 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
           value={formData.client_id}
           onChange={(value) => updateFormData('client_id', value)}
           error={errors.client_id}
+          disabled={!!preselectedClientId}
+          preselectedClientName={preselectedClientName}
         />
       </div>
 

@@ -8,10 +8,11 @@ interface UseAppointmentFormOptions {
   onSuccess: () => void;
   selectedDate?: Date | null;
   selectedTime?: string | null;
+  preselectedClientId?: string;
 }
 
-export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime }: UseAppointmentFormOptions) => {
-  const { formData, setFormData, updateFormData, resetForm } = useFormData({ selectedDate, selectedTime });
+export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime, preselectedClientId }: UseAppointmentFormOptions) => {
+  const { formData, setFormData, updateFormData, resetForm } = useFormData({ selectedDate, selectedTime, preselectedClientId });
   const { 
     errors, 
     validateForm, 

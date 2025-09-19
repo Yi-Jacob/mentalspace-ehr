@@ -23,11 +23,12 @@ interface AppointmentFormData {
 interface UseFormDataOptions {
   selectedDate?: Date | null;
   selectedTime?: string | null;
+  preselectedClientId?: string;
 }
 
-export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) => {
+export const useFormData = ({ selectedDate, selectedTime, preselectedClientId }: UseFormDataOptions) => {
   const [formData, setFormData] = useState<AppointmentFormData>({
-    client_id: '',
+    client_id: preselectedClientId || '',
     appointment_type: AppointmentType.THERAPY_SESSION,
     cptCode: '',
     title: '',
@@ -71,7 +72,7 @@ export const useFormData = ({ selectedDate, selectedTime }: UseFormDataOptions) 
 
   const resetForm = () => {
     setFormData({
-      client_id: '',
+      client_id: preselectedClientId || '',
       appointment_type: AppointmentType.THERAPY_SESSION,
       cptCode: '',
       title: '',

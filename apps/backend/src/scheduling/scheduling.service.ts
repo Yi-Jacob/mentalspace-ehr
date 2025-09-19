@@ -324,6 +324,78 @@ export class SchedulingService {
     return appointments;
   }
 
+  async getClientAppointments(clientId: string, user?: { id: string; email: string; roles: string[] }) {
+    // Role-based access control
+    if (user) {
+      // Define role groups
+      const adminRoles = ['Practice Administrator', 'Clinical Administrator', 'Practice Scheduler'];
+
+      // Check if user has admin roles - full access
+      if (user.roles.some(role => adminRoles.includes(role))) {
+        // Admin users can see all client appointments
+      } else {
+        // Check if user is a client
+        const client = await this.userTypeService.getClientByUserId(user.id);
+        if (client && client.id !== clientId) {
+          // Client can only see their own appointments
+          throw new NotFoundException('Access denied: You can only view your own appointments');
+        } else if (!client) {
+          // Check if user is staff
+          const staffProfile = await this.userTypeService.getStaffProfileByUserId(user.id);
+          if (!staffProfile) {
+            // If user is neither client nor staff, return empty result
+            return [];
+          }
+        }
+      }
+    }
+
+    // Get appointments for the specific client, ordered by start time (upcoming first)
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        clientId: clientId,
+        startTime: {
+          gte: new Date(), // Only future appointments
+        },
+        status: {
+          notIn: [AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW], // Exclude cancelled/no-show
+        },
+      },
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        note: {
+          select: {
+            id: true,
+            title: true,
+            noteType: true,
+            status: true,
+          },
+        },
+        recurringRule: {
+          select: {
+            id: true,
+            recurringPattern: true,
+            startDate: true,
+            endDate: true,
+            timeSlots: true,
+            isBusinessDayOnly: true,
+          },
+        },
+      },
+      orderBy: {
+        startTime: 'asc',
+      },
+    });
+
+    return appointments;
+  }
+
   async findOne(id: string) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id },
