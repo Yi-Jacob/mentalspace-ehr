@@ -12,6 +12,7 @@ import staffRoutes from './staff-routes';
 import usersRoutes from './users-routes';
 import complianceRoutes from './compliance-routes';
 import auditRoutes from './audit-routes';
+import todoRoutes from './todo-routes';
 import MyProfilePage from '../pages/MyProfilePage';
 
 const authenticatedRoutes: RouteObject[] = [
@@ -64,6 +65,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'audit',
     children: auditRoutes,
+  },
+  // Todo
+  {
+    path: 'todo',
+    children: todoRoutes,
   },
   // My Profile
   {

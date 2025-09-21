@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Home,
   Circle,
-  Activity
+  Activity,
+  CheckSquare
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -69,6 +70,7 @@ const menuItems: MenuItem[] = [
     ]
   },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
+  { id: 'todo', label: 'To-Do', icon: CheckSquare, path: '/todo' },
   { 
     id: 'billing', 
     label: 'Billing', 
@@ -150,6 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     if (currentPath.startsWith('/scheduling')) return 'scheduling';
     if (currentPath.startsWith('/clients')) return 'clients';
     if (currentPath.startsWith('/reports')) return 'reports';
+    if (currentPath.startsWith('/todo')) return 'todo';
 
     // Handle notes sub-items
     if (currentPath.startsWith('/notes')) {

@@ -22,6 +22,7 @@ import { ValidationModule } from './common/validation/validation.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { HealthModule } from './health/health.module';
 import { AuditModule } from './audit/audit.module';
+import { TodoModule } from './todo/todo.module';
 import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor';
 
 @Module({
@@ -54,6 +55,7 @@ import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor'
     AIChatbotModule,
     HealthModule,
     AuditModule,
+    TodoModule,
   ],
   controllers: [AppController],
   providers: [
