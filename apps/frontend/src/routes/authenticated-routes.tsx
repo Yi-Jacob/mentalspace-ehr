@@ -13,6 +13,7 @@ import usersRoutes from './users-routes';
 import complianceRoutes from './compliance-routes';
 import auditRoutes from './audit-routes';
 import todoRoutes from './todo-routes';
+import practiceSettingsRoutes from './practice-settings-routes';
 import MyProfilePage from '../pages/MyProfilePage';
 
 const authenticatedRoutes: RouteObject[] = [
@@ -70,6 +71,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'todo',
     children: todoRoutes,
+  },
+  // Practice Settings
+  {
+    path: 'practice-settings',
+    children: practiceSettingsRoutes,
   },
   // My Profile
   {

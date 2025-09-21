@@ -322,6 +322,13 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.CLINICAL_ADMINISTRATOR,
       USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
+  },
+
+  // Practice Settings - accessible only to practice administrators
+  'practice-settings': {
+    roles: [
+      USER_ROLES.PRACTICE_ADMINISTRATOR
+    ]
   }
 };
 

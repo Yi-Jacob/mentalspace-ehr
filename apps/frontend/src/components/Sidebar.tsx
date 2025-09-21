@@ -18,7 +18,8 @@ import {
   Home,
   Circle,
   Activity,
-  CheckSquare
+  CheckSquare,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -128,6 +129,7 @@ const menuItems: MenuItem[] = [
       { id: 'deadlines', label: 'Deadlines', path: '/compliance/deadlines' }
     ]
   },
+  { id: 'practice-settings', label: 'Practice Settings', icon: Settings, path: '/practice-settings' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
@@ -153,6 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     if (currentPath.startsWith('/clients')) return 'clients';
     if (currentPath.startsWith('/reports')) return 'reports';
     if (currentPath.startsWith('/todo')) return 'todo';
+    if (currentPath.startsWith('/practice-settings')) return 'practice-settings';
 
     // Handle notes sub-items
     if (currentPath.startsWith('/notes')) {
