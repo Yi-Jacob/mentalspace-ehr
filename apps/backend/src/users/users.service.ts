@@ -139,61 +139,6 @@ export class UsersService {
     };
   }
 
-  // Set default password for a user
-  async setDefaultPassword(userId: string) {
-    const user = await this.findOne(userId);
-    
-    const defaultPassword = this.configService.get<string>('DEFAULT_USER_PASSWORD', 'mentalspacePassword123!');
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
-
-    return {
-      message: 'Default password set successfully',
-      userId: updatedUser.id,
-      email: updatedUser.email,
-      defaultPassword: defaultPassword // Only return in development
-    };
-  }
-
-  // Activate a user
-  async activateUser(userId: string) {
-    const user = await this.findOne(userId);
-    
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: { isActive: true },
-    });
-
-    return {
-      message: 'User activated successfully',
-      userId: updatedUser.id,
-      email: updatedUser.email,
-      isActive: updatedUser.isActive
-    };
-  }
-
-  // Deactivate a user
-  async deactivateUser(userId: string) {
-    const user = await this.findOne(userId);
-    
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: { isActive: false },
-    });
-
-    return {
-      message: 'User deactivated successfully',
-      userId: updatedUser.id,
-      email: updatedUser.email,
-      isActive: updatedUser.isActive
-    };
-  }
-
-
   // Helper method to get client by user ID
   async getClientByUserId(userId: string) {
     const user = await this.prisma.user.findUnique({

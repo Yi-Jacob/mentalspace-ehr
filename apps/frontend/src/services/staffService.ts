@@ -370,6 +370,21 @@ class StaffService {
     
     return response.data;
   }
+
+  async setDefaultPassword(userId: string): Promise<any> {
+    const response = await apiClient.post(`/staff/${userId}/set-default-password`);
+    return response.data;
+  }
+
+  async deactivateUser(userId: string): Promise<any> {
+    const response = await apiClient.post(`/staff/${userId}/deactivate`);
+    return response.data;
+  }
+
+  async activateUser(userId: string): Promise<any> {
+    const response = await apiClient.post(`/staff/${userId}/activate`);
+    return response.data;
+  }
 }
 
 export const staffService = new StaffService(); 

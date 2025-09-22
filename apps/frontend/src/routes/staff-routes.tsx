@@ -4,6 +4,8 @@ import StaffDetailPage from '@/pages/staff/StaffDetailPage';
 import StaffEditPage from '@/pages/staff/StaffEditPage';
 import SupervisionPage from '@/pages/staff/SupervisionPage';
 import { RouteObject } from 'react-router-dom';
+import RolesPage from '@/pages/staff/RolesPage';
+import PermissionsPage from '@/pages/staff/PermissionsPage';
 
 const staffRoutes: RouteObject[] = [
   {
@@ -25,6 +27,14 @@ const staffRoutes: RouteObject[] = [
   {
     path: ':staffId/edit',
     element: <StaffEditPage />,
+  },
+  {
+    path: 'roles',
+    element: <RolesPage />,
+  },
+  {
+    path: 'permissions',
+    element: <PermissionsPage />,
   }
 ];
 

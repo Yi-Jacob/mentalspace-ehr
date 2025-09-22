@@ -10,6 +10,7 @@ import { Button } from '@/components/basic/button';
 import { Calendar, Settings, User, Clock, MapPin, FileText, Save, X, Video } from 'lucide-react';
 import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
+import { DateInput } from '@/components/basic/date-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Textarea } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
@@ -400,13 +401,12 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
                 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="date">Date</Label>
-                    <Input
+                    <DateInput
                       id="date"
-                      type="date"
+                      label="Date"
                       value={formData.date}
-                      onChange={(e) => handleFormDataChange('date', e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(value) => handleFormDataChange('date', value)}
+                      required
                     />
                   </div>
 

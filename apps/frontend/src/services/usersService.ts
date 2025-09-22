@@ -185,21 +185,6 @@ class UsersService {
     }
   }
 
-  async setDefaultPassword(userId: string): Promise<any> {
-    const response = await apiClient.post(`/users/${userId}/set-default-password`);
-    return response.data;
-  }
-
-  async deactivateUser(userId: string): Promise<any> {
-    const response = await apiClient.post(`/users/${userId}/deactivate`);
-    return response.data;
-  }
-
-  async activateUser(userId: string): Promise<any> {
-    const response = await apiClient.post(`/users/${userId}/activate`);
-    return response.data;
-  }
-
   async getMyProfile(): Promise<UserProfile> {
     try {
       const response = await apiClient.get<UserProfile>('/users/profile');

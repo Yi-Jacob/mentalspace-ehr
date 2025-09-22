@@ -93,17 +93,8 @@ const menuItems: MenuItem[] = [
     subItems: [
       { id: 'staff-list', label: 'Staffs', path: '/staff' },
       { id: 'staff-supervision', label: 'Supervision', path: '/staff/supervision' },
-    ]
-  },
-  {
-    id: 'users',
-    label: 'Users',
-    icon: Users,
-    path: '/users',
-    subItems: [
-      { id: 'users-list', label: 'Users', path: '/users' },
-      { id: 'users-roles', label: 'Roles', path: '/users/roles' },
-      { id: 'users-permissions', label: 'Permissions', path: '/users/permissions' },
+      { id: 'staff-roles', label: 'Roles', path: '/staff/roles' },
+      { id: 'staff-permissions', label: 'Permissions', path: '/staff/permissions' },
     ]
   },
   {

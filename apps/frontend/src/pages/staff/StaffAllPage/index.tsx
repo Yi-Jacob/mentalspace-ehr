@@ -21,8 +21,21 @@ const StaffPage: React.FC = () => {
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const { staffMembers, isLoading, error, refetchStaff } = useStaffManagement();
   const { hasRole } = useStaffRoles();
-
   const canManageStaff = hasRole('Practice Administrator');
+
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: 'default' | 'destructive';
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
+
 
   const handleAddTeamMember = () => {
     navigate('/staff/create');
@@ -195,6 +208,60 @@ const StaffPage: React.FC = () => {
       onClick: (staff: StaffMember) => navigate(`/staff/${staff.id}/edit`),
       variant: 'ghost' as const
     },
+    {
+      label: 'Set Default Password',
+      icon: <Key className="h-4 w-4" />,
+      onClick: (staff: StaffMember) => {
+        setConfirmationModal({
+          isOpen: true,
+          title: 'Set Default Password',
+          description: `Are you sure you want to set a default password for ${staff.firstName} ${staff.lastName}? This will reset their current password.`,
+          onConfirm: async () => {
+            try {
+              await staffService.setDefaultPassword(staff.id);
+              toast({
+                title: 'Default password set',
+                description: `Default password for ${staff.firstName} ${staff.lastName} has been set.`,
+              });
+              refetchStaff();
+            } catch (err) {
+              toast({
+                title: 'Error setting default password',
+                description: `Failed to set default password for ${staff.firstName} ${staff.lastName}.`,
+                variant: 'destructive',
+              });
+            }
+          },
+          variant: 'destructive'
+        });
+      },
+      variant: 'ghost' as const
+    },
+    {
+      label: staff => staff.isActive ? 'Deactivate Staff' : 'Activate Staff',
+      icon: staff => staff.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />,
+      onClick: async (staff: StaffMember) => {
+        try {
+          if (staff.isActive) {
+            await staffService.deactivateUser(staff.id);
+          } else {
+            await staffService.activateUser(staff.id);
+          }
+          toast({
+            title: staff.isActive ? 'Staff deactivated' : 'Staff activated',
+            description: `Staff ${staff.isActive ? 'deactivated' : 'activated'}.`,
+          });
+          refetchStaff();
+        } catch (err) {
+          toast({
+            title: staff.isActive ? 'Error deactivating staff' : 'Error activating staff',
+            description: `Failed to ${staff.isActive ? 'deactivate' : 'activate'} staff ${staff.firstName} ${staff.lastName}.`,
+            variant: 'destructive',
+          });
+        }
+      },
+      variant: staff => staff.isActive ? 'destructive' as const : 'default' as const
+    }
   ];
 
   return (
@@ -240,6 +307,16 @@ const StaffPage: React.FC = () => {
           }
           loading={isLoading}
           actions={actions}
+        />
+                <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          onClose={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
+          onConfirm={confirmationModal.onConfirm}
+          title={confirmationModal.title}
+          description={confirmationModal.description}
+          variant={confirmationModal.variant}
+          confirmText="Confirm"
+          cancelText="Cancel"
         />
       </div>
     </PageLayout>

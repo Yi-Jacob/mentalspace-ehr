@@ -58,7 +58,6 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
             value={dateString}
             onChange={handleDateChange}
             required={true}
-            minDate={today}
             placeholder="MM/DD/YYYY"
           />
           {errors?.date && (
