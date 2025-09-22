@@ -3,6 +3,7 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import * as bcrypt from 'bcryptjs';
+import { DEFAULT_PASSWORD } from '../common/constants';
 
 /**
  * Interface representing client data returned for note creation workflows.
@@ -38,7 +39,7 @@ export class ClientsService {
       });
 
       // Hash the default password
-      const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+      const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 
       // Create a user record for the client
       const clientUser = await prisma.user.create({
@@ -611,7 +612,7 @@ export class ClientsService {
       });
 
       // Hash the default password
-      const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+      const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 
       // Create a user record for the client
       const clientUser = await prisma.user.create({

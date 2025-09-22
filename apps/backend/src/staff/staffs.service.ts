@@ -5,6 +5,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
+import { randomBytes } from 'crypto';
+import { DEFAULT_PASSWORD } from '../common/constants';
 
 @Injectable()
 export class StaffsService {
@@ -270,7 +272,7 @@ export class StaffsService {
           },
         });
 
-        const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+        const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
         // 2. Create user with reference to staff profile
         const user = await prisma.user.create({
           data: {
@@ -705,12 +707,38 @@ export class StaffsService {
     return metric;
   }
 
-  // Set default password for a user
+  // Generate a secure random password
+  private generateSecurePassword(): string {
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    
+    const allChars = lowercase + uppercase + numbers + symbols;
+    
+    // Ensure at least one character from each category
+    let password = '';
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += symbols[Math.floor(Math.random() * symbols.length)];
+    
+    // Fill the rest with random characters (minimum 12 characters total)
+    const remainingLength = Math.max(8, 12 - password.length);
+    for (let i = 0; i < remainingLength; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    
+    // Shuffle the password to avoid predictable patterns
+    return password.split('').sort(() => Math.random() - 0.5).join('');
+  }
+
+  // Set random secure password for a user
   async setDefaultPassword(userId: string) {
     const user = await this.findOne(userId);
     
-    const defaultPassword = this.configService.get<string>('DEFAULT_USER_PASSWORD', 'ChangeMe123!');
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    const randomPassword = this.generateSecurePassword();
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -718,10 +746,10 @@ export class StaffsService {
     });
 
     return {
-      message: 'Default password set successfully',
+      message: 'Random secure password set successfully',
       userId: updatedUser.id,
       email: updatedUser.email,
-      defaultPassword: defaultPassword // Only return in development
+      generatedPassword: randomPassword
     };
   }
 

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { DEFAULT_PASSWORD, DEFAULT_ADMIN_EMAIL } from '../src/common/constants';
 
 const prisma = new PrismaClient();
 
@@ -8,14 +9,14 @@ async function main() {
 
   // Check if default user already exists
   const existingUser = await prisma.user.findUnique({
-    where: { email: 'example@gmail.com' }
+    where: { email: DEFAULT_ADMIN_EMAIL }
   });
 
   if (existingUser) {
     console.log('Default user already exists, skipping...');
   } else {
     // Hash the password
-    const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+    const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 
     try {
       // Use Prisma transaction to ensure data consistency (following users.service pattern)
@@ -56,7 +57,7 @@ async function main() {
         // 2. Create the user record with reference to staff profile
         const user = await prisma.user.create({
           data: {
-            email: 'example@gmail.com',
+            email: DEFAULT_ADMIN_EMAIL,
             password: hashedPassword,
             firstName: 'Default',
             lastName: 'User',
@@ -100,7 +101,7 @@ async function main() {
   const additionalStaff = [
     {
       email: 'dr.sarah.johnson@mentalspace.com',
-      password: 'mentalspacePassword123!',
+      password: DEFAULT_PASSWORD,
       firstName: 'Sarah',
       lastName: 'Johnson',
       middleName: 'Elizabeth',
@@ -130,7 +131,7 @@ async function main() {
     },
     {
       email: 'michael.chen@mentalspace.com',
-      password: 'mentalspacePassword123!',
+      password: DEFAULT_PASSWORD,
       firstName: 'Michael',
       lastName: 'Chen',
       middleName: 'David',
@@ -160,7 +161,7 @@ async function main() {
     },
     {
       email: 'emily.rodriguez@mentalspace.com',
-      password: 'mentalspacePassword123!',
+      password: DEFAULT_PASSWORD,
       firstName: 'Emily',
       lastName: 'Rodriguez',
       middleName: 'Maria',
@@ -386,7 +387,7 @@ async function main() {
           data: clientData
         });
 
-        const hashedPassword = await bcrypt.hash('mentalspacePassword123!', 12);
+        const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
 
         // Create a user record for the client
         const clientUser = await prisma.user.create({

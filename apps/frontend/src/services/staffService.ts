@@ -372,7 +372,7 @@ class StaffService {
   }
 
   async setDefaultPassword(userId: string): Promise<any> {
-    const response = await apiClient.post(`/staff/${userId}/set-default-password`);
+    const response = await apiClient.post(`/staff/${userId}/set-random-password`);
     return response.data;
   }
 

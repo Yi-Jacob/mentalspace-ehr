@@ -1,6 +1,9 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
+// Default admin email constant (should match the one in constants.ts)
+const DEFAULT_ADMIN_EMAIL = process.env.DEFAULT_ADMIN_EMAIL || 'example@gmail.com';
+
 console.log('🚀 Setting up database for first time...');
 
 try {
@@ -19,8 +22,7 @@ try {
   console.log('✅ Database setup completed successfully!');
   console.log('');
   console.log('📧 Default user created:');
-  console.log('   Email: example@gmail.com');
-  console.log('   Password: mentalspacePassword123!');
+  console.log(`   Email: ${DEFAULT_ADMIN_EMAIL}`);
   console.log('   Role: Practice Administrator');
   console.log('');
   console.log('📋 Sample data created:');

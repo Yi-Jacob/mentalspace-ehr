@@ -88,9 +88,9 @@ export class StaffsController {
     return this.staffsService.removeRole(body.userId, body.role);
   }
 
-  @Post(':id/set-default-password')
-  @ApiOperation({ summary: 'Set default password for a user' })
-  @ApiResponse({ status: 200, description: 'Default password set successfully' })
+  @Post(':id/set-random-password')
+  @ApiOperation({ summary: 'Set random secure password for a user' })
+  @ApiResponse({ status: 200, description: 'Random secure password set successfully' })
   setDefaultPassword(@Param('id') id: string) {
     return this.staffsService.setDefaultPassword(id);
   }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
-import { Plus, Stethoscope, Edit, UserMinus, Eye, Star, Users, AlertCircle, Key, UserCheck, UserX } from 'lucide-react';
+import { Plus, Stethoscope, Edit, UserMinus, Eye, Star, Users, AlertCircle, Key, UserCheck, UserX, Copy, Check } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
 import { useStaffRoles } from '@/pages/staff/hook/useStaffRoles';
@@ -36,6 +36,27 @@ const StaffPage: React.FC = () => {
     onConfirm: () => {},
   });
 
+  const [passwordModal, setPasswordModal] = useState<{
+    isOpen: boolean;
+    staffName: string;
+    generatedPassword: string;
+  }>({
+    isOpen: false,
+    staffName: '',
+    generatedPassword: '',
+  });
+
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
 
   const handleAddTeamMember = () => {
     navigate('/staff/create');
@@ -209,25 +230,26 @@ const StaffPage: React.FC = () => {
       variant: 'ghost' as const
     },
     {
-      label: 'Set Default Password',
+      label: 'Set Random Password',
       icon: <Key className="h-4 w-4" />,
       onClick: (staff: StaffMember) => {
         setConfirmationModal({
           isOpen: true,
-          title: 'Set Default Password',
-          description: `Are you sure you want to set a default password for ${staff.firstName} ${staff.lastName}? This will reset their current password.`,
+          title: 'Set Random Password',
+          description: `Are you sure you want to generate a new random password for ${staff.firstName} ${staff.lastName}? This will reset their current password.`,
           onConfirm: async () => {
             try {
-              await staffService.setDefaultPassword(staff.id);
-              toast({
-                title: 'Default password set',
-                description: `Default password for ${staff.firstName} ${staff.lastName} has been set.`,
+              const response = await staffService.setDefaultPassword(staff.id);
+              setPasswordModal({
+                isOpen: true,
+                staffName: `${staff.firstName} ${staff.lastName}`,
+                generatedPassword: response.generatedPassword,
               });
               refetchStaff();
             } catch (err) {
               toast({
-                title: 'Error setting default password',
-                description: `Failed to set default password for ${staff.firstName} ${staff.lastName}.`,
+                title: 'Error setting random password',
+                description: `Failed to set random password for ${staff.firstName} ${staff.lastName}.`,
                 variant: 'destructive',
               });
             }
@@ -318,6 +340,65 @@ const StaffPage: React.FC = () => {
           confirmText="Confirm"
           cancelText="Cancel"
         />
+
+        {/* Password Display Modal */}
+        {passwordModal.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Password Generated</h3>
+                <button
+                  onClick={() => setPasswordModal(prev => ({ ...prev, isOpen: false }))}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  A new random password has been generated for <strong>{passwordModal.staffName}</strong>
+                </p>
+                <p className="text-xs text-amber-600 mb-3 font-medium">
+                  ⚠️ This password will be shown only once. Please copy it now.
+                </p>
+                
+                <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded border">
+                  <code className="flex-1 font-mono text-sm break-all">
+                    {passwordModal.generatedPassword}
+                  </code>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(passwordModal.generatedPassword)}
+                    className="shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 mr-1" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => setPasswordModal(prev => ({ ...prev, isOpen: false }))}
+                  variant="outline"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PageLayout>
   );
