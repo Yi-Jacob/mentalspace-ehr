@@ -46,6 +46,23 @@ const ClientAppointmentTab: React.FC<ClientAppointmentTabProps> = ({ clientId, c
     fetchClientAppointments();
   };
 
+  const handleStartTelehealth = (appointment: Appointment) => {
+    // TODO: Implement telehealth session start logic
+    // This could open a video call, redirect to a telehealth platform, etc.
+    toast({
+      title: "Starting Telehealth Session",
+      description: `Initiating telehealth session for ${appointment.title || appointment.appointmentType} with ${clientName}`,
+    });
+    
+    // For now, just show a placeholder message
+    // In a real implementation, this would:
+    // 1. Generate a unique session ID
+    // 2. Create a video call room/meeting
+    // 3. Send invitations to client and provider
+    // 4. Redirect to the video call interface
+    console.log('Starting telehealth session for appointment:', appointment.id);
+  };
+
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
     return {
@@ -195,9 +212,20 @@ const ClientAppointmentTab: React.FC<ClientAppointmentTabProps> = ({ clientId, c
                       </div>
                     )}
                     {appointment.isTelehealth && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Video className="h-4 w-4 text-blue-500" />
-                        <span className="text-blue-600 font-medium">Telehealth</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Video className="h-4 w-4 text-blue-500" />
+                          <span className="text-blue-600 font-medium">Telehealth</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          onClick={() => handleStartTelehealth(appointment)}
+                        >
+                          <Video className="h-4 w-4 mr-1" />
+                          Start Telehealth
+                        </Button>
                       </div>
                     )}
                     {appointment.note && (
