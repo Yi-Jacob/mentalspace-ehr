@@ -21,7 +21,7 @@ export class SessionManagementService {
         where: { id: appointmentId },
         include: {
           clients: true,
-          staff: true,
+          provider: true,
         },
       });
 

@@ -5,15 +5,12 @@ import PageHeader from '../../components/basic/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/basic/tabs';
 import { Table, TableColumn } from '../../components/basic/table';
 import { Badge } from '../../components/basic/badge';
-import { Button } from '../../components/basic/button';
 import { todoService } from '../../services/todoService';
 import { 
-  TodoItem, 
   AccountTodoItem, 
   PatientTodoItem, 
   AppointmentTodoItem, 
   NoteTodoItem,
-  TodoStats,
   TodoPriority,
   TodoStatus 
 } from '../../types/todoTypes';
@@ -21,7 +18,6 @@ import {
 const TodoPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('account');
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<TodoStats | null>(null);
   const [accountTodos, setAccountTodos] = useState<AccountTodoItem[]>([]);
   const [patientTodos, setPatientTodos] = useState<PatientTodoItem[]>([]);
   const [appointmentTodos, setAppointmentTodos] = useState<AppointmentTodoItem[]>([]);
@@ -34,15 +30,16 @@ const TodoPage: React.FC = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [statsData, accountData, patientData, appointmentData, noteData] = await Promise.all([
-        todoService.getTodoStats(),
+      console.log('Loading all data');
+      const [accountData, patientData, appointmentData, noteData] = await Promise.all([
         todoService.getAccountTodos(),
         todoService.getPatientTodos(),
         todoService.getAppointmentTodos(),
         todoService.getNoteTodos(),
       ]);
 
-      setStats(statsData);
+
+      console.log(accountData, patientData, appointmentData, noteData);
       setAccountTodos(accountData);
       setPatientTodos(patientData);
       setAppointmentTodos(appointmentData);
@@ -91,15 +88,6 @@ const TodoPage: React.FC = () => {
     );
   };
 
-  const handleMarkComplete = async (todoId: string) => {
-    try {
-      await todoService.markTodoComplete(todoId);
-      await loadAllData(); // Reload data
-    } catch (error) {
-      console.error('Error marking todo complete:', error);
-    }
-  };
-
   // Account Todos Table
   const accountColumns: TableColumn<AccountTodoItem>[] = [
     {
@@ -143,21 +131,6 @@ const TodoPage: React.FC = () => {
       header: 'Status',
       accessor: (item) => getStatusBadge(item.status),
       sortable: true
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      accessor: (item) => (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleMarkComplete(item.id)}
-          disabled={item.status === 'completed'}
-        >
-          <CheckCircle className="h-4 w-4 mr-1" />
-          Complete
-        </Button>
-      )
     }
   ];
 
@@ -208,21 +181,6 @@ const TodoPage: React.FC = () => {
       header: 'Status',
       accessor: (item) => getStatusBadge(item.status),
       sortable: true
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      accessor: (item) => (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleMarkComplete(item.id)}
-          disabled={item.status === 'completed'}
-        >
-          <CheckCircle className="h-4 w-4 mr-1" />
-          Complete
-        </Button>
-      )
     }
   ];
 
@@ -280,21 +238,6 @@ const TodoPage: React.FC = () => {
       header: 'Status',
       accessor: (item) => getStatusBadge(item.status as TodoStatus),
       sortable: true
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      accessor: (item) => (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleMarkComplete(item.id)}
-          disabled={item.status === 'completed'}
-        >
-          <CheckCircle className="h-4 w-4 mr-1" />
-          Complete
-        </Button>
-      )
     }
   ];
 
@@ -362,29 +305,8 @@ const TodoPage: React.FC = () => {
       accessor: (item) => item.providerName,
       searchable: true,
       searchValue: (item) => item.providerName
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      accessor: (item) => (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleMarkComplete(item.id)}
-          disabled={item.status === 'completed'}
-        >
-          <CheckCircle className="h-4 w-4 mr-1" />
-          Complete
-        </Button>
-      )
     }
   ];
-
-  const getTabBadge = (count: number) => (
-    <Badge variant="secondary" className="ml-2">
-      {count}
-    </Badge>
-  );
 
   return (
     <PageLayout>
@@ -392,19 +314,6 @@ const TodoPage: React.FC = () => {
         icon={CheckSquare}
         title="To-Do List"
         description="Manage your tasks and track important items that need attention"
-        badge={stats && (
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
-              {stats.total} Total
-            </Badge>
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-              {stats.pending} Pending
-            </Badge>
-            <Badge variant="outline" className="bg-red-50 text-red-700">
-              {stats.overdue} Overdue
-            </Badge>
-          </div>
-        )}
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -412,22 +321,18 @@ const TodoPage: React.FC = () => {
           <TabsTrigger value="account" className="flex items-center">
             <User className="h-4 w-4 mr-2" />
             Account
-            {getTabBadge(accountTodos.length)}
           </TabsTrigger>
           <TabsTrigger value="patients" className="flex items-center">
             <Users className="h-4 w-4 mr-2" />
             Patients
-            {getTabBadge(patientTodos.length)}
           </TabsTrigger>
           <TabsTrigger value="appointments" className="flex items-center">
             <Calendar className="h-4 w-4 mr-2" />
             Appointments
-            {getTabBadge(appointmentTodos.length)}
           </TabsTrigger>
           <TabsTrigger value="notes" className="flex items-center">
             <FileText className="h-4 w-4 mr-2" />
             Notes
-            {getTabBadge(noteTodos.length)}
           </TabsTrigger>
         </TabsList>
 

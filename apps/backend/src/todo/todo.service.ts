@@ -87,71 +87,6 @@ export interface TodoStats {
 export class TodoService {
   constructor(private prisma: PrismaService) {}
 
-  async getTodos(filters: TodoFiltersDto, user: User): Promise<TodoItem[]> {
-    const [accountTodos, patientTodos, appointmentTodos, noteTodos] = await Promise.all([
-      this.getAccountTodos(user),
-      this.getPatientTodos(user),
-      this.getAppointmentTodos(user),
-      this.getNoteTodos(user),
-    ]);
-
-    let allTodos: TodoItem[] = [
-      ...accountTodos,
-      ...patientTodos,
-      ...appointmentTodos,
-      ...noteTodos,
-    ];
-
-    // Apply filters
-    if (filters.type) {
-      allTodos = allTodos.filter(todo => todo.type === filters.type);
-    }
-    if (filters.priority) {
-      allTodos = allTodos.filter(todo => todo.priority === filters.priority);
-    }
-    if (filters.status) {
-      allTodos = allTodos.filter(todo => todo.status === filters.status);
-    }
-    if (filters.assignedTo) {
-      allTodos = allTodos.filter(todo => todo.assignedTo === filters.assignedTo);
-    }
-
-    return allTodos;
-  }
-
-  async getTodoStats(user: User): Promise<TodoStats> {
-    const [accountTodos, patientTodos, appointmentTodos, noteTodos] = await Promise.all([
-      this.getAccountTodos(user),
-      this.getPatientTodos(user),
-      this.getAppointmentTodos(user),
-      this.getNoteTodos(user),
-    ]);
-
-    const allTodos = [...accountTodos, ...patientTodos, ...appointmentTodos, ...noteTodos];
-
-    const stats: TodoStats = {
-      total: allTodos.length,
-      pending: allTodos.filter(t => t.status === 'pending').length,
-      inProgress: allTodos.filter(t => t.status === 'in_progress').length,
-      completed: allTodos.filter(t => t.status === 'completed').length,
-      overdue: allTodos.filter(t => t.dueDate && t.dueDate < new Date() && t.status !== 'completed').length,
-      byType: {
-        account: accountTodos.length,
-        patient: patientTodos.length,
-        appointment: appointmentTodos.length,
-        note: noteTodos.length,
-      },
-      byPriority: {
-        low: allTodos.filter(t => t.priority === 'low').length,
-        medium: allTodos.filter(t => t.priority === 'medium').length,
-        high: allTodos.filter(t => t.priority === 'high').length,
-        urgent: allTodos.filter(t => t.priority === 'urgent').length,
-      },
-    };
-
-    return stats;
-  }
-
   async getAccountTodos(user: User): Promise<AccountTodoItem[]> {
     const userRole = user.userRoles?.[0]?.role;
     const todos: AccountTodoItem[] = [];
@@ -318,30 +253,27 @@ export class TodoService {
       });
     } else {
       // Regular clinicians can see their assigned clients
-      const staffProfile = await this.prisma.staffProfile.findUnique({
-        where: { id: user.staffProfile?.id },
-        include: {
-          clients: {
-            include: {
-              client: {
-                include: {
-                  clinicians: {
-                    include: {
-                      clinician: {
-                        include: {
-                          user: true,
-                        },
-                      },
-                    },
+      if (!user.staffProfile?.id) {
+        // If user doesn't have a staff profile, return empty array
+        clientsToCheck = [];
+      } else {
+        const staffProfile = await this.prisma.staffProfile.findUnique({
+          where: { id: user.staffProfile.id },
+          include: {
+            clients: {  // ClientClinician[]
+              include: {
+                client: {  // Client
+                  include: {
+                    user: true,  // Direct user relationship
                   },
                 },
               },
             },
           },
-        },
-      });
+        });
 
-      clientsToCheck = staffProfile?.clients.map(cc => cc.client) || [];
+        clientsToCheck = staffProfile?.clients.map(cc => cc.client) || [];
+      }
     }
 
     // Check each client for missing information
@@ -358,8 +290,13 @@ export class TodoService {
       if (!client.city) missingFields.push('City');
       if (!client.state) missingFields.push('State');
       if (!client.zipCode) missingFields.push('Zip Code');
-      if (!client.phoneNumber) missingFields.push('Phone Number');
       if (!client.hipaaSigned) missingFields.push('HIPAA Consent');
+
+      // Check phone numbers
+      const phoneCount = await this.prisma.clientPhoneNumber.count({
+        where: { clientId: client.id },
+      });
+      if (phoneCount === 0) missingFields.push('Phone Number');
 
       // Check insurance information
       const insuranceCount = await this.prisma.clientInsurance.count({
@@ -416,16 +353,12 @@ export class TodoService {
             gte: new Date(),
           },
           status: {
-            in: ['scheduled', 'confirmed'],
+            in: ['Scheduled', 'Confirmed'],
           },
         },
         include: {
           clients: true,
-          staff: {
-            include: {
-              user: true,
-            },
-          },
+          provider: true,
         },
         orderBy: {
           startTime: 'asc',
@@ -448,25 +381,21 @@ export class TodoService {
         },
       });
 
-      const superviseeStaffIds = supervisees.map(s => s.supervisee.staffProfile?.id).filter(Boolean);
+      const superviseeUserIds = supervisees.map(s => s.supervisee.id).filter(Boolean);
 
       appointments = await this.prisma.appointment.findMany({
         where: {
-          providerId: { in: superviseeStaffIds },
+          providerId: { in: superviseeUserIds },
           startTime: {
             gte: new Date(),
           },
           status: {
-            in: ['scheduled', 'confirmed'],
+            in: ['Scheduled', 'Confirmed'],
           },
         },
         include: {
           clients: true,
-          staff: {
-            include: {
-              user: true,
-            },
-          },
+          provider: true,
         },
         orderBy: {
           startTime: 'asc',
@@ -474,30 +403,32 @@ export class TodoService {
         take: 20,
       });
     } else {
+      console.log(user.id, user.staffProfile?.id);
       // Regular users can see their own appointments
-      appointments = await this.prisma.appointment.findMany({
-        where: {
-          providerId: user.staffProfile?.id,
-          startTime: {
-            gte: new Date(),
-          },
-          status: {
-            in: ['scheduled', 'confirmed'],
-          },
-        },
-        include: {
-          clients: true,
-          staff: {
-            include: {
-              user: true,
+      if (!user.id) {
+        // If user doesn't have a staff profile, return empty array
+        appointments = [];
+      } else {
+        appointments = await this.prisma.appointment.findMany({
+          where: {
+            providerId: user.id,
+            startTime: {
+              gte: new Date(),
+            },
+            status: {
+              in: ['Scheduled', 'Confirmed'],
             },
           },
-        },
-        orderBy: {
-          startTime: 'asc',
-        },
-        take: 20,
-      });
+          include: {
+            clients: true,
+            provider: true,
+          },
+          orderBy: {
+            startTime: 'asc',
+          },
+          take: 20,
+        });
+      }
     }
 
     // Convert appointments to todo items
@@ -520,7 +451,7 @@ export class TodoService {
         clientId: appointment.clientId,
         clientName: `${appointment.clients.firstName} ${appointment.clients.lastName}`,
         providerId: appointment.providerId,
-        providerName: `${appointment.staff.user.firstName} ${appointment.staff.user.lastName}`,
+        providerName: `${appointment.provider.firstName} ${appointment.provider.lastName}`,
         appointmentDate: appointment.startTime,
         appointmentType: appointment.appointmentType,
         appointmentStatus: appointment.status,
@@ -644,23 +575,5 @@ export class TodoService {
     }
 
     return todos;
-  }
-
-  async updateTodoStatus(id: string, status: TodoStatus, user: User): Promise<TodoItem> {
-    // This would typically update a todo record in the database
-    // For now, we'll return a mock response
-    throw new NotFoundException('Todo not found');
-  }
-
-  async markTodoComplete(id: string, user: User): Promise<TodoItem> {
-    // This would typically mark a todo as completed in the database
-    // For now, we'll return a mock response
-    throw new NotFoundException('Todo not found');
-  }
-
-  async deleteTodo(id: string, user: User): Promise<void> {
-    // This would typically delete a todo record from the database
-    // For now, we'll throw an error
-    throw new NotFoundException('Todo not found');
   }
 }

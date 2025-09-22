@@ -66,6 +66,7 @@ model User {
   chatSessions                 ChatSession[]                 @relation("UserChatSessions")
   client                        Client?                      @relation("UserClient", fields: [clientId], references: [id])
   staffProfile                  StaffProfile?                @relation("UserStaffProfile", fields: [staffId], references: [id])
+  appointments                  Appointment[]
 
   @@map("users")
 }
@@ -270,7 +271,7 @@ model Appointment {
   createdAt          DateTime       @default(now()) @map("created_at")
   updatedAt          DateTime       @default(now()) @map("updated_at")
   clients            Client         @relation(fields: [clientId], references: [id])
-  staff              StaffProfile   @relation(fields: [providerId], references: [id])
+  provider           User           @relation(fields: [providerId], references: [id])
   note               ClinicalNote?  @relation(fields: [noteId], references: [id])
   recurringRule      RecurringRule? @relation(fields: [recurringRuleId], references: [id])
   createdByStaff     StaffProfile?  @relation("AppointmentCreator", fields: [createdBy], references: [id])
@@ -405,7 +406,6 @@ model StaffProfile {
   userComments          String?                      @map("user_comments")
   workPhone             String?                      @map("work_phone")
   zipCode               String?                      @map("zip_code")
-  appointments          Appointment[]
   createdAppointments   Appointment[]                @relation("AppointmentCreator")
   canceledAppointments  Appointment[]                @relation("AppointmentCanceler")
   providerCompensations ProviderCompensationConfig[] @relation("ProviderCompensationProvider")

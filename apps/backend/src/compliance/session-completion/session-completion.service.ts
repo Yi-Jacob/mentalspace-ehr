@@ -443,7 +443,7 @@ export class SessionCompletionService {
       where: { id: appointmentId },
       include: {
         clients: true,
-        staff: true,
+        provider: true,
       },
     });
 
