@@ -70,6 +70,11 @@ jobs:
         echo "DATABASE_URL=${DATABASE_URL}" >> apps/backend/.env
         echo "JWT_SECRET=${JWT_SECRET}" >> apps/backend/.env
         echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> apps/backend/.env
+        echo "DEFAULT_PASSWORD=${DEFAULT_PASSWORD}" >> apps/backend/.env
+        echo "EMAIL_FROM=${EMAIL_FROM}" >> apps/backend/.env
+        echo "FRONTEND_URL=${FRONTEND_URL}" >> apps/backend/.env
+        echo "FRONTENDPASSWORD_RESET_EXPIRATION_MINUTES_URL=${FRONTENDPASSWORD_RESET_EXPIRATION_MINUTES_URL}" >> apps/backend/.env
+        echo "RESEND_API_KEY=${RESEND_API_KEY}" >> apps/backend/.env
         echo "JWT_EXPIRES_IN=24h" >> apps/backend/.env
         echo "PORT=7000" >> apps/backend/.env
         chmod 600 apps/backend/.env
