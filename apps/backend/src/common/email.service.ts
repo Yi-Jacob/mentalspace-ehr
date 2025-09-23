@@ -5,13 +5,13 @@ import { Resend } from 'resend';
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private resend: Resend;
+  private resend: Resend | null;
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
     if (!apiKey) {
-      this.logger.error('RESEND_API_KEY is not configured');
-      throw new Error('RESEND_API_KEY is required for email service');
+      this.logger.warn('RESEND_API_KEY is not configured');
+      // throw new Error('RESEND_API_KEY is required for email service');
     }
     this.resend = new Resend(apiKey);
   }

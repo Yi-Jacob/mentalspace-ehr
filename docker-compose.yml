@@ -5,14 +5,8 @@
       context: .
       dockerfile: Dockerfile.backend
     container_name: mentalspace-backend
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: 
-      JWT_SECRET: 
-      JWT_EXPIRES_IN: 
-      PORT: 7000
-      DB_HOST: database-1-instance-1.cny40qqomphs.us-east-2.rds.amazonaws.com
-      DB_PORT: 5432
+    env_file:
+      - ./apps/backend/.env
     ports:
       - "7000:7000"
     networks:
