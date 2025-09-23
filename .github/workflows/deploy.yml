@@ -30,6 +30,11 @@ jobs:
       VITE_API_TIMEOUT: ${{ secrets.VITE_API_TIMEOUT }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      DEFAULT_PASSWORD: ${{ secrets.DEFAULT_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      FRONTENDPASSWORD_RESET_EXPIRATION_MINUTES_URL: ${{ secrets.PASSWORD_RESET_EXPIRATION_MINUTES }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
     
     steps:
     - name: Checkout code
