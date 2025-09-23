@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Plus, Phone, Mail, Calendar, Eye } from 'lucide-react';
+import { User, Plus, Eye, Mail } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
@@ -11,9 +11,12 @@ import EmptyState from '@/components/EmptyState';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ClientErrorState from '../components/ClientErrorState';
 import { ClientFormData } from '@/types/clientType';
+import { toast } from 'sonner';
+import { clientService } from '@/services/clientService';
 
 const ClientsPage: React.FC = () => {
   const navigate = useNavigate();
+  const [sendingEmails, setSendingEmails] = useState<Set<string>>(new Set());
 
   // Use the new useClients hook
   const { 
@@ -31,19 +34,27 @@ const ClientsPage: React.FC = () => {
     navigate('/clients/add');
   };
 
-  const handleCallClient = (client: ClientFormData) => {
-    // TODO: Implement call functionality
-    console.log('Call client:', client);
-  };
+  const handleSendWelcomeEmail = async (client: ClientFormData) => {
+    setSendingEmails(prev => new Set(prev).add(client.id));
+    
+    try {
+      const result = await clientService.resendWelcomeEmail(client.id);
 
-  const handleEmailClient = (client: ClientFormData) => {
-    // TODO: Implement email functionality
-    console.log('Email client:', client);
-  };
-
-  const handleScheduleAppointment = (client: ClientFormData) => {
-    // TODO: Implement schedule appointment functionality
-    console.log('Schedule appointment for:', client);
+      if (result.success) {
+        toast.success('Welcome email sent successfully!');
+      } else {
+        toast.error(result.message || 'Failed to send welcome email');
+      }
+    } catch (error) {
+      console.error('Error sending welcome email:', error);
+      toast.error('Failed to send welcome email');
+    } finally {
+      setSendingEmails(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(client.id);
+        return newSet;
+      });
+    }
   };
 
   const formatAge = (dateOfBirth: string | null) => {
@@ -79,12 +90,8 @@ const ClientsPage: React.FC = () => {
     return location || 'Not specified';
   };
 
-  const formatStatus = (client: ClientFormData) => {
-    return (
-      <Badge variant={client.isActive ? 'default' : 'secondary'} className="text-xs">
-        {client.isActive ? 'Active' : 'Inactive'}
-      </Badge>
-    );
+  const formatSex = (client: ClientFormData) => {
+    return client.administrativeSex || 'Not specified';
   };
 
   const formatAssignment = (client: ClientFormData) => {
@@ -135,16 +142,21 @@ const ClientsPage: React.FC = () => {
       accessor: formatName,
       sortable: true,
       searchable: true,
-      searchValue: (client) => `${client.firstName} ${client.lastName} ${client.preferredName || ''}`,
-      width: '25%'
+      searchValue: (client) => `${client.firstName} ${client.lastName} ${client.preferredName || ''}`
     },
     {
       key: 'email',
       header: 'Email',
       accessor: (client) => client.email || 'Not provided',
       sortable: true,
-      searchable: true,
-      width: '20%'
+      searchable: true
+    },
+    {
+      key: 'sex',
+      header: 'Sex',
+      accessor: formatSex,
+      sortable: true,
+      searchable: true
     },
     {
       key: 'location',
@@ -152,23 +164,14 @@ const ClientsPage: React.FC = () => {
       accessor: formatLocation,
       sortable: true,
       searchable: true,
-      searchValue: (client) => `${client.city || ''} ${client.state || ''}`,
-      width: '15%'
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      accessor: formatStatus,
-      sortable: true,
-      width: '10%'
+      searchValue: (client) => `${client.city || ''} ${client.state || ''}`
     },
     {
       key: 'assignment',
       header: 'Assigned To',
       accessor: formatAssignment,
       sortable: true,
-      searchable: true,
-      width: '15%'
+      searchable: true
     }
   ];
 
@@ -222,22 +225,24 @@ const ClientsPage: React.FC = () => {
               variant: 'ghost'
             },
             {
-              label: 'Call',
-              icon: <Phone className="w-3 h-3" />,
-              onClick: handleCallClient,
-              variant: 'ghost'
-            },
-            {
-              label: 'Email',
+              label: (client) => {
+                const needsWelcomeEmail = !client?.hasPassword;
+                const isSendingEmail = sendingEmails.has(client.id);
+                return needsWelcomeEmail ? (isSendingEmail ? 'Sending...' : 'Send Welcome') : '';
+              },
               icon: <Mail className="w-3 h-3" />,
-              onClick: handleEmailClient,
-              variant: 'ghost'
-            },
-            {
-              label: 'Schedule',
-              icon: <Calendar className="w-3 h-3" />,
-              onClick: handleScheduleAppointment,
-              variant: 'ghost'
+              onClick: (client) => {
+                const needsWelcomeEmail = !client?.hasPassword;
+                if (needsWelcomeEmail) {
+                  handleSendWelcomeEmail(client);
+                }
+              },
+              variant: 'ghost',
+              disabled: (client) => {
+                const needsWelcomeEmail = !client?.hasPassword;
+                const isSendingEmail = sendingEmails.has(client.id);
+                return !needsWelcomeEmail || isSendingEmail;
+              }
             }
           ]}
         />

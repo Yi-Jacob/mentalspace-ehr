@@ -103,6 +103,7 @@ export interface ClientFormData {
   preferredName: string;
   pronouns: string;
   dateOfBirth: string;
+  hasPassword?: boolean; // Password status for welcome email functionality
   clinicians?: {
     id: string;
     clientId: string;

@@ -232,4 +232,13 @@ export class ClientsController {
   getClientClinicians(@Param('id') clientId: string) {
     return this.clientsService.getClientClinicians(clientId);
   }
+
+  @Post(':id/resend-welcome-email')
+  @ApiOperation({ summary: 'Resend welcome email to client' })
+  @ApiResponse({ status: 200, description: 'Welcome email sent successfully' })
+  @ApiResponse({ status: 400, description: 'Client already has password or email not found' })
+  @ApiResponse({ status: 404, description: 'Client not found' })
+  resendWelcomeEmail(@Param('id') clientId: string) {
+    return this.clientsService.resendWelcomeEmail(clientId);
+  }
 }

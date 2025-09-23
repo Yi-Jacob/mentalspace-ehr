@@ -211,6 +211,12 @@ export class ClientService {
     const response = await apiClient.get(`${this.baseUrl}/${clientId}/insurance-for-notes`);
     return response.data;
   }
+
+  // Resend welcome email to client
+  async resendWelcomeEmail(clientId: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string }>(`${this.baseUrl}/${clientId}/resend-welcome-email`);
+    return response.data;
+  }
 }
 
 export const clientService = new ClientService();

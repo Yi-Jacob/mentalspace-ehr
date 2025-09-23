@@ -2,8 +2,8 @@ import { Injectable, NotFoundException, BadRequestException, InternalServerError
 import { PrismaService } from '../database/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import * as bcrypt from 'bcryptjs';
-import { DEFAULT_PASSWORD } from '../common/constants';
+import { EmailService } from '../common/email.service';
+import { AuthService } from '../auth/auth.service';
 
 /**
  * Interface representing client data returned for note creation workflows.
@@ -18,7 +18,11 @@ export interface ClientNoteData {
 
 @Injectable()
 export class ClientsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private authService: AuthService,
+  ) {}
 
   // Utility function to convert date strings to Date objects
   private convertDate(dateString: string | undefined | null): Date | undefined {
@@ -38,14 +42,11 @@ export class ClientsService {
         data: createClientDto,
       });
 
-      // Hash the default password
-      const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
-
-      // Create a user record for the client
+      // Create a user record for the client without password
       const clientUser = await prisma.user.create({
         data: {
-          email: createClientDto.email || `client.${client.id}@example.com`,
-          password: hashedPassword,
+          email: createClientDto.email,
+          password: null, // No password set initially
           firstName: createClientDto.firstName,
           lastName: createClientDto.lastName,
           middleName: createClientDto.middleName,
@@ -56,24 +57,31 @@ export class ClientsService {
         },
       });
 
-      return { ...client, userId: clientUser.id };
-    });
-  }
+      // Generate password reset token for the new client
+      const passwordResetData = await this.authService.createPasswordResetToken(clientUser.id);
 
-  async findAll(): Promise<any[]> {
-    return this.prisma.client.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: {
-        lastName: 'asc',
-      },
+      // Send password setup email to the client
+      if (createClientDto.email) {
+        try {
+          await this.emailService.sendPasswordSetupEmail(
+            createClientDto.email,
+            createClientDto.firstName,
+            createClientDto.lastName,
+            passwordResetData.resetUrl,
+          );
+        } catch (error) {
+          console.error('Failed to send password setup email:', error);
+          // Don't fail the client creation if email fails
+        }
+      }
+
+      return { ...client, userId: clientUser.id };
     });
   }
 
   // Get clients for admin roles (full access)
   async findAllForAdmin(): Promise<any[]> {
-    return this.prisma.client.findMany({
+    const clients = await this.prisma.client.findMany({
       where: {
         isActive: true,
       },
@@ -93,16 +101,28 @@ export class ClientsService {
             },
           },
         },
+        user: {
+          select: {
+            password: true,
+          },
+        },
       },
       orderBy: {
         lastName: 'asc',
       },
     });
+
+    // Transform the data to include hasPassword
+    return clients.map(client => ({
+      ...client,
+      hasPassword: client.user?.password ? client.user.password.trim() !== '' : false,
+      user: undefined, // Remove the user object to avoid exposing password
+    }));
   }
 
   // Get clients assigned to a specific clinician
   async findClientsByClinicianId(clinicianId: string): Promise<any[]> {
-    return this.prisma.client.findMany({
+    const clients = await this.prisma.client.findMany({
       where: {
         isActive: true,
         clinicians: {
@@ -127,11 +147,23 @@ export class ClientsService {
             },
           },
         },
+        user: {
+          select: {
+            password: true,
+          },
+        },
       },
       orderBy: {
         lastName: 'asc',
       },
     });
+
+    // Transform the data to include hasPassword
+    return clients.map(client => ({
+      ...client,
+      hasPassword: client.user?.password ? client.user.password.trim() !== '' : false,
+      user: undefined, // Remove the user object to avoid exposing password
+    }));
   }
 
   // Get clients for supervisor (own clients + supervisee clients)
@@ -181,7 +213,7 @@ export class ClientsService {
       allStaffIds.push(supervisorStaffProfile.id);
     }
 
-    return this.prisma.client.findMany({
+    const clients = await this.prisma.client.findMany({
       where: {
         isActive: true,
         clinicians: {
@@ -206,11 +238,23 @@ export class ClientsService {
             },
           },
         },
+        user: {
+          select: {
+            password: true,
+          },
+        },
       },
       orderBy: {
         lastName: 'asc',
       },
     });
+
+    // Transform the data to include hasPassword
+    return clients.map(client => ({
+      ...client,
+      hasPassword: client.user?.password ? client.user.password.trim() !== '' : false,
+      user: undefined, // Remove the user object to avoid exposing password
+    }));
   }
 
   /**
@@ -611,14 +655,11 @@ export class ClientsService {
         data: mappedClientData,
       });
 
-      // Hash the default password
-      const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
-
-      // Create a user record for the client
+      // Create a user record for the client without password
       const clientUser = await prisma.user.create({
         data: {
           email: clientData.email || `client.${client.id}@example.com`,
-          password: hashedPassword,
+          password: null, // No password set initially
           firstName: clientData.firstName,
           lastName: clientData.lastName,
           middleName: clientData.middleName,
@@ -628,6 +669,24 @@ export class ClientsService {
           clientId: client.id,
         },
       });
+
+      // Generate password reset token for the new client
+      const passwordResetData = await this.authService.createPasswordResetToken(clientUser.id);
+
+      // Send password setup email to the client
+      if (clientData.email) {
+        try {
+          await this.emailService.sendPasswordSetupEmail(
+            clientData.email,
+            clientData.firstName,
+            clientData.lastName,
+            passwordResetData.resetUrl,
+          );
+        } catch (error) {
+          console.error('Failed to send password setup email:', error);
+          // Don't fail the client creation if email fails
+        }
+      }
 
       // Create phone numbers
       if (phoneNumbers.length > 0) {
@@ -901,5 +960,64 @@ export class ClientsService {
         department: assignment.clinician.department,
       },
     }));
+  }
+
+  async resendWelcomeEmail(clientId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Get the client with user information
+      const client = await this.prisma.client.findUnique({
+        where: { id: clientId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              password: true,
+            },
+          },
+        },
+      });
+
+      if (!client) {
+        throw new Error('Client not found');
+      }
+
+      if (!client.user) {
+        throw new Error('Client user account not found');
+      }
+
+      if (!client.user.email) {
+        throw new Error('Client email not found');
+      }
+
+      // Check if client already has a password
+      if (client.user.password && client.user.password.trim() !== '') {
+        throw new Error('Client already has a password set');
+      }
+
+      // Generate new password reset token
+      const passwordResetData = await this.authService.createPasswordResetToken(client.user.id);
+
+      // Send welcome email
+      await this.emailService.sendPasswordSetupEmail(
+        client.user.email,
+        client.user.firstName,
+        client.user.lastName,
+        passwordResetData.resetUrl,
+      );
+
+      return {
+        success: true,
+        message: 'Welcome email sent successfully',
+      };
+    } catch (error) {
+      console.error('Error resending welcome email:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to send welcome email',
+      };
+    }
   }
 }
