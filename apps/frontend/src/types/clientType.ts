@@ -1,5 +1,5 @@
 
-import { PhoneType, MessagePreference, InsuranceType, SubscriberRelationship, AdministrativeSex, GenderIdentity, SexualOrientation, Race, Ethnicity, Language, MaritalStatus, EmploymentStatus, ReligiousAffiliation, SmokingStatus, AppointmentReminders, PcpRelease, UsState, Timezone } from './enums/clientEnum';
+import { PhoneType, MessagePreference, InsuranceType, SubscriberRelationship, AdministrativeSex, GenderIdentity, SexualOrientation, Race, Ethnicity, Language, MaritalStatus, EmploymentStatus, ReligiousAffiliation, SmokingStatus, AppointmentReminders, PcpRelease, UsState, Timezone, FileStatus } from './enums/clientEnum';
 
 // API Response Types (from backend)
 export interface PhoneNumberDto {
@@ -179,4 +179,66 @@ export interface ClientFormData {
   patientComments: string;
   // Status
   isActive: boolean;
+}
+
+// Client File Types
+export interface ClientFileDto {
+  id: string;
+  clientId: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize?: number;
+  mimeType?: string;
+  status: FileStatus;
+  createdBy: string;
+  signedDate?: string;
+  coSignedBy?: string;
+  coSignedByDate?: string;
+  isCompletedOnStaff: boolean;
+  completedDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  client: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  creator: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  coSigner?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+export interface CreateClientFileDto {
+  clientId: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize?: number;
+  mimeType?: string;
+  status?: FileStatus;
+}
+
+export interface UpdateClientFileDto {
+  coSignedBy?: string;
+  coSignedByDate?: string;
+  completedDate?: string;
+}
+
+export interface SignFileDto {
+  fileId: string;
+  signedBy: string;
+}
+
+export interface CompleteFileDto {
+  fileId: string;
+  completedBy: string;
 }

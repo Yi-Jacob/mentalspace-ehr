@@ -247,4 +247,14 @@ export const TIMEZONE_OPTIONS = [
   { value: 'CVT', label: 'CVT - Cape Verde Time 2, UTC-1 no DST' },
 ];
 
-export type Timezone = typeof TIMEZONE_OPTIONS[number]['value']; 
+export type Timezone = typeof TIMEZONE_OPTIONS[number]['value'];
+
+// File Status Options
+export const FILE_STATUS_OPTIONS = [
+  { value: "draft", label: "Draft" },
+  { value: "signedbyauthor", label: "Signed by Author" },
+  { value: "signedbysupervisor", label: "Signed by Supervisor" },
+  { value: "completedbyclient", label: "Completed by Client" }
+];
+
+export type FileStatus = typeof FILE_STATUS_OPTIONS[number]['value']; 
