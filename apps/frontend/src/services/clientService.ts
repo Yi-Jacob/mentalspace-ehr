@@ -213,9 +213,14 @@ export class ClientService {
   }
 
   // Resend welcome email to client
-  async resendWelcomeEmail(clientId: string): Promise<{ success: boolean; message: string }> {
+  async sendClientEmail(clientId: string): Promise<{ success: boolean; message: string }> {
     const response = await apiClient.post<{ success: boolean; message: string }>(`${this.baseUrl}/${clientId}/resend-welcome-email`);
     return response.data;
+  }
+
+  // Keep the old method for backward compatibility
+  async resendWelcomeEmail(clientId: string): Promise<{ success: boolean; message: string }> {
+    return this.sendClientEmail(clientId);
   }
 }
 

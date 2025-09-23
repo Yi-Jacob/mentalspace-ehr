@@ -992,31 +992,44 @@ export class ClientsService {
         throw new Error('Client email not found');
       }
 
-      // Check if client already has a password
-      if (client.user.password && client.user.password.trim() !== '') {
-        throw new Error('Client already has a password set');
-      }
-
       // Generate new password reset token
       const passwordResetData = await this.authService.createPasswordResetToken(client.user.id);
 
-      // Send welcome email
-      await this.emailService.sendPasswordSetupEmail(
-        client.user.email,
-        client.user.firstName,
-        client.user.lastName,
-        passwordResetData.resetUrl,
-      );
+      // Check if client has a password to determine email type
+      const hasPassword = client.user.password && client.user.password.trim() !== '';
 
-      return {
-        success: true,
-        message: 'Welcome email sent successfully',
-      };
+      if (hasPassword) {
+        // Send password reset email
+        await this.emailService.sendPasswordResetEmail(
+          client.user.email,
+          client.user.firstName,
+          client.user.lastName,
+          passwordResetData.resetUrl,
+        );
+
+        return {
+          success: true,
+          message: 'Password reset email sent successfully',
+        };
+      } else {
+        // Send welcome email
+        await this.emailService.sendPasswordSetupEmail(
+          client.user.email,
+          client.user.firstName,
+          client.user.lastName,
+          passwordResetData.resetUrl,
+        );
+
+        return {
+          success: true,
+          message: 'Welcome email sent successfully',
+        };
+      }
     } catch (error) {
-      console.error('Error resending welcome email:', error);
+      console.error('Error sending email:', error);
       return {
         success: false,
-        message: error.message || 'Failed to send welcome email',
+        message: error.message || 'Failed to send email',
       };
     }
   }

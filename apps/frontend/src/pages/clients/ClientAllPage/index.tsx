@@ -38,16 +38,16 @@ const ClientsPage: React.FC = () => {
     setSendingEmails(prev => new Set(prev).add(client.id));
     
     try {
-      const result = await clientService.resendWelcomeEmail(client.id);
+      const result = await clientService.sendClientEmail(client.id);
 
       if (result.success) {
-        toast.success('Welcome email sent successfully!');
+        toast.success(result.message || 'Email sent successfully!');
       } else {
-        toast.error(result.message || 'Failed to send welcome email');
+        toast.error(result.message || 'Failed to send email');
       }
     } catch (error) {
-      console.error('Error sending welcome email:', error);
-      toast.error('Failed to send welcome email');
+      console.error('Error sending email:', error);
+      toast.error('Failed to send email');
     } finally {
       setSendingEmails(prev => {
         const newSet = new Set(prev);
@@ -226,22 +226,20 @@ const ClientsPage: React.FC = () => {
             },
             {
               label: (client) => {
-                const needsWelcomeEmail = !client?.hasPassword;
                 const isSendingEmail = sendingEmails.has(client.id);
-                return needsWelcomeEmail ? (isSendingEmail ? 'Sending...' : 'Send Welcome') : '';
+                if (isSendingEmail) return 'Sending...';
+                
+                const hasPassword = client?.hasPassword;
+                return hasPassword ? 'Send Reset Password' : 'Send Welcome';
               },
               icon: <Mail className="w-3 h-3" />,
               onClick: (client) => {
-                const needsWelcomeEmail = !client?.hasPassword;
-                if (needsWelcomeEmail) {
-                  handleSendWelcomeEmail(client);
-                }
+                handleSendWelcomeEmail(client);
               },
               variant: 'ghost',
               disabled: (client) => {
-                const needsWelcomeEmail = !client?.hasPassword;
                 const isSendingEmail = sendingEmails.has(client.id);
-                return !needsWelcomeEmail || isSendingEmail;
+                return isSendingEmail;
               }
             }
           ]}
