@@ -767,7 +767,8 @@ export class ClientsService {
   ) {
     return this.prisma.$transactionWithRetry(async (prisma) => {
       // Convert date fields and handle assignedClinicianIds relation
-      const { assignedClinicianIds, ...otherClientData } = clientData;
+      // Also remove clinicians relationship data as it's handled separately
+      const { assignedClinicianIds, clinicians, ...otherClientData } = clientData;
       const mappedClientData = {
         ...otherClientData,
         dateOfBirth: this.convertDate(clientData.dateOfBirth),

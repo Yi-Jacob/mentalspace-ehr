@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Plus, Eye, Mail } from 'lucide-react';
 import { Button } from '@/components/basic/button';
@@ -10,13 +10,15 @@ import { useClients } from '@/pages/clients/hook/useClients';
 import EmptyState from '@/components/EmptyState';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ClientErrorState from '../components/ClientErrorState';
-import { ClientFormData } from '@/types/clientType';
+import { ClientFormData, InsuranceInfo } from '@/types/clientType';
 import { toast } from 'sonner';
 import { clientService } from '@/services/clientService';
+import { formatDateOfBirth } from '@/utils/dateUtils';
 
 const ClientsPage: React.FC = () => {
   const navigate = useNavigate();
   const [sendingEmails, setSendingEmails] = useState<Set<string>>(new Set());
+  const [clientsWithInsurance, setClientsWithInsurance] = useState<Map<string, InsuranceInfo[]>>(new Map());
 
   // Use the new useClients hook
   const { 
@@ -25,6 +27,29 @@ const ClientsPage: React.FC = () => {
     error, 
     refetchClients 
   } = useClients();
+
+  // Fetch insurance information for all clients
+  useEffect(() => {
+    const fetchInsuranceData = async () => {
+      if (clients.length === 0) return;
+      
+      const insuranceMap = new Map<string, InsuranceInfo[]>();
+      
+      for (const client of clients) {
+        try {
+          const insuranceData = await clientService.getClientInsurance(client.id);
+          insuranceMap.set(client.id, insuranceData);
+        } catch (error) {
+          console.error(`Failed to fetch insurance for client ${client.id}:`, error);
+          insuranceMap.set(client.id, []);
+        }
+      }
+      
+      setClientsWithInsurance(insuranceMap);
+    };
+
+    fetchInsuranceData();
+  }, [clients]);
 
   const handleClientClick = (client: ClientFormData) => {
     navigate(`/clients/${client.id}`);
@@ -65,9 +90,42 @@ const ClientsPage: React.FC = () => {
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return `${age - 1} years`;
+      return `${age - 1}`;
     }
-    return `${age} years`;
+    return `${age}`;
+  };
+
+  const formatDOB = (dateOfBirth: string | null) => {
+    if (!dateOfBirth) return 'Not provided';
+    return formatDateOfBirth(dateOfBirth);
+  };
+
+  const formatGender = (client: ClientFormData) => {
+    return client.genderIdentity || 'Not specified';
+  };
+
+  const formatInsurance = (client: ClientFormData) => {
+    const insurance = clientsWithInsurance.get(client.id) || [];
+    if (insurance.length === 0) return 'None';
+    
+    const primaryInsurance = insurance.find(ins => ins.insuranceType === 'Primary');
+    if (primaryInsurance) {
+      return primaryInsurance.insuranceCompany || 'Unknown';
+    }
+    
+    return insurance[0].insuranceCompany || 'Unknown';
+  };
+
+  const formatSelfPay = (client: ClientFormData) => {
+    const insurance = clientsWithInsurance.get(client.id) || [];
+    const hasActiveInsurance = insurance.some(ins => {
+      // Check if insurance is active (no termination date or termination date is in the future)
+      const today = new Date();
+      const terminationDate = ins.terminationDate ? new Date(ins.terminationDate) : null;
+      return !terminationDate || terminationDate > today;
+    });
+    
+    return hasActiveInsurance ? 'No' : 'Yes';
   };
 
   const formatName = (client: ClientFormData) => {
@@ -78,9 +136,6 @@ const ClientsPage: React.FC = () => {
     return (
       <div>
         <div className="font-medium text-gray-900">{fullName}</div>
-        {client.dateOfBirth && (
-          <div className="text-sm text-gray-500">{formatAge(client.dateOfBirth)}</div>
-        )}
       </div>
     );
   };
@@ -90,7 +145,7 @@ const ClientsPage: React.FC = () => {
     return location || 'Not specified';
   };
 
-  const formatSex = (client: ClientFormData) => {
+  const formatAdministrativeSex = (client: ClientFormData) => {
     return client.administrativeSex || 'Not specified';
   };
 
@@ -145,6 +200,20 @@ const ClientsPage: React.FC = () => {
       searchValue: (client) => `${client.firstName} ${client.lastName} ${client.preferredName || ''}`
     },
     {
+      key: 'dob',
+      header: 'Date of Birth',
+      accessor: (client) => formatDOB(client.dateOfBirth),
+      sortable: true,
+      searchable: false
+    },
+    {
+      key: 'age',
+      header: 'Age',
+      accessor: (client) => formatAge(client.dateOfBirth),
+      sortable: true,
+      searchable: false
+    },
+    {
       key: 'email',
       header: 'Email',
       accessor: (client) => client.email || 'Not provided',
@@ -152,9 +221,16 @@ const ClientsPage: React.FC = () => {
       searchable: true
     },
     {
-      key: 'sex',
-      header: 'Sex',
-      accessor: formatSex,
+      key: 'gender',
+      header: 'Gender',
+      accessor: formatGender,
+      sortable: true,
+      searchable: true
+    },
+    {
+      key: 'administrativeSex',
+      header: 'Administrative Sex',
+      accessor: formatAdministrativeSex,
       sortable: true,
       searchable: true
     },
@@ -165,6 +241,20 @@ const ClientsPage: React.FC = () => {
       sortable: true,
       searchable: true,
       searchValue: (client) => `${client.city || ''} ${client.state || ''}`
+    },
+    {
+      key: 'insurance',
+      header: 'Insurance',
+      accessor: formatInsurance,
+      sortable: true,
+      searchable: true
+    },
+    {
+      key: 'selfPay',
+      header: 'Self-Pay',
+      accessor: formatSelfPay,
+      sortable: true,
+      searchable: false
     },
     {
       key: 'assignment',
