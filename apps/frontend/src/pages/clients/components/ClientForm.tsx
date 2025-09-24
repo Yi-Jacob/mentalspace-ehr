@@ -121,6 +121,7 @@ const ClientForm: React.FC<ClientFormProps> = ({
               <BillingTab
                 insuranceInfo={insuranceInfo}
                 setInsuranceInfo={setInsuranceInfo}
+                clientDob={formData.dateOfBirth}
               />
             </div>
           )

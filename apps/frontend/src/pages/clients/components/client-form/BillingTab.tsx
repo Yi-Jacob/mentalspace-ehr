@@ -14,11 +14,13 @@ import { billingService, Payer } from '@/services/billingService';
 interface BillingTabProps {
   insuranceInfo: InsuranceInfo[];
   setInsuranceInfo: React.Dispatch<React.SetStateAction<InsuranceInfo[]>>;
+  clientDob?: string;
 }
 
 export const BillingTab: React.FC<BillingTabProps> = ({ 
   insuranceInfo, 
-  setInsuranceInfo 
+  setInsuranceInfo,
+  clientDob
 }) => {
   // Fetch payers for the dropdown
   const { data: payers = [], isLoading: payersLoading, error: payersError } = useQuery({
@@ -46,6 +48,12 @@ export const BillingTab: React.FC<BillingTabProps> = ({
   const updateInsurance = (index: number, field: keyof InsuranceInfo, value: string | number) => {
     const updated = [...insuranceInfo];
     updated[index] = { ...updated[index], [field]: value };
+    
+    // Auto-populate DOB when "Self" is selected
+    if (field === 'subscriberRelationship' && value === 'Self' && clientDob) {
+      updated[index].subscriberDob = clientDob;
+    }
+    
     setInsuranceInfo(updated);
   };
 
@@ -175,18 +183,22 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                   label="Subscriber Date of Birth"
                   value={insurance.subscriberDob}
                   onChange={(value) => updateInsurance(index, 'subscriberDob', value)}
+                  showAge={true}
+                  showYearDropdown={true}
                 />
 
                 <DateInput
                   label="Effective Date"
                   value={insurance.effectiveDate}
                   onChange={(value) => updateInsurance(index, 'effectiveDate', value)}
+                  showYearDropdown={true}
                 />
 
                 <DateInput
                   label="Termination Date"
                   value={insurance.terminationDate}
                   onChange={(value) => updateInsurance(index, 'terminationDate', value)}
+                  showYearDropdown={true}
                 />
 
                 <InputField
