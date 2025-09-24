@@ -235,7 +235,7 @@ export const APPOINTMENT_REMINDERS_OPTIONS = [
   { value: "Email only", label: "Email only" },
   { value: "Text (SMS) only", label: "Text (SMS) only" },
   { value: "Text (SMS) and Email", label: "Text (SMS) and Email" },
-  { value: "Text or Call, and Email", label: "Text or Call, and Email" }
+  { value: "Text, Call, and Email", label: "Text, Call, and Email" }
 ];
 
 export type AppointmentReminders = typeof APPOINTMENT_REMINDERS_OPTIONS[number]['value'];

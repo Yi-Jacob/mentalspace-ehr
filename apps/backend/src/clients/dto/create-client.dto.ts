@@ -29,7 +29,7 @@ export enum AppointmentReminders {
   EMAIL_ONLY = 'Email only',
   TEXT_SMS_ONLY = 'Text (SMS) only',
   TEXT_SMS_AND_EMAIL = 'Text (SMS) and Email',
-  TEXT_OR_CALL_AND_EMAIL = 'Text or Call, and Email',
+  TEXT_OR_CALL_AND_EMAIL = 'Text, Call, and Email',
 }
 
 export enum PCPRelease {
