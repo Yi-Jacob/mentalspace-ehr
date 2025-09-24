@@ -1,5 +1,41 @@
 // Client-related enums and options for SelectField components
 
+// Suffix Options
+export const SUFFIX_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "Jr.", label: "Jr." },
+  { value: "Sr.", label: "Sr." },
+  { value: "II", label: "II" },
+  { value: "III", label: "III" },
+  { value: "IV", label: "IV" },
+  { value: "V", label: "V" },
+  { value: "MD", label: "MD" },
+  { value: "PhD", label: "PhD" },
+  { value: "Esq.", label: "Esq." },
+  { value: "RN", label: "RN" },
+  { value: "CPA", label: "CPA" },
+  { value: "Other", label: "Other" }
+];
+
+export type Suffix = typeof SUFFIX_OPTIONS[number]['value'];
+
+// Pronouns Options
+export const PRONOUNS_OPTIONS = [
+  { value: "not-selected", label: "Select pronouns" },
+  { value: "he/him", label: "he/him" },
+  { value: "she/her", label: "she/her" },
+  { value: "they/them", label: "they/them" },
+  { value: "he/they", label: "he/they" },
+  { value: "she/they", label: "she/they" },
+  { value: "ze/zir", label: "ze/zir" },
+  { value: "ze/hir", label: "ze/hir" },
+  { value: "xe/xem", label: "xe/xem" },
+  { value: "Other", label: "Other" },
+  { value: "Choose not to disclose", label: "Choose not to disclose" }
+];
+
+export type Pronouns = typeof PRONOUNS_OPTIONS[number]['value'];
+
 // Phone Number Types
 export const PHONE_TYPE_OPTIONS = [
   { value: "Mobile", label: "Mobile" },

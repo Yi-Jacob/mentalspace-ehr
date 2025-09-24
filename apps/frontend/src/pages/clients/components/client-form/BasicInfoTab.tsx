@@ -5,6 +5,7 @@ import { DateInput } from '@/components/basic/date-input';
 import { TextareaField } from '@/components/basic/textarea';
 import { SelectField } from '@/components/basic/select';
 import CategorySection from '@/components/basic/CategorySection';
+import { SUFFIX_OPTIONS, PRONOUNS_OPTIONS } from '@/types/enums/clientEnum';
 
 interface BasicInfoTabProps {
   formData: ClientFormData;
@@ -39,11 +40,12 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
             required
           />
-          <InputField
-            id="suffix"
+          <SelectField
             label="Suffix"
-            value={formData.suffix}
-            onChange={(e) => setFormData(prev => ({ ...prev, suffix: e.target.value }))}
+            value={formData.suffix || 'none'}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, suffix: value === 'none' ? '' : value }))}
+            options={SUFFIX_OPTIONS}
+            placeholder="Select suffix"
           />
           <InputField
             id="preferredName"
@@ -51,11 +53,12 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             value={formData.preferredName}
             onChange={(e) => setFormData(prev => ({ ...prev, preferredName: e.target.value }))}
           />
-          <InputField
-            id="pronouns"
+          <SelectField
             label="Pronouns"
-            value={formData.pronouns}
-            onChange={(e) => setFormData(prev => ({ ...prev, pronouns: e.target.value }))}
+            value={formData.pronouns || 'not-selected'}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, pronouns: value === 'not-selected' ? '' : value }))}
+            options={PRONOUNS_OPTIONS}
+            placeholder="Select pronouns"
           />
           <DateInput
             id="dateOfBirth"
