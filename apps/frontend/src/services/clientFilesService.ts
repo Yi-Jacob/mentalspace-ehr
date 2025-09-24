@@ -80,6 +80,12 @@ export class ClientFilesService {
     }
   }
 
+  // Get download URL for a file
+  async getDownloadUrl(clientId: string, fileId: string): Promise<string> {
+    const response = await apiClient.get<{ downloadUrl: string }>(`${this.baseUrl}/${clientId}/files/${fileId}/download`);
+    return response.data.downloadUrl;
+  }
+
   // Upload a file to S3 (this would typically be handled by a separate upload service)
   async uploadFile(file: File, clientId: string): Promise<{ fileUrl: string; fileName: string; fileSize: number; mimeType: string }> {
     try {

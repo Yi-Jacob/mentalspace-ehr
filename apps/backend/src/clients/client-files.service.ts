@@ -5,10 +5,14 @@ import { UpdateClientFileDto } from './dto/update-client-file.dto';
 import { SignFileDto } from './dto/sign-file.dto';
 import { CompleteFileDto } from './dto/complete-file.dto';
 import { FileStatus } from './enums/file-status.enum';
+import { S3Service } from '../common/s3.service';
 
 @Injectable()
 export class ClientFilesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+  ) {}
 
   /**
    * Get all files for a specific client
@@ -416,6 +420,28 @@ export class ClientFilesService {
     }
 
     return file;
+  }
+
+  /**
+   * Get download URL for a file
+   */
+  async getDownloadUrl(fileId: string): Promise<{ downloadUrl: string }> {
+    const file = await this.prisma.clientFile.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    // Extract the S3 key from the file URL
+    const url = new URL(file.fileUrl);
+    const s3Key = url.pathname.substring(1); // Remove leading slash
+
+    // Generate signed URL for download (expires in 1 hour)
+    const downloadUrl = await this.s3Service.getSignedDownloadUrl(s3Key, 3600);
+
+    return { downloadUrl };
   }
 
   /**

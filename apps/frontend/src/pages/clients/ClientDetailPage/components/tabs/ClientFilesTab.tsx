@@ -84,7 +84,17 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
 
   const handleDownload = async (file: ClientFileDto) => {
     try {
-      await clientFilesService.downloadFile(file.fileUrl, file.fileName);
+      // Get signed download URL from backend
+      const downloadUrl = await clientFilesService.getDownloadUrl(clientId, file.id);
+      
+      // Create a temporary link element to trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = file.fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Error downloading file:', error);
       toast({

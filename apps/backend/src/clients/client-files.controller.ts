@@ -107,6 +107,17 @@ export class ClientFilesController {
   }
 
   /**
+   * Get download URL for a file
+   */
+  @Get(':fileId/download')
+  async getDownloadUrl(
+    @Param('fileId') fileId: string,
+    @Request() req: any,
+  ) {
+    return this.clientFilesService.getDownloadUrl(fileId);
+  }
+
+  /**
    * Update a file
    */
   @Put(':fileId')
