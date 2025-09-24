@@ -49,6 +49,22 @@ export const BillingTab: React.FC<BillingTabProps> = ({
     setInsuranceInfo(updated);
   };
 
+  const handleNumericInput = (index: number, field: keyof InsuranceInfo, inputValue: string) => {
+    // If the input is empty, set to 0
+    if (inputValue === '') {
+      updateInsurance(index, field, 0);
+      return;
+    }
+    
+    // Parse the numeric value
+    const numericValue = parseFloat(inputValue);
+    
+    // If it's a valid number, update with the numeric value
+    if (!isNaN(numericValue)) {
+      updateInsurance(index, field, numericValue);
+    }
+  };
+
   const removeInsurance = (index: number) => {
     setInsuranceInfo(insuranceInfo.filter((_, i) => i !== index));
   };
@@ -177,16 +193,16 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                   label="Copay Amount ($)"
                   type="number"
                   step="0.01"
-                  value={insurance.copayAmount}
-                  onChange={(e) => updateInsurance(index, 'copayAmount', parseFloat(e.target.value) || 0)}
+                  value={insurance.copayAmount === 0 ? '' : insurance.copayAmount}
+                  onChange={(e) => handleNumericInput(index, 'copayAmount', e.target.value)}
                 />
 
                 <InputField
                   label="Deductible Amount ($)"
                   type="number"
                   step="0.01"
-                  value={insurance.deductibleAmount}
-                  onChange={(e) => updateInsurance(index, 'deductibleAmount', parseFloat(e.target.value) || 0)}
+                  value={insurance.deductibleAmount === 0 ? '' : insurance.deductibleAmount}
+                  onChange={(e) => handleNumericInput(index, 'deductibleAmount', e.target.value)}
                 />
               </div>
             </div>
