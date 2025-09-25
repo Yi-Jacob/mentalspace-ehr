@@ -403,6 +403,16 @@ async function main() {
           },
         });
 
+        // Create user role for the client
+        await prisma.userRole.create({
+          data: {
+            userId: clientUser.id,
+            role: 'Patient',
+            assignedAt: new Date(),
+            isActive: true,
+          }
+        });
+
         return { client, user: clientUser };
       });
       
@@ -526,11 +536,88 @@ async function main() {
     console.error('Error creating diagnosis codes:', error);
   }
 
+  // Create sample payer data
+  console.log('Creating sample payer data...');
+  
+  const samplePayers = [
+    {
+      name: 'Blue Cross Blue Shield',
+      payerType: 'Insurance',
+      electronicPayerId: 'BCBS001',
+      addressLine1: '123 Insurance Way',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94105',
+      phoneNumber: '(415) 555-1000',
+      faxNumber: '(415) 555-1001',
+      contactPerson: 'John Smith',
+      contactEmail: 'john.smith@bcbs.com',
+      website: 'https://www.bluecrossblueshield.com',
+      requiresAuthorization: true,
+      isActive: true,
+      notes: 'Primary insurance provider for mental health services'
+    },
+    {
+      name: 'Aetna Better Health',
+      payerType: 'Insurance',
+      electronicPayerId: 'AETNA002',
+      addressLine1: '456 Health Plaza',
+      city: 'Los Angeles',
+      state: 'CA',
+      zipCode: '90210',
+      phoneNumber: '(213) 555-2000',
+      faxNumber: '(213) 555-2001',
+      contactPerson: 'Sarah Johnson',
+      contactEmail: 'sarah.johnson@aetna.com',
+      website: 'https://www.aetna.com',
+      requiresAuthorization: false,
+      isActive: true,
+      notes: 'Secondary insurance provider with good mental health coverage'
+    }
+  ];
+
+  try {
+    for (const payer of samplePayers) {
+      // Check if payer already exists
+      const existingPayer = await prisma.payer.findFirst({
+        where: { name: payer.name }
+      });
+
+      if (!existingPayer) {
+        await prisma.payer.create({
+          data: {
+            name: payer.name,
+            payerType: payer.payerType,
+            electronicPayerId: payer.electronicPayerId,
+            addressLine1: payer.addressLine1,
+            city: payer.city,
+            state: payer.state,
+            zipCode: payer.zipCode,
+            phoneNumber: payer.phoneNumber,
+            faxNumber: payer.faxNumber,
+            contactPerson: payer.contactPerson,
+            contactEmail: payer.contactEmail,
+            website: payer.website,
+            requiresAuthorization: payer.requiresAuthorization,
+            isActive: payer.isActive,
+            notes: payer.notes,
+          }
+        });
+        console.log(`Created payer: ${payer.name}`);
+      } else {
+        console.log(`Payer ${payer.name} already exists, skipping...`);
+      }
+    }
+  } catch (error) {
+    console.error('Error creating payer data:', error);
+  }
+
   console.log('Database seeding completed successfully!');
   console.log(`Created ${createdStaff.length} additional staff members`);
   console.log(`Created ${createdClients.length} clients with user records`);
   console.log('Created supervision relationships');
   console.log('Created sample diagnosis codes');
+  console.log('Created sample payer data');
 }
 
 main()

@@ -20,7 +20,8 @@ export const USER_ROLES = {
   SUPERVISOR: 'Supervisor',
   CLINICAL_ADMINISTRATOR: 'Clinical Administrator',
   BILLER_FOR_ASSIGNED_PATIENTS_ONLY: 'Biller for Assigned Patients Only',
-  PRACTICE_BILLER: 'Practice Biller'
+  PRACTICE_BILLER: 'Practice Biller',
+  PATIENT: 'Patient'
 }
 
 // User Role Options - Static list based on roleCategories
@@ -34,7 +35,8 @@ export const USER_ROLE_OPTIONS = [
   { value: USER_ROLES.SUPERVISOR, label: 'Supervisor' },
   { value: USER_ROLES.CLINICAL_ADMINISTRATOR, label: 'Clinical Administrator' },
   { value: USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY, label: 'Biller for Assigned Patients Only' },
-  { value: USER_ROLES.PRACTICE_BILLER, label: 'Practice Biller' }
+  { value: USER_ROLES.PRACTICE_BILLER, label: 'Practice Biller' },
+  { value: USER_ROLES.PATIENT, label: 'Patient' }
 ];
 
 export type UserRole = typeof USER_ROLE_OPTIONS[number]['value'];
@@ -50,7 +52,8 @@ export const ROLE_DESCRIPTIONS = {
   [USER_ROLES.SUPERVISOR]: 'A Supervisor can be assigned to individual clinicians and interns, granting full access to their supervisees\' patient\'s notes.',
   [USER_ROLES.CLINICAL_ADMINISTRATOR]: 'A Clinical Administrator must also have the Clinician role. They can access any patient\'s records and can give other clinicians access to any patient records.',
   [USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY]: 'Clinicians with this role can collect and enter copay information, including by processing patient credit cards.',
-  [USER_ROLES.PRACTICE_BILLER]: 'A Practice Biller has full billing access to all patients in the practice. They can verify patient insurance, generate and track claims, enter patient and insurance payments, and run billing reports.'
+  [USER_ROLES.PRACTICE_BILLER]: 'A Practice Biller has full billing access to all patients in the practice. They can verify patient insurance, generate and track claims, enter patient and insurance payments, and run billing reports.',
+  [USER_ROLES.PATIENT]: 'Patients are clients who receive mental health services. They have limited access to view their own appointments, documents, and basic account information.'
 } as const;
 
 // Static role categories for the RolesSection component
@@ -115,6 +118,16 @@ export const ROLE_CATEGORIES = [
         description: ROLE_DESCRIPTIONS[USER_ROLES.PRACTICE_BILLER]
       }
     ]
+  },
+  {
+    title: 'Patient Access',
+    items: [
+      {
+        id: USER_ROLES.PATIENT,
+        label: 'Patient',
+        description: ROLE_DESCRIPTIONS[USER_ROLES.PATIENT]
+      }
+    ]
   }
 ];
 
@@ -144,7 +157,11 @@ export const PERMISSION_OPTIONS = [
   { value: 'Create Missed Appointment Notes', label: 'Create Missed Appointment Notes' },
   { value: 'Create Contact Notes', label: 'Create Contact Notes' },
   { value: 'Create Miscellaneous Notes', label: 'Create Miscellaneous Notes' },
-  { value: 'Supervision', label: 'Supervision' }
+  { value: 'Supervision', label: 'Supervision' },
+  { value: 'View Own Appointments', label: 'View Own Appointments' },
+  { value: 'View Own Documents', label: 'View Own Documents' },
+  { value: 'View Own Account Information', label: 'View Own Account Information' },
+  { value: 'Update Contact Information', label: 'Update Contact Information' }
 ];
 
 export type Permission = typeof PERMISSION_OPTIONS[number]['value'];
@@ -175,7 +192,11 @@ export const PERMISSION_DESCRIPTIONS = {
   'Create Missed Appointment Notes': 'Document missed appointments and follow-ups',
   'Create Contact Notes': 'Create contact notes for patient interactions',
   'Create Miscellaneous Notes': 'Create miscellaneous clinical documentation',
-  'Supervision': 'Supervise other clinicians and review their work'
+  'Supervision': 'Supervise other clinicians and review their work',
+  'View Own Appointments': 'View personal appointment schedule and details',
+  'View Own Documents': 'View personal documents and records',
+  'View Own Account Information': 'View personal account and profile information',
+  'Update Contact Information': 'Update personal contact details and preferences'
 } as const;
 
 // Role-Permission Mapping
@@ -282,6 +303,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'Insurance Benefit Verification',
     'Claims Generation and Tracking',
     'Billing Reports'
+  ],
+  [USER_ROLES.PATIENT]: [
+    'View Own Appointments',
+    'View Own Documents',
+    'View Own Account Information',
+    'Update Contact Information'
   ]
 };
 

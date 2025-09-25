@@ -57,6 +57,16 @@ export class ClientsService {
         },
       });
 
+      // Create user role for the client
+      await prisma.userRole.create({
+        data: {
+          userId: clientUser.id,
+          role: 'Patient',
+          assignedAt: new Date(),
+          isActive: true,
+        }
+      });
+
       // Generate password reset token for the new client
       const passwordResetData = await this.authService.createPasswordResetToken(clientUser.id);
 
