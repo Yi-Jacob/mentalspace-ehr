@@ -42,6 +42,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, genderIdentity: value})}
           placeholder="Select Gender Identity"
           options={GENDER_IDENTITY_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.genderIdentityOther}
+          onOtherValueChange={(value) => setFormData({...formData, genderIdentityOther: value})}
+          otherPlaceholder="Enter gender identity (e.g., Genderfluid, Agender, etc.)"
         />
 
         <SelectField
@@ -50,6 +54,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, sexualOrientation: value})}
           placeholder="Select Sexual Orientation"
           options={SEXUAL_ORIENTATION_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.sexualOrientationOther}
+          onOtherValueChange={(value) => setFormData({...formData, sexualOrientationOther: value})}
+          otherPlaceholder="Enter sexual orientation (e.g., Pansexual, Demisexual, etc.)"
         />
 
         <SelectField
@@ -58,6 +66,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, race: value})}
           placeholder="Select Race"
           options={RACE_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.raceOther}
+          onOtherValueChange={(value) => setFormData({...formData, raceOther: value})}
+          otherPlaceholder="Enter race (e.g., Mixed Race, Multiracial, etc.)"
         />
 
         <SelectField
@@ -66,6 +78,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, ethnicity: value})}
           placeholder="Select Ethnicity"
           options={ETHNICITY_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.ethnicityOther}
+          onOtherValueChange={(value) => setFormData({...formData, ethnicityOther: value})}
+          otherPlaceholder="Enter ethnicity (e.g., Mixed, Multiracial, etc.)"
         />
 
         <SelectField
@@ -82,6 +98,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, maritalStatus: value})}
           placeholder="Select Marital Status"
           options={MARITAL_STATUS_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.maritalStatusOther}
+          onOtherValueChange={(value) => setFormData({...formData, maritalStatusOther: value})}
+          otherPlaceholder="Enter marital status (e.g., Separated, Common Law, etc.)"
         />
 
         <SelectField
@@ -90,6 +110,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, employmentStatus: value})}
           placeholder="Select Employment Status"
           options={EMPLOYMENT_STATUS_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.employmentStatusOther}
+          onOtherValueChange={(value) => setFormData({...formData, employmentStatusOther: value})}
+          otherPlaceholder="Enter employment status (e.g., Freelance, Consultant, etc.)"
         />
 
         <SelectField
@@ -98,6 +122,10 @@ export const DemographicsTab: React.FC<DemographicsTabProps> = ({ formData, setF
           onValueChange={(value) => setFormData({...formData, religiousAffiliation: value})}
           placeholder="Select Religious Affiliation"
           options={RELIGIOUS_AFFILIATION_OPTIONS}
+          showOtherOption={true}
+          otherValue={formData.religiousAffiliationOther}
+          onOtherValueChange={(value) => setFormData({...formData, religiousAffiliationOther: value})}
+          otherPlaceholder="Enter religious affiliation (e.g., Baptist, Methodist, etc.)"
         />
 
         <SelectField

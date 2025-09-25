@@ -65,6 +65,8 @@ export const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, setFormDat
             label="Date of Birth"
             value={formData.dateOfBirth}
             onChange={(value) => setFormData(prev => ({ ...prev, dateOfBirth: value }))}
+            showAge={true}
+            showYearDropdown={true}
           />
         </div>
       </CategorySection>

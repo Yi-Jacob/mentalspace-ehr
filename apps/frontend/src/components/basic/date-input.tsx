@@ -37,7 +37,7 @@ export const DateInput: React.FC<DateInputProps> = ({
   showAge = false,
   showYearDropdown = false
 }) => {
-  // Convert database format (YYYY-MM-DD) to display format (M/D/YYYY) for initial value
+  // Convert database format (YYYY-MM-DD) to display format (M/D/YY) for initial value
   const getDisplayDate = (dbDate: string) => {
     if (!dbDate) return '';
     // Parse the database date as YYYY-MM-DD and create a local date
@@ -48,7 +48,7 @@ export const DateInput: React.FC<DateInputProps> = ({
       const day = parseInt(parts[2]);
       const date = new Date(year, month, day);
       if (isValid(date)) {
-        return format(date, 'M/d/yyyy');
+        return format(date, 'M/d/yy');
       }
     }
     return '';
@@ -117,8 +117,8 @@ export const DateInput: React.FC<DateInputProps> = ({
       const formattedDate = `${year}-${month}-${day}`;
       
       onChange(formattedDate);
-      // Display in M/D/YYYY format
-      setDateInputValue(format(date, 'M/d/yyyy'));
+      // Display in M/D/YY format
+      setDateInputValue(format(date, 'M/d/yy'));
       setCalendarMonth(date);
       setShowCalendar(false);
     } else {
@@ -223,7 +223,7 @@ export const DateInput: React.FC<DateInputProps> = ({
       if (isValid(newDate)) {
         const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         onChange(formattedDate);
-        setDateInputValue(format(newDate, 'M/d/yyyy'));
+        setDateInputValue(format(newDate, 'M/d/yy'));
         setCalendarMonth(newDate);
       }
     }

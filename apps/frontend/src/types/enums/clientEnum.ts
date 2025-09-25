@@ -92,6 +92,7 @@ export const GENDER_IDENTITY_OPTIONS = [
   { value: "Trans Man", label: "Trans Man" },
   { value: "Non-binary", label: "Non-binary" },
   { value: "Something else", label: "Something else" },
+  { value: "Other", label: "Other" },
   { value: "Unknown", label: "Unknown" },
   { value: "Choose not to disclose", label: "Choose not to disclose" }
 ];
@@ -105,6 +106,7 @@ export const SEXUAL_ORIENTATION_OPTIONS = [
   { value: "Lesbian or Gay", label: "Lesbian or Gay" },
   { value: "Straight", label: "Straight" },
   { value: "Something else", label: "Something else" },
+  { value: "Other", label: "Other" },
   { value: "Unknown", label: "Unknown" },
   { value: "Choose not to disclose", label: "Choose not to disclose" }
 ];
@@ -130,6 +132,14 @@ export type Race = typeof RACE_OPTIONS[number]['value'];
 export const ETHNICITY_OPTIONS = [
   { value: "Hispanic or Latino", label: "Hispanic or Latino" },
   { value: "Not Hispanic or Latino", label: "Not Hispanic or Latino" },
+  { value: "Mexican", label: "Mexican" },
+  { value: "Puerto Rican", label: "Puerto Rican" },
+  { value: "Cuban", label: "Cuban" },
+  { value: "Central American", label: "Central American" },
+  { value: "South American", label: "South American" },
+  { value: "Caribbean", label: "Caribbean" },
+  { value: "Mixed Hispanic/Latino", label: "Mixed Hispanic/Latino" },
+  { value: "Other", label: "Other" },
   { value: "Unknown", label: "Unknown" },
   { value: "Choose not to disclose", label: "Choose not to disclose" }
 ];
@@ -138,22 +148,22 @@ export type Ethnicity = typeof ETHNICITY_OPTIONS[number]['value'];
 
 // Language Options
 export const LANGUAGE_OPTIONS = [
+  { value: "American Sign Language (ASL)", label: "American Sign Language (ASL)" },
+  { value: "Arabic", label: "Arabic" },
+  { value: "Chinese (Cantonese)", label: "Chinese (Cantonese)" },
+  { value: "Chinese (Mandarin)", label: "Chinese (Mandarin)" },
   { value: "English", label: "English" },
-  { value: "Spanish", label: "Spanish" },
   { value: "French", label: "French" },
   { value: "German", label: "German" },
+  { value: "Hindi", label: "Hindi" },
   { value: "Italian", label: "Italian" },
-  { value: "Portuguese", label: "Portuguese" },
-  { value: "Russian", label: "Russian" },
-  { value: "Chinese (Mandarin)", label: "Chinese (Mandarin)" },
-  { value: "Chinese (Cantonese)", label: "Chinese (Cantonese)" },
   { value: "Japanese", label: "Japanese" },
   { value: "Korean", label: "Korean" },
-  { value: "Vietnamese", label: "Vietnamese" },
-  { value: "Arabic", label: "Arabic" },
-  { value: "Hindi", label: "Hindi" },
+  { value: "Portuguese", label: "Portuguese" },
+  { value: "Russian", label: "Russian" },
+  { value: "Spanish", label: "Spanish" },
   { value: "Tagalog", label: "Tagalog" },
-  { value: "American Sign Language (ASL)", label: "American Sign Language (ASL)" },
+  { value: "Vietnamese", label: "Vietnamese" },
   { value: "Other", label: "Other" },
   { value: "Unknown", label: "Unknown" }
 ];
@@ -171,6 +181,7 @@ export const MARITAL_STATUS_OPTIONS = [
   { value: "Interlocutory Decree", label: "Interlocutory Decree" },
   { value: "Annulled", label: "Annulled" },
   { value: "Something else", label: "Something else" },
+  { value: "Other", label: "Other" },
   { value: "Choose not to disclose", label: "Choose not to disclose" }
 ];
 
@@ -189,7 +200,9 @@ export const EMPLOYMENT_STATUS_OPTIONS = [
   { value: "Leave of absence", label: "Leave of absence" },
   { value: "Temporarily unemployed", label: "Temporarily unemployed" },
   { value: "Unemployed", label: "Unemployed" },
-  { value: "Something else", label: "Something else" }
+  { value: "Something else", label: "Something else" },
+  { value: "Other", label: "Other" },
+  { value: "Choose not to disclose", label: "Choose not to disclose" }
 ];
 
 export type EmploymentStatus = typeof EMPLOYMENT_STATUS_OPTIONS[number]['value'];
@@ -201,7 +214,7 @@ export const RELIGIOUS_AFFILIATION_OPTIONS = [
   { value: "Atheist", label: "Atheist" },
   { value: "Buddhist", label: "Buddhist" },
   { value: "Catholic", label: "Catholic" },
-  { value: "Christian (Protestant)", label: "Christian (Protestant)" },
+  { value: "Christian", label: "Christian" },
   { value: "Eastern Orthodox", label: "Eastern Orthodox" },
   { value: "Hindu", label: "Hindu" },
   { value: "Jewish", label: "Jewish" },

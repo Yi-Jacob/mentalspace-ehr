@@ -34,13 +34,33 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
   primaryCareProvider,
   setPrimaryCareProvider
 }) => {
+  // Phone number formatting function
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limit to 10 digits
+    const limitedNumbers = numbers.slice(0, 10);
+    
+    // Format as XXX-XXX-XXXX
+    if (limitedNumbers.length === 0) return '';
+    if (limitedNumbers.length <= 3) return limitedNumbers;
+    if (limitedNumbers.length <= 6) return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
+    return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3, 6)}-${limitedNumbers.slice(6)}`;
+  };
+
   const addPhoneNumber = () => {
     setPhoneNumbers([...phoneNumbers, { type: 'Home', number: '', messagePreference: 'No messages' }]);
   };
 
   const updatePhoneNumber = (index: number, field: keyof PhoneNumber, value: string) => {
     const updated = [...phoneNumbers];
-    updated[index] = { ...updated[index], [field]: value };
+    if (field === 'number') {
+      // Format phone number when updating the number field
+      updated[index] = { ...updated[index], [field]: formatPhoneNumber(value) };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
     setPhoneNumbers(updated);
   };
 
@@ -62,13 +82,27 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
 
   const updateEmergencyContact = (index: number, field: keyof EmergencyContact, value: string | boolean) => {
     const updated = [...emergencyContacts];
-    updated[index] = { ...updated[index], [field]: value };
+    if (field === 'phoneNumber' && typeof value === 'string') {
+      // Format phone number when updating the phoneNumber field
+      updated[index] = { ...updated[index], [field]: formatPhoneNumber(value) };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
     setEmergencyContacts(updated);
   };
 
   const removeEmergencyContact = (index: number) => {
     if (emergencyContacts.length > 1) {
       setEmergencyContacts(emergencyContacts.filter((_, i) => i !== index));
+    }
+  };
+
+  const updatePrimaryCareProvider = (field: keyof PrimaryCareProvider, value: string) => {
+    if (field === 'phoneNumber') {
+      // Format phone number when updating the phoneNumber field
+      setPrimaryCareProvider({...primaryCareProvider, [field]: formatPhoneNumber(value)});
+    } else {
+      setPrimaryCareProvider({...primaryCareProvider, [field]: value});
     }
   };
 
@@ -263,7 +297,7 @@ export const ContactInfoTab: React.FC<ContactInfoTabProps> = ({
           <InputField
             label="Phone Number"
             value={primaryCareProvider.phoneNumber}
-            onChange={(e) => setPrimaryCareProvider({...primaryCareProvider, phoneNumber: e.target.value})}
+            onChange={(e) => updatePrimaryCareProvider('phoneNumber', e.target.value)}
           />
           <div className="md:col-span-2">
             <InputField

@@ -79,6 +79,7 @@ export interface InsuranceInfo {
   groupNumber: string;
   subscriberName: string;
   subscriberRelationship: SubscriberRelationship;
+  subscriberRelationshipOther?: string;
   subscriberDob: string;
   effectiveDate: string;
   terminationDate: string;
@@ -164,13 +165,20 @@ export interface ClientFormData {
   // Demographics
   administrativeSex: AdministrativeSex;
   genderIdentity: GenderIdentity;
+  genderIdentityOther?: string;
   sexualOrientation: SexualOrientation;
+  sexualOrientationOther?: string;
   race: Race;
+  raceOther?: string;
   ethnicity: Ethnicity;
+  ethnicityOther?: string;
   languages: Language;
   maritalStatus: MaritalStatus;
+  maritalStatusOther?: string;
   employmentStatus: EmploymentStatus;
+  employmentStatusOther?: string;
   religiousAffiliation: ReligiousAffiliation;
+  religiousAffiliationOther?: string;
   smokingStatus: SmokingStatus;
   // Settings
   appointmentReminders: AppointmentReminders;

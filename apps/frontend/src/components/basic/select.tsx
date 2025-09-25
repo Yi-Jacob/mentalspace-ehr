@@ -2,6 +2,7 @@ import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import { Label } from "@/components/basic/label"
+import { Input } from "@/components/basic/input"
 
 import { cn } from "@/utils/utils"
 
@@ -160,6 +161,10 @@ interface SelectFieldProps {
   placeholder?: string;
   disabled?: boolean;
   options: SelectOption[];
+  showOtherOption?: boolean;
+  otherValue?: string;
+  onOtherValueChange?: (value: string) => void;
+  otherPlaceholder?: string;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -170,7 +175,11 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onValueChange,
   placeholder,
   disabled = false,
-  options
+  options,
+  showOtherOption = false,
+  otherValue,
+  onOtherValueChange,
+  otherPlaceholder = "Enter custom value"
 }) => {
   return (
     <div className={containerClassName}>
@@ -183,7 +192,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="max-h-[300px]">
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
@@ -191,6 +200,17 @@ const SelectField: React.FC<SelectFieldProps> = ({
           ))}
         </SelectContent>
       </Select>
+      
+      {showOtherOption && value === 'Other' && (
+        <div className="mt-2">
+          <Input
+            value={otherValue || ''}
+            onChange={(e) => onOtherValueChange?.(e.target.value)}
+            placeholder={otherPlaceholder}
+            disabled={disabled}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -37,6 +37,7 @@ export const BillingTab: React.FC<BillingTabProps> = ({
       groupNumber: '',
       subscriberName: '',
       subscriberRelationship: '',
+      subscriberRelationshipOther: '',
       subscriberDob: '',
       effectiveDate: '',
       terminationDate: '',
@@ -143,7 +144,6 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                       <SelectValue placeholder="Select Insurance Company" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Select Insurance Company</SelectItem>
                       {payers.map(payer => (
                         <SelectItem key={payer.id} value={payer.id}>
                           {payer.name}
@@ -171,13 +171,44 @@ export const BillingTab: React.FC<BillingTabProps> = ({
                   onChange={(e) => updateInsurance(index, 'subscriberName', e.target.value)}
                 />
 
-                <SelectField
-                  label="Subscriber Relationship"
-                  value={insurance.subscriberRelationship}
-                  onValueChange={(value) => updateInsurance(index, 'subscriberRelationship', value)}
-                  placeholder="Select Relationship"
-                  options={SUBSCRIBER_RELATIONSHIP_OPTIONS}
-                />
+                <div className="">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Subscriber Relationship *
+                  </label>
+                  <Select 
+                    value={insurance.subscriberRelationship || 'none'} 
+                    onValueChange={(value) => {
+                      if (value === 'none') {
+                        updateInsurance(index, 'subscriberRelationship', '');
+                      } else {
+                        updateInsurance(index, 'subscriberRelationship', value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Relationship" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Select Relationship</SelectItem>
+                      {SUBSCRIBER_RELATIONSHIP_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {insurance.subscriberRelationship === 'Other' && (
+                    <div className="mt-2">
+                      <InputField
+                        label="Specify Relationship"
+                        value={insurance.subscriberRelationshipOther || ''}
+                        onChange={(e) => updateInsurance(index, 'subscriberRelationshipOther', e.target.value)}
+                        placeholder="Enter relationship (e.g., Grandparent, Guardian, etc.)"
+                      />
+                    </div>
+                  )}
+                </div>
 
                 <DateInput
                   label="Subscriber Date of Birth"
