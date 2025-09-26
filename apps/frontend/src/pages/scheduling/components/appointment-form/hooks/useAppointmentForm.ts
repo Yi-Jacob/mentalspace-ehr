@@ -46,7 +46,15 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime, pres
       let recurringData = {};
       
       if (formData.recurring_period !== 'none' && formData.recurring_period !== 'custom') {
-        const startDate = new Date(`${formData.date}T${formData.start_time}`);
+        // Parse date and time as local to avoid timezone issues
+        const dateParts = formData.date.split('-');
+        const timeParts = formData.start_time.split(':');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // months are 0-indexed
+        const day = parseInt(dateParts[2]);
+        const hours = parseInt(timeParts[0]);
+        const minutes = parseInt(timeParts[1]);
+        const startDate = new Date(year, month, day, hours, minutes);
         
         // For recurring patterns, send the pattern and timeslots
         recurringData = {
@@ -83,7 +91,17 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime, pres
         cptCode: formData.cptCode || undefined,
         title: formData.title || undefined,
         description: formData.description || undefined,
-        startTime: new Date(`${formData.date}T${formData.start_time}`).toISOString(),
+        startTime: (() => {
+          // Parse date and time as local to avoid timezone issues
+          const dateParts = formData.date.split('-');
+          const timeParts = formData.start_time.split(':');
+          const year = parseInt(dateParts[0]);
+          const month = parseInt(dateParts[1]) - 1; // months are 0-indexed
+          const day = parseInt(dateParts[2]);
+          const hours = parseInt(timeParts[0]);
+          const minutes = parseInt(timeParts[1]);
+          return new Date(year, month, day, hours, minutes).toISOString();
+        })(),
         duration: formData.duration_minutes,
         location: formData.location || undefined,
         roomNumber: formData.room_number || undefined,

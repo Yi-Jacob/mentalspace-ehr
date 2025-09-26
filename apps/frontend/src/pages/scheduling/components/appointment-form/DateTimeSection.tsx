@@ -33,9 +33,16 @@ const DateTimeSection: React.FC<DateTimeSectionProps> = ({
 
   const handleDateChange = (dateString: string) => {
     if (dateString) {
-      const newDate = new Date(dateString);
-      if (!isNaN(newDate.getTime())) {
-        onDateChange(newDate);
+      // Parse the date string as local date to avoid timezone issues
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]) - 1; // months are 0-indexed
+        const day = parseInt(parts[2]);
+        const newDate = new Date(year, month, day);
+        if (!isNaN(newDate.getTime())) {
+          onDateChange(newDate);
+        }
       }
     }
   };

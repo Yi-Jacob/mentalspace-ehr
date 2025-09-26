@@ -150,10 +150,31 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   }, [appointment]);
 
   const startDateTime = formData.date && formData.start_time 
-    ? new Date(`${formData.date}T${formData.start_time}`).toISOString()
+    ? (() => {
+        // Parse date and time as local to avoid timezone issues
+        const dateParts = formData.date.split('-');
+        const timeParts = formData.start_time.split(':');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // months are 0-indexed
+        const day = parseInt(dateParts[2]);
+        const hours = parseInt(timeParts[0]);
+        const minutes = parseInt(timeParts[1]);
+        return new Date(year, month, day, hours, minutes).toISOString();
+      })()
     : '';
   const endDateTime = formData.date && formData.start_time 
-    ? new Date(new Date(`${formData.date}T${formData.start_time}`).getTime() + formData.duration * 60000).toISOString()
+    ? (() => {
+        // Parse date and time as local to avoid timezone issues
+        const dateParts = formData.date.split('-');
+        const timeParts = formData.start_time.split(':');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // months are 0-indexed
+        const day = parseInt(dateParts[2]);
+        const hours = parseInt(timeParts[0]);
+        const minutes = parseInt(timeParts[1]);
+        const startDate = new Date(year, month, day, hours, minutes);
+        return new Date(startDate.getTime() + formData.duration * 60000).toISOString();
+      })()
     : '';
 
   const { data: conflictData } = useConflictDetection({

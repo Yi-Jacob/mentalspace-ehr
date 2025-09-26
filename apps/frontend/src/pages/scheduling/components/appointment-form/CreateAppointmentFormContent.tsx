@@ -99,7 +99,17 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
           <h3 className="text-lg font-semibold text-gray-800">Date & Time</h3>
         </div>
         <DateTimeSection
-          date={new Date(formData.date)}
+          date={formData.date ? (() => {
+            // Parse the date string as local date to avoid timezone issues
+            const parts = formData.date.split('-');
+            if (parts.length === 3) {
+              const year = parseInt(parts[0]);
+              const month = parseInt(parts[1]) - 1; // months are 0-indexed
+              const day = parseInt(parts[2]);
+              return new Date(year, month, day);
+            }
+            return new Date();
+          })() : new Date()}
           startTime={formData.start_time}
           onDateChange={(value) => updateFormData('date', format(value, 'yyyy-MM-dd'))}
           onStartTimeChange={(value) => updateFormData('start_time', value)}
