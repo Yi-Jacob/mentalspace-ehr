@@ -70,6 +70,8 @@ model User {
   clientFiles                   ClientFile[]                 @relation("ClientFileClient")
   createdClientFiles            ClientFile[]                 @relation("ClientFileCreator")
   coSignedClientFiles           ClientFile[]                 @relation("ClientFileCoSigner")
+  files                         File[]                       @relation("FileUser")
+  createdFiles                  File[]                       @relation("FileCreator")
 
   @@map("users")
 }
@@ -246,6 +248,7 @@ model Client {
   patientStatements      PatientStatement[]
   user                   User?                   @relation("UserClient")
   clinicians             ClientClinician[]       @relation("ClientClinicians")
+  files                  File[]                  @relation("FileClient")
 
   @@map("clients")
 }
@@ -1096,4 +1099,30 @@ model ClientFile {
   @@index([status], map: "idx_client_file_status")
   @@index([createdBy], map: "idx_client_file_created_by")
   @@map("client_files")
+}
+
+model File {
+  id          String    @id @default(uuid())
+  fileName    String    @map("file_name")
+  fileUrl     String    @map("file_url")
+  fileSize    Int?      @map("file_size")
+  mimeType    String?   @map("mime_type")
+  sharable    String    @default("not_sharable") // 'sharable' | 'not_sharable'
+  accessLevel String    @default("admin") // 'admin' | 'clinician' | 'billing'
+  isForPatient Boolean  @default(false) @map("is_for_patient")
+  isForStaff  Boolean   @default(false) @map("is_for_staff")
+  clientId    String?   @map("client_id")
+  userId      String?   @map("user_id")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  
+  client      Client?   @relation("FileClient", fields: [clientId], references: [id])
+  user        User?     @relation("FileUser", fields: [userId], references: [id])
+  creator     User      @relation("FileCreator", fields: [createdBy], references: [id])
+  
+  @@index([sharable], map: "idx_file_sharable")
+  @@index([accessLevel], map: "idx_file_access_level")
+  @@index([createdBy], map: "idx_file_created_by")
+  @@map("files")
 }

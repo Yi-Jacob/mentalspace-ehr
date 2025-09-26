@@ -49,4 +49,34 @@ export class UploadController {
       throw new BadRequestException('Failed to upload file');
     }
   }
+
+  @Post('library')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadLibraryFile(
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    try {
+      // Generate a unique filename
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 15);
+      const fileExtension = file.originalname.split('.').pop();
+      const fileName = `library/${timestamp}-${randomString}.${fileExtension}`;
+
+      // Upload to S3
+      const fileUrl = await this.s3Service.uploadFile(file.buffer, fileName, file.mimetype);
+      return {
+        fileUrl,
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+      };
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw new BadRequestException('Failed to upload file');
+    }
+  }
 }

@@ -23,6 +23,7 @@ import { LoggerModule } from './common/logger/logger.module';
 import { HealthModule } from './health/health.module';
 import { AuditModule } from './audit/audit.module';
 import { TodoModule } from './todo/todo.module';
+import { LibraryModule } from './library/library.module';
 import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor';
 
 @Module({
@@ -56,6 +57,7 @@ import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor'
     HealthModule,
     AuditModule,
     TodoModule,
+    LibraryModule,
   ],
   controllers: [AppController],
   providers: [

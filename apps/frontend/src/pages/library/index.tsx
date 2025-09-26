@@ -1,0 +1,269 @@
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Eye, Upload, Plus, Library } from 'lucide-react';
+import { Button } from '@/components/basic/button';
+import { Badge } from '@/components/basic/badge';
+import { Table, TableColumn } from '@/components/basic/table';
+import { useToast } from '@/hooks/use-toast';
+import { LibraryFile, libraryService } from '@/services/libraryService';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import EmptyState from '@/components/EmptyState';
+import PageLayout from '@/components/basic/PageLayout';
+import PageHeader from '@/components/basic/PageHeader';
+import UploadFileModal from './components/UploadFileModal';
+
+const LibraryPage: React.FC = () => {
+  const [files, setFiles] = useState<LibraryFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const fetchFiles = async () => {
+    try {
+      setLoading(true);
+      const filesData = await libraryService.getAllFiles();
+      setFiles(filesData);
+    } catch (error) {
+      console.error('Error fetching files:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load library files",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
+  const handleFileUpload = async (file: File, metadata: {
+    sharable: 'sharable' | 'not_sharable';
+    accessLevel: 'admin' | 'clinician' | 'billing';
+  }) => {
+    try {
+      setUploading(true);
+      
+      // Upload file to S3
+      const uploadResult = await libraryService.uploadFile(file);
+
+      // Create file record
+      await libraryService.createFile({
+        fileName: uploadResult.fileName,
+        fileUrl: uploadResult.fileUrl,
+        fileSize: uploadResult.fileSize,
+        mimeType: uploadResult.mimeType,
+        isForPatient: false,
+        isForStaff: false,
+        ...metadata,
+      });
+
+      toast({
+        title: "Success",
+        description: "File uploaded successfully",
+      });
+
+      // Refresh files list
+      await fetchFiles();
+      setIsUploadModalOpen(false);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload file",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDownload = async (file: LibraryFile) => {
+    try {
+      // Get signed download URL from backend
+      const downloadUrl = await libraryService.getDownloadUrl(file.id);
+      
+      // Create a temporary link element to trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl.downloadUrl;
+      link.download = file.fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleOpen = async (file: LibraryFile) => {
+    try {
+      // Get signed download URL from backend
+      const downloadUrl = await libraryService.getDownloadUrl(file.id);
+      
+      // Open in new tab
+      window.open(downloadUrl.downloadUrl, '_blank');
+    } catch (error) {
+      console.error('Error opening file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getAccessLevelBadge = (accessLevel: string) => {
+    const variants = {
+      admin: 'destructive' as const,
+      clinician: 'secondary' as const,
+      billing: 'outline' as const,
+    };
+    
+    return (
+      <Badge variant={variants[accessLevel as keyof typeof variants] || 'outline'}>
+        {accessLevel.charAt(0).toUpperCase() + accessLevel.slice(1)}
+      </Badge>
+    );
+  };
+
+  const getSharableBadge = (sharable: string) => {
+    return (
+      <Badge variant={sharable === 'sharable' ? 'default' : 'secondary'}>
+        {sharable === 'sharable' ? 'Sharable' : 'Not Sharable'}
+      </Badge>
+    );
+  };
+
+  // Define table columns
+  const columns: TableColumn<LibraryFile>[] = [
+    {
+      key: 'fileName',
+      header: 'File Name',
+      accessor: (file) => (
+        <div className="flex items-center">
+          <FileText className="h-5 w-5 text-gray-400 mr-3" />
+          <div>
+            <div className="text-sm font-medium text-gray-900">
+              {file.fileName}
+            </div>
+            {file.fileSize && (
+              <div className="text-sm text-gray-500">
+                {(file.fileSize / 1024).toFixed(1)} KB
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+      sortable: true,
+      searchable: true,
+      searchValue: (file) => file.fileName,
+    },
+    {
+      key: 'accessLevel',
+      header: 'Access Level',
+      accessor: (file) => getAccessLevelBadge(file.accessLevel),
+      sortable: true,
+      searchable: true,
+      searchValue: (file) => file.accessLevel,
+    },
+    {
+      key: 'sharable',
+      header: 'Sharable',
+      accessor: (file) => getSharableBadge(file.sharable),
+      sortable: true,
+      searchable: true,
+      searchValue: (file) => file.sharable,
+    },
+    {
+      key: 'createdBy',
+      header: 'Created By',
+      accessor: (file) => `${file.creator.firstName} ${file.creator.lastName}`,
+      sortable: true,
+      searchable: true,
+      searchValue: (file) => `${file.creator.firstName} ${file.creator.lastName}`,
+    },
+    {
+      key: 'createdAt',
+      header: 'Created Date',
+      accessor: (file) => new Date(file.createdAt).toLocaleDateString(),
+      sortable: true,
+      searchable: false,
+    },
+  ];
+
+  // Define table actions
+  const actions = [
+    {
+      label: 'Open',
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (file: LibraryFile) => handleOpen(file),
+      variant: 'ghost' as const,
+    },
+    {
+      label: 'Download',
+      icon: <Download className="h-4 w-4" />,
+      onClick: (file: LibraryFile) => handleDownload(file),
+      variant: 'ghost' as const,
+    },
+  ];
+
+  if (loading) {
+    return <LoadingSpinner message="Loading library files..." />;
+  }
+
+  return (
+    <PageLayout>
+      <PageHeader
+        icon={Library}
+        title="Library"
+        description="Manage shared files and documents"
+        action={
+          <Button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Upload File</span>
+          </Button>
+        }
+      />
+
+      {/* Files Table */}
+      <Table
+        data={files}
+        columns={columns}
+        actions={actions}
+        loading={loading}
+        emptyMessage={
+          <EmptyState
+            title="No files found"
+            description="Upload files to get started"
+            icon={FileText}
+          />
+        }
+        searchable={true}
+        sortable={true}
+        pagination={true}
+        pageSize={10}
+      />
+
+      {/* Upload Modal */}
+      <UploadFileModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleFileUpload}
+        uploading={uploading}
+      />
+    </PageLayout>
+  );
+};
+
+export default LibraryPage;

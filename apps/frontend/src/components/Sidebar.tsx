@@ -19,7 +19,8 @@ import {
   Circle,
   Activity,
   CheckSquare,
-  Settings
+  Settings,
+  Library
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -72,6 +73,7 @@ const menuItems: MenuItem[] = [
   },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'todo', label: 'To-Do', icon: CheckSquare, path: '/todo' },
+  { id: 'library', label: 'Library', icon: Library, path: '/library' },
   { 
     id: 'billing', 
     label: 'Billing', 
@@ -146,6 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
     if (currentPath.startsWith('/clients')) return 'clients';
     if (currentPath.startsWith('/reports')) return 'reports';
     if (currentPath.startsWith('/todo')) return 'todo';
+    if (currentPath.startsWith('/library')) return 'library';
     if (currentPath.startsWith('/practice-settings')) return 'practice-settings';
 
     // Handle notes sub-items
