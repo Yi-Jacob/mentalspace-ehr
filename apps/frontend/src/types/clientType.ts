@@ -193,10 +193,8 @@ export interface ClientFormData {
 export interface ClientFileDto {
   id: string;
   clientId: string;
-  fileName: string;
-  fileUrl: string;
-  fileSize?: number;
-  mimeType?: string;
+  fileId: string;
+  notes?: string;
   status: FileStatus;
   createdBy: string;
   signedDate?: string;
@@ -224,14 +222,19 @@ export interface ClientFileDto {
     lastName: string;
     email: string;
   };
+  file: {
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize?: number;
+    mimeType?: string;
+  };
 }
 
 export interface CreateClientFileDto {
   clientId: string;
-  fileName: string;
-  fileUrl: string;
-  fileSize?: number;
-  mimeType?: string;
+  fileId: string;
+  notes?: string;
   status?: FileStatus;
 }
 

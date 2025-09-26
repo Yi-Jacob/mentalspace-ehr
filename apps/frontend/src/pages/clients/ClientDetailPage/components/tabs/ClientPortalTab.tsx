@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, PenTool, CheckCircle, Upload } from 'lucide-react';
+import { FileText, Download, PenTool, CheckCircle, Share, Eye, X } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
@@ -10,6 +10,7 @@ import { FILE_STATUS_OPTIONS, FileStatus } from '@/types/enums/clientEnum';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/hooks/useAuth';
+import ShareDocumentModal from './ShareDocumentModal';
 
 interface ClientFilesTabProps {
   clientId: string;
@@ -19,7 +20,8 @@ interface ClientFilesTabProps {
 const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName }) => {
   const [files, setFiles] = useState<ClientFileDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedFileForNotes, setSelectedFileForNotes] = useState<ClientFileDto | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -44,42 +46,13 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
     fetchFiles();
   }, [clientId]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileShared = async () => {
+    // Refresh files list after sharing
+    await fetchFiles();
+  };
 
-    try {
-      setUploading(true);
-      
-      // Upload file to S3
-      const uploadResult = await clientFilesService.uploadFile(file, clientId);
-
-      // Create file record
-      await clientFilesService.newFile(clientId, {
-        fileName: uploadResult.fileName,
-        fileUrl: uploadResult.fileUrl,
-        fileSize: uploadResult.fileSize,
-        mimeType: uploadResult.mimeType,
-      });
-      toast({
-        title: "Success",
-        description: "File uploaded successfully",
-      });
-
-      // Refresh files list
-      await fetchFiles();
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload file",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-      // Reset file input
-      event.target.value = '';
-    }
+  const handleViewNotes = (file: ClientFileDto) => {
+    setSelectedFileForNotes(file);
   };
 
   const handleDownload = async (file: ClientFileDto) => {
@@ -90,7 +63,7 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       // Create a temporary link element to trigger download
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = file.fileName;
+      link.download = file.file.fileName;
       link.target = '_blank';
       document.body.appendChild(link);
       link.click();
@@ -196,11 +169,11 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
           <FileText className="h-5 w-5 text-gray-400 mr-3" />
           <div>
             <div className="text-sm font-medium text-gray-900">
-              {file.fileName}
+              {file.file.fileName}
             </div>
-            {file.fileSize && (
+            {file.file.fileSize && (
               <div className="text-sm text-gray-500">
-                {(file.fileSize / 1024).toFixed(1)} KB
+                {(file.file.fileSize / 1024).toFixed(1)} KB
               </div>
             )}
           </div>
@@ -208,7 +181,25 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       ),
       sortable: true,
       searchable: true,
-      searchValue: (file) => file.fileName,
+      searchValue: (file) => file.file.fileName,
+    },
+    {
+      key: 'notes',
+      header: 'Notes',
+      accessor: (file) => (
+        <div className="max-w-xs">
+          {file.notes ? (
+            <div className="text-sm text-gray-900 truncate" title={file.notes}>
+              {file.notes}
+            </div>
+          ) : (
+            <span className="text-sm text-gray-400 italic">No notes</span>
+          )}
+        </div>
+      ),
+      sortable: false,
+      searchable: true,
+      searchValue: (file) => file.notes || '',
     },
     {
       key: 'createdBy',
@@ -244,6 +235,12 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       variant: 'ghost' as const,
     },
     {
+      label: 'View Notes',
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (file: ClientFileDto) => handleViewNotes(file),
+      variant: 'ghost' as const,
+    },
+    {
       label: (file: ClientFileDto) => canSign(file) ? 'Sign' : '',
       icon: (file: ClientFileDto) => canSign(file) ? <PenTool className="h-4 w-4" /> : null,
       onClick: (file: ClientFileDto) => handleSign(file),
@@ -269,33 +266,21 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
 
   return (
     <div className="space-y-6">
-      {/* Header with Upload Button */}
+      {/* Header with Share Document Button */}
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold">Client Files</h3>
           <p className="text-sm text-gray-600">Manage files for {clientName}</p>
         </div>
         <div className="flex items-center space-x-2">
-          <input
-            type="file"
-            id="file-upload"
-            className="hidden"
-            onChange={handleFileUpload}
-            disabled={uploading}
-          />
           <Button
             variant="outline"
             size="sm"
-            onClick={() => document.getElementById('file-upload')?.click()}
-            disabled={uploading}
+            onClick={() => setShowShareModal(true)}
             className="flex items-center space-x-2"
           >
-            {uploading ? (
-              <LoadingSpinner />
-            ) : (
-              <Upload className="h-4 w-4" />
-            )}
-            <span>Upload File</span>
+            <Share className="h-4 w-4" />
+            <span>Share Document</span>
           </Button>
         </div>
       </div>
@@ -309,7 +294,7 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
         emptyMessage={
           <EmptyState
             title="No files found"
-            description="Upload files to get started"
+            description="Share documents to get started"
             icon={FileText}
           />
         }
@@ -318,6 +303,49 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
         pagination={true}
         pageSize={10}
       />
+
+      {/* Share Document Modal */}
+      <ShareDocumentModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        clientId={clientId}
+        onFileShared={handleFileShared}
+      />
+
+      {/* Notes Modal */}
+      {selectedFileForNotes && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-semibold">File Notes</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedFileForNotes(null)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">File</h3>
+                  <p className="text-sm text-gray-900">{selectedFileForNotes.file.fileName}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Notes</h3>
+                  {selectedFileForNotes.notes ? (
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedFileForNotes.notes}</p>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No notes available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

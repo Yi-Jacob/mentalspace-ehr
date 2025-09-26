@@ -4,6 +4,7 @@ import { CreateClientFileDto } from './dto/create-client-file.dto';
 import { UpdateClientFileDto } from './dto/update-client-file.dto';
 import { SignFileDto } from './dto/sign-file.dto';
 import { CompleteFileDto } from './dto/complete-file.dto';
+import { ShareFileDto } from './dto/share-file.dto';
 import { FileStatus } from './enums/file-status.enum';
 import { S3Service } from '../common/s3.service';
 
@@ -60,6 +61,15 @@ export class ClientFilesService {
             email: true,
           },
         },
+        file: {
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -70,9 +80,9 @@ export class ClientFilesService {
   }
 
   /**
-   * Create a new file for a client
+   * Share a file with a client
    */
-  async newFile(createClientFileDto: CreateClientFileDto) {
+  async shareFile(createClientFileDto: CreateClientFileDto) {
     // Verify the client exists
     const client = await this.prisma.client.findUnique({
       where: { id: createClientFileDto.clientId },
@@ -91,18 +101,42 @@ export class ClientFilesService {
       throw new NotFoundException('Creator not found');
     }
 
+    // Verify the file exists and is shareable
+    const file = await this.prisma.file.findUnique({
+      where: { id: createClientFileDto.fileId },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    if (file.isForPatient || file.isForStaff) {
+      throw new BadRequestException('This file is not available for sharing');
+    }
+
     const clientUserId = await this.prisma.user.findUnique({
       where: { clientId: createClientFileDto.clientId },
       select: { id: true },
     });
-    // Create the file
-    const file = await this.prisma.clientFile.create({
+
+    // Check if file is already shared with this client
+    const existingClientFile = await this.prisma.clientFile.findFirst({
+      where: {
+        clientId: clientUserId.id,
+        fileId: createClientFileDto.fileId,
+      },
+    });
+
+    if (existingClientFile) {
+      throw new BadRequestException('This file is already shared with this client');
+    }
+
+    // Create the client file record
+    const clientFile = await this.prisma.clientFile.create({
       data: {
         clientId: clientUserId.id,
-        fileName: createClientFileDto.fileName,
-        fileUrl: createClientFileDto.fileUrl,
-        fileSize: createClientFileDto.fileSize,
-        mimeType: createClientFileDto.mimeType,
+        fileId: createClientFileDto.fileId,
+        notes: createClientFileDto.notes,
         status: createClientFileDto.status || FileStatus.DRAFT,
         createdBy: createClientFileDto.createdBy,
       },
@@ -131,10 +165,51 @@ export class ClientFilesService {
             email: true,
           },
         },
+        file: {
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
+          },
+        },
       },
     });
 
-    return file;
+    return clientFile;
+  }
+
+  /**
+   * Get shareable files (not for patient and not for staff)
+   */
+  async getShareableFiles() {
+    const files = await this.prisma.file.findMany({
+      where: {
+        isForPatient: false,
+        isForStaff: false,
+      },
+      select: {
+        id: true,
+        fileName: true,
+        fileUrl: true,
+        fileSize: true,
+        mimeType: true,
+        createdAt: true,
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return files;
   }
 
   /**
@@ -223,6 +298,15 @@ export class ClientFilesService {
             email: true,
           },
         },
+        file: {
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
+          },
+        },
       },
     });
 
@@ -292,6 +376,15 @@ export class ClientFilesService {
             firstName: true,
             lastName: true,
             email: true,
+          },
+        },
+        file: {
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
           },
         },
       },
@@ -375,6 +468,15 @@ export class ClientFilesService {
             email: true,
           },
         },
+        file: {
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
+          },
+        },
       },
     });
 
@@ -412,6 +514,15 @@ export class ClientFilesService {
             email: true,
           },
         },
+        file: {
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
+          },
+        },
       },
     });
 
@@ -426,16 +537,19 @@ export class ClientFilesService {
    * Get download URL for a file
    */
   async getDownloadUrl(fileId: string): Promise<{ downloadUrl: string }> {
-    const file = await this.prisma.clientFile.findUnique({
+    const clientFile = await this.prisma.clientFile.findUnique({
       where: { id: fileId },
+      include: {
+        file: true,
+      },
     });
 
-    if (!file) {
+    if (!clientFile) {
       throw new NotFoundException('File not found');
     }
 
     // Extract the S3 key from the file URL
-    const url = new URL(file.fileUrl);
+    const url = new URL(clientFile.file.fileUrl);
     const s3Key = url.pathname.substring(1); // Remove leading slash
 
     // Generate signed URL for download (expires in 1 hour)

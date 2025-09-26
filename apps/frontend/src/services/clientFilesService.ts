@@ -7,6 +7,25 @@ import {
   CompleteFileDto
 } from '@/types/clientType';
 
+export interface ShareableFileDto {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize?: number;
+  mimeType?: string;
+  createdAt: string;
+  creator: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface ShareFileDto {
+  fileId: string;
+  notes?: string;
+}
+
 // Client Files Service
 export class ClientFilesService {
   private baseUrl = '/clients';
@@ -17,13 +36,15 @@ export class ClientFilesService {
     return response.data;
   }
 
-  // Create a new file for a client
-  async newFile(clientId: string, fileData: Omit<CreateClientFileDto, 'clientId' | 'createdBy'>): Promise<ClientFileDto> {
-    const createData: CreateClientFileDto = {
-      ...fileData,
-      clientId, // This will be set by the backend from the authenticated user
-    };
-    const response = await apiClient.post<ClientFileDto>(`${this.baseUrl}/${clientId}/files`, createData);
+  // Share a file with a client
+  async shareFile(clientId: string, shareData: ShareFileDto): Promise<ClientFileDto> {
+    const response = await apiClient.post<ClientFileDto>(`${this.baseUrl}/${clientId}/files`, shareData);
+    return response.data;
+  }
+
+  // Get shareable files
+  async getShareableFiles(clientId: string): Promise<ShareableFileDto[]> {
+    const response = await apiClient.get<ShareableFileDto[]>(`${this.baseUrl}/${clientId}/files/shareable`);
     return response.data;
   }
 
@@ -86,36 +107,6 @@ export class ClientFilesService {
     return response.data.downloadUrl;
   }
 
-  // Upload a file to S3 (this would typically be handled by a separate upload service)
-  async uploadFile(file: File, clientId: string): Promise<{ fileUrl: string; fileName: string; fileSize: number; mimeType: string }> {
-    try {
-      // This is a placeholder for S3 upload functionality
-      // In a real implementation, you would:
-      // 1. Get a presigned URL from your backend
-      // 2. Upload the file directly to S3
-      // 3. Return the file information
-      
-      // For now, we'll simulate the upload
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('clientId', clientId);
-
-      const response = await apiClient.post<{ fileUrl: string; fileName: string; fileSize: number; mimeType: string }>(
-        '/upload/client-file',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      return response.data;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      throw new Error('Failed to upload file');
-    }
-  }
 }
 
 export const clientFilesService = new ClientFilesService();

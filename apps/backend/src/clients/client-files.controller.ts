@@ -16,6 +16,7 @@ import { CreateClientFileDto } from './dto/create-client-file.dto';
 import { UpdateClientFileDto } from './dto/update-client-file.dto';
 import { SignFileDto } from './dto/sign-file.dto';
 import { CompleteFileDto } from './dto/complete-file.dto';
+import { ShareFileDto } from './dto/share-file.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('clients/:clientId/files')
@@ -35,18 +36,29 @@ export class ClientFilesController {
   }
 
   /**
-   * Create a new file for a client
+   * Get shareable files (not for patient and not for staff)
+   */
+  @Get('shareable')
+  async getShareableFiles() {
+    return this.clientFilesService.getShareableFiles();
+  }
+
+  /**
+   * Share a file with a client
    */
   @Post()
-  async newFile(
+  async shareFile(
     @Param('clientId') clientId: string,
-    @Body() createClientFileDto: CreateClientFileDto,
+    @Body() shareFileDto: ShareFileDto,
     @Request() req: any,
   ) {
-    // Set the clientId and createdBy from the request
-    createClientFileDto.clientId = clientId;
-    createClientFileDto.createdBy = req.user.id;
-    return this.clientFilesService.newFile(createClientFileDto);
+    const createClientFileDto: CreateClientFileDto = {
+      clientId,
+      fileId: shareFileDto.fileId,
+      notes: shareFileDto.notes,
+      createdBy: req.user.id,
+    };
+    return this.clientFilesService.shareFile(createClientFileDto);
   }
 
   /**

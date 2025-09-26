@@ -8,7 +8,7 @@ import { ClientNotesTab } from './tabs/ClientNotesTab';
 import { ClientBillingTab } from './tabs/ClientBillingTab';
 import ClientMessagesTab from './tabs/ClientMessagesTab';
 import ClientAppointmentTab from './tabs/ClientAppointmentTab';
-import ClientFilesTab from './tabs/ClientFilesTab';
+import ClientPortalTab from './tabs/ClientPortalTab';
 import { ClientFormData, PhoneNumber, EmergencyContact, InsuranceInfo, PrimaryCareProvider } from '@/types/clientType';
 
 interface ClientDetailTabsProps {
@@ -59,10 +59,10 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
       content: <ClientNotesTab client={client} />
     },
     {
-      id: 'files',
-      label: 'Files',
+      id: 'portal',
+      label: 'Portal',
       icon: FolderOpen,
-      content: <ClientFilesTab clientId={client.id} clientName={`${client.firstName} ${client.lastName}`} />
+      content: <ClientPortalTab clientId={client.id} clientName={`${client.firstName} ${client.lastName}`} />
     },
     {
       id: 'billing',

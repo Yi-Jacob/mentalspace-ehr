@@ -8,19 +8,11 @@ export class CreateClientFileDto {
 
   @IsString()
   @IsNotEmpty()
-  fileName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  fileUrl: string;
-
-  @IsOptional()
-  @IsInt()
-  fileSize?: number;
+  fileId: string;
 
   @IsOptional()
   @IsString()
-  mimeType?: string;
+  notes?: string;
 
   @IsOptional()
   @IsString()

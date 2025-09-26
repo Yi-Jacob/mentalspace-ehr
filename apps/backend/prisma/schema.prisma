@@ -1077,10 +1077,8 @@ model AuditLog {
 model ClientFile {
   id                String    @id @default(uuid())
   clientId          String    @map("client_id")
-  fileName          String    @map("file_name")
-  fileUrl           String    @map("file_url")
-  fileSize          Int?      @map("file_size")
-  mimeType          String?   @map("mime_type")
+  fileId            String    @map("file_id")
+  notes             String?
   status            String    @default("draft") // 'draft' | 'signedbyauthor' | 'signedbysupervisor' | 'completedbyclient'
   createdBy         String    @map("created_by")
   signedDate        DateTime? @map("signed_date")
@@ -1094,10 +1092,12 @@ model ClientFile {
   client            User      @relation("ClientFileClient", fields: [clientId], references: [id])
   creator           User      @relation("ClientFileCreator", fields: [createdBy], references: [id])
   coSigner          User?     @relation("ClientFileCoSigner", fields: [coSignedBy], references: [id])
+  file              File      @relation("ClientFileFile", fields: [fileId], references: [id])
   
   @@index([clientId], map: "idx_client_file_client_id")
   @@index([status], map: "idx_client_file_status")
   @@index([createdBy], map: "idx_client_file_created_by")
+  @@index([fileId], map: "idx_client_file_file_id")
   @@map("client_files")
 }
 
@@ -1120,6 +1120,7 @@ model File {
   client      Client?   @relation("FileClient", fields: [clientId], references: [id])
   user        User?     @relation("FileUser", fields: [userId], references: [id])
   creator     User      @relation("FileCreator", fields: [createdBy], references: [id])
+  clientFiles ClientFile[] @relation("ClientFileFile")
   
   @@index([sharable], map: "idx_file_sharable")
   @@index([accessLevel], map: "idx_file_access_level")
