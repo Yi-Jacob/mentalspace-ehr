@@ -20,7 +20,8 @@ import {
   Activity,
   CheckSquare,
   Settings,
-  Library
+  Library,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,11 +55,7 @@ const menuItems: MenuItem[] = [
     id: 'notes', 
     label: 'Notes', 
     icon: FileText, 
-    path: '/notes',
-    subItems: [
-      { id: 'all-notes', label: 'All Notes', path: '/notes/all-notes' },
-      { id: 'create-note', label: 'Create Note', path: '/notes/create-note' }
-    ]
+    path: '/notes/all-notes'
   },
   { 
     id: 'scheduling', 
@@ -68,9 +65,9 @@ const menuItems: MenuItem[] = [
     subItems: [
       { id: 'calendar', label: 'Calendar', path: '/scheduling/calendar' },
       { id: 'appointments', label: 'Appointments', path: '/scheduling/appointments' },
-      { id: 'work-schedule', label: 'Work Schedule', path: '/scheduling/work-schedule' },
     ]
   },
+  { id: 'work-schedule', label: 'Work Schedule', icon: Clock, path: '/work-schedule' },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'todo', label: 'To-Do', icon: CheckSquare, path: '/todo' },
   { id: 'library', label: 'Library', icon: Library, path: '/library' },

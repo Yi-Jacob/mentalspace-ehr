@@ -2,15 +2,15 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { schedulingService, ScheduleException, ProviderSchedule } from '@/services/schedulingService';
-import ScheduleCard from '../components/work-schedule/ScheduleCard';
-import ExceptionCard from '../components/work-schedule/ExceptionCard';
-import AddScheduleModal from '../components/AddScheduleModal';
-import AddExceptionModal from '../components/AddExceptionModal';
-import DeleteExceptionModal from '../components/DeleteExceptionModal';
+import ScheduleCard from './components/ScheduleCard';
+import ExceptionCard from './components/ExceptionCard';
+import AddScheduleModal from './components/AddScheduleModal';
+import AddExceptionModal from './components/AddExceptionModal';
+import DeleteExceptionModal from './components/DeleteExceptionModal';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import PageTabs from '@/components/basic/PageTabs';
-import { Calendar, Plus, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Clock, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const WorkScheduleManagement = () => {
@@ -127,7 +127,7 @@ const WorkScheduleManagement = () => {
     <>
       <PageLayout variant="simple">
         <PageHeader
-          icon={Calendar}
+          icon={Clock}
           title="Work Schedule Management"
           description="Manage provider work schedules, availability, and exceptions"
           action={

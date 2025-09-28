@@ -14,7 +14,8 @@ import auditRoutes from './audit-routes';
 import todoRoutes from './todo-routes';
 import practiceSettingsRoutes from './practice-settings-routes';
 import libraryRoutes from './library-routes';
-import MyProfilePage from '../pages/MyProfilePage';
+import MyProfilePage from '../pages/my-profile';
+import WorkScheduleManagement from '@/pages/work-schedule';
 
 const authenticatedRoutes: RouteObject[] = [
   // Dashboard (index route)
@@ -36,6 +37,10 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'scheduling',
     children: schedulingRoutes,
+  },
+  {
+    path: 'work-schedule',
+    element: <WorkScheduleManagement />,
   },
   // Messaging
   {
