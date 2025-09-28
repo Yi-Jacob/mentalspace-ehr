@@ -238,7 +238,7 @@ export class SchedulingService {
         // Check if user is a client
         const client = await this.userTypeService.getClientByUserId(user.id);
         if (client) {
-          // Client can only see their own appointments
+          // Client can see all appointments for their clientId
           where.clientId = client.id;
         } else {
           // Check if user is staff

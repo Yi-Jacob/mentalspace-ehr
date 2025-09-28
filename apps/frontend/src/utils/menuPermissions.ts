@@ -78,7 +78,7 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
     ]
   },
 
-  // Scheduling - accessible to schedulers and clinical staff
+  // Scheduling - accessible to schedulers, clinical staff, and clients
   'scheduling': {
     roles: [
       USER_ROLES.PRACTICE_SCHEDULER,
@@ -87,7 +87,8 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSISTANT,
       USER_ROLES.ASSOCIATE,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
+      USER_ROLES.PRACTICE_ADMINISTRATOR,
+      USER_ROLES.PATIENT
     ]
   },
   'calendar': {

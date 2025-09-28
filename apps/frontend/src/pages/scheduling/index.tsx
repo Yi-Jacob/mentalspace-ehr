@@ -21,10 +21,13 @@ import PageHeader from '@/components/basic/PageHeader';
 import { Calendar, Plus } from 'lucide-react';
 import { AppointmentTypeValue } from '@/types/scheduleType';
 import { AppointmentStatus } from '@/types/enums/scheduleEnum';
+import { useAuth } from '@/hooks/useAuth';
+import { USER_ROLES } from '@/types/enums/staffEnum';
 
 type AppointmentTypeFilter = AppointmentTypeValue | 'all';
 
 const CalendarView = () => {
+  const { user } = useAuth();
   const { 
     currentDate, 
     setCurrentDate, 
@@ -138,6 +141,9 @@ const CalendarView = () => {
     setTypeFilter('all');
   };
 
+  // Check if user is a client/patient
+  const isClient = user?.roles?.includes(USER_ROLES.PATIENT);
+
   return (
     <PageLayout variant="gradient">
       <PageHeader
@@ -157,13 +163,15 @@ const CalendarView = () => {
                 <SelectItem value="list" className="hover:bg-blue-50 transition-colors">List</SelectItem>
               </SelectContent>
             </Select>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200"
-            >
-              <Plus className="h-4 w-4" />
-              <span>New Appointment</span>
-            </button>
+            {!isClient && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200"
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Appointment</span>
+              </button>
+            )}
           </div>
         }
       />
@@ -185,9 +193,9 @@ const CalendarView = () => {
             <AppointmentsList
               appointments={appointments}
               isLoading={isLoading}
-              onEditAppointment={handleEditAppointment}
-              onDeleteAppointment={handleDeleteAppointment}
-              onStatusChange={handleStatusChange}
+              onEditAppointment={isClient ? undefined : handleEditAppointment}
+              onDeleteAppointment={isClient ? undefined : handleDeleteAppointment}
+              onStatusChange={isClient ? undefined : handleStatusChange}
             />
           </div>
         ) : (
@@ -205,7 +213,7 @@ const CalendarView = () => {
               currentDate={currentDate}
               appointments={appointments}
               isLoading={isLoading}
-              onTimeSlotClick={handleTimeSlotClick}
+              onTimeSlotClick={isClient ? undefined : handleTimeSlotClick}
             />
           </Card>
         )}
