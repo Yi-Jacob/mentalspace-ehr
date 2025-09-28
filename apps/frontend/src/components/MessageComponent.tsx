@@ -36,7 +36,6 @@ const MessageComponent: React.FC<MessageComponentProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const { connect, disconnect, webSocketService, isAuthReady } = useWebSocket();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   // Use different query based on whether we're showing client-specific conversations
   const { data: conversations, isLoading: conversationsLoading } = clientId 
@@ -91,23 +90,10 @@ const MessageComponent: React.FC<MessageComponentProps> = ({
     setConversationToEdit(null);
   };
 
-  // Check if user can create new messages
-  const canCreateMessage = user?.roles?.includes('practice_admin') || 
-                          user?.roles?.includes('admin') || 
-                          user?.roles?.includes('therapist') ||
-                          user?.roles?.includes('staff');
-
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {showHeader && (
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <MessageSquare className="h-5 w-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              {clientId ? 'Client Messages' : 'Messages'}
-            </h2>
-          </div>
-          {canCreateMessage && (
             <Button 
               onClick={() => setShowComposeModal(true)}
               className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -115,7 +101,6 @@ const MessageComponent: React.FC<MessageComponentProps> = ({
               <Send className="h-4 w-4 mr-2" />
               New Message
             </Button>
-          )}
         </div>
       )}
 

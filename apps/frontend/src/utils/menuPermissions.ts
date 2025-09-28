@@ -11,8 +11,15 @@ export interface MenuPermission {
 export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
   // Dashboard - accessible to all authenticated users
   'dashboard': {
-    allowAll: true,
-    roles: []
+    roles: [
+      USER_ROLES.PRACTICE_ADMINISTRATOR,
+      USER_ROLES.CLINICAL_ADMINISTRATOR,
+      USER_ROLES.SUPERVISOR,
+      USER_ROLES.CLINICIAN,
+      USER_ROLES.INTERN,
+      USER_ROLES.ASSISTANT,
+      USER_ROLES.ASSOCIATE
+    ]
   },
 
   // Clients - accessible to clinical staff and schedulers
@@ -38,8 +45,7 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSOCIATE,
       USER_ROLES.SUPERVISOR,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'all-notes': {
@@ -50,8 +56,7 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSOCIATE,
       USER_ROLES.SUPERVISOR,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'create-note': {
@@ -82,8 +87,7 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSISTANT,
       USER_ROLES.ASSOCIATE,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'calendar': {
@@ -94,8 +98,7 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSISTANT,
       USER_ROLES.ASSOCIATE,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT,
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'appointments': {
@@ -106,8 +109,7 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSISTANT,
       USER_ROLES.ASSOCIATE,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'work-schedule': {
@@ -149,7 +151,6 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.PRACTICE_SCHEDULER,
       USER_ROLES.PRACTICE_BILLER,
       USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.PATIENT
     ]
   },
 
@@ -166,7 +167,6 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.PRACTICE_SCHEDULER,
       USER_ROLES.PRACTICE_BILLER,
       USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.PATIENT
     ]
   },
 
@@ -180,15 +180,13 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.ASSISTANT,
       USER_ROLES.ASSOCIATE,
       USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'payer-management': {
     roles: [
       USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
+      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'insurance-verification': {
