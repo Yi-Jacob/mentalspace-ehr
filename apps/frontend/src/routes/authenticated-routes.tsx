@@ -16,6 +16,7 @@ import practiceSettingsRoutes from './practice-settings-routes';
 import libraryRoutes from './library-routes';
 import MyProfilePage from '../pages/my-profile';
 import WorkScheduleManagement from '@/pages/work-schedule';
+import ClientFilesPage from '../pages/client-files';
 
 const authenticatedRoutes: RouteObject[] = [
   // Dashboard (index route)
@@ -86,6 +87,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'my-profile',
     element: <MyProfilePage />,
+  },
+  // Client Files
+  {
+    path: 'files',
+    element: <ClientFilesPage />,
   },
   {
     path: '*',

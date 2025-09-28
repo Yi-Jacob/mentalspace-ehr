@@ -56,6 +56,8 @@ export class AuthService {
         lastName: user.lastName,
         isActive: user.isActive,
         roles: roles,
+        clientId: user.clientId,
+        staffId: user.staffId,
       },
     };
   }
@@ -87,6 +89,8 @@ export class AuthService {
         lastName: user.lastName,
         isActive: user.isActive,
         roles: roles,
+        clientId: user.clientId,
+        staffId: user.staffId,
       };
     } catch (error) {
       return null;

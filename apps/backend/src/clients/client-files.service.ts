@@ -33,6 +33,33 @@ export class ClientFilesService {
       select: { id: true },
     });
 
+    if (!clientUserId) {
+      throw new NotFoundException('Client user not found');
+    }
+
+    // Check if the requesting user is the client or has permission to access client files
+    const requestingUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        client: true,
+        staffProfile: true,
+      },
+    });
+
+    if (!requestingUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Allow access if:
+    // 1. The user is the client themselves
+    // 2. The user is staff (they can access any client's files)
+    const isClient = requestingUser.clientId === clientId;
+    const isStaff = requestingUser.staffProfile !== null;
+
+    if (!isClient && !isStaff) {
+      throw new ForbiddenException('You can only access your own files');
+    }
+
     // Get files for the client
     const files = await this.prisma.clientFile.findMany({
       where: { clientId: clientUserId.id },
@@ -536,16 +563,40 @@ export class ClientFilesService {
   /**
    * Get download URL for a file
    */
-  async getDownloadUrl(fileId: string): Promise<{ downloadUrl: string }> {
+  async getDownloadUrl(fileId: string, userId: string): Promise<{ downloadUrl: string }> {
     const clientFile = await this.prisma.clientFile.findUnique({
       where: { id: fileId },
       include: {
         file: true,
+        client: true,
       },
     });
 
     if (!clientFile) {
       throw new NotFoundException('File not found');
+    }
+
+    // Check if the requesting user has permission to download this file
+    const requestingUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        client: true,
+        staffProfile: true,
+      },
+    });
+
+    if (!requestingUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Allow download if:
+    // 1. The user is the client who owns the file
+    // 2. The user is staff
+    const isClient = requestingUser.clientId === clientFile.client.clientId;
+    const isStaff = requestingUser.staffProfile !== null;
+
+    if (!isClient && !isStaff) {
+      throw new ForbiddenException('You can only download your own files');
     }
 
     // Extract the S3 key from the file URL

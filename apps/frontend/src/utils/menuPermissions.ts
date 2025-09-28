@@ -170,6 +170,23 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
     ]
   },
 
+  // Files - accessible to clients and all staff
+  'files': {
+    roles: [
+      USER_ROLES.CLINICIAN,
+      USER_ROLES.INTERN,
+      USER_ROLES.ASSISTANT,
+      USER_ROLES.ASSOCIATE,
+      USER_ROLES.SUPERVISOR,
+      USER_ROLES.CLINICAL_ADMINISTRATOR,
+      USER_ROLES.PRACTICE_ADMINISTRATOR,
+      USER_ROLES.PRACTICE_SCHEDULER,
+      USER_ROLES.PRACTICE_BILLER,
+      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
+      USER_ROLES.PATIENT
+    ]
+  },
+
   // Billing - accessible to billing staff and clinical staff with billing permissions
   'billing': {
     roles: [

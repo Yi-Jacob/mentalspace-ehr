@@ -126,7 +126,7 @@ export class ClientFilesController {
     @Param('fileId') fileId: string,
     @Request() req: any,
   ) {
-    return this.clientFilesService.getDownloadUrl(fileId);
+    return this.clientFilesService.getDownloadUrl(fileId, req.user.id);
   }
 
   /**
