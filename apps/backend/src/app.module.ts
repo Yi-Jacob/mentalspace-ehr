@@ -9,7 +9,6 @@ import { ClientsModule } from './clients/clients.module';
 import { StaffsModule } from './staff/staffs.module';
 import { UsersModule } from './users/users.module';
 import { NotesModule } from './notes/notes.module';
-import { DiagnosesModule } from './diagnoses/diagnoses.module';
 import { BillingModule } from './billing/billing.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { MessagesModule } from './messages/messages.module';
@@ -46,7 +45,6 @@ import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor'
     UsersModule,
     ClientsModule,
     NotesModule,
-    DiagnosesModule,
     BillingModule,
     ComplianceModule,
     MessagesModule,

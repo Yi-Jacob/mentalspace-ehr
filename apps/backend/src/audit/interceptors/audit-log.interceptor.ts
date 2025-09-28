@@ -202,7 +202,6 @@ export class AuditLogInterceptor implements NestInterceptor {
     if (resource === 'Permissions') resource = 'Permission';
     if (resource === 'AIChatbot') resource = 'AIChat';
     if (resource === 'Users') resource = 'User';
-    if (resource === 'Diagnoses') resource = 'Diagnosis';
     if (resource === 'Scheduling') resource = 'Schedule';
     
     // If route contains specific resource indicators, use those
@@ -214,7 +213,6 @@ export class AuditLogInterceptor implements NestInterceptor {
     if (route.includes('/billing')) resource = 'BillingRecord';
     if (route.includes('/compliance')) resource = 'ComplianceRecord';
     if (route.includes('/users')) resource = 'User';
-    if (route.includes('/diagnoses')) resource = 'Diagnosis';
     if (route.includes('/scheduling')) resource = 'Schedule';
     
     return resource;
