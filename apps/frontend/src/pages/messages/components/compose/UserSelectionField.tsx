@@ -10,7 +10,6 @@ interface User {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
   userType: 'staff' | 'client';
   jobTitle?: string;
   department?: string;
@@ -99,7 +98,6 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
               <div key={user.id} className="flex items-center space-x-2">
                 {getUserIcon(user.userType)}
                 <span>{getUserDisplayInfo(user)}</span>
-                {user.email && <span className="text-sm text-gray-500">({user.email})</span>}
               </div>
             ))}
           </div>
@@ -162,7 +160,6 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
                           />
                           {getUserIcon(user.userType)}
                           <span className="flex-1">{getUserDisplayInfo(user)}</span>
-                          {user.email && <span className="text-sm text-gray-500">({user.email})</span>}
                         </div>
                       </div>
                     ))}
@@ -191,7 +188,6 @@ const UserSelectionField: React.FC<UserSelectionFieldProps> = ({
                           />
                           {getUserIcon(user.userType)}
                           <span className="flex-1">{getUserDisplayInfo(user)}</span>
-                          {user.email && <span className="text-sm text-gray-500">({user.email})</span>}
                         </div>
                       </div>
                     ))}

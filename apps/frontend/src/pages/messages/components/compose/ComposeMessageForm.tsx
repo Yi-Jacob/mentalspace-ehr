@@ -11,7 +11,6 @@ interface User {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
   userType: 'staff' | 'client';
   jobTitle?: string;
   department?: string;

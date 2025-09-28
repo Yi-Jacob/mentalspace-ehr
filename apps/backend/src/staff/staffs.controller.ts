@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Staff')
 @Controller('staff')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class StaffsController {
   constructor(private readonly staffsService: StaffsService) {}
 
@@ -30,6 +30,13 @@ export class StaffsController {
   @ApiResponse({ status: 200, description: 'List of all users with types' })
   getAllUsersWithTypes() {
     return this.staffsService.getAllUsersWithTypes();
+  }
+
+  @Get('users/messaging')
+  @ApiOperation({ summary: 'Get users available for messaging based on current user type' })
+  @ApiResponse({ status: 200, description: 'List of users available for messaging' })
+  getUsersForMessaging(@Request() req: any) {
+    return this.staffsService.getUsersForMessaging(req.user.id);
   }
 
   @Get('profiles')

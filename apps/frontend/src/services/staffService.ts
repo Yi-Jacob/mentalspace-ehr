@@ -244,11 +244,10 @@ class StaffService {
   }
 
   // Get all users (staff and clients) for conversation creation
-  async getAllUsers(): Promise<Array<{
+  async getAllUsersForMessaging(): Promise<Array<{
     id: string;
     firstName: string;
     lastName: string;
-    email: string;
     userType: 'staff' | 'client';
     jobTitle?: string;
     department?: string;
@@ -257,23 +256,12 @@ class StaffService {
       id: string;
       firstName: string;
       lastName: string;
-      email: string;
       userType: 'staff' | 'client';
-      staffProfile?: {
-        jobTitle: string;
-        department: string;
-      };
-    }>>('/staff/users');
+      jobTitle?: string;
+      department?: string;
+    }>>('/staff/users/messaging');
     
-    return response.data.map(user => ({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      userType: user.userType,
-      jobTitle: user.staffProfile?.jobTitle,
-      department: user.staffProfile?.department,
-    }));
+    return response.data;
   }
 
   // Get all staff profiles for provider selection

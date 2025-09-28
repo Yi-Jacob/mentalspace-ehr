@@ -116,6 +116,98 @@ export class StaffsService {
   }
 
   /**
+   * Get users for message composition based on current user type
+   * @param currentUserId - ID of the current user making the request
+   * @returns Array of users available for messaging
+   */
+  async getUsersForMessaging(currentUserId: string) {
+    // Get current user to determine their type
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+      select: {
+        id: true,
+        clientId: true,
+        staffId: true,
+      }
+    });
+
+    if (!currentUser) {
+      throw new Error('Current user not found');
+    }
+
+    // If current user is a client, only get their assigned staff
+    if (currentUser.clientId) {
+      const assignedStaff = await this.prisma.clientClinician.findMany({
+        where: { clientId: currentUser.clientId },
+        include: {
+          clinician: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  staffId: true,
+                  clientId: true,
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return assignedStaff.map(assignment => ({
+        id: assignment.clinician.user.id,
+        firstName: assignment.clinician.user.firstName,
+        lastName: assignment.clinician.user.lastName,
+        userType: 'staff' as const,
+        jobTitle: assignment.clinician.jobTitle,
+        department: assignment.clinician.department,
+      }));
+    }
+
+    // If current user is staff, get all users except emails
+    const users = await this.prisma.user.findMany({
+      where: { 
+        isActive: true,
+        id: { not: currentUserId } // Exclude current user
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        staffId: true,
+        clientId: true,
+        staffProfile: {
+          select: {
+            jobTitle: true,
+            department: true,
+          }
+        },
+        client: {
+          select: {
+            preferredName: true,
+          }
+        }
+      },
+      orderBy: [
+        { lastName: 'asc' },
+        { firstName: 'asc' }
+      ]
+    });
+
+    return users.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userType: this.getUserType(user),
+      jobTitle: user.staffProfile?.jobTitle,
+      department: user.staffProfile?.department,
+      preferredName: user.client?.preferredName,
+    }));
+  }
+
+  /**
    * Get all staff profiles for provider selection
    * @returns Array of staff profiles with user information
    */
