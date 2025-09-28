@@ -51,22 +51,8 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
-  { 
-    id: 'notes', 
-    label: 'Notes', 
-    icon: FileText, 
-    path: '/notes/all-notes'
-  },
-  { 
-    id: 'scheduling', 
-    label: 'Scheduling', 
-    icon: Calendar, 
-    path: '/scheduling',
-    subItems: [
-      { id: 'calendar', label: 'Calendar', path: '/scheduling/calendar' },
-      { id: 'appointments', label: 'Appointments', path: '/scheduling/appointments' },
-    ]
-  },
+  { id: 'notes', label: 'Notes', icon: FileText, path: '/notes/all-notes'},
+  { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling'},
   { id: 'work-schedule', label: 'Work Schedule', icon: Clock, path: '/work-schedule' },
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'todo', label: 'To-Do', icon: CheckSquare, path: '/todo' },
