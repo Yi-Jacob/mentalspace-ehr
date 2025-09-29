@@ -57,7 +57,7 @@ const menuItems: MenuItem[] = [
   { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
   { id: 'todo', label: 'To-Do', icon: CheckSquare, path: '/todo' },
   { id: 'library', label: 'Library', icon: Library, path: '/library' },
-  { id: 'files', label: 'Files', icon: FileText, path: '/files' },
+  { id: 'client-files', label: 'Files', icon: FileText, path: '/files' },
   { 
     id: 'billing', 
     label: 'Billing', 
@@ -115,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const navigate = useNavigate();
   const { isCollapsed, toggleSidebar } = useSidebarContext();
   const isMobile = useIsMobile();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['staff', 'notes', 'scheduling', 'compliance', 'billing', 'audit']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Filter menu items based on user role
   const accessibleMenuItems = useMemo(() => {

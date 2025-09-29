@@ -48,35 +48,6 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
-  'all-notes': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'create-note': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'pending-approvals': {
-    roles: [
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
 
   // Scheduling - accessible to schedulers, clinical staff, and clients
   'scheduling': {
@@ -89,28 +60,6 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
       USER_ROLES.CLINICAL_ADMINISTRATOR,
       USER_ROLES.PRACTICE_ADMINISTRATOR,
       USER_ROLES.PATIENT
-    ]
-  },
-  'calendar': {
-    roles: [
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'appointments': {
-    roles: [
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
     ]
   },
   'work-schedule': {
@@ -172,18 +121,8 @@ export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
   },
 
   // Files - accessible to clients and all staff
-  'files': {
+  'client-files': {
     roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
       USER_ROLES.PATIENT
     ]
   },
