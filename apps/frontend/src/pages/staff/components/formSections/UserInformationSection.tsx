@@ -43,6 +43,7 @@ const UserInformationSection: React.FC<UserInformationSectionProps> = ({
             onChange={(e) => onInputChange('firstName', e.target.value)}
             required
             placeholder="Enter first name"
+            className={!formData.firstName?.trim() ? 'border-red-300 focus:border-red-500' : ''}
           />
 
           <InputField
@@ -60,6 +61,7 @@ const UserInformationSection: React.FC<UserInformationSectionProps> = ({
             onChange={(e) => onInputChange('lastName', e.target.value)}
             required
             placeholder="Enter last name"
+            className={!formData.lastName?.trim() ? 'border-red-300 focus:border-red-500' : ''}
           />
 
           <InputField
@@ -78,6 +80,7 @@ const UserInformationSection: React.FC<UserInformationSectionProps> = ({
             onChange={(e) => onInputChange('email', e.target.value)}
             required
             placeholder="Enter email address"
+            className={!formData.email?.trim() ? 'border-red-300 focus:border-red-500' : ''}
           />
 
           <InputField

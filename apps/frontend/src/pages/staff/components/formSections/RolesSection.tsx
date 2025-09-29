@@ -21,7 +21,7 @@ const RolesSection: React.FC<RolesSectionProps> = ({
   return (
     <CategorySection
       title="Roles"
-      description="Each user can have multiple roles. A user's roles determine what they can access within TherapyNotes."
+      description="Each user can have multiple roles. A user's roles determine what they can access."
       headerAction={
         <Button 
           type="button" 
@@ -35,8 +35,15 @@ const RolesSection: React.FC<RolesSectionProps> = ({
         </Button>
       }
     >
+      {(!formData.roles || formData.roles.length === 0) && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-600">
+            <strong>Required:</strong> Please select at least one role for this staff member.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {ROLE_CATEGORIES.map((category) => (
+        {ROLE_CATEGORIES.filter(category => category.title !== 'Patient Access').map((category) => (
           <CheckboxGroup
             key={category.title}
             title={category.title}

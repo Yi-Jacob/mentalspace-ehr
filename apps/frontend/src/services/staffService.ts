@@ -118,9 +118,24 @@ class StaffService {
       const response = await apiClient.post<any>('/staff', input);
       alert(response.data.passwordResetUrl);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating staff:', error);
-      throw error;
+      
+      // Extract user-friendly error message from the response
+      let errorMessage = 'Failed to create staff member. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Create a new error with the user-friendly message
+      const userFriendlyError = new Error(errorMessage);
+      userFriendlyError.name = error.name;
+      throw userFriendlyError;
     }
   }
 

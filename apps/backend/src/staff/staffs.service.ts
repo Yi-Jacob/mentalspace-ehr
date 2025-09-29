@@ -326,9 +326,16 @@ export class StaffsService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    console.log('Creating staff member with data:', createUserDto);
-
     try {
+      // Check if email already exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: createUserDto.email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException(`A user with the email address "${createUserDto.email}" already exists. Please use a different email address.`);
+      }
+
       // Use Prisma transaction to ensure data consistency
       const result = await this.prisma.$transaction(async (prisma) => {
         // 1. Create the staff profile first
@@ -436,7 +443,26 @@ export class StaffsService {
       return result;
     } catch (error) {
       console.error('Error creating staff member:', error);
-      throw error;
+      
+      // Handle specific Prisma errors
+      if (error.code === 'P2002') {
+        const field = error.meta?.target?.[0];
+        if (field === 'email') {
+          throw new ConflictException(`A user with the email address "${createUserDto.email}" already exists. Please use a different email address.`);
+        } else if (field === 'employeeId') {
+          throw new ConflictException(`A staff member with the employee ID "${createUserDto.employeeId}" already exists. Please use a different employee ID.`);
+        } else {
+          throw new ConflictException(`A record with this ${field} already exists. Please use a different value.`);
+        }
+      }
+      
+      // Re-throw known NestJS exceptions
+      if (error instanceof ConflictException || error instanceof BadRequestException) {
+        throw error;
+      }
+      
+      // For other errors, throw a generic message
+      throw new BadRequestException('Failed to create staff member. Please check your input and try again.');
     }
   }
 

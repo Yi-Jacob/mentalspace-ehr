@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
 import { UserStatus } from '@/types/staffType';
+import { toast } from '@/hooks/use-toast';
 
 export const useAddStaffSubmit = () => {
   const navigate = useNavigate();
@@ -11,8 +12,32 @@ export const useAddStaffSubmit = () => {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.firstName || !formData.lastName || !formData.email) {
-      console.error('Required fields missing: firstName, lastName, email');
+    const validationErrors: string[] = [];
+    
+    if (!formData.firstName?.trim()) {
+      validationErrors.push('First name is required');
+    }
+    
+    if (!formData.lastName?.trim()) {
+      validationErrors.push('Last name is required');
+    }
+    
+    if (!formData.email?.trim()) {
+      validationErrors.push('Email address is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      validationErrors.push('Please enter a valid email address');
+    }
+    
+    if (!formData.roles || formData.roles.length === 0) {
+      validationErrors.push('At least one role must be selected');
+    }
+    
+    if (validationErrors.length > 0) {
+      toast({
+        title: 'Validation Error',
+        description: validationErrors.join('. ') + '.',
+        variant: 'destructive',
+      });
       return;
     }
 
