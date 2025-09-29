@@ -30,6 +30,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/basic/button';
 import { filterMenuItemsByRole } from '@/utils/menuPermissions';
 import { UserRole } from '@/types/enums/staffEnum';
+import { MENU_ITEMS_CONFIG } from '@/types/enums/sidebarEnum';
 
 interface SidebarProps {
   activeItem?: string;
@@ -48,66 +49,32 @@ interface MenuItem {
   }[];
 }
 
-const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
-  { id: 'notes', label: 'Notes', icon: FileText, path: '/notes/all-notes'},
-  { id: 'scheduling', label: 'Scheduling', icon: Calendar, path: '/scheduling'},
-  { id: 'work-schedule', label: 'Work Schedule', icon: Clock, path: '/work-schedule' },
-  { id: 'message', label: 'Message', icon: MessageSquare, path: '/message' },
-  { id: 'todo', label: 'To-Do', icon: CheckSquare, path: '/todo' },
-  { id: 'library', label: 'Library', icon: Library, path: '/library' },
-  { id: 'client-files', label: 'Files', icon: FileText, path: '/files' },
-  { 
-    id: 'billing', 
-    label: 'Billing', 
-    icon: CreditCard, 
-    path: '/billing',
-    subItems: [
-      { id: 'payer-management', label: 'Payer Management', path: '/billing/payer-management' },
-      { id: 'insurance-verification', label: 'Insurance Verification', path: '/billing/insurance-verification' },
-      { id: 'claims-submission', label: 'Claims Submission', path: '/billing/claims-submission' },
-      { id: 'payment-processing', label: 'Payment Processing', path: '/billing/payment-processing' },
-      { id: 'statement-generation', label: 'Statement Generation', path: '/billing/statement-generation' },
-    ]
-  },
-  {
-    id: 'staff',
-    label: 'Staff',
-    icon: Stethoscope,
-    path: '/staff',
-    subItems: [
-      { id: 'staff-list', label: 'Staffs', path: '/staff' },
-      { id: 'staff-supervision', label: 'Supervision', path: '/staff/supervision' },
-      { id: 'staff-roles', label: 'Roles', path: '/staff/roles' },
-      { id: 'staff-permissions', label: 'Permissions', path: '/staff/permissions' },
-    ]
-  },
-  {
-    id: 'audit',
-    label: 'Audit',
-    icon: Activity,
-    path: '/audit',
-    subItems: [
-      { id: 'audit-logs', label: 'Audit Logs', path: '/audit/logs' },
-      { id: 'audit-stats', label: 'Statistics', path: '/audit/stats' },
-    ]
-  },
-  { 
-    id: 'compliance', 
-    label: 'Compliance', 
-    icon: Shield, 
-    path: '/compliance',
-    subItems: [
-      { id: 'compensation', label: 'Compensation', path: '/compliance/compensation' },
-      { id: 'sessions', label: 'Sessions', path: '/compliance/sessions' },
-      { id: 'time-tracking', label: 'Time Tracking', path: '/compliance/time-tracking' },
-      { id: 'payments', label: 'Payments', path: '/compliance/payments' },
-      { id: 'deadlines', label: 'Deadlines', path: '/compliance/deadlines' }
-    ]
-  },
-  { id: 'practice-settings', label: 'Practice Settings', icon: Settings, path: '/practice-settings' },
-];
+// Icon mapping for menu items
+const getIconForMenuItem = (id: string): React.ComponentType<{ size?: number | string; className?: string }> => {
+  const iconMap: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
+    'dashboard': LayoutDashboard,
+    'clients': Users,
+    'notes': FileText,
+    'scheduling': Calendar,
+    'work-schedule': Clock,
+    'message': MessageSquare,
+    'todo': CheckSquare,
+    'library': Library,
+    'client-files': FileText,
+    'billing': CreditCard,
+    'staff': Stethoscope,
+    'audit': Activity,
+    'compliance': Shield,
+    'practice-settings': Settings,
+  };
+  return iconMap[id] || LayoutDashboard;
+};
+
+// Convert MenuItemsConfig to Sidebar MenuItem format with icons
+const menuItems: MenuItem[] = MENU_ITEMS_CONFIG.map(item => ({
+  ...item,
+  icon: getIconForMenuItem(item.id)
+}));
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemClick }) => {
   const { signOut, user } = useAuth();

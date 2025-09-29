@@ -1,4 +1,5 @@
 import { USER_ROLES, UserRole } from '@/types/enums/staffEnum';
+import { MENU_PERMISSIONS as SIDEBAR_PERMISSIONS } from '@/types/enums/sidebarEnum';
 
 // Define which roles can access each menu item and sub-item
 export interface MenuPermission {
@@ -7,304 +8,13 @@ export interface MenuPermission {
   allowClients?: boolean; // If true, clients can access (for future use)
 }
 
-// Menu item permissions mapping
-export const MENU_PERMISSIONS: Record<string, MenuPermission> = {
-  // Dashboard - accessible to all authenticated users
-  'dashboard': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE
-    ]
-  },
-
-  // Clients - accessible to clinical staff and schedulers
-  'clients': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-
-  // Notes - accessible to clinical staff
-  'notes': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-
-  // Scheduling - accessible to schedulers, clinical staff, and clients
-  'scheduling': {
-    roles: [
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
-    ]
-  },
-  'work-schedule': {
-    roles: [
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-
-  // Messages - accessible to all clinical staff
-  'message': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PATIENT
-    ]
-  },
-
-  // Todo - accessible to all staff
-  'todo': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-    ]
-  },
-
-  // Library - accessible to all staff
-  'library': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-    ]
-  },
-
-  // Files - accessible to clients and all staff
-  'client-files': {
-    roles: [
-      USER_ROLES.PATIENT
-    ]
-  },
-
-  // Billing - accessible to billing staff and clinical staff with billing permissions
-  'billing': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'payer-management': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'insurance-verification': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.PRACTICE_SCHEDULER,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'claims-submission': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'payment-processing': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'statement-generation': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-
-  // Staff - accessible to administrators and supervisors
-  'staff': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.SUPERVISOR
-    ]
-  },
-  'staff-list': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.SUPERVISOR
-    ]
-  },
-  'staff-supervision': {
-    roles: [
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'staff-roles': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'staff-permissions': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-
-  // Audit - accessible only to practice administrators and clinical administrators
-  'audit': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR
-    ]
-  },
-  'audit-logs': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR
-    ]
-  },
-  'audit-stats': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR
-    ]
-  },
-
-  // Compliance - accessible to administrators and clinical staff
-  'compliance': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE
-    ]
-  },
-  'compensation': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR
-    ]
-  },
-  'sessions': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'time-tracking': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'payments': {
-    roles: [
-      USER_ROLES.PRACTICE_BILLER,
-      USER_ROLES.BILLER_FOR_ASSIGNED_PATIENTS_ONLY,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-  'deadlines': {
-    roles: [
-      USER_ROLES.CLINICIAN,
-      USER_ROLES.INTERN,
-      USER_ROLES.ASSISTANT,
-      USER_ROLES.ASSOCIATE,
-      USER_ROLES.SUPERVISOR,
-      USER_ROLES.CLINICAL_ADMINISTRATOR,
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  },
-
-  // Practice Settings - accessible only to practice administrators
-  'practice-settings': {
-    roles: [
-      USER_ROLES.PRACTICE_ADMINISTRATOR
-    ]
-  }
-};
+// Menu item permissions mapping - now using centralized configuration
+export const MENU_PERMISSIONS = SIDEBAR_PERMISSIONS;
 
 /**
  * Check if a user with the given role can access a specific menu item
  */
-export function canAccessMenuItem(menuItemId: string, userRole: UserRole | null): boolean {
+export const canAccessMenuItem = (menuItemId: string, userRole: UserRole | null): boolean => {
   if (!userRole) return false;
   
   const permission = MENU_PERMISSIONS[menuItemId];
@@ -315,15 +25,15 @@ export function canAccessMenuItem(menuItemId: string, userRole: UserRole | null)
   
   // Check if the user's role is in the allowed roles list
   return permission.roles.includes(userRole);
-}
+};
 
 /**
  * Filter menu items based on user role
  */
-export function filterMenuItemsByRole<T extends { id: string; subItems?: { id: string }[] }>(
+export const filterMenuItemsByRole = <T extends { id: string; subItems?: { id: string }[] }>(
   menuItems: T[],
   userRole: UserRole | null
-): T[] {
+): T[] => {
   return menuItems
     .map(item => {
       // Check if the main item is accessible
@@ -353,4 +63,4 @@ export function filterMenuItemsByRole<T extends { id: string; subItems?: { id: s
       return item;
     })
     .filter((item): item is T => item !== null);
-}
+};
