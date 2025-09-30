@@ -17,6 +17,8 @@ build/
 .env.test.local
 .env.production.local
 
+apps/backend/config/
+
 # IDE
 .vscode/
 .idea/
