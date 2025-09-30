@@ -52,9 +52,6 @@ jobs:
         echo "Starting deployment..."
         set -x  # Enable debug mode to show all commands
         
-        # Clean up any existing diagnostic files that might cause conflicts
-        rm -f /home/ec2-user/actions-runner/_diag/pages/*.log 2>/dev/null || true
-        
         cd /home/ec2-user/mentalspace-ehr
         
         # Check if directory exists and is a git repository
