@@ -40,6 +40,7 @@ RUN npm install --only=production
 COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/scripts ./scripts
+COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/config ./config
 
 # Generate Prisma client in production
 RUN npx prisma generate
