@@ -39,6 +39,9 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      GOOGLE_WORKSPACE_DOMAIN: ${{ secrets.GOOGLE_WORKSPACE_DOMAIN }}
+      GOOGLE_CALENDAR_ID: ${{ secrets.GOOGLE_CALENDAR_ID }}
+      GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
     
     steps:
     - name: Checkout code
@@ -83,9 +86,17 @@ jobs:
         echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> apps/backend/.env
         echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> apps/backend/.env
         echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> apps/backend/.env
+        echo "GOOGLE_WORKSPACE_DOMAIN=${GOOGLE_WORKSPACE_DOMAIN}" >> apps/backend/.env
+        echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" >> apps/backend/.env
         echo "JWT_EXPIRES_IN=24h" >> apps/backend/.env
         echo "PORT=7000" >> apps/backend/.env
         chmod 600 apps/backend/.env
+        
+        # Create Google service account JSON file
+        echo "Creating Google service account JSON file..."
+        mkdir -p apps/backend/config
+        echo "${GOOGLE_SERVICE_ACCOUNT}" > apps/backend/config/google-service-account.json
+        chmod 600 apps/backend/config/google-service-account.json
         
         echo "Stopping existing containers..."
         docker-compose down --remove-orphans
@@ -111,6 +122,10 @@ jobs:
         echo "Checking backend .env file content (non-sensitive)..."
         echo "Backend .env file exists: $(test -f apps/backend/.env && echo 'YES' || echo 'NO')"
         echo "Backend .env file size: $(wc -c < apps/backend/.env) bytes"
+        
+        echo "Checking Google service account file..."
+        echo "Google service account file exists: $(test -f apps/backend/config/google-service-account.json && echo 'YES' || echo 'NO')"
+        echo "Google service account file size: $(wc -c < apps/backend/config/google-service-account.json) bytes"
         
         echo "Checking monitoring services status..."
         docker ps --filter "name=mentalspace-prometheus" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
