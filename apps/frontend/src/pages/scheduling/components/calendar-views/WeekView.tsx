@@ -9,9 +9,10 @@ interface WeekViewProps {
   currentDate: Date;
   appointments: Appointment[];
   onTimeSlotClick: (date: Date, hour: number) => void;
+  onAttendMeeting?: (meetLink: string) => void;
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSlotClick }) => {
+const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting }) => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({
     start: weekStart,
@@ -72,6 +73,7 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSl
                         key={appointment.id} 
                         appointment={appointment} 
                         compact 
+                        onAttendMeeting={onAttendMeeting}
                       />
                     ))}
                     {dayAppointments.length === 0 && (

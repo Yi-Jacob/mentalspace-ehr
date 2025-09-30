@@ -11,9 +11,10 @@ interface DayViewProps {
   currentDate: Date;
   appointments: Appointment[];
   onTimeSlotClick: (date: Date, hour: number) => void;
+  onAttendMeeting?: (meetLink: string) => void;
 }
 
-const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlotClick }) => {
+const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting }) => {
   const dayAppointments = appointments?.filter(apt => 
     isSameDay(new Date(apt.startTime), currentDate)
   ) || [];
@@ -57,7 +58,11 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlot
                 {dayAppointments
                   .filter(apt => new Date(apt.startTime).getHours() === hour)
                   .map(appointment => (
-                    <AppointmentCard key={appointment.id} appointment={appointment} />
+                    <AppointmentCard 
+                      key={appointment.id} 
+                      appointment={appointment} 
+                      onAttendMeeting={onAttendMeeting}
+                    />
                   ))}
                 {dayAppointments.filter(apt => new Date(apt.startTime).getHours() === hour).length === 0 && (
                   <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">

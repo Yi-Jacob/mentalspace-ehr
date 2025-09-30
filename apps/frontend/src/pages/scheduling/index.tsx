@@ -141,6 +141,10 @@ const CalendarView = () => {
     setTypeFilter('all');
   };
 
+  const handleAttendMeeting = (meetLink: string) => {
+    window.open(meetLink, '_blank');
+  };
+
   // Check if user is a client/patient
   const isClient = user?.roles?.includes(USER_ROLES.PATIENT);
 
@@ -196,6 +200,7 @@ const CalendarView = () => {
               onEditAppointment={isClient ? undefined : handleEditAppointment}
               onDeleteAppointment={isClient ? undefined : handleDeleteAppointment}
               onStatusChange={isClient ? undefined : handleStatusChange}
+              onAttendMeeting={handleAttendMeeting}
             />
           </div>
         ) : (
@@ -214,6 +219,7 @@ const CalendarView = () => {
               appointments={appointments}
               isLoading={isLoading}
               onTimeSlotClick={isClient ? undefined : handleTimeSlotClick}
+              onAttendMeeting={handleAttendMeeting}
             />
           </Card>
         )}

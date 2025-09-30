@@ -58,6 +58,8 @@ export interface AppointmentTodoItem extends TodoItem {
   appointmentDate: Date;
   appointmentType: string;
   appointmentStatus: string;
+  isTelehealth?: boolean;
+  googleMeetLink?: string;
 }
 
 export interface NoteTodoItem extends TodoItem {
@@ -455,6 +457,8 @@ export class TodoService {
         appointmentDate: appointment.startTime,
         appointmentType: appointment.appointmentType,
         appointmentStatus: appointment.status,
+        isTelehealth: appointment.isTelehealth,
+        googleMeetLink: appointment.googleMeetLink,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

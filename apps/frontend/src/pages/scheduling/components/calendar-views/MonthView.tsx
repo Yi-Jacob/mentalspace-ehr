@@ -7,9 +7,10 @@ interface MonthViewProps {
   currentDate: Date;
   appointments: Appointment[];
   onTimeSlotClick: (date: Date, hour: number) => void;
+  onAttendMeeting?: (meetLink: string) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ currentDate, appointments, onTimeSlotClick }) => {
+const MonthView: React.FC<MonthViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting }) => {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -50,9 +51,20 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, appointments, onTime
                 {dayAppointments.slice(0, 3).map(appointment => (
                   <div
                     key={appointment.id}
-                    className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md truncate hover:bg-blue-200 transition-colors"
+                    className={`text-xs px-2 py-1 rounded-md truncate transition-colors ${
+                      appointment.isTelehealth && appointment.googleMeetLink
+                        ? 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer'
+                        : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                    }`}
+                    onClick={(e) => {
+                      if (appointment.isTelehealth && appointment.googleMeetLink && onAttendMeeting) {
+                        e.stopPropagation();
+                        onAttendMeeting(appointment.googleMeetLink);
+                      }
+                    }}
                   >
                     {format(new Date(appointment.startTime), 'HH:mm')} {appointment.title || 'Appointment'}
+                    {appointment.isTelehealth && appointment.googleMeetLink && ' 📹'}
                   </div>
                 ))}
                 {dayAppointments.length > 3 && (

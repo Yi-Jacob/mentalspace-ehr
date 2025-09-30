@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { Table, TableColumn } from '@/components/basic/table';
-import { Calendar, Clock, User, MapPin, Edit, Eye, Trash2, MoreVertical, CheckCircle, CheckSquare } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Edit, Eye, Trash2, MoreVertical, CheckCircle, CheckSquare, Video } from 'lucide-react';
 import { format } from 'date-fns';
 import { AppointmentTypeValue } from '@/types/scheduleType';
 import { AppointmentStatus } from '@/types/enums/scheduleEnum';
@@ -14,6 +14,7 @@ interface AppointmentsListProps {
   onEditAppointment: (appointment: any) => void;
   onDeleteAppointment: (appointment: any) => void;
   onStatusChange: (appointmentId: string, newStatus: string) => void;
+  onAttendMeeting?: (meetLink: string) => void;
 }
 
 const AppointmentsList: React.FC<AppointmentsListProps> = ({
@@ -21,7 +22,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   isLoading,
   onEditAppointment,
   onDeleteAppointment,
-  onStatusChange
+  onStatusChange,
+  onAttendMeeting
 }) => {
   // Helper function to safely format dates
   const safeFormatDate = (dateString: string | undefined, formatString: string) => {
@@ -217,6 +219,19 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       emptyMessage="No appointments found"
       loading={isLoading}
       actions={[
+        // Attend Meeting button for telehealth appointments
+        ...(onAttendMeeting ? [{
+          label: 'Attend',
+          icon: <Video className="w-3 h-3" />,
+          onClick: (appointment) => {
+            if (appointment.isTelehealth && appointment.googleMeetLink) {
+              onAttendMeeting(appointment.googleMeetLink);
+            }
+          },
+          variant: 'default' as const,
+          disabled: (appointment) => !appointment.isTelehealth || !appointment.googleMeetLink,
+          className: 'bg-green-600 hover:bg-green-700 text-white'
+        }] : []),
         {
           label: 'Edit',
           icon: <Edit className="w-3 h-3" />,

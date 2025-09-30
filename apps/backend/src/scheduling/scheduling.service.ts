@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { UserTypeService } from '../common/user-type.service';
+import { GoogleCalendarService } from '../common/google-calendar.service';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
@@ -15,9 +16,12 @@ import {
 
 @Injectable()
 export class SchedulingService {
+  private readonly logger = new Logger(SchedulingService.name);
+
   constructor(
     private prisma: PrismaService,
     private userTypeService: UserTypeService,
+    private googleCalendarService: GoogleCalendarService,
   ) {}
 
   async createAppointment(createAppointmentDto: CreateAppointmentDto, userId: string) {
@@ -42,6 +46,51 @@ export class SchedulingService {
       );
     }
 
+    // Create Google Meet if telehealth appointment
+    let googleMeetLink: string | null = null;
+    let googleEventId: string | null = null;
+
+    if (createAppointmentDto.isTelehealth) {
+      try {
+        const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
+        
+        // Get client and provider emails for the meeting
+        const [client, provider] = await Promise.all([
+          this.prisma.client.findUnique({
+            where: { id: clientId },
+            include: { user: true }
+          }),
+          this.prisma.user.findUnique({
+            where: { id: providerId }
+          })
+        ]);
+
+        if (client?.user?.email && provider?.email) {
+          const meetResult = await this.googleCalendarService.createMeeting({
+            summary: createAppointmentDto.title || `${createAppointmentDto.appointmentType} - ${client.firstName} ${client.lastName}`,
+            description: createAppointmentDto.description || `Telehealth appointment with ${client.firstName} ${client.lastName}`,
+            startTime: startDateTime,
+            endTime: endDateTime,
+            attendeeEmail: client.user.email,
+            organizerEmail: provider.email,
+          });
+
+          if (meetResult) {
+            googleMeetLink = meetResult.meetLink;
+            googleEventId = meetResult.eventId;
+            this.logger.log(`Google Meet created for appointment: ${googleMeetLink}`);
+          } else {
+            this.logger.warn('Failed to create Google Meet for telehealth appointment');
+          }
+        } else {
+          this.logger.warn('Missing client or provider email for Google Meet creation');
+        }
+      } catch (error) {
+        this.logger.error('Error creating Google Meet:', error);
+        // Continue with appointment creation even if Google Meet fails
+      }
+    }
+
     // Create the initial appointment (non-recurring)
     const appointment = await this.prisma.appointment.create({
       data: {
@@ -58,6 +107,8 @@ export class SchedulingService {
         roomNumber: createAppointmentDto.roomNumber,
         noteId: createAppointmentDto.noteId,
         isTelehealth: createAppointmentDto.isTelehealth ?? false,
+        googleMeetLink,
+        googleEventId,
         recurringRuleId: null,
         createdBy: createAppointmentDto.createdBy || userId,
       },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, User, Users, Calendar, FileText, AlertCircle, Clock, CheckCircle } from 'lucide-react';
+import { CheckSquare, User, Users, Calendar, FileText, AlertCircle, Clock, CheckCircle, Video } from 'lucide-react';
 import PageLayout from '../../components/basic/PageLayout';
 import PageHeader from '../../components/basic/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/basic/tabs';
@@ -30,7 +30,6 @@ const TodoPage: React.FC = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      console.log('Loading all data');
       const [accountData, patientData, appointmentData, noteData] = await Promise.all([
         todoService.getAccountTodos(),
         todoService.getPatientTodos(),
@@ -38,8 +37,6 @@ const TodoPage: React.FC = () => {
         todoService.getNoteTodos(),
       ]);
 
-
-      console.log(accountData, patientData, appointmentData, noteData);
       setAccountTodos(accountData);
       setPatientTodos(patientData);
       setAppointmentTodos(appointmentData);
@@ -86,6 +83,10 @@ const TodoPage: React.FC = () => {
         {status.replace('_', ' ').toUpperCase()}
       </Badge>
     );
+  };
+
+  const handleAttendMeeting = (meetLink: string) => {
+    window.open(meetLink, '_blank');
   };
 
   // Account Todos Table
@@ -366,6 +367,19 @@ const TodoPage: React.FC = () => {
             emptyMessage="No appointment-related tasks found"
             searchable={true}
             pagination={true}
+            actions={[
+              {
+                label: 'Attend',
+                icon: <Video className="w-3 h-3" />,
+                onClick: (item) => {
+                  if (item.isTelehealth && item.googleMeetLink) {
+                    handleAttendMeeting(item.googleMeetLink);
+                  }
+                },
+                variant: 'default' as const,
+                disabled: (item) => !item.isTelehealth || !item.googleMeetLink
+              }
+            ]}
           />
         </TabsContent>
 

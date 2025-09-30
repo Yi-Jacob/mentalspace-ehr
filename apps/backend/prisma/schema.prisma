@@ -257,6 +257,8 @@ model Appointment {
   roomNumber         String?        @map("room_number")
   noteId             String?        @map("note_id")
   isTelehealth       Boolean        @default(false) @map("is_telehealth")
+  googleMeetLink     String?        @map("google_meet_link")
+  googleEventId      String?        @map("google_event_id")
   recurringRuleId    String?        @map("recurring_rule_id")
   createdBy          String?        @map("created_by")
   cancelledBy        String?        @map("cancelled_by")

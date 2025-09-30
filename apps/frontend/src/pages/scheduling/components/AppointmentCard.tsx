@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
-import { Clock, MapPin, User, Edit, Trash2 } from 'lucide-react';
+import { Clock, MapPin, User, Edit, Trash2, Video } from 'lucide-react';
 import { format } from 'date-fns';
 import { Appointment } from '@/services/schedulingService';
 import { AppointmentType, AppointmentStatus } from '@/types/enums/scheduleEnum';
@@ -12,11 +12,13 @@ import { AppointmentType, AppointmentStatus } from '@/types/enums/scheduleEnum';
 interface AppointmentCardProps {
   appointment: Appointment;
   compact?: boolean;
+  onAttendMeeting?: (meetLink: string) => void;
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ 
   appointment, 
-  compact = false
+  compact = false,
+  onAttendMeeting
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -107,6 +109,16 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             <Badge className={`text-xs ${getStatusColor(appointment.status)} border`}>
               {appointment.status}
             </Badge>
+            {appointment.isTelehealth && appointment.googleMeetLink && onAttendMeeting && (
+              <Button
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-6"
+                onClick={() => onAttendMeeting(appointment.googleMeetLink)}
+              >
+                <Video className="w-3 h-3 mr-1" />
+                Attend
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
