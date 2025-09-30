@@ -67,7 +67,7 @@ jobs:
         
         # Create frontend .env file (no secrets)
         echo "Creating frontend .env file..."
-        echo "VITE_API_URL=http://3.147.75.218:7000/api" > apps/frontend/.env
+        echo "VITE_API_URL=http://3.23.1.84:7000/api" > apps/frontend/.env
         echo "VITE_API_TIMEOUT=${VITE_API_TIMEOUT}" >> apps/frontend/.env
         chmod 600 apps/frontend/.env
         
@@ -133,8 +133,8 @@ jobs:
         docker ps --filter "name=mentalspace-node-exporter" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
         
         echo "Monitoring services accessible at:"
-        echo "- Prometheus: http://3.147.75.218:9090"
-        echo "- Grafana: http://3.147.75.218:3000 (admin/admin123)"
-        echo "- Node Exporter: http://3.147.75.218:9100"
+        echo "- Prometheus: http://3.23.1.84:9090"
+        echo "- Grafana: http://3.23.1.84:3000 (admin/admin123)"
+        echo "- Node Exporter: http://3.23.1.84:9100"
         
         echo "Deployment completed!" 
