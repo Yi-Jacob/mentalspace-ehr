@@ -100,7 +100,7 @@ async function main() {
   
   const additionalStaff = [
     {
-      email: 'dr.sarah.johnson@mentalspace.com',
+      email: 'dr.sarah.johnson@chctherapy.com',
       password: DEFAULT_PASSWORD,
       firstName: 'Sarah',
       lastName: 'Johnson',
@@ -130,7 +130,7 @@ async function main() {
       formalName: 'Dr. Sarah Elizabeth Johnson, PhD'
     },
     {
-      email: 'michael.chen@mentalspace.com',
+      email: 'michael.chen@chctherapy.com',
       password: DEFAULT_PASSWORD,
       firstName: 'Michael',
       lastName: 'Chen',
@@ -160,7 +160,7 @@ async function main() {
       formalName: 'Michael David Chen, LCSW'
     },
     {
-      email: 'emily.rodriguez@mentalspace.com',
+      email: 'emily.rodriguez@chctherapy.com',
       password: DEFAULT_PASSWORD,
       firstName: 'Emily',
       lastName: 'Rodriguez',
