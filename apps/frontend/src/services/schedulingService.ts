@@ -16,6 +16,7 @@ export interface Appointment {
   roomNumber?: string;
   noteId?: string;
   isTelehealth: boolean;
+  googleMeetLink?: string;
   recurringRuleId?: string;
   createdAt: string;
   updatedAt: string;
