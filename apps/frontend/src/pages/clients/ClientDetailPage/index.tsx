@@ -168,6 +168,7 @@ const ClientDetailView = () => {
         emergencyContacts={emergencyContacts}
         insuranceInfo={insuranceInfo}
         primaryCareProvider={primaryCareProvider}
+        onDataChange={fetchClientDetails}
       />
 
 

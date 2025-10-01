@@ -17,6 +17,7 @@ interface ClientDetailTabsProps {
   emergencyContacts: EmergencyContact[];
   insuranceInfo: InsuranceInfo[];
   primaryCareProvider: PrimaryCareProvider | null;
+  onDataChange?: () => void;
 }
 
 const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
@@ -24,7 +25,8 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
   phoneNumbers,
   emergencyContacts,
   insuranceInfo,
-  primaryCareProvider
+  primaryCareProvider,
+  onDataChange
 }) => {
   const tabItems = [
     {
@@ -50,7 +52,7 @@ const ClientDetailTabs: React.FC<ClientDetailTabsProps> = ({
       id: 'clinicians',
       label: 'Clinicians',
       icon: Users,
-      content: <ClientCliniciansTab client={client} />
+      content: <ClientCliniciansTab client={client} onDataChange={onDataChange} />
     },
     {
       id: 'notes',

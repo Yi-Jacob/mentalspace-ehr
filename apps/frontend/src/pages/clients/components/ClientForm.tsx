@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import PageTabs from '@/components/basic/PageTabs';
 import { BasicInfoTab } from './client-form/BasicInfoTab';
-import { ClinicianAssignmentTab } from './client-form/ClinicianAssignmentTab';
 import { ContactInfoTab } from './client-form/ContactInfoTab';
 import { DemographicsTab } from './client-form/DemographicsTab';
 import { BillingTab } from './client-form/BillingTab';
@@ -74,15 +73,6 @@ const ClientForm: React.FC<ClientFormProps> = ({
           content: (
             <div className="space-y-4">
               <BasicInfoTab formData={formData} setFormData={setFormData} />
-            </div>
-          )
-        },
-        {
-          id: 'clinicians',
-          label: 'Clinicians',
-          content: (
-            <div className="space-y-4">
-              <ClinicianAssignmentTab formData={formData} onDataChange={onDataChange} />
             </div>
           )
         },
