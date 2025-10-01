@@ -721,14 +721,10 @@ model AppointmentWaitlist {
   providerId             String   @map("provider_id")
   preferredDate          DateTime @default(now()) @map("preferred_date")
   preferredTimeStart     String?  @map("preferred_time_start")
-  preferredTimeEnd       String?  @map("preferred_time_end")
-  appointmentType        String   @map("appointment_type")
   notes                  String?
-  priority               Int?
+  isTelehealth           Boolean  @default(false) @map("is_telehealth")
   createdAt              DateTime @default(now()) @map("created_at")
-  notifiedAt             DateTime @default(now()) @map("notified_at")
   isFulfilled            Boolean? @map("is_fulfilled")
-  fulfilledAppointmentId String?  @map("fulfilled_appointment_id")
   clients                Client   @relation(fields: [clientId], references: [id])
   users                  User     @relation(fields: [providerId], references: [id])
 

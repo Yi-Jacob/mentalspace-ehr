@@ -24,22 +24,32 @@ interface UseFormDataOptions {
   selectedDate?: Date | null;
   selectedTime?: string | null;
   preselectedClientId?: string;
+  defaultProviderId?: string;
+  defaultIsTelehealth?: boolean;
+  defaultNotes?: string;
 }
 
-export const useFormData = ({ selectedDate, selectedTime, preselectedClientId }: UseFormDataOptions) => {
+export const useFormData = ({ 
+  selectedDate, 
+  selectedTime, 
+  preselectedClientId,
+  defaultProviderId,
+  defaultIsTelehealth,
+  defaultNotes
+}: UseFormDataOptions) => {
   const [formData, setFormData] = useState<AppointmentFormData>({
     client_id: preselectedClientId || '',
     appointment_type: AppointmentType.THERAPY_SESSION,
     cptCode: '',
     title: '',
-    description: '',
+    description: defaultNotes || '',
     date: format(selectedDate || new Date(), 'yyyy-MM-dd'),
     start_time: selectedTime || '09:00',
     duration_minutes: 60,
     location: '',
     room_number: '',
     noteId: '',
-    isTelehealth: false,
+    isTelehealth: defaultIsTelehealth || false,
     recurring_period: 'none'
   });
 

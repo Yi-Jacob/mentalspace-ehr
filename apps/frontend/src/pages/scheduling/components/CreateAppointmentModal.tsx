@@ -17,6 +17,12 @@ interface CreateAppointmentModalProps {
   selectedTime?: string | null;
   preselectedClientId?: string;
   preselectedClientName?: string;
+  defaultClientId?: string;
+  defaultProviderId?: string;
+  defaultIsTelehealth?: boolean;
+  defaultNotes?: string;
+  waitlistEntryId?: string;
+  onAppointmentCreated?: () => void;
 }
 
 const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
@@ -25,7 +31,13 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   selectedDate,
   selectedTime,
   preselectedClientId,
-  preselectedClientName
+  preselectedClientName,
+  defaultClientId,
+  defaultProviderId,
+  defaultIsTelehealth,
+  defaultNotes,
+  waitlistEntryId,
+  onAppointmentCreated
 }) => {
   const { 
     formData, 
@@ -39,10 +51,15 @@ const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
     onSuccess: () => {
       onOpenChange(false);
       resetForm();
+      onAppointmentCreated?.();
     },
     selectedDate,
     selectedTime,
-    preselectedClientId
+    preselectedClientId: defaultClientId || preselectedClientId,
+    defaultProviderId,
+    defaultIsTelehealth,
+    defaultNotes,
+    waitlistEntryId
   });
 
   const startDateTime = formData.date && formData.start_time 

@@ -23,7 +23,7 @@ interface AppointmentData {
   isBusinessDayOnly?: boolean;
 }
 
-export const useAppointmentMutation = (onSuccess: () => void) => {
+export const useAppointmentMutation = (onSuccess: () => void, waitlistEntryId?: string) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -34,7 +34,7 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         throw new Error('User not authenticated');
       }
 
-      return await schedulingService.createAppointment({
+      const appointment = await schedulingService.createAppointment({
         clientId: appointmentData.clientId,
         appointmentType: appointmentData.appointmentType,
         cptCode: appointmentData.cptCode || undefined,
@@ -50,6 +50,13 @@ export const useAppointmentMutation = (onSuccess: () => void) => {
         recurringTimeSlots: appointmentData.recurringTimeSlots,
         isBusinessDayOnly: appointmentData.isBusinessDayOnly,
       });
+
+      // If this appointment was created from a waitlist entry, fulfill the waitlist
+      if (waitlistEntryId && appointment.id) {
+        await schedulingService.fulfillWaitlistEntry(waitlistEntryId, appointment.id);
+      }
+
+      return appointment;
     },
     onSuccess: () => {
       toast({

@@ -23,17 +23,20 @@ import { AppointmentTypeValue } from '@/types/scheduleType';
 import { AppointmentStatus } from '@/types/enums/scheduleEnum';
 import { useAuth } from '@/hooks/useAuth';
 import { USER_ROLES } from '@/types/enums/staffEnum';
+import { useNavigate } from 'react-router-dom';
+import AskMeetingModal from './components/AskMeetingModal';
 
 type AppointmentTypeFilter = AppointmentTypeValue | 'all';
 
 const CalendarView = () => {
   const { user } = useAuth();
-  const { 
-    currentDate, 
-    setCurrentDate, 
-    viewType, 
-    setViewType, 
-    navigateDate 
+  const navigate = useNavigate();
+  const {
+    currentDate,
+    setCurrentDate,
+    viewType,
+    setViewType,
+    navigateDate
   } = useCalendarNavigation();
 
   const {
@@ -52,6 +55,7 @@ const CalendarView = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [showAskMeetingModal, setShowAskMeetingModal] = useState(false);
 
   // Enable real-time updates
   useRealtimeAppointments();
@@ -98,7 +102,7 @@ const CalendarView = () => {
     queryKey: ['appointments-management', searchTerm, statusFilter, typeFilter],
     queryFn: async () => {
       const params: any = {};
-      
+
       if (statusFilter !== 'all') {
         params.status = statusFilter;
       }
@@ -148,6 +152,10 @@ const CalendarView = () => {
   // Check if user is a client/patient
   const isClient = user?.roles?.includes(USER_ROLES.PATIENT);
 
+  const handleWaitlistClick = () => {
+    navigate('/scheduling/waitlist');
+  };
+
   return (
     <PageLayout variant="gradient">
       <PageHeader
@@ -167,7 +175,21 @@ const CalendarView = () => {
                 <SelectItem value="list" className="hover:bg-blue-50 transition-colors">List</SelectItem>
               </SelectContent>
             </Select>
-            {!isClient && (
+            <button
+              onClick={handleWaitlistClick}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200"
+            >
+              <span>Waitlist</span>
+            </button>
+            {isClient ? (
+                <button
+                  onClick={() => setShowAskMeetingModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Ask Meeting</span>
+                </button>
+            ):(
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200"
@@ -212,7 +234,7 @@ const CalendarView = () => {
               onNavigateDate={navigateDate}
               onTodayClick={() => setCurrentDate(new Date())}
             />
-            
+
             <CalendarContent
               viewType={viewType}
               currentDate={currentDate}
@@ -224,7 +246,7 @@ const CalendarView = () => {
           </Card>
         )}
 
-        <CreateAppointmentModal 
+        <CreateAppointmentModal
           open={showCreateModal}
           onOpenChange={(open) => {
             if (!open) {
@@ -247,6 +269,11 @@ const CalendarView = () => {
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
           appointment={selectedAppointment}
+        />
+
+        <AskMeetingModal
+          open={showAskMeetingModal}
+          onOpenChange={setShowAskMeetingModal}
         />
       </div>
     </PageLayout>

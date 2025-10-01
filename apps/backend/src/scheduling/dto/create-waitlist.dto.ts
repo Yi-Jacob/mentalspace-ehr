@@ -1,5 +1,4 @@
-import { IsString, IsOptional, IsDateString, IsEnum, IsInt, Min, Max, IsUUID } from 'class-validator';
-import { AppointmentType } from './create-appointment.dto';
+import { IsString, IsOptional, IsDateString, IsBoolean, IsUUID } from 'class-validator';
 
 export class CreateWaitlistDto {
   @IsUUID()
@@ -17,18 +16,9 @@ export class CreateWaitlistDto {
 
   @IsOptional()
   @IsString()
-  preferredTimeEnd?: string;
-
-  @IsEnum(AppointmentType)
-  appointmentType: AppointmentType;
-
-  @IsOptional()
-  @IsString()
   notes?: string;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  @Max(5)
-  priority?: number;
+  @IsBoolean()
+  isTelehealth?: boolean;
 } 

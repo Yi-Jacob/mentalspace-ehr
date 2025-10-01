@@ -89,8 +89,21 @@ export class SchedulingController {
   }
 
   @Get('waitlist')
-  getWaitlistEntries() {
-    return this.schedulingService.getWaitlistEntries();
+  getWaitlistEntries(@Request() req: any) {
+    const userId = req.user?.id;
+    const userRole = req.user?.roles?.[0]; // Assuming roles is an array
+    return this.schedulingService.getWaitlistEntries(userId, userRole);
+  }
+
+  @Delete('waitlist/:id')
+  cancelWaitlistEntry(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user?.id;
+    return this.schedulingService.cancelWaitlistEntry(id, userId);
+  }
+
+  @Patch('waitlist/:id/fulfill')
+  fulfillWaitlistEntry(@Param('id') id: string, @Body() body: { appointmentId: string }) {
+    return this.schedulingService.fulfillWaitlistEntry(id, body.appointmentId);
   }
 
   @Post('schedules')

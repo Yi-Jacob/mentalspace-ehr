@@ -792,24 +792,83 @@ export class SchedulingService {
         providerId: createWaitlistDto.providerId,
         preferredDate: new Date(createWaitlistDto.preferredDate),
         preferredTimeStart: createWaitlistDto.preferredTimeStart,
-        preferredTimeEnd: createWaitlistDto.preferredTimeEnd,
-        appointmentType: createWaitlistDto.appointmentType,
         notes: createWaitlistDto.notes,
-        priority: createWaitlistDto.priority || 1,
+        isTelehealth: createWaitlistDto.isTelehealth || false,
         isFulfilled: false,
       },
     });
   }
 
-  async getWaitlistEntries() {
+  async getWaitlistEntries(userId?: string, userRole?: string) {
+    let whereClause: any = {};
+
+    // Role-based filtering
+    if (userRole === 'PATIENT') {
+      whereClause.clientId = userId;
+    } else if (userRole === 'CLINICIAN') {
+      whereClause.providerId = userId;
+    } else if (userRole === 'SUPERVISOR') {
+      // Get supervisees' patients
+      const supervisees = await this.prisma.supervisionRelationship.findMany({
+        where: { 
+          supervisorId: userId,
+          status: 'active'
+        },
+        select: { superviseeId: true }
+      });
+      const superviseeIds = supervisees.map(s => s.superviseeId);
+      whereClause.providerId = { in: superviseeIds };
+    }
+    // ADMIN sees all entries (no additional filtering)
+
     return this.prisma.appointmentWaitlist.findMany({
-      where: {
-        isFulfilled: false,
+      where: whereClause,
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        },
+        users: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
       },
       orderBy: [
-        { priority: 'desc' },
+        { isFulfilled: 'asc' }, // Unfulfilled first
         { createdAt: 'asc' },
       ],
+    });
+  }
+
+  async cancelWaitlistEntry(waitlistId: string, userId: string) {
+    const waitlistEntry = await this.prisma.appointmentWaitlist.findFirst({
+      where: {
+        id: waitlistId
+      }
+    });
+
+    if (!waitlistEntry) {
+      throw new Error('Waitlist entry not found or already fulfilled');
+    }
+
+    // Then delete the entry
+    return this.prisma.appointmentWaitlist.delete({
+      where: { id: waitlistId }
+    });
+  }
+
+  async fulfillWaitlistEntry(waitlistId: string, appointmentId: string) {
+    return this.prisma.appointmentWaitlist.update({
+      where: { id: waitlistId },
+      data: {
+        isFulfilled: true,
+      }
     });
   }
 

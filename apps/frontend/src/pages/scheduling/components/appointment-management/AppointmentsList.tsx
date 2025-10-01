@@ -229,8 +229,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             }
           },
           variant: 'default' as const,
-          disabled: (appointment) => !appointment.isTelehealth || !appointment.googleMeetLink,
-          className: 'bg-green-600 hover:bg-green-700 text-white'
+          disabled: (appointment) => !appointment.isTelehealth || !appointment.googleMeetLink
         }] : []),
         {
           label: 'Edit',

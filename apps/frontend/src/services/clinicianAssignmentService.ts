@@ -9,6 +9,7 @@ export interface ClinicianAssignment {
   clinician: {
     id: string;
     user: {
+      id: string;
       firstName: string;
       lastName: string;
       email: string;
@@ -20,7 +21,7 @@ export interface ClinicianAssignment {
 
 export const clinicianAssignmentService = {
   // Assign a clinician to a client
-  async assignClinician(clientId: string, clinicianId: string): Promise<ClinicianAssignment> {
+  async assignClinician(clientId: string, clinicianId: string): Promise<any> {
     const response = await apiClient.post(`/clients/${clientId}/clinicians/${clinicianId}`);
     return response.data;
   },
@@ -32,7 +33,7 @@ export const clinicianAssignmentService = {
 
   // Get all clinicians assigned to a client
   async getClientClinicians(clientId: string): Promise<ClinicianAssignment[]> {
-    const response = await apiClient.get(`/clients/${clientId}/clinicians`);
+    const response = await apiClient.get<ClinicianAssignment[]>(`/clients/${clientId}/clinicians`);
     return response.data;
   },
 };

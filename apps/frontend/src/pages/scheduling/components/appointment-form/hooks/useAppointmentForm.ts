@@ -9,10 +9,30 @@ interface UseAppointmentFormOptions {
   selectedDate?: Date | null;
   selectedTime?: string | null;
   preselectedClientId?: string;
+  defaultProviderId?: string;
+  defaultIsTelehealth?: boolean;
+  defaultNotes?: string;
+  waitlistEntryId?: string;
 }
 
-export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime, preselectedClientId }: UseAppointmentFormOptions) => {
-  const { formData, setFormData, updateFormData, resetForm } = useFormData({ selectedDate, selectedTime, preselectedClientId });
+export const useAppointmentForm = ({ 
+  onSuccess, 
+  selectedDate, 
+  selectedTime, 
+  preselectedClientId,
+  defaultProviderId,
+  defaultIsTelehealth,
+  defaultNotes,
+  waitlistEntryId
+}: UseAppointmentFormOptions) => {
+  const { formData, setFormData, updateFormData, resetForm } = useFormData({ 
+    selectedDate, 
+    selectedTime, 
+    preselectedClientId,
+    defaultProviderId,
+    defaultIsTelehealth,
+    defaultNotes
+  });
   const { 
     errors, 
     validateForm, 
@@ -22,7 +42,7 @@ export const useAppointmentForm = ({ onSuccess, selectedDate, selectedTime, pres
   
   const [isValidating, setIsValidating] = useState(false);
 
-  const mutation = useAppointmentMutation(onSuccess);
+  const mutation = useAppointmentMutation(onSuccess, waitlistEntryId);
 
   const updateFormDataWithErrorClear = (field: keyof typeof formData, value: string | number | boolean | Date) => {
     updateFormData(field, value);

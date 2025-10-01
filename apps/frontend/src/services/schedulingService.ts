@@ -95,19 +95,15 @@ export interface WaitlistEntry {
   providerId: string;
   preferredDate: string;
   preferredTimeStart?: string;
-  preferredTimeEnd?: string;
-  appointmentType: AppointmentTypeValue;
   notes?: string;
-  priority: number;
+  isTelehealth: boolean;
   createdAt: string;
-  notifiedAt: string;
   isFulfilled: boolean;
-  fulfilledAppointmentId?: string;
   clients?: {
     firstName: string;
     lastName: string;
   };
-  staff?: {
+  users?: {
     firstName: string;
     lastName: string;
   };
@@ -118,10 +114,8 @@ export interface CreateWaitlistData {
   providerId: string;
   preferredDate: string;
   preferredTimeStart?: string;
-  preferredTimeEnd?: string;
-  appointmentType: AppointmentTypeValue;
   notes?: string;
-  priority?: number;
+  isTelehealth?: boolean;
 }
 
 export interface ProviderSchedule {
@@ -244,6 +238,14 @@ class SchedulingService {
   async getWaitlistEntries(): Promise<WaitlistEntry[]> {
     const response = await apiClient.get<WaitlistEntry[]>('/scheduling/waitlist');
     return response.data;
+  }
+
+  async cancelWaitlistEntry(waitlistId: string): Promise<void> {
+    await apiClient.delete(`/scheduling/waitlist/${waitlistId}`);
+  }
+
+  async fulfillWaitlistEntry(waitlistId: string, appointmentId: string): Promise<void> {
+    await apiClient.patch(`/scheduling/waitlist/${waitlistId}/fulfill`, { appointmentId });
   }
 
   // Provider schedule methods
