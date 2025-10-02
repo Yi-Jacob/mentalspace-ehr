@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
+import { BCRYPT_SALT_ROUNDS } from '../common/constants';
 
 @Injectable()
 export class AuthService {
@@ -124,8 +125,7 @@ export class AuthService {
     }
 
     // Hash the new password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, saltRounds);
+    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, BCRYPT_SALT_ROUNDS);
 
     // Update user password and mark token as used
     await this.prisma.$transaction([

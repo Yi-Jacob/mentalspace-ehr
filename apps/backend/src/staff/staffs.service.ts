@@ -5,8 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
-import { randomBytes } from 'crypto';
-import { DEFAULT_PASSWORD } from '../common/constants';
+import { DEFAULT_PASSWORD, BCRYPT_SALT_ROUNDS } from '../common/constants';
 
 @Injectable()
 export class StaffsService {
@@ -371,7 +370,7 @@ export class StaffsService {
           },
         });
 
-        const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+        const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_SALT_ROUNDS);
         // 2. Create user with reference to staff profile
         const user = await prisma.user.create({
           data: {
@@ -853,10 +852,8 @@ export class StaffsService {
 
   // Set random secure password for a user
   async setDefaultPassword(userId: string) {
-    const user = await this.findOne(userId);
-    
     const randomPassword = this.generateSecurePassword();
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    const hashedPassword = await bcrypt.hash(randomPassword, BCRYPT_SALT_ROUNDS);
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },

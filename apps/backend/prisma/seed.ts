@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { DEFAULT_PASSWORD, DEFAULT_ADMIN_EMAIL } from '../src/common/constants';
+import { DEFAULT_PASSWORD, DEFAULT_ADMIN_EMAIL, BCRYPT_SALT_ROUNDS } from '../src/common/constants';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ async function main() {
     console.log('Default user already exists, skipping...');
   } else {
     // Hash the password
-    const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+    const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_SALT_ROUNDS);
 
     try {
       // Use Prisma transaction to ensure data consistency (following users.service pattern)
@@ -205,7 +205,7 @@ async function main() {
         continue;
       }
 
-      const hashedPassword = await bcrypt.hash(staffData.password, 12);
+      const hashedPassword = await bcrypt.hash(staffData.password, BCRYPT_SALT_ROUNDS);
       
       const result = await prisma.$transaction(async (prisma) => {
         // Create staff profile first
@@ -387,7 +387,7 @@ async function main() {
           data: clientData
         });
 
-        const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+        const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_SALT_ROUNDS);
 
         // Create a user record for the client
         const clientUser = await prisma.user.create({
