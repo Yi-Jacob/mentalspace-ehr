@@ -171,17 +171,12 @@ const CalendarView = () => {
         description="Manage and track all your appointments and client schedules"
         action={
           <div className="flex items-center space-x-3">
-            <Select value={viewType} onValueChange={(value: CalendarViewType) => setViewType(value)}>
-              <SelectTrigger className="w-32 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-0 shadow-2xl">
-                <SelectItem value="day" className="hover:bg-blue-50 transition-colors">Day</SelectItem>
-                <SelectItem value="week" className="hover:bg-blue-50 transition-colors">Week</SelectItem>
-                <SelectItem value="month" className="hover:bg-blue-50 transition-colors">Month</SelectItem>
-                <SelectItem value="list" className="hover:bg-blue-50 transition-colors">List</SelectItem>
-              </SelectContent>
-            </Select>
+            <button
+              onClick={() => setViewType(viewType === 'list' ? 'week' : 'list')}
+              className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 transition-all duration-200"
+            >
+              {viewType === 'list' ? 'Calendar View' : 'Table View'}
+            </button>
             <button
               onClick={handleWaitlistClick}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200"
@@ -240,6 +235,7 @@ const CalendarView = () => {
               viewType={viewType}
               onNavigateDate={navigateDate}
               onTodayClick={() => setCurrentDate(new Date())}
+              onViewChange={(newView) => setViewType(newView)}
             />
 
             <CalendarContent
