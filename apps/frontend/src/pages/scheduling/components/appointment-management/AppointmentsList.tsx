@@ -1,11 +1,9 @@
 
 import React from 'react';
 import { Badge } from '@/components/basic/badge';
-import { Button } from '@/components/basic/button';
 import { Table, TableColumn } from '@/components/basic/table';
-import { Calendar, Clock, User, MapPin, Edit, Eye, Trash2, MoreVertical, CheckCircle, CheckSquare, Video } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Edit, Trash2, CheckCircle, CheckSquare, Video } from 'lucide-react';
 import { format } from 'date-fns';
-import { AppointmentTypeValue } from '@/types/scheduleType';
 import { AppointmentStatus } from '@/types/enums/scheduleEnum';
 
 interface AppointmentsListProps {

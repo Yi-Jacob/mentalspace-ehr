@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/basic/dialog';
 import { format } from 'date-fns';
 import { useAppointmentMutations } from './hooks/useAppointmentMutations';
 import { useConflictDetection } from './hooks/useConflictDetection';
 import EditRecurringRuleModal from './edit-appointment-modal/EditRecurringRuleModal';
 import { AppointmentTypeValue, AppointmentStatusValue, getAppointmentTypeOptions, getAppointmentStatusOptions } from '@/types/scheduleType';
+import { AppointmentType } from '@/types/enums/scheduleEnum';
 import { Button } from '@/components/basic/button';
 import { Calendar, Settings, User, Save, Video, Edit, X } from 'lucide-react';
 import { Input } from '@/components/basic/input';
@@ -15,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
 import NoteSelectionSection from './appointment-form/NoteSelectionSection';
+import { CPT_CODES_BY_TYPE } from '@/types/enums/notesEnum';
 
 interface Appointment {
   id: string;
@@ -30,6 +32,7 @@ interface Appointment {
   roomNumber?: string;
   noteId?: string;
   isTelehealth?: boolean;
+  googleMeetLink?: string;
   recurringRuleId?: string;
   clients?: {
     firstName: string;
@@ -64,6 +67,7 @@ interface AppointmentDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   appointment: Appointment | null;
+  onAttendMeeting?: (meetLink: string) => void;
 }
 
 interface FormData {
@@ -85,7 +89,8 @@ interface FormData {
 const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
   open,
   onOpenChange,
-  appointment
+  appointment,
+  onAttendMeeting
 }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -186,8 +191,53 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     endTime: endDateTime
   });
 
+  // Map appointment types to CPT code categories (same logic as CreateAppointmentModal)
+  const getCptCodeCategory = (type: AppointmentType): string => {
+    switch (type) {
+      case AppointmentType.INTAKE_SESSION:
+        return 'therapy intake';
+      case AppointmentType.FOLLOW_UP:
+      case AppointmentType.THERAPY_SESSION:
+        return 'therapy session';
+      case AppointmentType.GROUP_THERAPY:
+        return 'group therapy';
+      case AppointmentType.ASSESSMENT:
+        return 'psychological evaluation';
+      case AppointmentType.MEDICATION_MANAGEMENT:
+        return 'consultation';
+      case AppointmentType.CRISIS_INTERVENTION:
+        return 'therapy session';
+      case AppointmentType.OTHER:
+        return 'consultation';
+      default:
+        return 'therapy session';
+    }
+  };
+
+  // Get available CPT codes based on appointment type
+  const availableCptCodes = useMemo(() => {
+    const category = getCptCodeCategory(formData.appointment_type as AppointmentType);
+    return CPT_CODES_BY_TYPE[category] || [];
+  }, [formData.appointment_type]);
+
+  const cptCodeOptions = useMemo(() => {
+    return availableCptCodes.map(code => ({
+      value: code.value,
+      label: code.label
+    }));
+  }, [availableCptCodes]);
+
   const handleFormDataChange = (field: keyof FormData, value: string | number | boolean) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Reset CPT code when appointment type changes
+      if (field === 'appointment_type') {
+        newData.cptCode = '';
+      }
+      
+      return newData;
+    });
   };
 
   const handleSave = async () => {
@@ -306,10 +356,11 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
   const isCompletedOrCancelled = appointment?.status === 'COMPLETED' || appointment?.status === 'CANCELLED';
   const canEdit = !isCompletedOrCancelled;
 
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30" hideCloseButton>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
@@ -326,6 +377,19 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              {/* Attend Meeting Button */}
+              {  appointment?.isTelehealth && appointment?.googleMeetLink && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => onAttendMeeting(appointment.googleMeetLink)}
+                  className="flex items-center space-x-2"
+                >
+                  <Video className="h-4 w-4" />
+                  <span>Attend</span>
+                </Button>
+              )}
+              
               {isEditMode ? (
                 <Button
                   type="button"
@@ -468,13 +532,22 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
                   {renderField(
                     'CPT Code',
-                    formData.cptCode || appointment?.cptCode || '',
-                    <Input
-                      id="cptCode"
+                    cptCodeOptions.find(opt => opt.value === formData.cptCode)?.label || '',
+                    <Select
                       value={formData.cptCode}
-                      onChange={(e) => handleFormDataChange('cptCode', e.target.value)}
-                      placeholder="Enter CPT code"
-                    />
+                      onValueChange={(value) => handleFormDataChange('cptCode', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select CPT code" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cptCodeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
 
                   {renderField(

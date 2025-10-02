@@ -15,6 +15,7 @@ interface CalendarContentProps {
   isLoading: boolean;
   onTimeSlotClick: (date: Date, hour: number) => void;
   onAttendMeeting?: (meetLink: string) => void;
+  onAppointmentClick?: (appointment: Appointment) => void;
 }
 
 const CalendarContent: React.FC<CalendarContentProps> = ({
@@ -23,7 +24,8 @@ const CalendarContent: React.FC<CalendarContentProps> = ({
   appointments,
   isLoading,
   onTimeSlotClick,
-  onAttendMeeting
+  onAttendMeeting,
+  onAppointmentClick
 }) => {
   const renderCalendarView = () => {
     if (!appointments) return null;
@@ -36,6 +38,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({
             appointments={appointments}
             onTimeSlotClick={onTimeSlotClick}
             onAttendMeeting={onAttendMeeting}
+            onAppointmentClick={onAppointmentClick}
           />
         );
       case 'week':

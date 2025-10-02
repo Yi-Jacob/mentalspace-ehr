@@ -6,7 +6,7 @@ import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-
 import { useQuery } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import CreateAppointmentModal from './components/CreateAppointmentModal';
-import EditAppointmentModal from './components/EditAppointmentModal';
+import AppointmentDetailModal from './components/AppointmentDetailModal';
 import DeleteAppointmentDialog from './components/DeleteAppointmentDialog';
 import { useCalendarNavigation, CalendarViewType } from './components/hooks/useCalendarNavigation';
 import { useAppointmentModal } from './components/hooks/useAppointmentModal';
@@ -75,6 +75,8 @@ const CalendarView = () => {
         case 'day':
           startDate = new Date(currentDate);
           endDate = new Date(currentDate);
+          startDate.setHours(0, 0, 0, 0); // Set to start of day
+          endDate.setHours(23, 59, 59, 999); // Set to end of day
           break;
         case 'week':
           startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -88,7 +90,7 @@ const CalendarView = () => {
           startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
           endDate = addDays(endOfWeek(currentDate, { weekStartsOn: 1 }), 30);
       }
-
+      
       return await schedulingService.getAppointments({
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
@@ -147,6 +149,11 @@ const CalendarView = () => {
 
   const handleAttendMeeting = (meetLink: string) => {
     window.open(meetLink, '_blank');
+  };
+
+  const handleAppointmentClick = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setShowEditModal(true);
   };
 
   // Check if user is a client/patient
@@ -242,6 +249,7 @@ const CalendarView = () => {
               isLoading={isLoading}
               onTimeSlotClick={isClient ? undefined : handleTimeSlotClick}
               onAttendMeeting={handleAttendMeeting}
+              onAppointmentClick={handleAppointmentClick}
             />
           </Card>
         )}
@@ -259,10 +267,11 @@ const CalendarView = () => {
           selectedTime={selectedTime}
         />
 
-        <EditAppointmentModal
+        <AppointmentDetailModal
           open={showEditModal}
           onOpenChange={setShowEditModal}
           appointment={selectedAppointment}
+          onAttendMeeting={handleAttendMeeting}
         />
 
         <DeleteAppointmentDialog
