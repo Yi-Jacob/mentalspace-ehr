@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -33,60 +33,6 @@ export class ClientsService {
     } catch {
       return undefined;
     }
-  }
-
-  async create(createClientDto: CreateClientDto) {
-    return this.prisma.$transaction(async (prisma) => {
-      // Create the client
-      const client = await prisma.client.create({
-        data: createClientDto,
-      });
-
-      // Create a user record for the client without password
-      const clientUser = await prisma.user.create({
-        data: {
-          email: createClientDto.email,
-          password: null, // No password set initially
-          firstName: createClientDto.firstName,
-          lastName: createClientDto.lastName,
-          middleName: createClientDto.middleName,
-          suffix: createClientDto.suffix,
-          userName: `${createClientDto.firstName.toLowerCase()}.${createClientDto.lastName.toLowerCase()}`,
-          isActive: true,
-          clientId: client.id,
-        },
-      });
-
-      // Create user role for the client
-      await prisma.userRole.create({
-        data: {
-          userId: clientUser.id,
-          role: 'Patient',
-          assignedAt: new Date(),
-          isActive: true,
-        }
-      });
-
-      // Generate password reset token for the new client
-      const passwordResetData = await this.authService.createPasswordResetToken(clientUser.id);
-
-      // Send password setup email to the client
-      if (createClientDto.email) {
-        try {
-          await this.emailService.sendPasswordSetupEmail(
-            createClientDto.email,
-            createClientDto.firstName,
-            createClientDto.lastName,
-            passwordResetData.resetUrl,
-          );
-        } catch (error) {
-          console.error('Failed to send password setup email:', error);
-          // Don't fail the client creation if email fails
-        }
-      }
-
-      return { ...client, userId: clientUser.id };
-    });
   }
 
   // Get clients for admin roles (full access)
@@ -653,6 +599,17 @@ export class ClientsService {
     insuranceInfo: any[],
     primaryCareProvider: any,
   ) {
+    // Check for duplicate email before creating
+    if (clientData.email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: clientData.email },
+      });
+      
+      if (existingUser) {
+        throw new ConflictException('Email address is already in use. Please use a different email address.');
+      }
+    }
+
     return this.prisma.$transactionWithRetry(async (prisma) => {
       // Convert date fields
       const mappedClientData = {

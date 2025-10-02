@@ -91,12 +91,6 @@ export class ClientService {
     return response.data;
   }
 
-  // Create new client
-  async createClient(data: ClientFormData): Promise<ClientFormData> {
-    const response = await apiClient.post<ClientFormData>(this.baseUrl, data);
-    return response.data;
-  }
-
   // Update existing client
   async updateClient(id: string, data: Partial<ClientFormData>): Promise<ClientFormData> {
     const response = await apiClient.put<ClientFormData>(`${this.baseUrl}/${id}`, data);

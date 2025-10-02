@@ -58,6 +58,7 @@ export const useClients = (options?: {
       options?.onCreateSuccess?.();
     },
     onError: (error: any) => {
+      console.error('Client creation error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to create client',
