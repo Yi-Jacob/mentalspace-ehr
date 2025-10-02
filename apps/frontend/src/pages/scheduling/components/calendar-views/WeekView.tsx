@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { cn } from '@/utils/utils';
-import AppointmentCard from '../AppointmentCard';
 import { Appointment } from '@/services/schedulingService';
 
 interface WeekViewProps {
@@ -10,32 +8,67 @@ interface WeekViewProps {
   appointments: Appointment[];
   onTimeSlotClick: (date: Date, hour: number) => void;
   onAttendMeeting?: (meetLink: string) => void;
+  onAppointmentClick?: (appointment: Appointment) => void;
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting }) => {
+const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting, onAppointmentClick }) => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({
     start: weekStart,
     end: endOfWeek(currentDate, { weekStartsOn: 1 })
   });
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // Helper function to get appointment position and size
+  const getAppointmentPosition = (appointment: Appointment) => {
+    const startTime = new Date(appointment.startTime);
+    const endTime = new Date(startTime.getTime() + appointment.duration * 60000);
+
+    // Calculate position within the day in 15-minute units
+    const startQuarterHour = (startTime.getHours() * 4) + (startTime.getMinutes() / 15);
+    const endQuarterHour = (endTime.getHours() * 4) + (endTime.getMinutes() / 15);
+
+    // Each hour block is 96px, each quarter hour is 24px
+    const topPosition = startQuarterHour * 24; // pixels from top of day
+    const height = (endQuarterHour - startQuarterHour) * 24; // height in pixels
+
+    return {
+      top: `${topPosition}px`,
+      height: `${Math.max(height, 16)}px`, // Minimum 16px height
+      backgroundColor: getAppointmentColor(appointment.appointmentType)
+    };
+  };
+
+  // Helper function to get appointment color based on type
+  const getAppointmentColor = (appointmentType: string) => {
+    switch (appointmentType.toLowerCase()) {
+      case 'intake_session':
+        return 'bg-indigo-100 border-indigo-400';
+      case 'follow_up':
+        return 'bg-yellow-100 border-yellow-400';
+      case 'therapy_session':
+        return 'bg-green-100 border-green-400';
+      case 'assessment':
+        return 'bg-purple-100 border-purple-400';
+      default:
+        return 'bg-blue-100 border-blue-400';
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-white to-blue-50/30">
-      {/* Week header */}
-      <div className="grid grid-cols-[80px_repeat(7,1fr)] gap-0 border-b border-gray-200 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg">
-        <div className="p-4"></div>
+    <div className="flex flex-col h-full bg-white">
+      {/* Week header - minimized and clean */}
+      <div className="grid grid-cols-[80px_repeat(7,1fr)] gap-0 border-b border-gray-200 bg-white">
+        <div className="p-2"></div>
         {weekDays.map(day => (
-          <div key={day.toISOString()} className="p-4 text-center border-r border-white/20 last:border-r-0">
-            <div className="text-sm font-medium opacity-90">
+          <div key={day.toISOString()} className="p-2 text-center border-r border-gray-200 last:border-r-0">
+            <div className="text-sm font-medium text-gray-600">
               {format(day, 'EEE')}
             </div>
             <div className={cn(
-              "text-xl font-bold mt-2",
-              isSameDay(day, new Date()) 
-                ? "bg-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto backdrop-blur-sm border border-white/30" 
-                : ""
+              "text-lg font-semibold mt-1",
+              isSameDay(day, new Date())
+                ? "bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto"
+                : "text-gray-900"
             )}>
               {format(day, 'd')}
             </div>
@@ -43,51 +76,76 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSl
         ))}
       </div>
 
-      {/* Time grid */}
+      {/* Calendar grid */}
       <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-[80px_repeat(7,1fr)] gap-0">
-          {hours.map((hour) => (
-            <React.Fragment key={hour}>
-              {/* Time label */}
-              <div className="text-sm font-medium text-gray-600 p-3 border-r border-gray-200 text-right bg-gradient-to-r from-gray-50 to-blue-50/50 sticky left-0 z-10">
-                <div className="bg-white px-2 py-1 rounded-md shadow-sm border text-xs">
-                  {format(new Date().setHours(hour, 0, 0, 0), 'h a')}
+        <div className="grid grid-cols-[80px_repeat(7,1fr)] gap-0 relative">
+          {/* Time column */}
+          <div className="relative">
+            {Array.from({ length: 24 }, (_, hour) => (
+              <div key={`time-${hour}`} className="h-24 relative bg-gray-50 border-r border-gray-200 sticky left-0 z-10">
+                <div className="flex items-center justify-center h-full pr-3">
+                  <div className="text-sm font-medium text-gray-600">
+                    {format(new Date().setHours(hour, 0, 0, 0), 'h a')}
+                  </div>
                 </div>
               </div>
-              {/* Day columns */}
-              {weekDays.map(day => {
-                const dayAppointments = appointments?.filter(apt => 
-                  isSameDay(new Date(apt.startTime), day) && 
-                  new Date(apt.startTime).getHours() === hour
-                ) || [];
+            ))}
+          </div>
 
-                return (
-                  <div 
+          {/* Day columns */}
+          {weekDays.map(day => {
+            const dayAppointments = appointments?.filter(apt =>
+              isSameDay(new Date(apt.startTime), day)
+            ) || [];
+
+            return (
+              <div key={day.toISOString()} className="relative">
+                {/* Hourly grid lines */}
+                {Array.from({ length: 24 }, (_, hour) => (
+                  <div
                     key={`${day.toISOString()}-${hour}`}
-                    className="min-h-[80px] border-b border-r border-gray-100 p-1 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 cursor-pointer relative last:border-r-0 transition-all duration-200 group"
+                    className="h-24 border-b border-r border-gray-100 hover:bg-gray-50 cursor-pointer relative last:border-r-0 transition-colors duration-200"
                     onClick={() => onTimeSlotClick(day, hour)}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/0 to-purple-400/0 group-hover:from-blue-400/10 group-hover:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
-                    {dayAppointments.map(appointment => (
-                      <AppointmentCard 
-                        key={appointment.id} 
-                        appointment={appointment} 
-                        compact 
-                        onAttendMeeting={onAttendMeeting}
-                      />
-                    ))}
-                    {dayAppointments.length === 0 && (
-                      <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="text-xs text-gray-400 font-medium bg-white/60 px-2 py-1 rounded-full backdrop-blur-sm">
-                          +
+                  />
+                ))}
+
+                {/* Appointments positioned absolutely */}
+                {dayAppointments.map(appointment => {
+                  const position = getAppointmentPosition(appointment);
+
+                  return (
+                    <div
+                      key={appointment.id}
+                      className={`absolute left-0 right-0 ${position.backgroundColor} border-l-4 rounded-sm hover:shadow-md transition-all duration-200 z-20 ${onAppointmentClick ? 'cursor-pointer' : ''}`}
+                      style={{
+                        top: position.top,
+                        height: position.height,
+                        minHeight: '16px'
+                      }}
+                      onClick={onAppointmentClick ? (e) => {
+                        e.stopPropagation();
+                        onAppointmentClick(appointment);
+                      } : undefined}
+                    >
+                      <div className="flex flex-col items-center justify-center h-full p-1 text-center overflow-hidden">
+                        <div className="text-xs font-medium text-gray-900 truncate w-full">
+                          {format(new Date(appointment.startTime), 'HH:mm')}
+                        </div>
+                        <div className="text-xs font-semibold text-gray-900 truncate w-full">
+                          {appointment.clients
+                            ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
+                            : 'Unknown Client'}
+                        </div>
+                        <div className="text-xs text-gray-600 truncate w-full">
+                          {appointment.appointmentType.replace('_', ' ')}
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </React.Fragment>
-          ))}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

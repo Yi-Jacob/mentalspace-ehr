@@ -48,6 +48,7 @@ const CalendarContent: React.FC<CalendarContentProps> = ({
             appointments={appointments}
             onTimeSlotClick={onTimeSlotClick}
             onAttendMeeting={onAttendMeeting}
+            onAppointmentClick={onAppointmentClick}
           />
         );
       case 'month':

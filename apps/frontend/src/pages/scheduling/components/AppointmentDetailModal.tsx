@@ -378,7 +378,7 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
             </div>
             <div className="flex items-center space-x-2">
               {/* Attend Meeting Button */}
-              {  appointment?.isTelehealth && appointment?.googleMeetLink && (
+              {!isEditMode && appointment?.isTelehealth && appointment?.googleMeetLink && onAttendMeeting && (
                 <Button
                   type="button"
                   size="sm"
