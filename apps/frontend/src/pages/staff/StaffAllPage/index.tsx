@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
-import { Plus, Stethoscope, Edit, UserMinus, Eye, Star, Users, AlertCircle, Key, UserCheck, UserX, Copy, Check } from 'lucide-react';
+import { Plus, Stethoscope, Edit, UserMinus, Eye, Star, Users, AlertCircle, Key, UserCheck, UserX } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { useStaffManagement } from '@/pages/staff/hook/useStaffManagement';
 import { useStaffRoles } from '@/pages/staff/hook/useStaffRoles';
@@ -11,6 +11,7 @@ import { Table, TableColumn } from '@/components/basic/table';
 import { staffService } from '@/services/staffService';
 import { useToast } from '@/hooks/use-toast';
 import ConfirmationModal from '@/components/basic/confirmation-modal';
+import PasswordDisplayModal from '@/components/PasswordDisplayModal';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 
@@ -45,18 +46,6 @@ const StaffPage: React.FC = () => {
     staffName: '',
     generatedPassword: '',
   });
-
-  const [copied, setCopied] = useState(false);
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
-  };
 
   const handleAddTeamMember = () => {
     navigate('/staff/create');
@@ -342,63 +331,12 @@ const StaffPage: React.FC = () => {
         />
 
         {/* Password Display Modal */}
-        {passwordModal.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Password Generated</h3>
-                <button
-                  onClick={() => setPasswordModal(prev => ({ ...prev, isOpen: false }))}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">
-                  A new random password has been generated for <strong>{passwordModal.staffName}</strong>
-                </p>
-                <p className="text-xs text-amber-600 mb-3 font-medium">
-                  ⚠️ This password will be shown only once. Please copy it now.
-                </p>
-                
-                <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded border">
-                  <code className="flex-1 font-mono text-sm break-all">
-                    {passwordModal.generatedPassword}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(passwordModal.generatedPassword)}
-                    className="shrink-0"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="h-4 w-4 mr-1" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4 mr-1" />
-                        Copy
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button
-                  onClick={() => setPasswordModal(prev => ({ ...prev, isOpen: false }))}
-                  variant="outline"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <PasswordDisplayModal
+          isOpen={passwordModal.isOpen}
+          onClose={() => setPasswordModal(prev => ({ ...prev, isOpen: false }))}
+          staffName={passwordModal.staffName}
+          generatedPassword={passwordModal.generatedPassword}
+        />
       </div>
     </PageLayout>
   );
