@@ -10,11 +10,21 @@ import UserCommentsSection from '@/pages/staff/components/formSections/UserComme
 import RolesSection from '@/pages/staff/components/formSections/RolesSection';
 import UserInformationSection from '@/pages/staff/components/formSections/UserInformationSection';
 import LicensesSection from '@/pages/staff/components/formSections/LicensesSection';
+import PasswordResetModal from '@/components/basic/password-reset-modal';
 
 const CreateStaffPage: React.FC = () => {
   const { formData, handleInputChange, handleRoleToggle, handleLicensesChange, resetForm } = useAddStaffForm();
   const { handleSubmit, handleCancel, isCreatingStaff } = useAddStaffSubmit();
   const [currentTab, setCurrentTab] = useState('information');
+  const [passwordResetModal, setPasswordResetModal] = useState<{
+    isOpen: boolean;
+    passwordResetUrl: string;
+    staffName: string;
+  }>({
+    isOpen: false,
+    passwordResetUrl: '',
+    staffName: ''
+  });
 
   const tabs = [
     {
@@ -84,15 +94,36 @@ const CreateStaffPage: React.FC = () => {
     }
   };
 
-  const handleSave = (createAnother: boolean = false) => {
+  const handleSave = async (createAnother: boolean = false) => {
     const mockEvent = { preventDefault: () => {} } as React.FormEvent;
-    handleSubmit(mockEvent, formData);
     
-    // If creating another, reset form after successful creation
-    if (createAnother) {
-      resetForm();
-      setCurrentTab('information'); // Reset to first tab
+    try {
+      const result = await handleSubmit(mockEvent, formData);
+      
+      // Check if passwordResetUrl is available in the result
+      if (result?.passwordResetUrl) {
+        const staffName = `${formData.firstName} ${formData.lastName}`.trim();
+        setPasswordResetModal({
+          isOpen: true,
+          passwordResetUrl: result.passwordResetUrl,
+          staffName: staffName || 'the new staff member'
+        });
+      }
+      
+      // If creating another, reset form after successful creation
+      if (createAnother) {
+        resetForm();
+        setCurrentTab('information'); // Reset to first tab
+      }
+    } catch (error) {
+      console.error('Error creating staff member:', error);
     }
+  };
+
+  const handleClosePasswordResetModal = () => {
+    setPasswordResetModal(prev => ({ ...prev, isOpen: false }));
+    // Navigate back to staff list after closing the modal
+    handleCancel();
   };
 
   return (
@@ -144,6 +175,13 @@ const CreateStaffPage: React.FC = () => {
           canGoPrevious={!isFirstTab}
         />
       </div>
+
+      <PasswordResetModal
+        isOpen={passwordResetModal.isOpen}
+        onClose={handleClosePasswordResetModal}
+        passwordResetUrl={passwordResetModal.passwordResetUrl}
+        staffName={passwordResetModal.staffName}
+      />
     </PageLayout>
   );
 };

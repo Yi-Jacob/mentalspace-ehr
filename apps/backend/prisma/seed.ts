@@ -13,7 +13,7 @@ async function main() {
   });
 
   if (existingUser) {
-    console.log('Default user already exists, skipping...');
+    console.log('Admin user already exists, skipping...');
   } else {
     // Hash the password
     const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_SALT_ROUNDS);
@@ -49,7 +49,7 @@ async function main() {
             city: '',
             state: '',
             zipCode: '',
-            formalName: 'Default User',
+            formalName: 'Admin User',
             clinicianType: '',
           },
         });
@@ -82,15 +82,15 @@ async function main() {
         return {
           user,
           staffProfile,
-          message: 'Default user created successfully.',
+          message: 'Admin user created successfully.',
         };
       });
 
-      console.log('Default user created:', result.user.email);
+      console.log('Admin user created:', result.user.email);
       console.log('Staff profile created for user ID:', result.user.id);
       
     } catch (error) {
-      console.error('Error creating default user:', error);
+      console.error('Error creating Admin user:', error);
       throw error;
     }
   }

@@ -116,7 +116,6 @@ class StaffService {
   async createStaff(input: CreateStaffInput): Promise<any> {
     try {
       const response = await apiClient.post<any>('/staff', input);
-      alert(response.data.passwordResetUrl);
       return response.data;
     } catch (error: any) {
       console.error('Error creating staff:', error);

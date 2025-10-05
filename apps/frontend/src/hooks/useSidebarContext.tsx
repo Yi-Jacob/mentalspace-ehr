@@ -17,6 +17,8 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const handleResize = () => {
       if (window.innerWidth < 1024) {
         setIsCollapsed(true);
+      } else {
+        setIsCollapsed(false);
       }
     };
 

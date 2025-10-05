@@ -102,10 +102,11 @@ export const useAddStaffSubmit = () => {
     };
 
     try {
-      await createStaffMember(staffData);
-      navigate('/staff');
+      const result = await createStaffMember(staffData);
+      return result;
     } catch (error) {
       console.error('Error creating staff member:', error);
+      throw error;
     }
   };
 

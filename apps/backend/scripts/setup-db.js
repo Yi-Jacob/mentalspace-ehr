@@ -21,7 +21,7 @@ try {
 
   console.log('✅ Database setup completed successfully!');
   console.log('');
-  console.log('📧 Default user created:');
+  console.log('📧 Admin user created:');
   console.log(`   Email: ${DEFAULT_ADMIN_EMAIL}`);
   console.log('   Role: Practice Administrator');
   console.log('');

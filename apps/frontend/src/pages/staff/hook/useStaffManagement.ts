@@ -22,13 +22,14 @@ export const useStaffManagement = () => {
   // Mutation for creating staff
   const createStaffMutation = useMutation({
     mutationFn: (input: CreateStaffInput) => staffService.createStaff(input),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['staff'] });
       queryClient.invalidateQueries({ queryKey: ['staff-members'] });
       toast({
         title: 'Success',
         description: 'Staff member created successfully',
       });
+      return data;
     },
     onError: (error: any) => {
       toast({
@@ -103,7 +104,8 @@ export const useStaffManagement = () => {
   // Staff management functions
   const createStaffMember = async (input: CreateStaffInput) => {
     try {
-      return await createStaffMutation.mutateAsync(input);
+      const result = await createStaffMutation.mutateAsync(input);
+      return result;
     } catch (error) {
       console.error('Error creating staff member:', error);
       throw error;
