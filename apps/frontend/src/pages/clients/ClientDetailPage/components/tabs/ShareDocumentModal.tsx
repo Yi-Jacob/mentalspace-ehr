@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Textarea } from '@/components/basic/textarea';
 import { SelectField, SelectOption } from '@/components/basic/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/basic/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { clientFilesService, ShareableFileDto, ShareFileDto } from '@/services/clientFilesService';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -99,25 +100,17 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
   }));
 
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold">Share Document</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">Share Document</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Select a document to share with the client and add optional notes.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="overflow-y-auto max-h-[calc(90vh-200px)]">
           <div className="space-y-6">
             {/* File Selection */}
             <div className="space-y-2">
@@ -179,33 +172,33 @@ const ShareDocumentModal: React.FC<ShareDocumentModalProps> = ({
                 rows={4}
               />
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={sharing}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleShareFile}
-                disabled={sharing || !selectedFileId}
-                className="flex items-center space-x-2"
-              >
-                {sharing ? (
-                  <LoadingSpinner />
-                ) : (
-                  <FileText className="h-4 w-4" />
-                )}
-                <span>Share Document</span>
-              </Button>
-            </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={sharing}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleShareFile}
+            disabled={sharing || !selectedFileId}
+            className="flex-1 flex items-center space-x-2"
+          >
+            {sharing ? (
+              <LoadingSpinner />
+            ) : (
+              <FileText className="h-4 w-4" />
+            )}
+            <span>Share Document</span>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

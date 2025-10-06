@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, PenTool, CheckCircle, Share, Eye, X } from 'lucide-react';
+import { FileText, Download, PenTool, CheckCircle, Share, Eye } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/basic/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ClientFileDto } from '@/types/clientType';
 import { clientFilesService } from '@/services/clientFilesService';
@@ -313,39 +314,43 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       />
 
       {/* Notes Modal */}
-      {selectedFileForNotes && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold">File Notes</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedFileForNotes(null)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">File</h3>
-                  <p className="text-sm text-gray-900">{selectedFileForNotes.file.fileName}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Notes</h3>
-                  {selectedFileForNotes.notes ? (
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedFileForNotes.notes}</p>
-                  ) : (
-                    <p className="text-sm text-gray-400 italic">No notes available</p>
-                  )}
-                </div>
+      <Dialog open={!!selectedFileForNotes} onOpenChange={() => setSelectedFileForNotes(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">File Notes</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              View notes for the selected file.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedFileForNotes && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">File</h3>
+                <p className="text-sm text-gray-900">{selectedFileForNotes.file.fileName}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Notes</h3>
+                {selectedFileForNotes.notes ? (
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedFileForNotes.notes}</p>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No notes available</p>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedFileForNotes(null)}
+              className="flex-1"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
