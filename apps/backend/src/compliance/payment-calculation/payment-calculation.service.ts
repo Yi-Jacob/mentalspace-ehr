@@ -100,7 +100,6 @@ export class PaymentCalculationService {
     // Calculate based on compensation type
     if (compensationConfig.compensationType === 'session_based') {
       // Session-based calculation - get sessions from SessionCompletion table
-      console.log('targetPayPeriod', targetPayPeriod);
       const sessionCompletions = await this.prisma.sessionCompletion.findMany({
         where: {
           providerId,
@@ -158,7 +157,7 @@ export class PaymentCalculationService {
           entryDate: 'asc',
         },
       });
-      console.log('timeEntries', timeEntries);
+
       totalSessions = timeEntries.length; // For hourly, sessions = time entries
       totalHours = timeEntries.reduce((sum, entry) => sum + (entry.totalHours || 0), 0);
 

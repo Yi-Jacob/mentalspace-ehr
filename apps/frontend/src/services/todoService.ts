@@ -19,7 +19,6 @@ class TodoService {
   }
 
   async getNoteTodos(): Promise<NoteTodoItem[]> {
-    console.log('getNoteTodos');
     const response = await apiClient.get<NoteTodoItem[]>('/todos/notes');
     return response.data;
   }

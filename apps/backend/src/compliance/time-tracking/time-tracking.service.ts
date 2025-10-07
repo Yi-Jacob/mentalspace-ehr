@@ -196,7 +196,6 @@ export class TimeTrackingService {
   }
 
   async createTimeEntry(createTimeEntryDto: CreateTimeEntryDto) {
-    console.log(createTimeEntryDto);
     const data: any = {
       ...createTimeEntryDto,
       entryDate: new Date(createTimeEntryDto.entryDate),

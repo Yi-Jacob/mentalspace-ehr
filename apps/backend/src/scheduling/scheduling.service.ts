@@ -540,7 +540,6 @@ export class SchedulingService {
 
       // Delete existing recurring appointments from current time onwards
       const deletedCount = await this.deleteFutureRecurringAppointments(appointment.recurringRuleId, appointment.startTime);
-      console.log(`Deleted ${deletedCount.count} future recurring appointments`);
 
       // Create new recurring appointments based on the updated rule
       const startDate = appointment.startTime;

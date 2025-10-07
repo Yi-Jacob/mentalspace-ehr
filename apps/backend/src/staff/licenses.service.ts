@@ -34,8 +34,6 @@ export class LicensesService {
   }
 
   async create(createLicenseDto: CreateLicenseDto) {
-    console.log('Creating license with data:', createLicenseDto);
-
     try {
       const license = await this.prisma.license.create({
         data: {
@@ -59,7 +57,6 @@ export class LicensesService {
         },
       });
 
-      console.log('License created successfully:', license);
       return license;
     } catch (error) {
       console.error('Error creating license:', error);
@@ -129,8 +126,6 @@ export class LicensesService {
   }
 
   async update(id: string, updateLicenseDto: UpdateLicenseDto) {
-    console.log('Updating license with data:', updateLicenseDto);
-
     try {
       // Check if license exists
       const existingLicense = await this.prisma.license.findUnique({
