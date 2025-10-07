@@ -81,6 +81,13 @@ export class StaffsController {
     return Object.values(UserRole);
   }
 
+  @Get('roles/current')
+  @ApiOperation({ summary: 'Get current user roles' })
+  @ApiResponse({ status: 200, description: 'Current user roles retrieved' })
+  getCurrentUserRoles(@Request() req: any) {
+    return this.staffsService.getCurrentUserRoles(req.user.id);
+  }
+
   @Post('roles/assign')
   @ApiOperation({ summary: 'Assign a role to a user' })
   @ApiResponse({ status: 200, description: 'Role assigned successfully' })

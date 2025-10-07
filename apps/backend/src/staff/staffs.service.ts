@@ -976,6 +976,24 @@ export class StaffsService {
     };
   }
 
+  // Get current user roles
+  async getCurrentUserRoles(userId: string) {
+    const userRoles = await this.prisma.userRole.findMany({
+      where: {
+        userId: userId,
+        isActive: true
+      },
+      select: {
+        id: true,
+        role: true,
+        assignedAt: true,
+        isActive: true
+      }
+    });
+
+    return userRoles;
+  }
+
   // Helper method to get client by user ID
   async getClientByUserId(userId: string) {
     const user = await this.prisma.user.findUnique({

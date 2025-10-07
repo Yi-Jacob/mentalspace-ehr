@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
 import { 
   LayoutDashboard,
   CheckSquare,
@@ -19,6 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { todoService } from '@/services/todoService';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   AccountTodoItem, 
   PatientTodoItem, 
@@ -36,11 +38,17 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [accountTodos, setAccountTodos] = useState<AccountTodoItem[]>([]);
   const [patientTodos, setPatientTodos] = useState<PatientTodoItem[]>([]);
   const [appointmentTodos, setAppointmentTodos] = useState<AppointmentTodoItem[]>([]);
   const [noteTodos, setNoteTodos] = useState<NoteTodoItem[]>([]);
+
+  // Redirect patients to scheduling page
+  if (user?.clientId) {
+    return <Navigate to="/scheduling" replace />;
+  }
 
   useEffect(() => {
     loadAllData();
@@ -139,7 +147,7 @@ const Dashboard = () => {
     window.open(meetLink, '_blank');
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <PageLayout variant="simple">
         <PageHeader

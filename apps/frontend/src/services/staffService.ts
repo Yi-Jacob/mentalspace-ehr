@@ -193,6 +193,11 @@ class StaffService {
     return response.data;
   }
 
+  async getCurrentUserRoles(): Promise<UserRole[]> {
+    const response = await apiClient.get<UserRole[]>('/staff/roles/current');
+    return response.data;
+  }
+
   async assignRole(userId: string, role: string): Promise<any> {
     const response = await apiClient.post('/staff/roles/assign', {
       userId,
