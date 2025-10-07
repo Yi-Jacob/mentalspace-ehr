@@ -14,6 +14,30 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  private async getAuthSettings() {
+    try {
+      const practiceSettings = await this.prisma.practiceSetting.findFirst();
+      if (!practiceSettings) {
+        return {
+          jwtExpiresIn: '24h',
+          passwordResetExpirationMinutes: 60,
+        };
+      }
+      
+      const authSettings = practiceSettings.authSettings as any;
+      return {
+        jwtExpiresIn: authSettings?.jwtExpiresIn || '24h',
+        passwordResetExpirationMinutes: authSettings?.passwordResetExpirationMinutes || 60,
+      };
+    } catch (error) {
+      // Fallback to defaults if practice settings fail to load
+      return {
+        jwtExpiresIn: '24h',
+        passwordResetExpirationMinutes: 60,
+      };
+    }
+  }
+
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
@@ -48,8 +72,11 @@ export class AuthService {
       roles: roles
     };
 
+    // Get auth settings for JWT expiration
+    const authSettings = await this.getAuthSettings();
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn: authSettings.jwtExpiresIn }),
       user: {
         id: user.id,
         email: user.email,
@@ -148,8 +175,9 @@ export class AuthService {
     // Generate a secure random token
     const token = randomBytes(32).toString('hex');
     
-    // Get expiration time from environment (default 10 minutes)
-    const expirationMinutes = parseInt(process.env.PASSWORD_RESET_EXPIRATION_MINUTES || '10');
+    // Get expiration time from practice settings
+    const authSettings = await this.getAuthSettings();
+    const expirationMinutes = authSettings.passwordResetExpirationMinutes;
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expirationMinutes);
 

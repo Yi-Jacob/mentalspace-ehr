@@ -61,12 +61,12 @@ const tabs: Tab[] = [
     icon: Users,
     path: '/practice-settings/staff-settings',
   },
-  {
-    id: 'client-settings',
-    label: 'Client Settings',
-    icon: UserCheck,
-    path: '/practice-settings/client-settings',
-  },
+  // {
+  //   id: 'client-settings',
+  //   label: 'Client Settings',
+  //   icon: UserCheck,
+  //   path: '/practice-settings/client-settings',
+  // },
 ];
 
 const PracticeSettingsPage: React.FC = () => {

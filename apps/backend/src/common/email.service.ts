@@ -1,19 +1,38 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private resend: Resend | null;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
     if (!apiKey) {
       this.logger.warn('RESEND_API_KEY is not configured');
       // throw new Error('RESEND_API_KEY is required for email service');
     }
     this.resend = new Resend(apiKey);
+  }
+
+  private async getEmailFromAddress(): Promise<string> {
+    try {
+      const practiceSettings = await this.prisma.practiceSetting.findFirst();
+      if (!practiceSettings) {
+        return this.configService.get<string>('EMAIL_FROM') || 'mentalspace-test@gmail.com';
+      }
+      
+      const authSettings = practiceSettings.authSettings as any;
+      return authSettings?.emailFrom || this.configService.get<string>('EMAIL_FROM') || 'mentalspace-test@gmail.com';
+    } catch (error) {
+      // Fallback to environment variable if practice settings fail to load
+      return this.configService.get<string>('EMAIL_FROM') || 'mentalspace-test@gmail.com';
+    }
   }
 
   async sendPasswordSetupEmail(
@@ -23,7 +42,7 @@ export class EmailService {
     resetUrl: string,
   ): Promise<void> {
     try {
-      const fromEmail = this.configService.get<string>('EMAIL_FROM') || 'mentalspace-test@gmail.com';
+      const fromEmail = await this.getEmailFromAddress();
       
       const emailData = {
         from: fromEmail,
@@ -53,7 +72,7 @@ export class EmailService {
     resetUrl: string,
   ): Promise<void> {
     try {
-      const fromEmail = this.configService.get<string>('EMAIL_FROM') || 'mentalspace-test@gmail.com';
+      const fromEmail = await this.getEmailFromAddress();
       
       const emailData = {
         from: fromEmail,

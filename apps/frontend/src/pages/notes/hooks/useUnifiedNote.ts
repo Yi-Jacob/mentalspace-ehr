@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedErrorHandler } from '@/hooks/useEnhancedErrorHandler';
 import { noteService } from '@/services/noteService';
 import { Note } from '@/types/noteType';
+import { PracticeSettingsService } from '@/services/practiceSettingsService';
 
 // Generic form data type that can be extended for specific note types
 export interface BaseFormData {
@@ -36,6 +37,10 @@ export const useUnifiedNote = <T extends BaseFormData>(
   const [lastSaved, setLastSaved] = useState<Date | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [formData, setFormData] = useState<T>(noteTypeConfig.initialFormData as T);
+  const [autoSaveSettings, setAutoSaveSettings] = useState({
+    autoSave: true,
+    autoSaveInterval: 30,
+  });
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -61,6 +66,26 @@ export const useUnifiedNote = <T extends BaseFormData>(
     enabled: !!noteId,
   });
 
+  // Fetch practice settings for auto-save configuration
+  const { data: practiceSettings } = useQuery({
+    queryKey: ['practice-settings'],
+    queryFn: async () => {
+      return await PracticeSettingsService.getPracticeSettings();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Update auto-save settings when practice settings are loaded
+  useEffect(() => {
+    if (practiceSettings?.noteSettings) {
+      const noteSettings = practiceSettings.noteSettings;
+      setAutoSaveSettings({
+        autoSave: noteSettings.autoSave ?? true,
+        autoSaveInterval: noteSettings.autoSaveInterval ?? 30,
+      });
+    }
+  }, [practiceSettings]);
+
   // Load form data from note content
   useEffect(() => {
     if (note?.content && typeof note.content === 'object') {
@@ -75,16 +100,21 @@ export const useUnifiedNote = <T extends BaseFormData>(
 
   // Auto-save functionality
   useEffect(() => {
+    // Only set up auto-save if it's enabled in practice settings
+    if (!autoSaveSettings.autoSave) {
+      return;
+    }
+
     const interval = setInterval(() => {
-      if (noteId && !note?.status?.includes('signed') && hasUnsavedChanges) {
+      if (noteId && !note?.status?.includes('accepted') && hasUnsavedChanges) {
         saveNoteMutation.mutate({ data: formData, isDraft: true });
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
       }
-    }, 30000);
+    }, autoSaveSettings.autoSaveInterval * 1000); // Convert seconds to milliseconds
 
     return () => clearInterval(interval);
-  }, [formData, noteId, note?.status, hasUnsavedChanges]);
+  }, [formData, noteId, note?.status, hasUnsavedChanges, autoSaveSettings.autoSave, autoSaveSettings.autoSaveInterval]);
 
   // Save mutation
   const saveNoteMutation = useMutation({
@@ -253,5 +283,6 @@ export const useUnifiedNote = <T extends BaseFormData>(
     handleSaveDraft,
     validateForm,
     noteTypeConfig,
+    autoSaveSettings,
   };
 };

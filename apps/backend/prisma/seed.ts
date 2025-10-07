@@ -531,12 +531,64 @@ async function main() {
     console.error('Error creating payer data:', error);
   }
 
+  // Create practice settings
+  console.log('Creating practice settings...');
+  
+  try {
+    // Check if practice settings already exist
+    const existingPracticeSettings = await prisma.practiceSetting.findFirst();
+
+    if (!existingPracticeSettings) {
+      const practiceSettings = await prisma.practiceSetting.create({
+        data: {
+          practiceInfo: {
+            practiceName: 'MentalSpace EHR'
+          },
+          authSettings: {
+            jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
+            emailFrom: process.env.EMAIL_FROM || 'noreply@mentalspace.com',
+            passwordResetExpirationMinutes: parseInt(process.env.PASSWORD_RESET_EXPIRATION_MINUTES || '60')
+          },
+          aiSettings: {
+            openaiApiKey: process.env.OPENAI_API_KEY || 'your-openai-api-key-here'
+          },
+          noteSettings: {
+            autoSave: true,
+            autoSaveInterval: 30
+          },
+          schedulingSettings: {
+            startWorkTime: '09:00',
+            endWorkTime: '17:00',
+            lunchStartTime: '12:00',
+            lunchEndTime: '13:00'
+          },
+          staffSettings: {
+          },
+          clientSettings: {
+          }
+        }
+      });
+      
+      console.log('Practice settings created successfully');
+      console.log('Auth settings configured with:');
+      console.log(`- JWT Expiration: ${practiceSettings.authSettings['jwtExpiresIn']}`);
+      console.log(`- Email From: ${practiceSettings.authSettings['emailFrom']}`);
+      console.log(`- Password Reset Expiration: ${practiceSettings.authSettings['passwordResetExpirationMinutes']} minutes`);
+      console.log(`- OpenAI API Key: ${practiceSettings.aiSettings['openaiApiKey'] ? 'Configured' : 'Not set'}`);
+    } else {
+      console.log('Practice settings already exist, skipping...');
+    }
+  } catch (error) {
+    console.error('Error creating practice settings:', error);
+  }
+
   console.log('Database seeding completed successfully!');
   console.log(`Created ${createdStaff.length} additional staff members`);
   console.log(`Created ${createdClients.length} clients with user records`);
   console.log('Created supervision relationships');
   console.log('Created sample diagnosis codes');
   console.log('Created sample payer data');
+  console.log('Created practice settings');
 }
 
 main()
