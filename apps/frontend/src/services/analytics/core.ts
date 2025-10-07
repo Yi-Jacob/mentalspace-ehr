@@ -50,8 +50,6 @@ export class AnalyticsCore {
     if (this.events.length > this.maxEvents) {
       this.events = this.events.slice(0, this.maxEvents);
     }
-
-    console.log('Analytics event:', event);
   }
 
   private trackSessionStart(): void {

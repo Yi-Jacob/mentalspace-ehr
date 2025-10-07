@@ -129,7 +129,7 @@ export const useAppointmentForm = ({
         isTelehealth: formData.isTelehealth,
         ...recurringData
       };
-      console.log('appointmentData', appointmentData);
+      
       // Send to backend - the backend will handle creating all recurring appointments
       await mutation.mutateAsync(appointmentData);
     } catch (error) {

@@ -6,15 +6,11 @@ export const useNotesModal = () => {
   const [selectedNoteType, setSelectedNoteType] = useState<string | null>(null);
 
   const handleCreateNote = (noteType: string) => {
-    console.log('=== HANDLE CREATE NOTE CALLED ===');
-    console.log('Note type:', noteType);
     setSelectedNoteType(noteType);
     setShowCreateModal(true);
-    console.log('Modal state set to open');
   };
 
   const handleCloseModal = () => {
-    console.log('=== CLOSING MODAL ===');
     setShowCreateModal(false);
     setSelectedNoteType(null);
   };

@@ -174,7 +174,6 @@ export class LicensesService {
         },
       });
 
-      console.log('License updated successfully:', license);
       return license;
     } catch (error) {
       console.error('Error updating license:', error);

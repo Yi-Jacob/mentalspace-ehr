@@ -301,9 +301,6 @@ const StaffPage: React.FC = () => {
           searchable={true}
           selectable={canManageStaff}
           onRowClick={(staff) => navigate(`/staff/${staff.id}`)}
-          onSelectionChange={(selectedItems) => {
-            console.log('Selected staff:', selectedItems);
-          }}
           pageSize={10}
           pageSizeOptions={[10, 25, 50]}
           className="shadow-sm"

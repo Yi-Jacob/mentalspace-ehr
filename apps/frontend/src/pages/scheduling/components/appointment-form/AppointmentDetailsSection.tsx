@@ -112,7 +112,6 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
   }, [availableCptCodes]);
 
   const handleCptCodeChange = (value: string) => {
-    console.log('CPT Code changed to:', value);
     onCptCodeChange(value);
   };
 

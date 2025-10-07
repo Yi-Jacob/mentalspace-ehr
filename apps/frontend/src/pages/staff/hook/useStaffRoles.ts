@@ -16,7 +16,6 @@ export const useStaffRoles = () => {
       
       try {
         const data = await staffService.getCurrentUserRoles();
-        console.log('User roles fetched successfully:', data);
         return data || [];
       } catch (err) {
         console.error('Unexpected error fetching roles:', err);

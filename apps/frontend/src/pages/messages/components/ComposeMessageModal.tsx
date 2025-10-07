@@ -87,19 +87,6 @@ const ComposeMessageModal: React.FC<ComposeMessageModalProps> = ({
   // Filter out the current user from the available recipients
   const availableUsers = allUsers?.filter(user => user.id !== currentUser?.id) || [];
 
-  useEffect(() => {
-    if (usersError) {
-      console.error('Users query error:', usersError);
-    }
-    if (usersLoading) {
-      console.log('Loading users...');
-    }
-    if (allUsers) {
-      console.log('All users loaded:', allUsers.length, 'users');
-      console.log('Available recipients (excluding current user):', availableUsers.length, 'users');
-    }
-  }, [allUsers, usersLoading, usersError, availableUsers.length]);
-
   const sendMessageMutation = useMutation({
     mutationFn: async () => {
       if (selectedUserIds.length === 0 || (!isEditing && !messageContent.trim())) {

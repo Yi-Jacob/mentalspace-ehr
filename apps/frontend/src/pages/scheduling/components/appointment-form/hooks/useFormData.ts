@@ -75,7 +75,6 @@ export const useFormData = ({
         newData.cptCode = '';
       }
       
-      console.log('Form data updated:', field, value, newData);
       return newData;
     });
   };

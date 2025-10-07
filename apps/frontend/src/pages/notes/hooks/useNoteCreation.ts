@@ -39,20 +39,10 @@ export const useNoteCreation = () => {
       }, `Create ${noteType}`);
     },
     onSuccess: (data) => {
-      console.log('=== MUTATION SUCCESS - STARTING NAVIGATION ===');
-      console.log('Created note:', data);
-      console.log('Note type for navigation:', data.noteType);
-      
-      // Navigate based on note type with detailed logging
-      // Use the unified edit route for all note types
       const targetRoute = `/notes/edit/${data.id}`;
-      
-      console.log('Navigating to:', targetRoute);
       navigate(targetRoute);
-      console.log('=== NAVIGATION COMPLETED ===');
     },
     onError: (error) => {
-      console.error('=== MUTATION ERROR ===');
       console.error('Full error object:', error);
       console.error('Error message:', error.message);
       handleAPIError(error, '/notes', 'POST');

@@ -113,8 +113,6 @@ const CreateNoteModal = ({ isOpen, onClose, noteType, createNoteMutation }: Crea
   const isStructuredNote = ['intake', 'progress_note', 'treatment_plan', 'cancellation_note', 'contact_note', 'consultation_note', 'miscellaneous_note'].includes(noteType || '');
   const isLoading = createNoteMutation?.isPending;
 
-  console.log('Modal render - isOpen:', isOpen, 'noteType:', noteType, 'isLoading:', isLoading);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">

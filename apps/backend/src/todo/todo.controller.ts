@@ -29,7 +29,6 @@ export class TodoController {
 
   @Get('notes')
   async getNoteTodos(@Request() req): Promise<NoteTodoItem[]> {
-    console.log('getNoteTodos');
     return this.todoService.getNoteTodos(req.user);
   }
 }

@@ -421,7 +421,7 @@ export class StaffsService {
               licenseState: license.licenseState || '',
               issuedBy: license.issuedBy || '',
             }));
-            console.log('licenseRecords', licenseRecords);
+            
             await prisma.license.createMany({
               data: licenseRecords,
             });

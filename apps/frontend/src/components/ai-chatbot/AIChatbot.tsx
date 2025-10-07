@@ -17,9 +17,7 @@ export const AIChatbot: React.FC = () => {
     clearChat,
     startNewConversation,
   } = useAIChatbot();
-
-  console.log('AIChatbot render - isOpen:', isOpen, 'noteContext:', noteContext);
-
+  
   return (
     <>
       {/* Floating Chat Button */}

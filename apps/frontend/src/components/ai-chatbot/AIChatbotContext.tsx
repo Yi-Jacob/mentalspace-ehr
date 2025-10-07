@@ -105,10 +105,8 @@ export const AIChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [messages.length, addMessage]);
 
   const openChatWithNote = useCallback((noteContext: ChatRequest['noteContext']) => {
-    console.log('openChatWithNote called with:', noteContext);
     setNoteContext(noteContext);
     setIsOpen(true);
-    console.log('Setting isOpen to true');
     
     // Add welcome message with note context after a short delay to ensure state is set
     setTimeout(() => {

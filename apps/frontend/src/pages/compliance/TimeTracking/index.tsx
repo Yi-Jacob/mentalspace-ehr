@@ -263,8 +263,6 @@ const TimeTracking: React.FC = () => {
     );
   }
 
-  console.log(user);
-
   return (
     <PageLayout variant="gradient">
       <PageHeader

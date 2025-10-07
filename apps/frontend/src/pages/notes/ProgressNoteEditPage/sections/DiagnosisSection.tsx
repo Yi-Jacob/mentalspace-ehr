@@ -72,27 +72,11 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
     updateFormData({ primaryDiagnosis: '' });
   };
 
-  const showPriorDiagnoses = () => {
-    // This would open a modal or section showing client's diagnosis history
-    console.log('Show prior diagnoses for client:', clientData?.id);
-  };
-
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Diagnosis</CardTitle>
-          {clientData && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={showPriorDiagnoses}
-              className="flex items-center gap-2"
-            >
-              <History className="h-4 w-4" />
-              History
-            </Button>
-          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

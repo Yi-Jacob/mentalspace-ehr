@@ -152,7 +152,6 @@ const ClientEditPage: React.FC = () => {
   const handleSave = () => {
     if (!clientId) return;
     
-    console.log('Saving client data:', formData);
     updateClient({
       clientId,
       data: {

@@ -552,7 +552,6 @@ export class SchedulingService {
         updateAppointmentDto.recurringEndDate,
         updateAppointmentDto // Pass the updated appointment data
       );
-      console.log(`Created ${createdCount.count} new recurring appointments`);
       
       // Return message instead of updated appointment since it was deleted and recreated
       return {

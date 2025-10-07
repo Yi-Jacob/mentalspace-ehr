@@ -405,7 +405,7 @@ export class TodoService {
         take: 20,
       });
     } else {
-      console.log(user.id, user.staffProfile?.id);
+
       // Regular users can see their own appointments
       if (!user.id) {
         // If user doesn't have a staff profile, return empty array

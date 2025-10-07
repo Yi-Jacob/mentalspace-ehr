@@ -13,7 +13,6 @@ export const useRealtimeAppointments = () => {
     }, 30000);
 
     return () => {
-      console.log('Cleaning up polling interval');
       clearInterval(interval);
     };
   }, [queryClient]);
