@@ -8,21 +8,21 @@ import { AI_CHATBOT_CONFIG } from './ai-chatbot.config';
 @Injectable()
 export class AIChatbotService {
   private readonly logger = new Logger(AIChatbotService.name);
-  private readonly openaiApiKey: string;
   private readonly openaiApiUrl = AI_CHATBOT_CONFIG.API_URL;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-  ) {
-    this.openaiApiKey = this.configService.get<string>('OPENAI_API_KEY');
-    if (!this.openaiApiKey) {
-      this.logger.warn('OpenAI API key not found in environment variables');
-    }
-  }
+  ) {}
 
   async processChatMessage(request: ChatRequestDto, userId: string): Promise<ChatResponseDto> {
     try {
+      // Get OpenAI API key from practice settings
+      const openaiApiKey = await this.getOpenAIApiKey();
+      if (!openaiApiKey) {
+        throw new HttpException('OpenAI API key not configured in practice settings', HttpStatus.SERVICE_UNAVAILABLE);
+      }
+
       // Get or create chat session
       let sessionId = request.sessionId;
       if (!sessionId) {
@@ -61,7 +61,7 @@ export class AIChatbotService {
       ];
 
       // Call OpenAI API
-      const aiResponse = await this.callOpenAI(messages);
+      const aiResponse = await this.callOpenAI(messages, openaiApiKey);
       
       // Save the new messages to the session
       const updatedMessages = [
@@ -101,11 +101,24 @@ export class AIChatbotService {
     });
   }
 
-  private async callOpenAI(messages: OpenAIMessage[]): Promise<string> {
-    if (!this.openaiApiKey) {
-      throw new HttpException('OpenAI API key not configured', HttpStatus.SERVICE_UNAVAILABLE);
-    }
+  private async getOpenAIApiKey(): Promise<string | null> {
+    try {
+      // Get the first practice settings record (assuming single practice)
+      const practiceSettings = await this.prisma.practiceSetting.findFirst();
+      if (!practiceSettings) {
+        this.logger.warn('No practice settings found');
+        return null;
+      }
 
+      const aiSettings = practiceSettings.aiSettings as any;
+      return aiSettings?.openaiApiKey || null;
+    } catch (error) {
+      this.logger.error('Error retrieving OpenAI API key from practice settings:', error);
+      return null;
+    }
+  }
+
+  private async callOpenAI(messages: OpenAIMessage[], apiKey: string): Promise<string> {
     const requestBody: OpenAIRequest = {
       model: AI_CHATBOT_CONFIG.MODEL,
       messages,
@@ -118,7 +131,7 @@ export class AIChatbotService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.openaiApiKey}`,
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify(requestBody),
       });

@@ -5,21 +5,33 @@ const practiceSettingsRoutes: RouteObject[] = [
   {
     index: true,
     element: <PracticeSettings />,
-  },
+  },  
   {
-    path: 'account-access',
+    path: 'practice-information',
     element: <PracticeSettings />,
   },
   {
-    path: 'portal-scheduling',
+    path: 'authentication-settings',
     element: <PracticeSettings />,
   },
   {
-    path: 'notes',
+    path: 'scheduling',
     element: <PracticeSettings />,
   },
   {
     path: 'billing',
+    element: <PracticeSettings />,
+  },
+  {
+    path: 'notes-settings',
+    element: <PracticeSettings />,
+  },
+  {
+    path: 'staff-settings',
+    element: <PracticeSettings />,
+  },
+  {
+    path: 'client-settings',
     element: <PracticeSettings />,
   },
 ];

@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Settings, User, Calendar, FileText, CreditCard } from 'lucide-react';
+import { Settings, User, Calendar, FileText, CreditCard, Cog, Users, UserCheck, Building2, Key } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
-import { Button } from '@/components/basic/button';
 import { cn } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { USER_ROLES } from '@/types/enums/staffEnum';
 import { Navigate } from 'react-router-dom';
 
 // Import tab components
-import AccountAccessTab from './components/AccountAccessTab';
-import PortalSchedulingTab from './components/PortalSchedulingTab';
-import NotesTab from './components/NotesTab';
+import PracticeInformationSection from './components/PracticeInformation';
+import SchedulingTab from './components/PortalSchedulingTab';
 import BillingTab from './components/BillingTab';
+import NotesSettingsTab from './components/NotesSettingsTab';
+import StaffSettingsTab from './components/StaffSettingsTab';
+import ClientSettingsTab from './components/ClientSettingsTab';
+import AuthenticationSettingsTab from './components/AuthenticationSettingsTab';
 
 interface Tab {
   id: string;
@@ -24,28 +26,46 @@ interface Tab {
 
 const tabs: Tab[] = [
   {
-    id: 'account-access',
-    label: 'Account and Access',
-    icon: User,
-    path: '/practice-settings/account-access',
+    id: 'practice-information',
+    label: 'Practice Information',
+    icon: Building2,
+    path: '/practice-settings/practice-information',
   },
   {
-    id: 'portal-scheduling',
-    label: 'Portal and Scheduling',
+    id: 'authentication-settings',
+    label: 'Authentication',
+    icon: Key,
+    path: '/practice-settings/authentication-settings',
+  },
+  {
+    id: 'scheduling',
+    label: 'Scheduling',
     icon: Calendar,
-    path: '/practice-settings/portal-scheduling',
+    path: '/practice-settings/scheduling',
   },
+  // {
+  //   id: 'billing',
+  //   label: 'Billing',
+  //   icon: CreditCard,
+  //   path: '/practice-settings/billing',
+  // },
   {
-    id: 'notes',
-    label: 'Notes',
+    id: 'notes-settings',
+    label: 'Notes Settings',
     icon: FileText,
-    path: '/practice-settings/notes',
+    path: '/practice-settings/notes-settings',
   },
   {
-    id: 'billing',
-    label: 'Billing',
-    icon: CreditCard,
-    path: '/practice-settings/billing',
+    id: 'staff-settings',
+    label: 'Staff Settings',
+    icon: Users,
+    path: '/practice-settings/staff-settings',
+  },
+  {
+    id: 'client-settings',
+    label: 'Client Settings',
+    icon: UserCheck,
+    path: '/practice-settings/client-settings',
   },
 ];
 
@@ -86,16 +106,22 @@ const PracticeSettingsPage: React.FC = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'account-access':
-        return <AccountAccessTab />;
-      case 'portal-scheduling':
-        return <PortalSchedulingTab />;
-      case 'notes':
-        return <NotesTab />;
+      case 'practice-information':
+        return <PracticeInformationSection />;
+      case 'authentication-settings':
+        return <AuthenticationSettingsTab />;
+      case 'scheduling':
+        return <SchedulingTab />;
       case 'billing':
         return <BillingTab />;
+      case 'notes-settings':
+        return <NotesSettingsTab />;
+      case 'staff-settings':
+        return <StaffSettingsTab />;
+      case 'client-settings':
+        return <ClientSettingsTab />;
       default:
-        return <AccountAccessTab />;
+        return <PracticeInformationSection />;
     }
   };
 

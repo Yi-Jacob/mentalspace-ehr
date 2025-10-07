@@ -844,18 +844,17 @@ model Message {
 
 model PracticeSetting {
   id                    String   @id @default(uuid())
-  userId                String   @unique @map("user_id")
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @default(now()) @map("updated_at")
-  practiceName          String?  @map("practice_name")
-  practiceAddress       Json?    @map("practice_address")
-  practiceContact       Json?    @map("practice_contact")
-  businessHours         Json?    @map("business_hours")
-  securitySettings      Json?    @map("security_settings")
-  portalSettings        Json?    @map("portal_settings")
-  schedulingSettings    Json?    @map("scheduling_settings")
+  practiceInfo          Json?    @map("practice_info")
+  authSettings          Json?    @map("auth_settings")
+  complianceSettings    Json?    @map("compliance_settings")
+  aiSettings            Json?    @map("ai_settings")
   documentationSettings Json?    @map("documentation_settings")
-  billingSettings       Json?    @map("billing_settings")
+  schedulingSettings    Json?    @map("scheduling_settings")
+  noteSettings          Json?    @map("note_settings")
+  staffSettings         Json?    @map("staff_settings")
+  clientSettings        Json?    @map("client_settings")
 
   @@map("practice_settings")
 }
