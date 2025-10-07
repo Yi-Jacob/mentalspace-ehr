@@ -63,6 +63,21 @@ export class S3Service {
     }
   }
 
+  async getSignedViewUrl(key: string, expiresIn: number = 3600): Promise<string> {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        ResponseContentDisposition: 'inline', // This tells the browser to display inline instead of download
+      });
+
+      return await getSignedUrl(this.s3Client, command, { expiresIn });
+    } catch (error) {
+      console.error('Error generating signed view URL:', error);
+      throw new Error('Failed to generate signed view URL');
+    }
+  }
+
   async deleteFile(key: string): Promise<void> {
     try {
       const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');

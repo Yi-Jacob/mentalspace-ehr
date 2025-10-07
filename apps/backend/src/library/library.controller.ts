@@ -63,6 +63,17 @@ export class LibraryController {
   }
 
   /**
+   * Get view URL for a file (opens in browser instead of downloading)
+   */
+  @Get(':fileId/view')
+  async getViewUrl(
+    @Param('fileId') fileId: string,
+    @Request() req: any,
+  ) {
+    return this.libraryService.getViewUrl(fileId, req.user.id);
+  }
+
+  /**
    * Update a file
    */
   @Put(':fileId')

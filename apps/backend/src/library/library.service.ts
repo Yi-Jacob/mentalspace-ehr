@@ -222,6 +222,39 @@ export class LibraryService {
   }
 
   /**
+   * Get view URL for a file (opens in browser instead of downloading)
+   */
+  async getViewUrl(fileId: string, userId: string): Promise<{ viewUrl: string }> {
+    const file = await this.prisma.file.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    // Check access permissions
+    await this.checkFileAccess(file, userId);
+
+    // Debug logging
+    console.log('File details:', {
+      id: file.id,
+      fileName: file.fileName,
+      mimeType: file.mimeType,
+      fileUrl: file.fileUrl
+    });
+
+    // Extract the S3 key from the file URL
+    const url = new URL(file.fileUrl);
+    const s3Key = url.pathname.substring(1); // Remove leading slash
+
+    // Generate signed URL for viewing (expires in 1 hour)
+    const viewUrl = await this.s3Service.getSignedViewUrl(s3Key, 3600);
+
+    return { viewUrl };
+  }
+
+  /**
    * Update a file
    */
   async updateFile(fileId: string, updateFileDto: UpdateFileDto, userId: string) {
@@ -368,14 +401,20 @@ export class LibraryService {
       throw new NotFoundException('User not found');
     }
 
-    const isAdmin = user.userRoles.some(role => role.role === 'admin');
-    const isClinician = user.userRoles.some(role => role.role === 'clinician');
-    const isBilling = user.userRoles.some(role => role.role === 'billing');
+    const isAdmin = user.userRoles.some(role => role.role === 'Practice Administrator');
+    const isClinician = user.userRoles.some(role => role.role === 'Clinician' || role.role === 'Intern' || role.role === 'Assistant' || role.role === 'Associate');
+    const isBilling = user.userRoles.some(role => role.role === 'Biller for Assigned Patients Only' || role.role === 'Practice Biller');
 
-    // Check access level
-    const hasAccess = isAdmin || 
+    // Check access level - admin can access all files
+    if (isAdmin) {
+      return; // Admin has access to all files
+    }
+
+    // Check specific access levels
+    const hasAccess = 
       (file.accessLevel === 'clinician' && isClinician) ||
-      (file.accessLevel === 'billing' && isBilling);
+      (file.accessLevel === 'billing' && isBilling) ||
+      (file.accessLevel === 'admin' && (isAdmin || isClinician || isBilling)); // Allow staff roles to access admin files
 
     if (!hasAccess) {
       throw new ForbiddenException('You do not have access to this file');

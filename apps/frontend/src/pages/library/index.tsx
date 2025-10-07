@@ -10,12 +10,15 @@ import EmptyState from '@/components/EmptyState';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import UploadFileModal from './components/UploadFileModal';
+import FileViewerModal from './components/FileViewerModal';
 
 const LibraryPage: React.FC = () => {
   const [files, setFiles] = useState<LibraryFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<LibraryFile | null>(null);
   const { toast } = useToast();
 
   const fetchFiles = async () => {
@@ -103,21 +106,14 @@ const LibraryPage: React.FC = () => {
     }
   };
 
-  const handleOpen = async (file: LibraryFile) => {
-    try {
-      // Get signed download URL from backend
-      const downloadUrl = await libraryService.getDownloadUrl(file.id);
-      
-      // Open in new tab
-      window.open(downloadUrl.downloadUrl, '_blank');
-    } catch (error) {
-      console.error('Error opening file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to open file",
-        variant: "destructive",
-      });
-    }
+  const handleOpen = (file: LibraryFile) => {
+    setSelectedFile(file);
+    setIsViewerModalOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerModalOpen(false);
+    setSelectedFile(null);
   };
 
   const getAccessLevelBadge = (accessLevel: string) => {
@@ -261,6 +257,13 @@ const LibraryPage: React.FC = () => {
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleFileUpload}
         uploading={uploading}
+      />
+
+      {/* File Viewer Modal */}
+      <FileViewerModal
+        isOpen={isViewerModalOpen}
+        onClose={handleCloseViewer}
+        file={selectedFile}
       />
     </PageLayout>
   );

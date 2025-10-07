@@ -70,6 +70,10 @@ export interface DownloadUrlResponse {
   downloadUrl: string;
 }
 
+export interface ViewUrlResponse {
+  viewUrl: string;
+}
+
 class LibraryService {
   private baseUrl = '/library';
 
@@ -100,6 +104,11 @@ class LibraryService {
 
   async getDownloadUrl(fileId: string): Promise<DownloadUrlResponse> {
     const response = await apiClient.get<DownloadUrlResponse>(`${this.baseUrl}/${fileId}/download`);
+    return response.data;
+  }
+
+  async getViewUrl(fileId: string): Promise<ViewUrlResponse> {
+    const response = await apiClient.get<ViewUrlResponse>(`${this.baseUrl}/${fileId}/view`);
     return response.data;
   }
 
