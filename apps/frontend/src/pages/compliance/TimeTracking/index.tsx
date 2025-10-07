@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
+import { Card, CardContent } from '@/components/basic/card';
 import { Badge } from '@/components/basic/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/basic/dialog';
 import { Label } from '@/components/basic/label';
@@ -519,21 +519,21 @@ const TimeTracking: React.FC = () => {
                           <strong>Clock Out:</strong> {formatTime(entry.clockOutTime)}
                         </div>
                         <div>
-                          <strong>Total Hours:</strong> {totalHours.toFixed(2)}
+                          <strong>Total Hours:</strong> {totalHours?.toFixed(2)}
                         </div>
                         {entry.regularHours !== undefined && (
                           <div>
-                            <strong>Regular Hours:</strong> {entry.regularHours.toFixed(2)}
+                            <strong>Regular Hours:</strong> {entry.regularHours?.toFixed(2)}
                           </div>
                         )}
                         {entry.eveningHours !== undefined && entry.eveningHours > 0 && (
                           <div>
-                            <strong>Evening Hours:</strong> {entry.eveningHours.toFixed(2)}
+                            <strong>Evening Hours:</strong> {entry.eveningHours?.toFixed(2)}
                           </div>
                         )}
                         {entry.weekendHours !== undefined && entry.weekendHours > 0 && (
                           <div>
-                            <strong>Weekend Hours:</strong> {entry.weekendHours.toFixed(2)}
+                            <strong>Weekend Hours:</strong> {entry.weekendHours?.toFixed(2)}
                           </div>
                         )}
                       </div>
