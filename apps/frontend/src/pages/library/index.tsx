@@ -11,6 +11,7 @@ import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import UploadFileModal from './components/UploadFileModal';
 import FileViewerModal from './components/FileViewerModal';
+import { useStaffRoles } from '@/pages/staff/hook/useStaffRoles';
 
 const LibraryPage: React.FC = () => {
   const [files, setFiles] = useState<LibraryFile[]>([]);
@@ -20,6 +21,8 @@ const LibraryPage: React.FC = () => {
   const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<LibraryFile | null>(null);
   const { toast } = useToast();
+  const { hasRole } = useStaffRoles();
+  const canUploadFiles = hasRole('Practice Administrator');
 
   const fetchFiles = async () => {
     try {
@@ -222,13 +225,15 @@ const LibraryPage: React.FC = () => {
         title="Library"
         description="Manage shared files and documents"
         action={
-          <Button
-            onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center space-x-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Upload File</span>
-          </Button>
+          canUploadFiles && (
+            <Button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Upload File</span>
+            </Button>
+          )
         }
       />
 
