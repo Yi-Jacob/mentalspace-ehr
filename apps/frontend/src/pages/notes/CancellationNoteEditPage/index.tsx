@@ -84,6 +84,15 @@ const CancellationNoteForm = () => {
     return required.every(field => formData[field as keyof CancellationNoteFormData]);
   };
 
+  const handleAIFill = (generatedFormData: any) => {
+    // Merge with existing form data, preserving clientId
+    const mergedData = {
+      ...generatedFormData,
+      clientId: formData.clientId,
+    };
+    updateFormData(mergedData);
+  };
+
   const handleSaveDraft = async () => {
     setIsLoading(true);
     try {
@@ -191,6 +200,8 @@ const CancellationNoteForm = () => {
       signedBy={formData.signedBy}
       signedAt={formData.signedAt}
       finalizeButtonColor="orange"
+      noteType="cancellation_note"
+      onAIFill={handleAIFill}
     >
       {/* Basic Information */}
       <div className="space-y-4">

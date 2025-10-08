@@ -28,6 +28,15 @@ const MiscellaneousNoteForm = () => {
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
   const handleFinalize = () => handleSave(formData, false, validateForm);
 
+  const handleAIFill = (generatedFormData: any) => {
+    // Merge with existing form data, preserving clientId
+    const mergedData = {
+      ...generatedFormData,
+      clientId: formData.clientId,
+    };
+    updateFormData(mergedData);
+  };
+
   const addRelatedPerson = () => {
     const newPerson = {
       name: '',
@@ -69,6 +78,8 @@ const MiscellaneousNoteForm = () => {
       showFinalizationSection={false}
       showBottomActionButtons={false}
       finalizeButtonColor="gray"
+      noteType="miscellaneous_note"
+      onAIFill={handleAIFill}
       backButtonText="Back to Documentation"
     >
       {/* Basic Info Section */}

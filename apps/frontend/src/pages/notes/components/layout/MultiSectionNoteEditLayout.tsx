@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Bot, LucideIcon } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 import SectionNavigation from '../SectionNavigation';
 import CurrentSectionCard from '../CurrentSectionCard';
+import AINoteFillModal from '@/components/notes/AINoteFillModal';
 
 interface Section {
   id: string;
@@ -20,7 +21,7 @@ interface NoteEditLayoutProps<T = any> {
   // Page configuration
   title: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: LucideIcon;
   
   // Data and state
   sections: Section[];
@@ -61,6 +62,7 @@ const SectionStyleNoteEditLayout = <T extends Record<string, any>>({
   customHeaderAction,
 }: NoteEditLayoutProps<T>) => {
   const navigate = useNavigate();
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -88,6 +90,15 @@ const SectionStyleNoteEditLayout = <T extends Record<string, any>>({
     ? `${note.client.firstName} ${note.client.lastName}`
     : 'Unknown Client';
 
+  const handleAIFill = (generatedFormData: any) => {
+    // Merge the generated data with existing form data, preserving clientId
+    const mergedData = {
+      ...generatedFormData,
+      clientId: formData.clientId, // Preserve the existing clientId
+    };
+    updateFormData(mergedData);
+  };
+
   const defaultHeaderAction = (
     <div className="flex items-center space-x-3">
       <Button
@@ -98,6 +109,16 @@ const SectionStyleNoteEditLayout = <T extends Record<string, any>>({
       >
         <ArrowLeft className="h-4 w-4" />
         <span>Back to Notes</span>
+      </Button>
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsAIModalOpen(true)}
+        className="flex items-center space-x-2 hover:bg-purple-50 transition-colors border-purple-300 hover:border-purple-400 text-purple-700"
+      >
+        <Bot className="h-4 w-4" />
+        <span>AI Fill</span>
       </Button>
       
       <Button
@@ -144,6 +165,14 @@ const SectionStyleNoteEditLayout = <T extends Record<string, any>>({
           </div>
         </div>
       </PageLayout>
+      
+      <AINoteFillModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        noteType={note.noteType}
+        clientName={clientName}
+        onFormFill={handleAIFill}
+      />
     </ErrorBoundary>
   );
 };

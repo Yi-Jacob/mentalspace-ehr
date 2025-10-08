@@ -26,6 +26,15 @@ const ContactNoteForm = () => {
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
   const handleFinalize = () => handleSave(formData, false, validateForm);
 
+  const handleAIFill = (generatedFormData: any) => {
+    // Merge with existing form data, preserving clientId
+    const mergedData = {
+      ...generatedFormData,
+      clientId: formData.clientId,
+    };
+    updateFormData(mergedData);
+  };
+
   return (
     <OneSectionNoteEditLayout
       icon={Phone}
@@ -43,6 +52,8 @@ const ContactNoteForm = () => {
       showFinalizationSection={false}
       showBottomActionButtons={false}
       finalizeButtonColor="teal"
+      noteType="contact_note"
+      onAIFill={handleAIFill}
     >
       {/* Contact Information Section */}
       <div className="space-y-4">

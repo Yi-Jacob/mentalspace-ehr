@@ -61,4 +61,25 @@ export class AIChatbotService {
       throw new Error('Failed to get chat sessions');
     }
   }
+
+  static async generateFormData(
+    summary: string,
+    noteType: string,
+    clientName: string
+  ): Promise<{ formData: any }> {
+    try {
+      const response = await apiClient.post<{ formData: any }>(
+        `${this.BASE_URL}/generate-form-data`,
+        {
+          summary,
+          noteType,
+          clientName
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error generating form data:', error);
+      throw new Error('Failed to generate form data');
+    }
+  }
 }

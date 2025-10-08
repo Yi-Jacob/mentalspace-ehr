@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/basic/card';
@@ -6,11 +6,12 @@ import { Button } from '@/components/basic/button';
 import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Alert, AlertDescription } from '@/components/basic/alert';
-import { AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ArrowLeft, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ClientInfoDisplay from '@/pages/notes/components/shared/ClientInfoDisplay';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
+import AINoteFillModal from '@/components/notes/AINoteFillModal';
 
 interface OneSectionNoteEditLayoutProps {
   icon: LucideIcon;
@@ -32,6 +33,9 @@ interface OneSectionNoteEditLayoutProps {
   customHeaderActions?: React.ReactNode;
   finalizeButtonColor?: 'orange' | 'indigo' | 'teal' | 'gray';
   backButtonText?: string;
+  // AI Fill support
+  noteType?: string;
+  onAIFill?: (formData: any) => void;
 }
 
 const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
@@ -54,12 +58,21 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
   customHeaderActions,
   finalizeButtonColor = 'orange',
   backButtonText = 'Back to Notes',
+  noteType,
+  onAIFill,
 }) => {
   const navigate = useNavigate();
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const clientName = clientData 
     ? `${clientData.firstName} ${clientData.lastName}`
     : 'Unknown Client';
+
+  const handleAIFill = (generatedFormData: any) => {
+    if (onAIFill) {
+      onAIFill(generatedFormData);
+    }
+  };
 
   const handleBackToNotes = () => {
     navigate('/notes');
@@ -93,6 +106,17 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
       )}
       
       <div className="flex space-x-2">
+        {noteType && onAIFill && (
+          <Button
+            variant="outline"
+            onClick={() => setIsAIModalOpen(true)}
+            className="flex items-center space-x-2 hover:bg-purple-50 transition-colors border-purple-300 hover:border-purple-400 text-purple-700"
+          >
+            <Bot className="h-4 w-4" />
+            <span>AI Fill</span>
+          </Button>
+        )}
+        
         <Button
           variant="outline"
           onClick={onSaveDraft}
@@ -192,6 +216,16 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
           )}
         </CardContent>
       </Card>
+      
+      {noteType && onAIFill && (
+        <AINoteFillModal
+          isOpen={isAIModalOpen}
+          onClose={() => setIsAIModalOpen(false)}
+          noteType={noteType}
+          clientName={clientName}
+          onFormFill={handleAIFill}
+        />
+      )}
     </PageLayout>
   );
 };

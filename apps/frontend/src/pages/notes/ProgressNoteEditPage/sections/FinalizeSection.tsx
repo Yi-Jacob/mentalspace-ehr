@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/car
 import { CheckCircle } from 'lucide-react';
 import { ProgressNoteFormData } from '@/types/noteType';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import CompletionStatus from './finalize/CompletionStatus';
 import ProgressNoteSummary from './finalize/ProgressNoteSummary';
 import FinalizationForm from './finalize/FinalizationForm';
@@ -25,6 +26,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   clientData,
 }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   // Check if all required sections are complete
   const checkSectionCompletion = () => {
     const requiredSections = [
@@ -73,12 +75,20 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
 
   const handleFinalize = async () => {
     if (!allSectionsComplete) {
-      alert('Please complete all required sections before finalizing.');
+      toast({
+        title: "Incomplete Sections",
+        description: "Please complete all required sections before finalizing.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!formData.signature) {
-      alert('Please provide your signature before finalizing.');
+      toast({
+        title: "Signature Required",
+        description: "Please provide your signature before finalizing.",
+        variant: "destructive",
+      });
       return;
     }
 

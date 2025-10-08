@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
 import { NOTE_TYPES } from '@/types/enums/notesEnum';
 import { LoadingState } from '@/components/basic/loading-state';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertCircle } from 'lucide-react';
 

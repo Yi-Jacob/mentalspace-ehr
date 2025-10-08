@@ -52,4 +52,20 @@ export class AIChatbotController {
       );
     }
   }
+
+  @Post('generate-form-data')
+  async generateFormData(
+    @Body() request: { summary: string; noteType: string; clientName: string },
+    @Request() req: any
+  ) {
+    try {
+      const userId = req.user.id;
+      return await this.aiChatbotService.generateFormData(request, userId);
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to generate form data',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

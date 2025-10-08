@@ -28,6 +28,15 @@ const ConsultationNoteForm = () => {
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
   const handleFinalize = () => handleSave(formData, false, validateForm);
 
+  const handleAIFill = (generatedFormData: any) => {
+    // Merge with existing form data, preserving clientId
+    const mergedData = {
+      ...generatedFormData,
+      clientId: formData.clientId,
+    };
+    updateFormData(mergedData);
+  };
+
   const addParticipant = () => {
     const newParticipant = {
       id: Date.now().toString(),
@@ -94,6 +103,8 @@ const ConsultationNoteForm = () => {
       showFinalizationSection={false}
       showBottomActionButtons={false}
       finalizeButtonColor="indigo"
+      noteType="consultation_note"
+      onAIFill={handleAIFill}
     >
       {/* Consultation Information Section */}
       <div className="space-y-4">
