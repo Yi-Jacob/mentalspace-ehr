@@ -196,17 +196,22 @@ export class AIChatbotService {
       // Create specialized prompt for form generation
       const systemPrompt = `You are a specialized AI assistant for generating structured mental health note forms. Your task is to create comprehensive, professional form data based on a summary provided by a healthcare provider.
 
-IMPORTANT RULES:
+CRITICAL RULES:
 1. Return ONLY valid JSON that matches the provided schema exactly
 2. Use realistic, professional content appropriate for mental health documentation
 3. Fill in all relevant fields based on the summary
 4. Use appropriate medical terminology and professional language
-5. Ensure dates are in YYYY-MM-DD format
-6. Use appropriate values for dropdowns and selections
-7. Include realistic but anonymized content
+5. Ensure dates are in YYYY-MM-DD format and times in HH:MM format
+6. For fields with "options:" listed, you MUST use EXACTLY one of those values - do not create new values
+7. For boolean fields, use true or false
+8. For array fields, provide arrays of strings using the exact option values when specified
+9. Include realistic but anonymized content
+10. If a field has specific options listed, you must choose from those options only
 
 FORM SCHEMA:
 ${JSON.stringify(formSchema, null, 2)}
+
+IMPORTANT: When you see "options:" in a field description, you MUST use one of those exact values. Do not create new values or variations.
 
 Return ONLY the JSON object, no additional text, explanations, or formatting.`;
 
@@ -268,38 +273,38 @@ Please create comprehensive form data that includes all relevant sections and fi
         startTime: 'string (HH:MM)',
         endTime: 'string (HH:MM)',
         duration: 'number (minutes)',
-        serviceCode: 'string',
-        location: 'string',
-        participants: 'string',
+        serviceCode: 'string (options: 90834, 90832, 90837, 90839, 90846, 90847, 90853, 96158, 99404, H0004, H2011, H2014, H2015)',
+        location: 'string (options: office, telehealth, home, hospital, other)',
+        participants: 'string (options: client-only, client-family, family-only, group)',
         primaryDiagnosis: 'string',
         secondaryDiagnoses: 'array of strings',
-        orientation: 'string',
-        generalAppearance: 'string',
-        dress: 'string',
-        motorActivity: 'string',
-        interviewBehavior: 'string',
-        speech: 'string',
-        mood: 'string',
-        affect: 'string',
-        insight: 'string',
-        judgmentImpulseControl: 'string',
-        memory: 'string',
-        attentionConcentration: 'string',
-        thoughtProcess: 'string',
-        thoughtContent: 'string',
-        perception: 'string',
-        functionalStatus: 'string',
-        riskAreas: 'array of strings',
+        orientation: 'string (options: X3: Oriented to Person Place and Time, X2: Oriented to Person Place; Impaired to Time, X2: Oriented to Person Time; Impaired to Place, X2: Oriented to Time Place; Impaired to Person, X1: Oriented to Person; Impaired to Place Time, X1: Oriented to Place; Impaired to Person Time, X1: Oriented to Time; Impaired to Person Place, X0: Impaired to Person Place and Time, Not Assessed)',
+        generalAppearance: 'string (options: Well-groomed, Disheveled, Unkempt, Clean and neat, Poor hygiene, Age-appropriate, Younger than stated age, Older than stated age, Not Assessed)',
+        dress: 'string (options: Appropriate, Disheveled, Emaciated, Obese, Poor Hygiene, Inappropriate for weather, Bizarre, Seductive, Not Assessed)',
+        motorActivity: 'string (options: Unremarkable, Agitation, Retardation, Posturing, Repetitive actions, Tics, Tremor, Unusual Gait, Hyperactive, Hypoactive, Restless, Catatonic, Not Assessed)',
+        interviewBehavior: 'string (options: Cooperative, Uncooperative, Guarded, Hostile, Evasive, Suspicious, Seductive, Manipulative, Demanding, Pleasant, Withdrawn, Not Assessed)',
+        speech: 'string (options: Normal rate and rhythm, Rapid, Slow, Loud, Soft, Pressured, Monotone, Slurred, Stammering, Circumstantial, Tangential, Flight of ideas, Not Assessed)',
+        mood: 'string (options: Euthymic, Depressed, Elevated, Irritable, Anxious, Angry, Euphoric, Dysphoric, Labile, Expansive, Not Assessed)',
+        affect: 'string (options: Euthymic, Depressed, Elevated, Irritable, Anxious, Angry, Flat, Blunted, Labile, Inappropriate, Constricted, Expansive, Not Assessed)',
+        insight: 'string (options: Excellent, Good, Fair, Poor, Nil, Not Assessed)',
+        judgmentImpulseControl: 'string (options: Excellent, Good, Fair, Poor, Nil, Not Assessed)',
+        memory: 'string (options: Excellent, Good, Fair, Poor, Nil, Not Assessed)',
+        attentionConcentration: 'string (options: Excellent, Good, Fair, Poor, Nil, Not Assessed)',
+        thoughtProcess: 'string (options: Linear, Goal-directed, Circumstantial, Tangential, Flight of ideas, Loose associations, Word salad, Thought blocking, Perseveration, Clang associations, Not Assessed)',
+        thoughtContent: 'string (options: No abnormalities noted, Obsessions, Compulsions, Phobias, Suicidal ideation, Homicidal ideation, Delusions, Ideas of reference, Paranoid thoughts, Not Assessed)',
+        perception: 'string (options: No abnormalities noted, Auditory hallucinations, Visual hallucinations, Tactile hallucinations, Olfactory hallucinations, Gustatory hallucinations, Illusions, Depersonalization, Derealization, Not Assessed)',
+        functionalStatus: 'string (options: Independent in all activities, Mild impairment, Moderate impairment, Severe impairment, Requires assistance with ADLs, Requires supervision, Homebound, Institutionalized, Not Assessed)',
+        riskAreas: 'array of strings (options: Inability to care for self, Inability to care for others, Aggression toward others, Aggression toward property, Self-harm, Suicide, Violence, Substance abuse, Elopement/Wandering, Sexual acting out, Fire setting, Other)',
         noRiskPresent: 'boolean',
         medicationsContent: 'string',
         symptomDescription: 'string',
         objectiveContent: 'string',
-        selectedInterventions: 'array of strings',
+        selectedInterventions: 'array of strings (options: Cognitive Challenging, Cognitive Refocusing, Cognitive Reframing, Communication Skills, Compliance Issues, DBT, Exploration of Coping Patterns, Exploration of Emotions, Exploration of Relationship Patterns, Guided Imagery, Interactive Feedback, Interpersonal Resolutions, Mindfulness Training, Preventative Services, Psycho-Education, Relaxation/Deep Breathing, Review of Treatment Plan/Progress, Role-Play/Behavioral Rehearsal, Structured Problem Solving, Supportive Reflection, Symptom Management, Other)',
         otherInterventions: 'string',
         objectives: 'array of strings',
         planContent: 'string',
-        recommendation: 'string',
-        prescribedFrequency: 'string',
+        recommendation: 'string (options: Continue current therapeutic focus, Change treatment goals or objectives, Terminate treatment)',
+        prescribedFrequency: 'string (options: As Needed, Twice a Week, Weekly, Every 2 Weeks, Every 4 Weeks, Every Month, Every 2 Months, Every 3 Months, Every 4 Months)',
         isFinalized: 'boolean',
         signature: 'string',
         signedBy: 'string',
@@ -314,16 +319,16 @@ Please create comprehensive form data that includes all relevant sections and fi
         strengths: 'array of strings',
         treatmentGoals: 'array of strings',
         dischargeCriteria: 'string',
-        estimatedDuration: 'string',
+        estimatedDuration: 'string (options: 3 months, 6 months, 9 months, 12 months)',
         aftercareRecommendations: 'string',
         additionalInformation: 'string',
         medicalConsiderations: 'string',
         psychosocialFactors: 'string',
         culturalConsiderations: 'string',
-        sessionFrequency: 'string',
-        sessionDuration: 'string',
-        modality: 'string',
-        prescribedFrequency: 'string',
+        sessionFrequency: 'string (options: Weekly, Bi-weekly, Monthly, As needed, Other)',
+        sessionDuration: 'string (options: 30 minutes, 45 minutes, 60 minutes, 90 minutes, Other)',
+        modality: 'string (options: Individual Therapy, Group Therapy, Family Therapy, Couples Therapy, Telehealth, Other)',
+        prescribedFrequency: 'string (options: As Needed, Twice a Week, Weekly, Every 2 Weeks, Every 4 Weeks, Every Month, Every 2 Months, Every 3 Months, Every 4 Months)',
         medicalNecessityDeclaration: 'boolean',
         isFinalized: 'boolean',
         signature: 'string',
@@ -336,15 +341,15 @@ Please create comprehensive form data that includes all relevant sections and fi
         primaryPhone: 'string',
         primaryEmail: 'string',
         primaryInsurance: 'string',
-        cptCode: 'string',
-        primaryProblem: 'string',
+        cptCode: 'string (options: 021701, 021702, 90791, 96156)',
+        primaryProblem: 'string (options: Anxiety, Depression, Trauma / PTSD, Stress Management, Relationship Issues, Grief / Loss, Anger Management, Substance Use / Addiction, Behavioral Issues, Bipolar Symptoms, Psychosis / Schizophrenia, Eating Disorder Concerns, Personality Disorder Concerns, Sexual / Gender Identity Concerns, Other)',
         additionalConcerns: 'array of strings',
-        symptomOnset: 'string',
-        symptomSeverity: 'string',
+        symptomOnset: 'string (options: Recent (Less than 1 month), Acute (1-3 months), Subacute (3-6 months), Chronic (6+ months), Episodic (Comes and goes), Longstanding (Years), Since childhood, Unknown / Not specified)',
+        symptomSeverity: 'string (options: Mild, Moderate, Severe, Extreme, Fluctuating)',
         detailedDescription: 'string',
         impactOnFunctioning: 'string',
         hasPriorTreatment: 'boolean',
-        treatmentTypes: 'array of strings',
+        treatmentTypes: 'array of strings (options: Individual Therapy, Group Therapy, Family Therapy, Couples Therapy, Psychiatric Medication, Substance Abuse Treatment, Inpatient Hospitalization, Partial Hospitalization (PHP), Intensive Outpatient Program (IOP), Support Group, Other)',
         treatmentDetails: 'string',
         treatmentEffectiveness: 'string',
         medicalConditions: 'string',
@@ -353,13 +358,13 @@ Please create comprehensive form data that includes all relevant sections and fi
         familyPsychiatricHistory: 'string',
         substanceUseHistory: 'object',
         noSubstanceUse: 'boolean',
-        riskFactors: 'array of strings',
+        riskFactors: 'array of strings (options: Current Suicidal Ideation, History of Suicide Attempt(s), Homicidal Ideation, Self-Harm Behaviors, Significant Impulsivity, Aggression/Violence History)',
         noAcuteRisk: 'boolean',
         riskDetails: 'string',
         safetyPlan: 'string',
-        relationshipStatus: 'string',
+        relationshipStatus: 'string (options: Single, Married, Divorced, Separated, Widowed, In a relationship, Engaged, Other)',
         occupation: 'string',
-        livingSituation: 'string',
+        livingSituation: 'string (options: Own home/apartment, Rental home/apartment, Living with family, Living with friends, Group home, Homeless, Institution, Other)',
         socialSupport: 'string',
         currentStressors: 'string',
         strengthsCoping: 'string',
@@ -374,8 +379,8 @@ Please create comprehensive form data that includes all relevant sections and fi
         noteDate: 'string (YYYY-MM-DD)',
         contactDate: 'string (YYYY-MM-DD)',
         contactTime: 'string (HH:MM)',
-        contactType: 'string',
-        contactInitiator: 'string',
+        contactType: 'string (options: phone, email, text, video_call, in_person, collateral)',
+        contactInitiator: 'string (options: client, provider, family, other_provider, emergency)',
         contactDuration: 'number (minutes)',
         contactPurpose: 'array of strings',
         contactSummary: 'string',
@@ -398,7 +403,7 @@ Please create comprehensive form data that includes all relevant sections and fi
         noteDate: 'string (YYYY-MM-DD)',
         consultationDate: 'string (YYYY-MM-DD)',
         consultationTime: 'string (HH:MM)',
-        consultationType: 'string',
+        consultationType: 'string (options: case_review, treatment_planning, supervision, peer_consultation, multidisciplinary_team)',
         consultationPurpose: 'string',
         consultationDuration: 'number (minutes)',
         participants: 'array of strings',
@@ -423,9 +428,9 @@ Please create comprehensive form data that includes all relevant sections and fi
         clientId: 'string',
         noteDate: 'string (YYYY-MM-DD)',
         eventDate: 'string (YYYY-MM-DD)',
-        noteCategory: 'string',
+        noteCategory: 'string (options: administrative, legal, insurance, coordination_of_care, incident_report, other)',
         noteSubtype: 'string',
-        urgencyLevel: 'string',
+        urgencyLevel: 'string (options: low, medium, high, urgent)',
         noteTitle: 'string',
         noteDescription: 'string',
         detailedNotes: 'string',
@@ -449,13 +454,13 @@ Please create comprehensive form data that includes all relevant sections and fi
         appointmentTime: 'string (HH:MM)',
         cancellationDate: 'string (YYYY-MM-DD)',
         cancellationTime: 'string (HH:MM)',
-        cancellationInitiator: 'string',
-        notificationMethod: 'string',
+        cancellationInitiator: 'string (options: client, provider, emergency, system)',
+        notificationMethod: 'string (options: phone, email, text, in_person, no_show)',
         cancellationReason: 'string',
         rescheduled: 'boolean',
         newAppointmentDate: 'string (YYYY-MM-DD)',
         newAppointmentTime: 'string (HH:MM)',
-        billingStatus: 'string',
+        billingStatus: 'string (options: not_billed, billed, partial_charge, pending_review)',
         billingNotes: 'string',
         signature: 'string',
         isFinalized: 'boolean'
@@ -511,6 +516,30 @@ Please create comprehensive form data that includes all relevant sections and fi
     
     if (missingFields.length > 0) {
       this.logger.warn(`Missing fields in generated form data: ${missingFields.join(', ')}`);
+    }
+
+    // Validate enum/option values
+    for (const [field, fieldSchema] of Object.entries(schema)) {
+      if (typeof fieldSchema === 'string' && fieldSchema.includes('options:')) {
+        const optionsMatch = fieldSchema.match(/options:\s*([^)]+)/);
+        if (optionsMatch && formData[field]) {
+          const options = optionsMatch[1].split(',').map(opt => opt.trim());
+          const value = formData[field];
+          
+          if (Array.isArray(value)) {
+            // For array fields, validate each item
+            const invalidItems = value.filter(item => !options.includes(item));
+            if (invalidItems.length > 0) {
+              this.logger.warn(`Invalid values in field ${field}: ${invalidItems.join(', ')}. Valid options: ${options.join(', ')}`);
+            }
+          } else {
+            // For single value fields
+            if (!options.includes(value)) {
+              this.logger.warn(`Invalid value for field ${field}: ${value}. Valid options: ${options.join(', ')}`);
+            }
+          }
+        }
+      }
     }
   }
 }
