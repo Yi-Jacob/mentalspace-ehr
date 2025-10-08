@@ -58,9 +58,9 @@ model User {
   appointments                  Appointment[]
   clientFiles                   ClientFile[]                 @relation("ClientFileClient")
   createdClientFiles            ClientFile[]                 @relation("ClientFileCreator")
-  coSignedClientFiles           ClientFile[]                 @relation("ClientFileCoSigner")
   files                         File[]                       @relation("FileUser")
   createdFiles                  File[]                       @relation("FileCreator")
+  createdPortalForms            PortalForm[]                 @relation("PortalFormCreator")
 
   @@map("users")
 }
@@ -1061,29 +1061,29 @@ model AuditLog {
 }
 
 model ClientFile {
-  id                String    @id @default(uuid())
-  clientId          String    @map("client_id")
-  fileId            String    @map("file_id")
-  notes             String?
-  status            String    @default("draft") // 'draft' | 'signedbyauthor' | 'signedbysupervisor' | 'completedbyclient'
-  createdBy         String    @map("created_by")
-  signedDate        DateTime? @map("signed_date")
-  coSignedBy        String?   @map("co_signed_by")
-  coSignedByDate    DateTime? @map("co_signed_by_date")
-  isCompletedOnStaff Boolean  @default(false) @map("is_completed_on_staff")
-  completedDate     DateTime? @map("completed_date")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @default(now()) @map("updated_at")
+  id                    String    @id @default(uuid())
+  clientId              String    @map("client_id")
+  fileId                String?   @map("file_id")
+  portalFormId          String?   @map("portal_form_id")
+  notes                 String?
+  status                String    @default("draft") // 'draft' | 'signedbyauthor' | 'signedbysupervisor' | 'completedbyclient'
+  createdBy             String    @map("created_by")
+  isCompletedOnStaff    Boolean   @default(false) @map("is_completed_on_staff")
+  completedDate         DateTime? @map("completed_date")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @map("updated_at")
   
-  client            User      @relation("ClientFileClient", fields: [clientId], references: [id])
-  creator           User      @relation("ClientFileCreator", fields: [createdBy], references: [id])
-  coSigner          User?     @relation("ClientFileCoSigner", fields: [coSignedBy], references: [id])
-  file              File      @relation("ClientFileFile", fields: [fileId], references: [id])
+  client                User      @relation("ClientFileClient", fields: [clientId], references: [id])
+  creator               User      @relation("ClientFileCreator", fields: [createdBy], references: [id])
+  file                  File?     @relation("ClientFileFile", fields: [fileId], references: [id])
+  portalForm            PortalForm? @relation("ClientFilePortalForm", fields: [portalFormId], references: [id])
+  portalFormResponse    PortalFormResponse? @relation("ClientFilePortalFormResponse")
   
   @@index([clientId], map: "idx_client_file_client_id")
   @@index([status], map: "idx_client_file_status")
   @@index([createdBy], map: "idx_client_file_created_by")
   @@index([fileId], map: "idx_client_file_file_id")
+  @@index([portalFormId], map: "idx_client_file_portal_form_id")
   @@map("client_files")
 }
 
@@ -1112,4 +1112,38 @@ model File {
   @@index([accessLevel], map: "idx_file_access_level")
   @@index([createdBy], map: "idx_file_created_by")
   @@map("files")
+}
+
+model PortalForm {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  sharable      String    @default("not_sharable") // 'sharable' | 'not_sharable'
+  accessLevel   String    @default("admin") // 'admin' | 'clinician' | 'billing'
+  panelContent  Json      @map("panel_content") // Form elements and structure
+  createdBy     String    @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+  
+  creator       User      @relation("PortalFormCreator", fields: [createdBy], references: [id])
+  clientFiles   ClientFile[] @relation("ClientFilePortalForm")
+  
+  @@index([sharable], map: "idx_portal_form_sharable")
+  @@index([accessLevel], map: "idx_portal_form_access_level")
+  @@index([createdBy], map: "idx_portal_form_created_by")
+  @@map("portal_forms")
+}
+
+model PortalFormResponse {
+  id           String    @id @default(uuid())
+  clientFileId String    @unique @map("client_file_id")
+  content      Json      // All form responses and metadata
+  signature    String?   // Base64 encoded signature image
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @map("updated_at")
+  
+  clientFile   ClientFile @relation("ClientFilePortalFormResponse", fields: [clientFileId], references: [id])
+  
+  @@index([clientFileId], map: "idx_portal_form_response_client_file_id")
+  @@map("portal_form_responses")
 }

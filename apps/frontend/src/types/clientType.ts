@@ -193,13 +193,11 @@ export interface ClientFormData {
 export interface ClientFileDto {
   id: string;
   clientId: string;
-  fileId: string;
+  fileId?: string;
+  portalFormId?: string;
   notes?: string;
   status: FileStatus;
   createdBy: string;
-  signedDate?: string;
-  coSignedBy?: string;
-  coSignedByDate?: string;
   isCompletedOnStaff: boolean;
   completedDate?: string;
   createdAt: string;
@@ -216,18 +214,26 @@ export interface ClientFileDto {
     lastName: string;
     email: string;
   };
-  coSigner?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  file: {
+  file?: {
     id: string;
     fileName: string;
     fileUrl: string;
     fileSize?: number;
     mimeType?: string;
+  };
+  portalForm?: {
+    id: string;
+    title: string;
+    description?: string;
+    createdAt: string;
+    creator: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  };
+  portalFormResponse?: {
+    id: string;
   };
 }
 

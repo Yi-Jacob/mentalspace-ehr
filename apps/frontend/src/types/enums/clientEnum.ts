@@ -301,8 +301,6 @@ export type Timezone = typeof TIMEZONE_OPTIONS[number]['value'];
 // File Status Options
 export const FILE_STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
-  { value: "signedbyauthor", label: "Signed by Author" },
-  { value: "signedbysupervisor", label: "Signed by Supervisor" },
   { value: "completedbyclient", label: "Completed by Client" }
 ];
 

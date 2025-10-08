@@ -2,9 +2,9 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException 
 import { PrismaService } from '../database/prisma.service';
 import { CreateClientFileDto } from './dto/create-client-file.dto';
 import { UpdateClientFileDto } from './dto/update-client-file.dto';
-import { SignFileDto } from './dto/sign-file.dto';
 import { CompleteFileDto } from './dto/complete-file.dto';
 import { ShareFileDto } from './dto/share-file.dto';
+import { SharePortalFormDto } from './dto/share-portal-form.dto';
 import { FileStatus } from './enums/file-status.enum';
 import { S3Service } from '../common/s3.service';
 
@@ -80,14 +80,6 @@ export class ClientFilesService {
             email: true,
           },
         },
-        coSigner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
         file: {
           select: {
             id: true,
@@ -95,6 +87,20 @@ export class ClientFilesService {
             fileUrl: true,
             fileSize: true,
             mimeType: true,
+          },
+        },
+        portalForm: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+          },
+        },
+        portalFormResponse: {
+          select: {
+            id: true,
+            content: true,
+            signature: true,
           },
         },
       },
@@ -184,14 +190,6 @@ export class ClientFilesService {
             email: true,
           },
         },
-        coSigner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
         file: {
           select: {
             id: true,
@@ -240,73 +238,93 @@ export class ClientFilesService {
   }
 
   /**
-   * Sign a file by the author
+   * Get shareable portal forms
    */
-  async signByAuthor(signFileDto: SignFileDto) {
-    const { fileId, signedBy } = signFileDto;
-
-    // Get the file
-    const file = await this.prisma.clientFile.findUnique({
-      where: { id: fileId },
-      include: {
-        creator: true,
-      },
-    });
-
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
-
-    // Verify the signer is the creator
-    if (file.createdBy !== signedBy) {
-      throw new ForbiddenException('Only the file creator can sign the file');
-    }
-
-    // Check if file is already signed
-    if (file.status !== FileStatus.DRAFT) {
-      throw new BadRequestException('File is already signed');
-    }
-
-    // Check if the creator has a supervisor
-    const creatorUser = await this.prisma.user.findUnique({
+  async getShareablePortalForms() {
+    const forms = await this.prisma.portalForm.findMany({
       where: {
-        id: signedBy,
+        sharable: 'sharable',
       },
-      include: {
-        supervisionAsSupervisee: {
-          where: {
-            status: 'active',
-          },
-          include: {
-            supervisor: true,
-          },
-        },
-      },
-    });
-
-    let newStatus = FileStatus.SIGNED_BY_AUTHOR;
-    let isCompletedOnStaff = false;
-
-    // If creator has no supervisor, mark as completed on staff
-    if (!creatorUser || creatorUser.supervisionAsSupervisee.length === 0) {
-      isCompletedOnStaff = true;
-    }
-
-    // Update the file
-    const updatedFile = await this.prisma.clientFile.update({
-      where: { id: fileId },
-      data: {
-        status: newStatus,
-        signedDate: new Date(),
-        isCompletedOnStaff,
-      },
-      include: {
-        client: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        creator: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
-            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return forms;
+  }
+
+  /**
+   * Share a portal form with a client
+   */
+  async sharePortalForm(clientId: string, shareFormDto: SharePortalFormDto) {
+    const { portalFormId, notes } = shareFormDto;
+
+    // Check if portal form exists and is shareable
+    const portalForm = await this.prisma.portalForm.findUnique({
+      where: { id: portalFormId },
+    });
+
+    if (!portalForm) {
+      throw new NotFoundException('Portal form not found');
+    }
+
+    if (portalForm.sharable !== 'sharable') {
+      throw new BadRequestException('Portal form is not shareable');
+    }
+
+    // Check if already shared
+    const existingShare = await this.prisma.clientFile.findFirst({
+      where: {
+        clientId,
+        portalFormId,
+      },
+    });
+
+    if (existingShare) {
+      throw new BadRequestException('Portal form is already shared with this client');
+    }
+
+    const clientUserId = await this.prisma.user.findUnique({
+      where: { clientId: clientId },
+      select: { id: true },
+    });
+
+    // Create client file record for portal form
+    const clientFile = await this.prisma.clientFile.create({
+      data: {
+        clientId: clientUserId.id,
+        portalFormId,
+        notes: notes || undefined,
+        status: 'draft',
+        createdBy: portalForm.createdBy,
+      },
+      include: {
+        portalForm: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            createdAt: true,
+            creator: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
         creator: {
@@ -314,30 +332,21 @@ export class ClientFilesService {
             id: true,
             firstName: true,
             lastName: true,
-            email: true,
-          },
-        },
-        coSigner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        file: {
-          select: {
-            id: true,
-            fileName: true,
-            fileUrl: true,
-            fileSize: true,
-            mimeType: true,
           },
         },
       },
     });
 
-    return updatedFile;
+    // Create portal form response record linked to the client file
+    await this.prisma.portalFormResponse.create({
+      data: {
+        clientFileId: clientFile.id,
+        content: {}, // Empty content initially, will be filled when client submits
+        signature: null, // No signature initially
+      },
+    });
+
+    return clientFile
   }
 
   /**
@@ -363,16 +372,6 @@ export class ClientFilesService {
       throw new ForbiddenException('Only the client can complete the file');
     }
 
-    // Check if file is ready for completion (signed by author and supervisor if needed)
-    if (file.status !== FileStatus.SIGNED_BY_AUTHOR && file.status !== FileStatus.SIGNED_BY_SUPERVISOR) {
-      throw new BadRequestException('File must be signed before completion');
-    }
-
-    // Check if staff completion is required
-    if (!file.isCompletedOnStaff) {
-      throw new BadRequestException('File must be completed by staff before client completion');
-    }
-
     // Update the file
     const updatedFile = await this.prisma.clientFile.update({
       where: { id: fileId },
@@ -390,104 +389,6 @@ export class ClientFilesService {
           },
         },
         creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        coSigner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        file: {
-          select: {
-            id: true,
-            fileName: true,
-            fileUrl: true,
-            fileSize: true,
-            mimeType: true,
-          },
-        },
-      },
-    });
-
-    return updatedFile;
-  }
-
-  /**
-   * Co-sign a file by supervisor
-   */
-  async coSignFile(fileId: string, coSignedBy: string) {
-    // Get the file
-    const file = await this.prisma.clientFile.findUnique({
-      where: { id: fileId },
-      include: {
-        creator: {
-          include: {
-            supervisionAsSupervisee: {
-              where: {
-                status: 'active',
-              },
-              include: {
-                supervisor: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
-
-    // Check if file is signed by author
-    if (file.status !== FileStatus.SIGNED_BY_AUTHOR) {
-      throw new BadRequestException('File must be signed by author before co-signing');
-    }
-
-    // Verify the co-signer is the supervisor of the file creator
-    const supervisionRelationship = file.creator.supervisionAsSupervisee.find(
-      (rel) => rel.supervisor.id === coSignedBy
-    );
-
-    if (!supervisionRelationship) {
-      throw new ForbiddenException('Only the supervisor can co-sign this file');
-    }
-
-    // Update the file
-    const updatedFile = await this.prisma.clientFile.update({
-      where: { id: fileId },
-      data: {
-        status: FileStatus.SIGNED_BY_SUPERVISOR,
-        coSignedBy,
-        coSignedByDate: new Date(),
-        isCompletedOnStaff: true,
-      },
-      include: {
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        coSigner: {
           select: {
             id: true,
             firstName: true,
@@ -526,14 +427,6 @@ export class ClientFilesService {
           },
         },
         creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        coSigner: {
           select: {
             id: true,
             firstName: true,

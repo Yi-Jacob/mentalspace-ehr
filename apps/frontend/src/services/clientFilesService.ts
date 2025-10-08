@@ -48,15 +48,15 @@ export class ClientFilesService {
     return response.data;
   }
 
-  // Sign a file by the author
-  async signByAuthor(clientId: string, fileId: string): Promise<ClientFileDto> {
-    const response = await apiClient.put<ClientFileDto>(`${this.baseUrl}/${clientId}/files/${fileId}/sign`);
+  // Get shareable portal forms
+  async getShareablePortalForms(clientId: string): Promise<any[]> {
+    const response = await apiClient.get<any[]>(`${this.baseUrl}/${clientId}/files/shareable-portal-forms`);
     return response.data;
   }
 
-  // Co-sign a file by supervisor
-  async coSignFile(clientId: string, fileId: string): Promise<ClientFileDto> {
-    const response = await apiClient.put<ClientFileDto>(`${this.baseUrl}/${clientId}/files/${fileId}/co-sign`);
+  // Share a portal form with a client
+  async sharePortalForm(clientId: string, shareData: { portalFormId: string; notes?: string }): Promise<ClientFileDto> {
+    const response = await apiClient.post<ClientFileDto>(`${this.baseUrl}/${clientId}/files/share-portal-form`, shareData);
     return response.data;
   }
 

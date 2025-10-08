@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, PenTool, CheckCircle, Share, Eye } from 'lucide-react';
+import { FileText, Download, PenTool, CheckCircle, Share, Eye, FileEdit } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
@@ -12,6 +12,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/hooks/useAuth';
 import ShareDocumentModal from './ShareDocumentModal';
+import { useNavigate } from 'react-router-dom';
 
 interface ClientFilesTabProps {
   clientId: string;
@@ -25,6 +26,7 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
   const [selectedFileForNotes, setSelectedFileForNotes] = useState<ClientFileDto | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const fetchFiles = async () => {
     try {
@@ -57,6 +59,15 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
   };
 
   const handleDownload = async (file: ClientFileDto) => {
+    if (!file.file) {
+      toast({
+        title: "Error",
+        description: "Cannot download portal forms",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       // Get signed download URL from backend
       const downloadUrl = await clientFilesService.getDownloadUrl(clientId, file.id);
@@ -74,42 +85,6 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       toast({
         title: "Error",
         description: "Failed to download file",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSign = async (file: ClientFileDto) => {
-    try {
-      await clientFilesService.signByAuthor(clientId, file.id);
-      toast({
-        title: "Success",
-        description: "File signed successfully",
-      });
-      await fetchFiles();
-    } catch (error) {
-      console.error('Error signing file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to sign file",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCoSign = async (file: ClientFileDto) => {
-    try {
-      await clientFilesService.coSignFile(clientId, file.id);
-      toast({
-        title: "Success",
-        description: "File co-signed successfully",
-      });
-      await fetchFiles();
-    } catch (error) {
-      console.error('Error co-signing file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to co-sign file",
         variant: "destructive",
       });
     }
@@ -135,25 +110,13 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
 
   const getStatusBadge = (status: FileStatus) => {
     const statusOption = FILE_STATUS_OPTIONS.find(option => option.value === status);
-    const variant = status === 'completedbyclient' ? 'default' : 
-                   status === 'signedbysupervisor' ? 'secondary' : 
-                   status === 'signedbyauthor' ? 'outline' : 'destructive';
+    const variant = status === 'completedbyclient' ? 'default' : 'destructive';
     
     return (
       <Badge variant={variant}>
         {statusOption?.label || status}
       </Badge>
     );
-  };
-
-  const canSign = (file: ClientFileDto) => {
-    return file.createdBy === user?.id && file.status === 'draft';
-  };
-
-  const canCoSign = (file: ClientFileDto) => {
-    // This would need to be implemented based on supervision relationships
-    // For now, we'll check if the user is not the creator and the file is signed by author
-    return file.createdBy !== user?.id && file.status === 'signedbyauthor' && !file.isCompletedOnStaff;
   };
 
   const canComplete = (file: ClientFileDto) => {
@@ -164,15 +127,23 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
   const columns: TableColumn<ClientFileDto>[] = [
     {
       key: 'fileName',
-      header: 'File Name',
+      header: 'Name',
       accessor: (file) => (
         <div className="flex items-center">
-          <FileText className="h-5 w-5 text-gray-400 mr-3" />
+          {file.portalForm ? (
+            <FileEdit className="h-5 w-5 text-blue-400 mr-3" />
+          ) : (
+            <FileText className="h-5 w-5 text-gray-400 mr-3" />
+          )}
           <div>
             <div className="text-sm font-medium text-gray-900">
-              {file.file.fileName}
+              {file.portalForm ? file.portalForm.title : file.file?.fileName}
             </div>
-            {file.file.fileSize && (
+            {file.portalForm ? (
+              <div className="text-sm text-gray-500">
+                Portal Form
+              </div>
+            ) : file.file?.fileSize && (
               <div className="text-sm text-gray-500">
                 {(file.file.fileSize / 1024).toFixed(1)} KB
               </div>
@@ -182,7 +153,7 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       ),
       sortable: true,
       searchable: true,
-      searchValue: (file) => file.file.fileName,
+      searchValue: (file) => file.portalForm ? file.portalForm.title : file.file?.fileName || '',
     },
     {
       key: 'notes',
@@ -227,37 +198,37 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
     },
   ];
 
+  const handleViewPortalForm = async (file: ClientFileDto) => {
+    if (file.portalForm) {
+      navigate(`/library/portal-forms-response/${file.portalFormResponse.id}`);
+    }
+  };
+
   // Define table actions
   const actions = [
     {
-      label: 'Download',
-      icon: <Download className="h-4 w-4" />,
-      onClick: (file: ClientFileDto) => handleDownload(file),
-      variant: 'ghost' as const,
-    },
-    {
-      label: 'View Notes',
+      label: 'View',
       icon: <Eye className="h-4 w-4" />,
-      onClick: (file: ClientFileDto) => handleViewNotes(file),
+      onClick: (file: ClientFileDto) => {
+        if (file.portalForm) {
+          handleViewPortalForm(file);
+        } else {
+          handleViewNotes(file);
+        }
+      },
       variant: 'ghost' as const,
     },
     {
-      label: (file: ClientFileDto) => canSign(file) ? 'Sign' : '',
-      icon: (file: ClientFileDto) => canSign(file) ? <PenTool className="h-4 w-4" /> : null,
-      onClick: (file: ClientFileDto) => handleSign(file),
-      disabled: (file: ClientFileDto) => !canSign(file),
+      label: (file: ClientFileDto) => !file.portalForm ? 'Download' : '',
+      icon: (file: ClientFileDto) => !file.portalForm ? <Download className="h-4 w-4" /> : null,
+      onClick: (file: ClientFileDto) => handleDownload(file),
+      disabled: (file: ClientFileDto) => !!file.portalForm,
     },
     {
-      label: (file: ClientFileDto) => canCoSign(file) ? 'Co-sign' : '',
-      icon: (file: ClientFileDto) => canCoSign(file) ? <PenTool className="h-4 w-4" /> : null,
-      onClick: (file: ClientFileDto) => handleCoSign(file),
-      disabled: (file: ClientFileDto) => !canCoSign(file),
-    },
-    {
-      label: (file: ClientFileDto) => canComplete(file) ? 'Complete' : '',
-      icon: (file: ClientFileDto) => canComplete(file) ? <CheckCircle className="h-4 w-4" /> : null,
+      label: (file: ClientFileDto) => !file.portalForm && canComplete(file) ? 'Complete' : '',
+      icon: (file: ClientFileDto) => !file.portalForm && canComplete(file) ? <CheckCircle className="h-4 w-4" /> : null,
       onClick: (file: ClientFileDto) => handleComplete(file),
-      disabled: (file: ClientFileDto) => !canComplete(file),
+      disabled: (file: ClientFileDto) => !!file.portalForm || !canComplete(file),
     },
   ].filter(action => action.label !== ''); // Filter out empty actions
 
@@ -326,8 +297,15 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
           {selectedFileForNotes && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">File</h3>
-                <p className="text-sm text-gray-900">{selectedFileForNotes.file.fileName}</p>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  {selectedFileForNotes.portalForm ? 'Portal Form' : 'File'}
+                </h3>
+                <p className="text-sm text-gray-900">
+                  {selectedFileForNotes.portalForm 
+                    ? selectedFileForNotes.portalForm.title 
+                    : selectedFileForNotes.file?.fileName
+                  }
+                </p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Notes</h3>

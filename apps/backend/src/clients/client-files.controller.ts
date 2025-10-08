@@ -14,9 +14,9 @@ import {
 import { ClientFilesService } from './client-files.service';
 import { CreateClientFileDto } from './dto/create-client-file.dto';
 import { UpdateClientFileDto } from './dto/update-client-file.dto';
-import { SignFileDto } from './dto/sign-file.dto';
 import { CompleteFileDto } from './dto/complete-file.dto';
 import { ShareFileDto } from './dto/share-file.dto';
+import { SharePortalFormDto } from './dto/share-portal-form.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('clients/:clientId/files')
@@ -44,6 +44,14 @@ export class ClientFilesController {
   }
 
   /**
+   * Get shareable portal forms
+   */
+  @Get('shareable-portal-forms')
+  async getShareablePortalForms() {
+    return this.clientFilesService.getShareablePortalForms();
+  }
+
+  /**
    * Share a file with a client
    */
   @Post()
@@ -62,32 +70,14 @@ export class ClientFilesController {
   }
 
   /**
-   * Sign a file by the author
+   * Share a portal form with a client
    */
-  @Put(':fileId/sign')
-  @HttpCode(HttpStatus.OK)
-  async signByAuthor(
-    @Param('fileId') fileId: string,
-    @Request() req: any,
+  @Post('share-portal-form')
+  async sharePortalForm(
+    @Param('clientId') clientId: string,
+    @Body() sharePortalFormDto: SharePortalFormDto,
   ) {
-    const signFileDto: SignFileDto = {
-      fileId,
-      signedBy: req.user.id,
-    };
-
-    return this.clientFilesService.signByAuthor(signFileDto);
-  }
-
-  /**
-   * Co-sign a file by supervisor
-   */
-  @Put(':fileId/co-sign')
-  @HttpCode(HttpStatus.OK)
-  async coSignFile(
-    @Param('fileId') fileId: string,
-    @Request() req: any,
-  ) {
-    return this.clientFilesService.coSignFile(fileId, req.user.id);
+    return this.clientFilesService.sharePortalForm(clientId, sharePortalFormDto);
   }
 
   /**
