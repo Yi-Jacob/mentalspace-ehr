@@ -101,6 +101,22 @@ jobs:
         echo "Stopping existing containers..."
         docker-compose down --remove-orphans
         
+        echo "Cleaning up Docker data to free disk space..."
+        # Remove unused Docker images
+        docker image prune -af || echo "No unused images to remove"
+        
+        # Remove unused Docker containers
+        docker container prune -f || echo "No unused containers to remove"
+        
+        # Remove unused Docker volumes
+        docker volume prune -f || echo "No unused volumes to remove"
+        
+        # Remove unused Docker networks
+        docker network prune -f || echo "No unused networks to remove"
+        
+        # Remove all unused Docker data (images, containers, networks, volumes)
+        docker system prune -af --volumes || echo "Docker system cleanup completed"
+        
         echo "Building and starting containers..."
         docker-compose up -d --build
         
