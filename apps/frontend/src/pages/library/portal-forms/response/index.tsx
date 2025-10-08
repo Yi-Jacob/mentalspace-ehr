@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/basic/checkbox';
 import { Textarea } from '@/components/basic/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { portalFormService } from '@/services/portalFormService';
-import { PortalForm, PortalFormResponse, AnyFormElement, SubmitPortalFormResponseDto } from '@/types/portalFormType';
+import { PortalFormResponse, AnyFormElement, SubmitPortalFormResponseDto } from '@/types/portalFormType';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -227,28 +227,6 @@ const PortalFormResponsePage: React.FC = () => {
     }
   };
 
-  const getAccessLevelBadge = (accessLevel: string) => {
-    const variants = {
-      admin: 'destructive' as const,
-      clinician: 'secondary' as const,
-      billing: 'outline' as const,
-    };
-    
-    return (
-      <Badge variant={variants[accessLevel as keyof typeof variants] || 'outline'}>
-        {accessLevel?.charAt(0).toUpperCase() + accessLevel?.slice(1)}
-      </Badge>
-    );
-  };
-
-  const getSharableBadge = (sharable: string) => {
-    return (
-      <Badge variant={sharable === 'sharable' ? 'default' : 'secondary'}>
-        {sharable === 'sharable' ? 'Sharable' : 'Not Sharable'}
-      </Badge>
-    );
-  };
-
   if (loading) {
     return <LoadingSpinner message="Loading portal form response..." />;
   }
@@ -264,7 +242,6 @@ const PortalFormResponsePage: React.FC = () => {
   }
 
   const isPatient = user?.roles?.includes('Patient');
-  const isCreator = form?.clientFile.portalForm.creator?.id === user?.id;
   const hasResponse = !!response;
   const canEdit = isPatient && hasResponse && !isEditing;
   const canSubmit = false; // Since we're viewing an existing response, we can't submit a new one
@@ -309,39 +286,6 @@ const PortalFormResponsePage: React.FC = () => {
       />
 
       <div className="space-y-6">
-        {/* Form Information */}
-        {!isPatient && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Form Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Created By</p>
-                  <p className="font-medium">
-                    {form.clientFile.portalForm.creator?.firstName} {form.clientFile.portalForm.creator?.lastName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Created Date</p>
-                  <p className="font-medium">
-                    {new Date(form.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Access Level</p>
-                  {getAccessLevelBadge(form.clientFile.portalForm.accessLevel)}
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Sharable</p>
-                  {getSharableBadge(form.clientFile.portalForm.sharable)}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Response Information */}
         {hasResponse && (
           <Card>
@@ -359,14 +303,14 @@ const PortalFormResponsePage: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-600">Submitted Date</p>
                   <p className="font-medium">
-                    {new Date(response.createdAt).toLocaleDateString()}
+                    {new Date(response.createdAt).toLocaleString()}
                   </p>
                 </div>
                 {response.updatedAt !== response.createdAt && (
                   <div>
                     <p className="text-sm text-gray-600">Last Updated</p>
                     <p className="font-medium">
-                      {new Date(response.updatedAt).toLocaleDateString()}
+                      {new Date(response.updatedAt).toLocaleString()}
                     </p>
                   </div>
                 )}
