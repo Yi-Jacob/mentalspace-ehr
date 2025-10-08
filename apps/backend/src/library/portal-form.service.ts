@@ -190,8 +190,6 @@ export class PortalFormService {
   }
 
   async getPortalFormResponseById(responseId: string) {
-    console.log('Getting portal form response by ID:', responseId);
-
     // Get the response by ID with related data
     const response = await this.prisma.portalFormResponse.findUnique({
       where: { id: responseId },

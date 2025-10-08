@@ -236,14 +236,6 @@ export class LibraryService {
     // Check access permissions
     await this.checkFileAccess(file, userId);
 
-    // Debug logging
-    console.log('File details:', {
-      id: file.id,
-      fileName: file.fileName,
-      mimeType: file.mimeType,
-      fileUrl: file.fileUrl
-    });
-
     // Extract the S3 key from the file URL
     const url = new URL(file.fileUrl);
     const s3Key = url.pathname.substring(1); // Remove leading slash

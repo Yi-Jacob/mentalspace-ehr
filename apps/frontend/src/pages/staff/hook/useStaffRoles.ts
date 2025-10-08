@@ -27,7 +27,6 @@ export const useStaffRoles = () => {
 
   const hasRole = useCallback((role: UserRole): boolean => {
     const result = userRoles?.some(r => r.role === role) || false;
-    console.log(`Checking role ${role}:`, result, 'Available roles:', userRoles);
     return result;
   }, [userRoles]);
 

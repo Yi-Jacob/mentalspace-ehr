@@ -39,7 +39,6 @@ const PortalFormResponsePage: React.FC = () => {
     try {
       setLoading(true);
       const responseData = await portalFormService.getPortalFormResponseById(portalFormResponseId!);
-      console.log('Response data:', responseData);
       
       setResponse(responseData);
       setResponses(responseData.content.responses || {});

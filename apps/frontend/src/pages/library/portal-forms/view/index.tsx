@@ -30,7 +30,6 @@ const PortalFormViewPage: React.FC = () => {
   useEffect(() => {
     if (id) {
       fetchForm();
-      console.log(user);
     }
   }, [id]);
 
@@ -105,7 +104,7 @@ const PortalFormViewPage: React.FC = () => {
         },
         signature: signature || undefined,
       };
-      console.log(submitData);
+
       await portalFormService.submitPortalFormResponse(id!, submitData);
 
       toast({
