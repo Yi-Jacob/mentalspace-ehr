@@ -7,7 +7,6 @@ import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle, ArrowLeft, Bot } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import ClientInfoDisplay from '@/pages/notes/components/shared/ClientInfoDisplay';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -94,18 +93,18 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
 
   const defaultHeaderActions = (
     <div className="flex items-center justify-between w-full">
-      {showBackButton && (
-        <Button
-          variant="outline"
-          onClick={handleBackToNotes}
-          className="flex items-center space-x-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {backButtonText}
-        </Button>
-      )}
-      
       <div className="flex space-x-2">
+        {showBackButton && (
+          <Button
+            variant="outline"
+            onClick={handleBackToNotes}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {backButtonText}
+          </Button>
+        )}
+
         {noteType && onAIFill && (
           <Button
             variant="outline"

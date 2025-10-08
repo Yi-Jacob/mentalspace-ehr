@@ -25,7 +25,7 @@ const ClientInfoDisplay: React.FC<ClientInfoDisplayProps> = ({
   }
 
   return (
-    <div className="bg-gray-50 p-6 rounded-lg border">
+    <div className="bg-gray-50 p-6 rounded-lg border mb-4">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">Client Information</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>

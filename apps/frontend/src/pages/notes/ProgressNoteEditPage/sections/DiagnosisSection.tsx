@@ -8,7 +8,7 @@ import { Badge } from '@/components/basic/badge';
 import { Textarea } from '@/components/basic/textarea';
 import { Plus, X, History } from 'lucide-react';
 import { ProgressNoteFormData } from '@/types/noteType';
-import { useDiagnosesData } from '../../hooks/useIntakeAssessmentNoteDiagnosesData';
+import { AVAILABLE_DIAGNOSES } from '@/types/enums/notesEnum';
 import DiagnosisSearch, { DiagnosisOption } from '../../IntakeAssessmentNoteEditPage/sections/diagnosis/DiagnosisSearch';
 import DiagnosisSuggestions from '../../IntakeAssessmentNoteEditPage/sections/diagnosis/DiagnosisSuggestions';
 
@@ -23,7 +23,7 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
   updateFormData,
   clientData,
 }) => {
-  const { data: availableDiagnoses = [] } = useDiagnosesData();
+  const availableDiagnoses = AVAILABLE_DIAGNOSES;
   const [primarySearchTerm, setPrimarySearchTerm] = useState('');
   const [showPrimarySuggestions, setShowPrimarySuggestions] = useState(false);
   const [secondarySearchTerm, setSecondarySearchTerm] = useState('');

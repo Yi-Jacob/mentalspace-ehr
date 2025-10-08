@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { PracticeSettingsService, PracticeSettings, UpdatePracticeSettingsRequest } from '@/services/practiceSettingsService';
 import { CPT_CODES_BY_TYPE } from '@/types/enums/notesEnum';
-import { availableDiagnoses } from '@/data/diagnoses';
+import { AVAILABLE_DIAGNOSES } from '@/types/enums/notesEnum';
 
 const NotesSettingsTab: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -230,13 +230,13 @@ const NotesSettingsTab: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="max-h-96 overflow-y-auto">
             {Object.entries(
-              availableDiagnoses.reduce((acc, diagnosis) => {
+              AVAILABLE_DIAGNOSES.reduce((acc, diagnosis) => {
                 if (!acc[diagnosis.category]) {
                   acc[diagnosis.category] = [];
                 }
                 acc[diagnosis.category].push(diagnosis);
                 return acc;
-              }, {} as Record<string, typeof availableDiagnoses>)
+              }, {} as Record<string, typeof AVAILABLE_DIAGNOSES>)
             ).map(([category, diagnoses]) => (
               <div key={category} className="mb-6">
                 <h4 className="font-semibold text-sm text-gray-700 mb-2">{category}</h4>

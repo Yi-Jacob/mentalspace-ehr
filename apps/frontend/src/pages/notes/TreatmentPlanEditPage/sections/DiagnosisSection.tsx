@@ -5,7 +5,7 @@ import { Button } from '@/components/basic/button';
 import { Plus, X } from 'lucide-react';
 import { TreatmentPlanFormData } from '@/types/noteType';
 import SearchableSelect from '../../../../components/basic/SearchableSelect';
-import { availableDiagnoses } from '@/data/diagnoses';
+import { AVAILABLE_DIAGNOSES } from '@/types/enums/notesEnum';
 
 interface DiagnosisSectionProps {
   formData: TreatmentPlanFormData;
@@ -19,7 +19,7 @@ const DiagnosisSection: React.FC<DiagnosisSectionProps> = ({
   clientData,
 }) => {
   // Transform static diagnoses to match SearchableSelect format
-  const diagnosisOptions = availableDiagnoses.map(diagnosis => ({
+  const diagnosisOptions = AVAILABLE_DIAGNOSES.map(diagnosis => ({
     value: diagnosis.code,
     label: diagnosis.description,
     description: diagnosis.category || '',

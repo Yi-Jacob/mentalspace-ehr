@@ -80,7 +80,7 @@ const MiscellaneousNoteForm = () => {
       finalizeButtonColor="gray"
       noteType="miscellaneous_note"
       onAIFill={handleAIFill}
-      backButtonText="Back to Documentation"
+      backButtonText="Back to Notes"
     >
       {/* Basic Info Section */}
       <div className="space-y-4">
