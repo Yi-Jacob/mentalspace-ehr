@@ -96,11 +96,26 @@ export class ClientFilesService {
             description: true,
           },
         },
+        outcomeMeasure: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+          },
+        },
         portalFormResponse: {
           select: {
             id: true,
             content: true,
             signature: true,
+          },
+        },
+        outcomeMeasureResponse: {
+          select: {
+            id: true,
+            responses: true,
+            totalScore: true,
+            criteria: true,
           },
         },
       },
@@ -267,6 +282,35 @@ export class ClientFilesService {
   }
 
   /**
+   * Get shareable outcome measures
+   */
+  async getShareableOutcomeMeasures() {
+    const measures = await this.prisma.outcomeMeasure.findMany({
+      where: {
+        sharable: 'sharable',
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return measures;
+  }
+
+  /**
    * Share a portal form with a client
    */
   async sharePortalForm(clientId: string, shareFormDto: SharePortalFormDto) {
@@ -346,7 +390,91 @@ export class ClientFilesService {
       },
     });
 
-    return clientFile
+    return clientFile;
+  }
+
+  /**
+   * Share an outcome measure with a client
+   */
+  async shareOutcomeMeasure(clientId: string, shareMeasureDto: { outcomeMeasureId: string; notes?: string }) {
+    const { outcomeMeasureId, notes } = shareMeasureDto;
+
+    // Check if outcome measure exists and is shareable
+    const outcomeMeasure = await this.prisma.outcomeMeasure.findUnique({
+      where: { id: outcomeMeasureId },
+    });
+
+    if (!outcomeMeasure) {
+      throw new NotFoundException('Outcome measure not found');
+    }
+
+    if (outcomeMeasure.sharable !== 'sharable') {
+      throw new BadRequestException('Outcome measure is not shareable');
+    }
+
+    const clientUserId = await this.prisma.user.findUnique({
+      where: { clientId: clientId },
+      select: { id: true },
+    });
+
+    // Check if already shared
+    const existingShare = await this.prisma.clientFile.findFirst({
+      where: {
+        clientId: clientUserId.id,
+        outcomeMeasureId,
+      },
+    });
+
+    if (existingShare) {
+      throw new BadRequestException('Outcome measure is already shared with this client');
+    }
+
+    // Create client file record for outcome measure
+    const clientFile = await this.prisma.clientFile.create({
+      data: {
+        clientId: clientUserId.id,
+        outcomeMeasureId,
+        notes: notes || undefined,
+        status: 'draft',
+        createdBy: outcomeMeasure.createdBy,
+      },
+      include: {
+        outcomeMeasure: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            createdAt: true,
+            creator: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Create outcome measure response record linked to the client file
+    await this.prisma.outcomeMeasureResponse.create({
+      data: {
+        clientFileId: clientFile.id,
+        responses: [], // Empty responses initially, will be filled when client submits
+        totalScore: 0,
+        criteria: 'Not Completed',
+      },
+    });
+
+    return clientFile;
   }
 
   /**

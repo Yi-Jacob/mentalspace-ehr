@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Upload, Plus, Library, FileEdit } from 'lucide-react';
+import { FileText, Download, Eye, Upload, Plus, Library, FileEdit, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
@@ -7,7 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/basic/tab
 import { useToast } from '@/hooks/use-toast';
 import { LibraryFile, libraryService } from '@/services/libraryService';
 import { portalFormService } from '@/services/portalFormService';
+import { outcomeMeasureService } from '@/services/outcomeMeasureService';
 import { PortalForm } from '@/types/portalFormType';
+import { OutcomeMeasure } from '@/types/outcomeMeasureType';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
 import PageLayout from '@/components/basic/PageLayout';
@@ -20,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 const LibraryPage: React.FC = () => {
   const [files, setFiles] = useState<LibraryFile[]>([]);
   const [portalForms, setPortalForms] = useState<PortalForm[]>([]);
+  const [outcomeMeasures, setOutcomeMeasures] = useState<OutcomeMeasure[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -58,10 +61,24 @@ const LibraryPage: React.FC = () => {
     }
   };
 
+  const fetchOutcomeMeasures = async () => {
+    try {
+      const measuresData = await outcomeMeasureService.getAllOutcomeMeasures();
+      setOutcomeMeasures(measuresData);
+    } catch (error) {
+      console.error('Error fetching outcome measures:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load outcome measures",
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      await Promise.all([fetchFiles(), fetchPortalForms()]);
+      await Promise.all([fetchFiles(), fetchPortalForms(), fetchOutcomeMeasures()]);
     } finally {
       setLoading(false);
     }
@@ -155,6 +172,18 @@ const LibraryPage: React.FC = () => {
 
   const handleEditPortalForm = (form: PortalForm) => {
     navigate(`/library/portal-forms/${form.id}/edit`);
+  };
+
+  const handleCreateOutcomeMeasure = () => {
+    navigate('/library/outcome-measures/create');
+  };
+
+  const handleViewOutcomeMeasure = (measure: OutcomeMeasure) => {
+    navigate(`/library/outcome-measures/${measure.id}`);
+  };
+
+  const handleEditOutcomeMeasure = (measure: OutcomeMeasure) => {
+    navigate(`/library/outcome-measures/${measure.id}/edit`);
   };
 
   const getAccessLevelBadge = (accessLevel: string) => {
@@ -325,6 +354,79 @@ const LibraryPage: React.FC = () => {
     },
   ];
 
+  // Define outcome measure table columns
+  const outcomeMeasureColumns: TableColumn<OutcomeMeasure>[] = [
+    {
+      key: 'title',
+      header: 'Measure Name',
+      accessor: (measure) => (
+        <div className="flex items-center">
+          <BarChart3 className="h-5 w-5 text-gray-400 mr-3" />
+          <div>
+            <div className="text-sm font-medium text-gray-900">
+              {measure.title}
+            </div>
+            {measure.description && (
+              <div className="text-sm text-gray-500 truncate max-w-xs">
+                {measure.description}
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+      sortable: true,
+      searchable: true,
+      searchValue: (measure) => measure.title,
+    },
+    {
+      key: 'accessLevel',
+      header: 'Access Level',
+      accessor: (measure) => getAccessLevelBadge(measure.accessLevel),
+      sortable: true,
+      searchable: true,
+      searchValue: (measure) => measure.accessLevel,
+    },
+    {
+      key: 'sharable',
+      header: 'Sharable',
+      accessor: (measure) => getSharableBadge(measure.sharable),
+      sortable: true,
+      searchable: true,
+      searchValue: (measure) => measure.sharable,
+    },
+    {
+      key: 'createdBy',
+      header: 'Created By',
+      accessor: (measure) => `${measure.creator.firstName} ${measure.creator.lastName}`,
+      sortable: true,
+      searchable: true,
+      searchValue: (measure) => `${measure.creator.firstName} ${measure.creator.lastName}`,
+    },
+    {
+      key: 'createdAt',
+      header: 'Created Date',
+      accessor: (measure) => new Date(measure.createdAt).toLocaleDateString(),
+      sortable: true,
+      searchable: false,
+    },
+  ];
+
+  // Define outcome measure table actions
+  const outcomeMeasureActions = [
+    {
+      label: 'View',
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (measure: OutcomeMeasure) => handleViewOutcomeMeasure(measure),
+      variant: 'ghost' as const,
+    },
+    {
+      label: 'Edit',
+      icon: <FileEdit className="h-4 w-4" />,
+      onClick: (measure: OutcomeMeasure) => handleEditOutcomeMeasure(measure),
+      variant: 'ghost' as const,
+    },
+  ];
+
   if (loading) {
     return <LoadingSpinner message="Loading library files..." />;
   }
@@ -352,15 +454,23 @@ const LibraryPage: React.FC = () => {
                 <Plus className="h-4 w-4" />
                 <span>Create Form</span>
               </Button>
+              <Button
+                onClick={handleCreateOutcomeMeasure}
+                className="flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Create Measure</span>
+              </Button>
             </div>
           )
         }
       />
 
       <Tabs defaultValue="files" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="files">Files</TabsTrigger>
           <TabsTrigger value="portal-forms">Portal Forms</TabsTrigger>
+          <TabsTrigger value="outcome-measures">Outcome Measures</TabsTrigger>
         </TabsList>
         
         <TabsContent value="files" className="space-y-4">
@@ -394,6 +504,26 @@ const LibraryPage: React.FC = () => {
                 title="No portal forms found"
                 description="Create portal forms to get started"
                 icon={FileEdit}
+              />
+            }
+            searchable={true}
+            sortable={true}
+            pagination={true}
+            pageSize={10}
+          />
+        </TabsContent>
+        
+        <TabsContent value="outcome-measures" className="space-y-4">
+          <Table
+            data={outcomeMeasures}
+            columns={outcomeMeasureColumns}
+            actions={outcomeMeasureActions}
+            loading={loading}
+            emptyMessage={
+              <EmptyState
+                title="No outcome measures found"
+                description="Create outcome measures to get started"
+                icon={BarChart3}
               />
             }
             searchable={true}

@@ -54,9 +54,21 @@ export class ClientFilesService {
     return response.data;
   }
 
+  // Get shareable outcome measures
+  async getShareableOutcomeMeasures(clientId: string): Promise<any[]> {
+    const response = await apiClient.get<any[]>(`${this.baseUrl}/${clientId}/files/shareable-outcome-measures`);
+    return response.data;
+  }
+
   // Share a portal form with a client
   async sharePortalForm(clientId: string, shareData: { portalFormId: string; notes?: string }): Promise<ClientFileDto> {
     const response = await apiClient.post<ClientFileDto>(`${this.baseUrl}/${clientId}/files/share-portal-form`, shareData);
+    return response.data;
+  }
+
+  // Share an outcome measure with a client
+  async shareOutcomeMeasure(clientId: string, shareData: { outcomeMeasureId: string; notes?: string }): Promise<ClientFileDto> {
+    const response = await apiClient.post<ClientFileDto>(`${this.baseUrl}/${clientId}/files/share-outcome-measure`, shareData);
     return response.data;
   }
 

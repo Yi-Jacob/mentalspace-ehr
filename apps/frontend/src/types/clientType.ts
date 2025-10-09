@@ -235,6 +235,20 @@ export interface ClientFileDto {
   portalFormResponse?: {
     id: string;
   };
+  outcomeMeasure?: {
+    id: string;
+    title: string;
+    description?: string;
+    createdAt: string;
+    creator: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    };
+  };
+  outcomeMeasureResponse?: {
+    id: string;
+  }
 }
 
 export interface CreateClientFileDto {

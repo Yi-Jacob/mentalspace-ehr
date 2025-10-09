@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, CheckCircle, Clock, AlertCircle, Eye, FileEdit } from 'lucide-react';
+import { FileText, Download, CheckCircle, Clock, AlertCircle, Eye, FileEdit, BarChart3 } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
 import { Table, TableColumn } from '@/components/basic/table';
@@ -32,7 +32,7 @@ const ClientFilesPage: React.FC = () => {
 
   const loadFiles = async () => {
     if (!clientId) return;
-    
+
     try {
       setLoading(true);
       const filesData = await clientFilesService.getForClient(clientId);
@@ -85,6 +85,12 @@ const ClientFilesPage: React.FC = () => {
     }
   };
 
+  const handleViewOutcomeMeasure = async (file: ClientFileDto) => {
+    if (file.outcomeMeasure) {
+      navigate(`/library/outcome-measures-response/${file.outcomeMeasureResponse.id}`);
+    }
+  };
+
   const handleViewNotes = (file: ClientFileDto) => {
     setSelectedFileForNotes(file);
   };
@@ -129,12 +135,17 @@ const ClientFilesPage: React.FC = () => {
         <div className="flex items-center space-x-2">
           {file.portalForm ? (
             <FileEdit className="h-4 w-4 text-blue-500" />
+          ) : file.outcomeMeasure ? (
+            <BarChart3 className="h-4 w-4 text-green-500" />
           ) : (
             <FileText className="h-4 w-4 text-gray-500" />
           )}
-          <span className="font-medium">{file.file?.fileName || file.portalForm?.title}</span>
+          <span className="font-medium">{file.file?.fileName || file.portalForm?.title || file.outcomeMeasure?.title}</span>
           {file.portalForm && (
             <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Portal Form</span>
+          )}
+          {file.outcomeMeasure && (
+            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">Outcome Measure</span>
           )}
         </div>
       ),
@@ -182,6 +193,8 @@ const ClientFilesPage: React.FC = () => {
       onClick: (file: ClientFileDto) => {
         if (file.portalForm) {
           handleViewPortalForm(file);
+        } else if (file.outcomeMeasure) {
+          handleViewOutcomeMeasure(file);
         } else {
           handleViewNotes(file);
         }
@@ -225,7 +238,7 @@ const ClientFilesPage: React.FC = () => {
         title="My Files"
         description="View and manage files shared with you by your healthcare providers"
       />
-      
+
       <Table
         data={files}
         columns={columns}
@@ -236,8 +249,8 @@ const ClientFilesPage: React.FC = () => {
         pagination={true}
         pageSize={10}
       />
-            {/* Notes Modal */}
-            <Dialog open={!!selectedFileForNotes} onOpenChange={() => setSelectedFileForNotes(null)}>
+      {/* Notes Modal */}
+      <Dialog open={!!selectedFileForNotes} onOpenChange={() => setSelectedFileForNotes(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">File Notes</DialogTitle>
@@ -245,7 +258,7 @@ const ClientFilesPage: React.FC = () => {
               View notes for the selected file.
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedFileForNotes && (
             <div className="space-y-4">
               <div>
@@ -253,8 +266,8 @@ const ClientFilesPage: React.FC = () => {
                   {selectedFileForNotes.portalForm ? 'Portal Form' : 'File'}
                 </h3>
                 <p className="text-sm text-gray-900">
-                  {selectedFileForNotes.portalForm 
-                    ? selectedFileForNotes.portalForm.title 
+                  {selectedFileForNotes.portalForm
+                    ? selectedFileForNotes.portalForm.title
                     : selectedFileForNotes.file?.fileName
                   }
                 </p>

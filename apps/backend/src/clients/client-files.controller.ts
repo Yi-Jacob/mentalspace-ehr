@@ -52,6 +52,14 @@ export class ClientFilesController {
   }
 
   /**
+   * Get shareable outcome measures
+   */
+  @Get('shareable-outcome-measures')
+  async getShareableOutcomeMeasures() {
+    return this.clientFilesService.getShareableOutcomeMeasures();
+  }
+
+  /**
    * Share a file with a client
    */
   @Post()
@@ -78,6 +86,17 @@ export class ClientFilesController {
     @Body() sharePortalFormDto: SharePortalFormDto,
   ) {
     return this.clientFilesService.sharePortalForm(clientId, sharePortalFormDto);
+  }
+
+  /**
+   * Share an outcome measure with a client
+   */
+  @Post('share-outcome-measure')
+  async shareOutcomeMeasure(
+    @Param('clientId') clientId: string,
+    @Body() shareMeasureDto: { outcomeMeasureId: string; notes?: string },
+  ) {
+    return this.clientFilesService.shareOutcomeMeasure(clientId, shareMeasureDto);
   }
 
   /**
