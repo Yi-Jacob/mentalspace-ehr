@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, PenTool, CheckCircle, Share, Eye, FileEdit } from 'lucide-react';
+import { FileText, Download, CheckCircle, Share, Eye, FileEdit, BarChart3, X } from 'lucide-react';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/basic/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ClientFileDto } from '@/types/clientType';
 import { clientFilesService } from '@/services/clientFilesService';
@@ -13,6 +12,7 @@ import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/hooks/useAuth';
 import ShareDocumentModal from './ShareDocumentModal';
 import { useNavigate } from 'react-router-dom';
+import FileViewerModal from '@/pages/library/components/FileViewerModal';
 
 interface ClientFilesTabProps {
   clientId: string;
@@ -23,7 +23,8 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
   const [files, setFiles] = useState<ClientFileDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [selectedFileForNotes, setSelectedFileForNotes] = useState<ClientFileDto | null>(null);
+  const [selectedFile, setSelectedFile] = useState<ClientFileDto['file'] | null>(null);
+  const [isViewerModalOpen, setIsViewerModalOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -54,8 +55,20 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
     await fetchFiles();
   };
 
-  const handleViewNotes = (file: ClientFileDto) => {
-    setSelectedFileForNotes(file);
+  const handleViewFile = (file: ClientFileDto['file']) => {
+    setSelectedFile(file);
+    setIsViewerModalOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+      setSelectedFile(null);
+      setIsViewerModalOpen(false);
+  };
+
+  const handleViewOutcomeMeasure = (file: ClientFileDto) => {
+    if (file.outcomeMeasure) {
+      navigate(`/library/outcome-measures-response/${file.outcomeMeasureResponse.id}`);
+    }
   };
 
   const handleDownload = async (file: ClientFileDto) => {
@@ -132,12 +145,14 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
         <div className="flex items-center">
           {file.portalForm ? (
             <FileEdit className="h-5 w-5 text-blue-400 mr-3" />
+          ) : file.outcomeMeasure ? (
+            <BarChart3 className="h-5 w-5 text-green-400 mr-3" />
           ) : (
             <FileText className="h-5 w-5 text-gray-400 mr-3" />
           )}
           <div>
             <div className="text-sm font-medium text-gray-900">
-              {file.portalForm ? file.portalForm.title : file.file?.fileName}
+              {file.portalForm ? file.portalForm.title : file.outcomeMeasure ? file.outcomeMeasure.title : file.file?.fileName}
             </div>
             {file.portalForm ? (
               <div className="text-sm text-gray-500">
@@ -154,24 +169,6 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       sortable: true,
       searchable: true,
       searchValue: (file) => file.portalForm ? file.portalForm.title : file.file?.fileName || '',
-    },
-    {
-      key: 'notes',
-      header: 'Notes',
-      accessor: (file) => (
-        <div className="max-w-xs">
-          {file.notes ? (
-            <div className="text-sm text-gray-900 truncate" title={file.notes}>
-              {file.notes}
-            </div>
-          ) : (
-            <span className="text-sm text-gray-400 italic">No notes</span>
-          )}
-        </div>
-      ),
-      sortable: false,
-      searchable: true,
-      searchValue: (file) => file.notes || '',
     },
     {
       key: 'createdBy',
@@ -212,8 +209,10 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
       onClick: (file: ClientFileDto) => {
         if (file.portalForm) {
           handleViewPortalForm(file);
-        } else {
-          handleViewNotes(file);
+        } else if (file.outcomeMeasure) {
+          handleViewOutcomeMeasure(file);
+        } else if (file.file) {
+          handleViewFile(file.file);
         }
       },
       variant: 'ghost' as const,
@@ -284,51 +283,12 @@ const ClientFilesTab: React.FC<ClientFilesTabProps> = ({ clientId, clientName })
         onFileShared={handleFileShared}
       />
 
-      {/* Notes Modal */}
-      <Dialog open={!!selectedFileForNotes} onOpenChange={() => setSelectedFileForNotes(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">File Notes</DialogTitle>
-            <DialogDescription className="text-gray-600">
-              View notes for the selected file.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedFileForNotes && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  {selectedFileForNotes.portalForm ? 'Portal Form' : 'File'}
-                </h3>
-                <p className="text-sm text-gray-900">
-                  {selectedFileForNotes.portalForm 
-                    ? selectedFileForNotes.portalForm.title 
-                    : selectedFileForNotes.file?.fileName
-                  }
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Notes</h3>
-                {selectedFileForNotes.notes ? (
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedFileForNotes.notes}</p>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">No notes available</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSelectedFileForNotes(null)}
-              className="flex-1"
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* File Viewer Modal */}
+      <FileViewerModal
+        isOpen={isViewerModalOpen}
+        onClose={handleCloseViewer}
+        file={selectedFile}
+      />
     </div>
   );
 };

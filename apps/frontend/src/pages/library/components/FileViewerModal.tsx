@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, FileText, Image, File } from 'lucide-react';
 import { Button } from '@/components/basic/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/basic/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { LibraryFile, libraryService } from '@/services/libraryService';
+import { ClientFileDto } from '@/types/clientType';
 
 interface FileViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  file: LibraryFile | null;
+  file: LibraryFile | ClientFileDto['file'] | null;
 }
 
 const FileViewerModal: React.FC<FileViewerModalProps> = ({
@@ -269,24 +271,23 @@ const FileViewerModal: React.FC<FileViewerModalProps> = ({
     );
   };
 
-  if (!isOpen || !file) return null;
+  if (!file) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-6xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-3">
             {getFileIcon(file.mimeType)}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 truncate max-w-md">
+              <DialogTitle className="text-lg font-semibold text-gray-900 truncate max-w-md">
                 {file.fileName}
-              </h2>
-              <p className="text-sm text-gray-500">
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-500">
                 {file.fileSize ? `${(file.fileSize / 1024).toFixed(1)} KB` : 'Unknown size'} • 
                 {file.mimeType || 'Unknown MIME type'} • 
                 {getFileExtension(file.fileName) || 'No extension'}
-              </p>
+              </DialogDescription>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -309,14 +310,14 @@ const FileViewerModal: React.FC<FileViewerModalProps> = ({
               <span>Close</span>
             </Button>
           </div>
-        </div>
+        </DialogHeader>
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
           {renderFileContent()}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
