@@ -17,6 +17,7 @@ import libraryRoutes from './library-routes';
 import MyProfilePage from '../pages/my-profile';
 import WorkScheduleManagement from '@/pages/work-schedule';
 import ClientFilesPage from '../pages/client-files';
+import NotificationsPage from '../pages/notifications';
 
 const authenticatedRoutes: RouteObject[] = [
   // Dashboard (index route)
@@ -92,6 +93,11 @@ const authenticatedRoutes: RouteObject[] = [
   {
     path: 'files',
     element: <ClientFilesPage />,
+  },
+  // Notifications
+  {
+    path: 'notifications',
+    element: <NotificationsPage />,
   },
   {
     path: '*',
