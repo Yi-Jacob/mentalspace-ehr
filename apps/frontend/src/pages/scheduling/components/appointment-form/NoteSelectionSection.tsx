@@ -37,7 +37,7 @@ const NoteSelectionSection: React.FC<NoteSelectionSectionProps> = ({
       const response = await noteService.getNotes({
         clientId,
         limit: 100, // Get more notes for selection
-        status: 'signed' // Only show signed notes
+        status: 'accepted' // Only show signed notes
       });
       setNotes(response.notes);
     } catch (error) {

@@ -327,39 +327,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Common actions to manage your tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                <User className="h-6 w-6" />
-                <span className="text-sm">View Account Tasks</span>
-              </Button>
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                <Users className="h-6 w-6" />
-                <span className="text-sm">View Patient Tasks</span>
-              </Button>
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                <Calendar className="h-6 w-6" />
-                <span className="text-sm">View Appointments</span>
-              </Button>
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                <FileText className="h-6 w-6" />
-                <span className="text-sm">View Notes</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </PageLayout>
   );
