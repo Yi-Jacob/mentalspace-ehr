@@ -3,12 +3,14 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateNoteDto, UpdateNoteDto, QueryNotesDto, NoteStatus } from './dto';
 import { NoteEntity } from './entities/note.entity';
 import { NoteHistoryService } from './note-history.service';
+import { NotificationService } from '../common/notification.service';
 
 @Injectable()
 export class NotesService {
   constructor(
     private prisma: PrismaService,
-    private noteHistoryService: NoteHistoryService
+    private noteHistoryService: NoteHistoryService,
+    private notificationService: NotificationService
   ) {}
 
   async createNote(createNoteDto: CreateNoteDto, providerId: string): Promise<NoteEntity> {
@@ -567,6 +569,35 @@ export class NotesService {
         }
       }
     });
+
+    // Create notifications for note signing
+    try {
+      // Get supervisor details for notifications
+      const supervisors = await this.prisma.user.findMany({
+        where: { id: { in: supervisorIds } },
+        select: { id: true, firstName: true, lastName: true }
+      });
+
+      const noteTitle = note.title;
+      const clientName = `${note.client.firstName} ${note.client.lastName}`;
+      const providerName = `${note.provider.firstName} ${note.provider.lastName}`;
+
+      // Notify supervisors if note needs co-signature
+      if (supervisors.length > 0) {
+        const notifications = supervisors.map(supervisor => 
+          this.notificationService.createNoteNotification(
+            supervisor.id,
+            note.id,
+            `Clinical note "${noteTitle}" for ${clientName} by ${providerName} requires your co-signature`,
+            'signed'
+          )
+        );
+        await Promise.all(notifications);
+      }
+    } catch (error) {
+      console.error('Error creating note signing notifications:', error);
+      // Don't fail the note signing if notifications fail
+    }
 
     return this.mapToEntity(note);
   }

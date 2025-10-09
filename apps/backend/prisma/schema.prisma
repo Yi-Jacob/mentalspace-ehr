@@ -62,6 +62,7 @@ model User {
   createdFiles                  File[]                       @relation("FileCreator")
   createdPortalForms            PortalForm[]                 @relation("PortalFormCreator")
   createdOutcomeMeasures        OutcomeMeasure[]             @relation("OutcomeMeasureCreator")
+  notifications                 Notification[]               @relation("UserNotifications")
 
   @@map("users")
 }
@@ -1186,4 +1187,22 @@ model OutcomeMeasureResponse {
   
   @@index([clientFileId], map: "idx_outcome_measure_response_client_file_id")
   @@map("outcome_measure_responses")
+}
+
+model Notification {
+  id             String    @id @default(uuid())
+  receiverId     String    @map("receiver_id")
+  content        String
+  isViewed       Boolean   @default(false) @map("is_viewed")
+  viewedAt       DateTime? @map("viewed_at")
+  associatedLink String?   @map("associated_link")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+  
+  receiver       User      @relation("UserNotifications", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  @@index([receiverId], map: "idx_notification_receiver_id")
+  @@index([isViewed], map: "idx_notification_is_viewed")
+  @@index([createdAt], map: "idx_notification_created_at")
+  @@map("notifications")
 }

@@ -24,6 +24,7 @@ import { AuditModule } from './audit/audit.module';
 import { TodoModule } from './todo/todo.module';
 import { LibraryModule } from './library/library.module';
 import { PracticeSettingsModule } from './practice-settings/practice-settings.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor';
 
 @Module({
@@ -58,6 +59,7 @@ import { AuditLogInterceptor } from './audit/interceptors/audit-log.interceptor'
     TodoModule,
     LibraryModule,
     PracticeSettingsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
