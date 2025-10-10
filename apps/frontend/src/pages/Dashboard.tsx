@@ -11,8 +11,7 @@ import {
   Clock,
   CheckCircle,
   Video,
-  AlertTriangle,
-  Plus
+  AlertTriangle
 } from 'lucide-react';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -20,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/basic/badge';
 import { Button } from '@/components/basic/button';
 import { todoService } from '@/services/todoService';
+import { NotificationService } from '@/services/notificationService';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   AccountTodoItem, 
@@ -28,6 +28,7 @@ import {
   NoteTodoItem,
   TodoPriority
 } from '@/types/todoTypes';
+import { NotificationData } from '@/types/notification';
 
 interface DashboardStats {
   overdueTodos: number;
@@ -44,6 +45,7 @@ const Dashboard = () => {
   const [patientTodos, setPatientTodos] = useState<PatientTodoItem[]>([]);
   const [appointmentTodos, setAppointmentTodos] = useState<AppointmentTodoItem[]>([]);
   const [noteTodos, setNoteTodos] = useState<NoteTodoItem[]>([]);
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
   // Redirect patients to scheduling page
   if (user?.clientId) {
@@ -57,17 +59,19 @@ const Dashboard = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [accountData, patientData, appointmentData, noteData] = await Promise.all([
+      const [accountData, patientData, appointmentData, noteData, notificationsData] = await Promise.all([
         todoService.getAccountTodos(),
         todoService.getPatientTodos(),
         todoService.getAppointmentTodos(),
         todoService.getNoteTodos(),
+        NotificationService.getNotifications(10, 0), // Get latest 10 notifications
       ]);
 
       setAccountTodos(accountData);
       setPatientTodos(patientData);
       setAppointmentTodos(appointmentData);
       setNoteTodos(noteData);
+      setNotifications(notificationsData);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -145,6 +149,29 @@ const Dashboard = () => {
 
   const handleAttendMeeting = (meetLink: string) => {
     window.open(meetLink, '_blank');
+  };
+
+  // Filter critical notifications (unread and recent)
+  const criticalNotifications = useMemo(() => {
+    return notifications
+      .filter(notification => !notification.isViewed)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5); // Show only top 5 critical notifications
+  }, [notifications]);
+
+  const formatNotificationTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInHours * 60);
+      return `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)}h ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   };
 
   if (authLoading || loading) {
@@ -239,7 +266,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Urgent Tasks */}
           <Card>
             <CardHeader>
@@ -322,6 +349,55 @@ const Dashboard = () => {
                 <div className="text-center py-6">
                   <CheckSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">No recent tasks</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Critical Notifications */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                Critical Notifications
+              </CardTitle>
+              <CardDescription>
+                Unread notifications requiring attention
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {criticalNotifications.length > 0 ? (
+                <div className="space-y-3">
+                  {criticalNotifications.map((notification) => (
+                    <div key={notification.id} className="flex items-start justify-between p-3 border rounded-lg bg-orange-50 border-orange-200">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-gray-900">{notification.content}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                            NEW
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {formatNotificationTime(notification.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                      {notification.associatedLink && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(notification.associatedLink, '_blank')}
+                          className="ml-2"
+                        >
+                          View
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No critical notifications</p>
                 </div>
               )}
             </CardContent>
