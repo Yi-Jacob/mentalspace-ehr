@@ -31,6 +31,8 @@ import { useSidebarContext } from '@/hooks/useSidebarContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/basic/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/basic/popover';
+import { NotificationBadge } from '@/components/basic/notification-badge';
+import { useNotificationCount } from '@/hooks/useNotificationCount';
 import { filterMenuItemsByRole } from '@/utils/menuPermissions';
 import { UserRole } from '@/types/enums/staffEnum';
 import { MENU_ITEMS_CONFIG } from '@/types/enums/sidebarEnum';
@@ -87,6 +89,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const isMobile = useIsMobile();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  
+  // Notification count hook
+  const { unreadCount, refresh: refreshNotifications } = useNotificationCount({
+    pollInterval: 15000, // 15 seconds
+    enabled: !!user, // Only poll if user is logged in
+  });
 
   // Handler functions for user menu
   const handleMyProfile = () => {
@@ -97,6 +105,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
   const handleNotifications = () => {
     setIsUserMenuOpen(false);
     navigate('/notifications');
+    // Refresh notification count when navigating to notifications page
+    refreshNotifications();
   };
 
   const handleSignOut = () => {
@@ -293,13 +303,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
         {!isCollapsed ? (
           <Popover open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen}>
             <PopoverTrigger asChild>
-              <div className="px-3 py-2 bg-slate-700/40 rounded-lg border border-slate-600/30 cursor-pointer hover:bg-slate-600/30 transition-all duration-200">
+              <div className="px-3 py-2 bg-slate-700/40 rounded-lg border border-slate-600/30 cursor-pointer hover:bg-slate-600/30 transition-all duration-200 relative">
                 <div className="text-white text-sm font-medium">
                   {user ? `${user.firstName} ${user.lastName}` : 'User'}
                 </div>
                 <div className="text-slate-300 text-xs">
                   {user?.roles?.[0] || 'Staff'}
                 </div>
+                <NotificationBadge count={unreadCount} />
               </div>
             </PopoverTrigger>
             <PopoverContent 
@@ -322,7 +333,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
                   className="w-full justify-start text-left font-normal text-slate-200 hover:text-white hover:bg-slate-700/50"
                   onClick={handleNotifications}
                 >
-                  <Bell className="mr-2 h-4 w-4" />
+                  <div className="relative mr-2">
+                    <Bell className="h-4 w-4" />
+                    <NotificationBadge count={unreadCount} className="-top-1 -right-1" />
+                  </div>
                   Notifications
                 </Button>
                 <div className="border-t border-slate-600/30 my-1"></div>
@@ -342,8 +356,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
             <PopoverTrigger asChild>
               <div className="flex flex-col items-center space-y-2">
                 {/* User Avatar/Initials - Clickable */}
-                <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-medium text-sm border border-slate-500/30 cursor-pointer hover:bg-slate-500 transition-all duration-200">
+                <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-medium text-sm border border-slate-500/30 cursor-pointer hover:bg-slate-500 transition-all duration-200 relative">
                   {user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : 'U'}
+                  <NotificationBadge count={unreadCount} />
                 </div>
               </div>
             </PopoverTrigger>
@@ -367,7 +382,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem: propActiveItem, onItemCli
                   className="w-full justify-start text-left font-normal text-slate-200 hover:text-white hover:bg-slate-700/50"
                   onClick={handleNotifications}
                 >
-                  <Bell className="mr-2 h-4 w-4" />
+                  <div className="relative ml-10">
+                    <Bell className="h-4 w-4" />
+                    <NotificationBadge count={unreadCount} className="-top-1 -right-1" />
+                  </div>
                   Notifications
                 </Button>
                 <div className="border-t border-slate-600/30 my-1"></div>

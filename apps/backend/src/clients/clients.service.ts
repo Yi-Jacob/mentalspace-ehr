@@ -4,6 +4,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { EmailService } from '../common/email.service';
 import { AuthService } from '../auth/auth.service';
+import { NotificationService } from '../common/notification.service';
 
 /**
  * Interface representing client data returned for note creation workflows.
@@ -22,6 +23,7 @@ export class ClientsService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private authService: AuthService,
+    private notificationService: NotificationService,
   ) {}
 
   // Utility function to convert date strings to Date objects
@@ -866,6 +868,7 @@ export class ClientsService {
           include: {
             user: {
               select: {
+                id: true,
                 firstName: true,
                 lastName: true,
                 email: true,
@@ -873,8 +876,30 @@ export class ClientsService {
             },
           },
         },
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
+
+    // Send notification to clinician
+    try {
+      if (assignment.clinician.user) {
+        const clientName = `${assignment.client.firstName} ${assignment.client.lastName}`;
+        
+        await this.notificationService.createNotification({
+          receiverId: assignment.clinician.user.id,
+          content: `You have been assigned a new patient: ${clientName}`,
+          associatedLink: '/clients',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating notification for clinician assignment:', error);
+      // Don't fail the assignment if notification fails
+    }
 
     return assignment;
   }
@@ -887,10 +912,46 @@ export class ClientsService {
           clinicianId: clinicianId,
         },
       },
+      include: {
+        clinician: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        client: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     if (!assignment) {
       throw new Error('Clinician assignment not found');
+    }
+
+    // Send notification to clinician before removing assignment
+    try {
+      if (assignment.clinician.user) {
+        const clientName = `${assignment.client.firstName} ${assignment.client.lastName}`;
+        
+        await this.notificationService.createNotification({
+          receiverId: assignment.clinician.user.id,
+          content: `You have been removed from patient: ${clientName}`,
+          associatedLink: '/clients',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating notification for clinician removal:', error);
+      // Don't fail the removal if notification fails
     }
 
     return this.prisma.clientClinician.delete({

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
+// Simple in-memory cache for notification counts
+const notificationCountCache = new Map<string, { count: number; timestamp: number }>();
+const CACHE_TTL = 10000; // 10 seconds cache
+
 export interface CreateNotificationData {
   receiverId: string;
   content: string;
@@ -16,11 +20,18 @@ export class NotificationService {
    */
   async createNotification(data: CreateNotificationData) {
     try {
+      // Automatically add frontend URL to associated link if provided
+      let fullAssociatedLink = data.associatedLink;
+      if (data.associatedLink && !data.associatedLink.startsWith('http')) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        fullAssociatedLink = `${frontendUrl}${data.associatedLink.startsWith('/') ? '' : '/'}${data.associatedLink}`;
+      }
+
       const notification = await this.prisma.notification.create({
         data: {
           receiverId: data.receiverId,
           content: data.content,
-          associatedLink: data.associatedLink,
+          associatedLink: fullAssociatedLink,
         },
         include: {
           receiver: {
@@ -34,6 +45,9 @@ export class NotificationService {
         },
       });
 
+      // Invalidate cache for the receiver
+      notificationCountCache.delete(data.receiverId);
+
       return notification;
     } catch (error) {
       console.error('Error creating notification:', error);
@@ -46,12 +60,22 @@ export class NotificationService {
    */
   async createBulkNotifications(data: CreateNotificationData[]) {
     try {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      
       const notifications = await this.prisma.notification.createMany({
-        data: data.map((item) => ({
-          receiverId: item.receiverId,
-          content: item.content,
-          associatedLink: item.associatedLink,
-        })),
+        data: data.map((item) => {
+          // Automatically add frontend URL to associated link if provided
+          let fullAssociatedLink = item.associatedLink;
+          if (item.associatedLink && !item.associatedLink.startsWith('http')) {
+            fullAssociatedLink = `${frontendUrl}${item.associatedLink.startsWith('/') ? '' : '/'}${item.associatedLink}`;
+          }
+
+          return {
+            receiverId: item.receiverId,
+            content: item.content,
+            associatedLink: fullAssociatedLink,
+          };
+        }),
       });
 
       return notifications;
@@ -73,6 +97,9 @@ export class NotificationService {
           viewedAt: new Date(),
         },
       });
+
+      // Invalidate cache for the receiver
+      notificationCountCache.delete(notification.receiverId);
 
       return notification;
     } catch (error) {
@@ -96,6 +123,9 @@ export class NotificationService {
           viewedAt: new Date(),
         },
       });
+
+      // Invalidate cache for the user
+      notificationCountCache.delete(userId);
 
       return result;
     } catch (error) {
@@ -138,12 +168,24 @@ export class NotificationService {
    */
   async getUnreadCount(userId: string) {
     try {
+      // Check cache first
+      const cached = notificationCountCache.get(userId);
+      const now = Date.now();
+      
+      if (cached && (now - cached.timestamp) < CACHE_TTL) {
+        return cached.count;
+      }
+
+      // Fetch from database
       const count = await this.prisma.notification.count({
         where: {
           receiverId: userId,
           isViewed: false,
         },
       });
+
+      // Update cache
+      notificationCountCache.set(userId, { count, timestamp: now });
 
       return count;
     } catch (error) {
