@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../database/prisma.service';
 import { UserTypeService } from '../common/user-type.service';
 import { GoogleCalendarService } from '../common/google-calendar.service';
+import { NotificationService } from '../common/notification.service';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
@@ -22,6 +23,7 @@ export class SchedulingService {
     private prisma: PrismaService,
     private userTypeService: UserTypeService,
     private googleCalendarService: GoogleCalendarService,
+    private notificationService: NotificationService,
   ) {}
 
   async createAppointment(createAppointmentDto: CreateAppointmentDto, userId: string) {
@@ -112,7 +114,48 @@ export class SchedulingService {
         recurringRuleId: null,
         createdBy: createAppointmentDto.createdBy || userId,
       },
+      include: {
+        clients: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
+
+    // Send notification to client about the scheduled appointment
+    try {
+      // Get client's user account
+      const clientUser = await this.prisma.user.findUnique({
+        where: { clientId: clientId },
+        select: { id: true }
+      });
+
+      if (clientUser) {
+        const providerName = `${appointment.provider.firstName} ${appointment.provider.lastName}`;
+        const appointmentTitle = createAppointmentDto.title || `${createAppointmentDto.appointmentType} appointment`;
+        const appointmentTime = startDateTime.toLocaleString();
+        const locationText = createAppointmentDto.isTelehealth ? 'Telehealth' : (createAppointmentDto.location || 'Office');
+
+        await this.notificationService.createNotification({
+          receiverId: clientUser.id,
+          content: `Your appointment "${appointmentTitle}" with ${providerName} is scheduled for ${appointmentTime} (${locationText})`,
+          associatedLink: '/scheduling',
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error creating appointment notification:', error);
+      // Don't fail the appointment creation if notification fails
+    }
 
     return appointment;
   }
@@ -178,6 +221,40 @@ export class SchedulingService {
       const createdAppointments = await this.prisma.appointment.createMany({
         data: appointments
       });
+      
+      // Send notification to client about recurring appointments
+      try {
+        // Get client and provider details for notification
+        const [client, provider, clientUser] = await Promise.all([
+          this.prisma.client.findUnique({
+            where: { id: createAppointmentDto.clientId },
+            select: { firstName: true, lastName: true }
+          }),
+          this.prisma.user.findUnique({
+            where: { id: createAppointmentDto.providerId || userId },
+            select: { firstName: true, lastName: true }
+          }),
+          this.prisma.user.findUnique({
+            where: { clientId: createAppointmentDto.clientId },
+            select: { id: true }
+          })
+        ]);
+
+        if (clientUser && client && provider) {
+          const providerName = `${provider.firstName} ${provider.lastName}`;
+          const appointmentTitle = createAppointmentDto.title || `${createAppointmentDto.appointmentType} appointments`;
+          const locationText = createAppointmentDto.isTelehealth ? 'Telehealth' : (createAppointmentDto.location || 'Office');
+
+          await this.notificationService.createNotification({
+            receiverId: clientUser.id,
+            content: `Your recurring ${appointmentTitle} with ${providerName} have been scheduled (${appointments.length} appointments, ${locationText})`,
+            associatedLink: '/scheduling',
+          });
+        }
+      } catch (error) {
+        this.logger.error('Error creating recurring appointments notification:', error);
+        // Don't fail the appointment creation if notification fails
+      }
       
       // Return the first appointment as the main result
       return {
@@ -563,7 +640,7 @@ export class SchedulingService {
     }
 
     // Only update and return the appointment if no recurring rule changes
-    return this.prisma.appointment.update({
+    const updatedAppointment = await this.prisma.appointment.update({
       where: { id },
       data: updateData,
       include: {
@@ -574,8 +651,52 @@ export class SchedulingService {
             lastName: true,
           },
         },
+        provider: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
+
+    // Send notification to client about appointment update
+    try {
+      // Get client's user account
+      const clientUser = await this.prisma.user.findUnique({
+        where: { clientId: updatedAppointment.clientId },
+        select: { id: true }
+      });
+
+      if (clientUser) {
+        const providerName = `${updatedAppointment.provider.firstName} ${updatedAppointment.provider.lastName}`;
+        const appointmentTitle = updatedAppointment.title || `${updatedAppointment.appointmentType} appointment`;
+        const appointmentTime = updatedAppointment.startTime.toLocaleString();
+        const locationText = updatedAppointment.isTelehealth ? 'Telehealth' : (updatedAppointment.location || 'Office');
+
+        let notificationContent = '';
+        
+        if (updateAppointmentDto.status === AppointmentStatus.CANCELLED) {
+          notificationContent = `Your appointment "${appointmentTitle}" with ${providerName} has been cancelled`;
+        } else if (updateAppointmentDto.status === AppointmentStatus.COMPLETED) {
+          notificationContent = `Your appointment "${appointmentTitle}" with ${providerName} has been completed`;
+        } else {
+          notificationContent = `Your appointment "${appointmentTitle}" with ${providerName} has been updated. New time: ${appointmentTime} (${locationText})`;
+        }
+
+        await this.notificationService.createNotification({
+          receiverId: clientUser.id,
+          content: notificationContent,
+          associatedLink: '/scheduling',
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error creating appointment update notification:', error);
+      // Don't fail the appointment update if notification fails
+    }
+
+    return updatedAppointment;
   }
 
   async updateStatus(id: string, status: AppointmentStatus) {

@@ -885,20 +885,36 @@ export class ClientsService {
       },
     });
 
-    // Send notification to clinician
+    // Send notifications to both clinician and client
     try {
+      const clientName = `${assignment.client.firstName} ${assignment.client.lastName}`;
+      const clinicianName = `${assignment.clinician.user?.firstName} ${assignment.clinician.user?.lastName}`;
+      
+      // Notify the clinician
       if (assignment.clinician.user) {
-        const clientName = `${assignment.client.firstName} ${assignment.client.lastName}`;
-        
         await this.notificationService.createNotification({
           receiverId: assignment.clinician.user.id,
           content: `You have been assigned a new patient: ${clientName}`,
           associatedLink: '/clients',
         });
       }
+
+      // Notify the client (if they have a user account)
+      const clientUser = await this.prisma.user.findUnique({
+        where: { clientId: clientId },
+        select: { id: true }
+      });
+
+      if (clientUser) {
+        await this.notificationService.createNotification({
+          receiverId: clientUser.id,
+          content: `You have been assigned a new clinician: ${clinicianName}`,
+          associatedLink: '/clients',
+        });
+      }
     } catch (error) {
-      console.error('Error creating notification for clinician assignment:', error);
-      // Don't fail the assignment if notification fails
+      console.error('Error creating notifications for clinician assignment:', error);
+      // Don't fail the assignment if notifications fail
     }
 
     return assignment;
@@ -938,20 +954,36 @@ export class ClientsService {
       throw new Error('Clinician assignment not found');
     }
 
-    // Send notification to clinician before removing assignment
+    // Send notifications to both clinician and client before removing assignment
     try {
+      const clientName = `${assignment.client.firstName} ${assignment.client.lastName}`;
+      const clinicianName = `${assignment.clinician.user?.firstName} ${assignment.clinician.user?.lastName}`;
+      
+      // Notify the clinician
       if (assignment.clinician.user) {
-        const clientName = `${assignment.client.firstName} ${assignment.client.lastName}`;
-        
         await this.notificationService.createNotification({
           receiverId: assignment.clinician.user.id,
           content: `You have been removed from patient: ${clientName}`,
           associatedLink: '/clients',
         });
       }
+
+      // Notify the client (if they have a user account)
+      const clientUser = await this.prisma.user.findUnique({
+        where: { clientId: clientId },
+        select: { id: true }
+      });
+
+      if (clientUser) {
+        await this.notificationService.createNotification({
+          receiverId: clientUser.id,
+          content: `Your clinician ${clinicianName} has been removed from your care`,
+          associatedLink: '/clients',
+        });
+      }
     } catch (error) {
-      console.error('Error creating notification for clinician removal:', error);
-      // Don't fail the removal if notification fails
+      console.error('Error creating notifications for clinician removal:', error);
+      // Don't fail the removal if notifications fail
     }
 
     return this.prisma.clientClinician.delete({

@@ -7,12 +7,14 @@ import { ShareFileDto } from './dto/share-file.dto';
 import { SharePortalFormDto } from './dto/share-portal-form.dto';
 import { FileStatus } from './enums/file-status.enum';
 import { S3Service } from '../common/s3.service';
+import { NotificationService } from '../common/notification.service';
 
 @Injectable()
 export class ClientFilesService {
   constructor(
     private prisma: PrismaService,
     private s3Service: S3Service,
+    private notificationService: NotificationService,
   ) {}
 
   /**
@@ -217,6 +219,21 @@ export class ClientFilesService {
       },
     });
 
+    // Send notification to client
+    try {
+      const creatorName = `${clientFile.creator.firstName} ${clientFile.creator.lastName}`;
+      const fileName = clientFile.file.fileName;
+      
+      await this.notificationService.createNotification({
+        receiverId: clientUserId.id,
+        content: `${creatorName} has shared a file with you: ${fileName}`,
+        associatedLink: '/files',
+      });
+    } catch (error) {
+      console.error('Error creating notification for file sharing:', error);
+      // Don't fail the file sharing if notification fails
+    }
+
     return clientFile;
   }
 
@@ -390,6 +407,21 @@ export class ClientFilesService {
       },
     });
 
+    // Send notification to client
+    try {
+      const creatorName = `${clientFile.creator.firstName} ${clientFile.creator.lastName}`;
+      const formTitle = clientFile.portalForm.title;
+      
+      await this.notificationService.createNotification({
+        receiverId: clientUserId.id,
+        content: `${creatorName} has shared a form with you: ${formTitle}`,
+        associatedLink: '/files',
+      });
+    } catch (error) {
+      console.error('Error creating notification for portal form sharing:', error);
+      // Don't fail the form sharing if notification fails
+    }
+
     return clientFile;
   }
 
@@ -474,6 +506,21 @@ export class ClientFilesService {
       },
     });
 
+    // Send notification to client
+    try {
+      const creatorName = `${clientFile.creator.firstName} ${clientFile.creator.lastName}`;
+      const measureTitle = clientFile.outcomeMeasure.title;
+      
+      await this.notificationService.createNotification({
+        receiverId: clientUserId.id,
+        content: `${creatorName} has shared an assessment with you: ${measureTitle}`,
+        associatedLink: '/files',
+      });
+    } catch (error) {
+      console.error('Error creating notification for outcome measure sharing:', error);
+      // Don't fail the outcome measure sharing if notification fails
+    }
+
     return clientFile;
   }
 
@@ -533,8 +580,63 @@ export class ClientFilesService {
             mimeType: true,
           },
         },
+        portalForm: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        outcomeMeasure: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
     });
+
+    // Send notification to assigned clinician when client completes the file
+    try {
+      const clientName = `${updatedFile.client.firstName} ${updatedFile.client.lastName}`;
+      let itemName = '';
+      let itemType = '';
+
+      if (updatedFile.file) {
+        itemName = updatedFile.file.fileName;
+        itemType = 'file';
+      } else if (updatedFile.portalForm) {
+        itemName = updatedFile.portalForm.title;
+        itemType = 'form';
+      } else if (updatedFile.outcomeMeasure) {
+        itemName = updatedFile.outcomeMeasure.title;
+        itemType = 'assessment';
+      }
+
+      // Get the assigned clinician for this client
+      const assignedClinician = await this.prisma.clientClinician.findFirst({
+        where: { clientId: updatedFile.clientId },
+        include: {
+          clinician: {
+            include: {
+              user: {
+                select: { id: true }
+              }
+            }
+          }
+        }
+      });
+
+      if (assignedClinician?.clinician?.user) {
+        await this.notificationService.createNotification({
+          receiverId: assignedClinician.clinician.user.id,
+          content: `${clientName} has completed the ${itemType}: ${itemName}`,
+          associatedLink: '/files',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating notification for file completion:', error);
+      // Don't fail the completion if notification fails
+    }
 
     return updatedFile;
   }

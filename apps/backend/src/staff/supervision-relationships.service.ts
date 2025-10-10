@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service';
 import { CreateSupervisionRelationshipDto } from './dto/create-supervision-relationship.dto';
 import { UpdateSupervisionRelationshipDto } from './dto/update-supervision-relationship.dto';
+import { NotificationService } from '../common/notification.service';
 
 @Injectable()
 export class SupervisionRelationshipsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+  ) {}
 
   async create(createSupervisionRelationshipDto: CreateSupervisionRelationshipDto) {
     // Validate that supervisor and supervisee exist
@@ -45,7 +49,7 @@ export class SupervisionRelationshipsService {
       throw new BadRequestException('Supervisee must have Intern or Clinician role');
     }
 
-    return this.prisma.supervisionRelationship.create({
+    const supervisionRelationship = await this.prisma.supervisionRelationship.create({
       data: {
         supervisorId: createSupervisionRelationshipDto.supervisorId,
         superviseeId: createSupervisionRelationshipDto.superviseeId,
@@ -56,17 +60,47 @@ export class SupervisionRelationshipsService {
       },
       include: {
         supervisor: {
-          include: {
-            userRoles: true
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           }
         },
         supervisee: {
-          include: {
-            userRoles: true
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           }
         }
       }
     });
+
+    // Send notifications to both supervisor and supervisee
+    try {
+      const supervisorName = `${supervisionRelationship.supervisor.firstName} ${supervisionRelationship.supervisor.lastName}`;
+      const superviseeName = `${supervisionRelationship.supervisee.firstName} ${supervisionRelationship.supervisee.lastName}`;
+      const startDate = new Date(createSupervisionRelationshipDto.startDate).toLocaleDateString();
+
+      // Notify the supervisor
+      await this.notificationService.createNotification({
+        receiverId: supervisionRelationship.supervisorId,
+        content: `You have been assigned as supervisor for ${superviseeName} starting ${startDate}`,
+        associatedLink: '/my-profile',
+      });
+
+      // Notify the supervisee
+      await this.notificationService.createNotification({
+        receiverId: supervisionRelationship.superviseeId,
+        content: `You have been assigned ${supervisorName} as your supervisor starting ${startDate}`,
+        associatedLink: '/my-profile',
+      });
+    } catch (error) {
+      console.error('Error creating supervision relationship notifications:', error);
+      // Don't fail the relationship creation if notifications fail
+    }
+
+    return supervisionRelationship;
   }
 
   async findAll() {
