@@ -1,8 +1,9 @@
-import { Controller, Post, Body, UnauthorizedException, Headers } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, Headers, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { Request } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -12,9 +13,12 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  @ApiResponse({ status: 401, description: 'Invalid credentials or account locked' })
+  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] as string;
+    const userAgent = req.headers['user-agent'];
+    
+    return this.authService.login(loginDto, ipAddress, userAgent);
   }
 
   @Post('validate')

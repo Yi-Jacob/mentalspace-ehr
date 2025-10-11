@@ -6,10 +6,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { DatabaseModule } from '../database/database.module';
+import { AccountLockoutService } from './account-lockout.service';
+import { AuditModule } from '../audit/audit.module';
+import { AccountManagementController } from './account-management.controller';
 
 @Module({
   imports: [
     DatabaseModule,
+    AuditModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -22,8 +26,8 @@ import { DatabaseModule } from '../database/database.module';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  controllers: [AuthController, AccountManagementController],
+  providers: [AuthService, JwtStrategy, AccountLockoutService],
+  exports: [AuthService, AccountLockoutService],
 })
 export class AuthModule {} 

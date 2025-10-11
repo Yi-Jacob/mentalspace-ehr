@@ -6,12 +6,16 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { BCRYPT_SALT_ROUNDS } from '../common/constants';
+import { AccountLockoutService } from './account-lockout.service';
+import { AuditLogService } from '../audit/audit-log.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private accountLockoutService: AccountLockoutService,
+    private auditLogService: AuditLogService,
   ) {}
 
   private async getAuthSettings() {
@@ -38,7 +42,7 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
       include: {
@@ -53,15 +57,38 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+    // Check if account is locked
+    const lockoutStatus = await this.accountLockoutService.isAccountLocked(user.id);
+    if (lockoutStatus.isLocked) {
+      const remainingMinutes = lockoutStatus.remainingMinutes || 0;
+      throw new UnauthorizedException(
+        `Account is locked due to multiple failed login attempts. Please try again in ${remainingMinutes} minutes.`
+      );
     }
 
     if (!user.isActive) {
       throw new UnauthorizedException('Account is deactivated');
     }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    if (!isPasswordValid) {
+      // Record failed attempt
+      await this.accountLockoutService.recordFailedAttempt(user.id, user.email, ipAddress, userAgent);
+      
+      // Check if account is now locked after this failed attempt
+      const newLockoutStatus = await this.accountLockoutService.isAccountLocked(user.id);
+      if (newLockoutStatus.isLocked) {
+        throw new UnauthorizedException(
+          'Account has been locked due to multiple failed login attempts. Please try again in 30 minutes.'
+        );
+      }
+      
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Reset failed attempts on successful login
+    await this.accountLockoutService.resetFailedAttempts(user.id);
 
     // Extract roles from userRoles
     const roles = user.userRoles.map(userRole => userRole.role);
@@ -74,6 +101,19 @@ export class AuthService {
 
     // Get auth settings for JWT expiration
     const authSettings = await this.getAuthSettings();
+
+    // Log successful login
+    await this.auditLogService.log({
+      userId: user.id,
+      userEmail: user.email,
+      userRole: roles[0],
+      action: 'LOGIN',
+      resource: 'User',
+      resourceId: user.id,
+      description: 'Successful login',
+      ipAddress,
+      userAgent
+    });
 
     return {
       access_token: this.jwtService.sign(payload, { expiresIn: authSettings.jwtExpiresIn }),

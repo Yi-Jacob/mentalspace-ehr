@@ -76,7 +76,16 @@ const Login = () => {
       });
     } catch (err: any) {
       console.error('Login error:', err);
-      setErrors({ general: err.message || 'An unexpected error occurred. Please try again.' });
+      
+      // Handle account lockout messages
+      if (err.message && err.message.includes('Account is locked')) {
+        setErrors({ 
+          general: err.message,
+          accountLocked: true 
+        });
+      } else {
+        setErrors({ general: err.message || 'An unexpected error occurred. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -146,8 +155,17 @@ const Login = () => {
                   {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                 </div>
                 {errors.general && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{errors.general}</AlertDescription>
+                  <Alert variant={errors.accountLocked ? "destructive" : "destructive"}>
+                    <AlertDescription>
+                      {errors.general}
+                      {errors.accountLocked && (
+                        <div className="mt-2 text-sm">
+                          <p className="font-medium">Account Security Notice:</p>
+                          <p>Your account has been temporarily locked for security reasons. This helps protect your healthcare information from unauthorized access.</p>
+                          <p className="mt-1">If you believe this is an error, please contact your system administrator.</p>
+                        </div>
+                      )}
+                    </AlertDescription>
                   </Alert>
                 )}
                 <Button type="submit" className="w-full" disabled={loading}>
