@@ -18,7 +18,7 @@ export const ENV_CONFIG = {
   security: {
     sessionTimeout: parseInt(import.meta.env.VITE_SESSION_TIMEOUT || '1800000'), // 30 minutes
     maxLoginAttempts: parseInt(import.meta.env.VITE_MAX_LOGIN_ATTEMPTS || '5'),
-    passwordMinLength: parseInt(import.meta.env.VITE_PASSWORD_MIN_LENGTH || '8'),
+    passwordMinLength: parseInt(import.meta.env.VITE_PASSWORD_MIN_LENGTH || '12'),
   },
   analytics: {
     enabled: import.meta.env.VITE_ANALYTICS_ENABLED === 'true',

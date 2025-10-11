@@ -4,7 +4,7 @@
 
 // Default password for new users (staff and clients)
 // This should be set in your .env file as DEFAULT_PASSWORD
-export const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || 'mentalspacePassword123!';
+export const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || 'Kx9mP2$nQ8!vR5@';
 
 // Default admin email for the practice administrator
 // This should be set in your .env file as DEFAULT_ADMIN_EMAIL

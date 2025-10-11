@@ -4,6 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { BCRYPT_SALT_ROUNDS } from '../common/constants';
+import { PasswordValidationService } from '../common/validation/password-validation.service';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +12,7 @@ export class UsersService {
     private prisma: PrismaService,
     private authService: AuthService,
     private configService: ConfigService,
+    private passwordValidationService: PasswordValidationService,
   ) {}
 
   async findAll() {
@@ -505,8 +507,10 @@ export class UsersService {
       throw new BadRequestException('New password and confirmation password do not match');
     }
 
-    if (newPassword.length < 8) {
-      throw new BadRequestException('New password must be at least 8 characters long');
+    // HIPAA-compliant password validation using service
+    const passwordValidation = this.passwordValidationService.validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      throw new BadRequestException(passwordValidation.errors[0]);
     }
 
     // Get user with password

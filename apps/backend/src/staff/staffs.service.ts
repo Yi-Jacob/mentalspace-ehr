@@ -840,8 +840,8 @@ export class StaffsService {
     password += numbers[Math.floor(Math.random() * numbers.length)];
     password += symbols[Math.floor(Math.random() * symbols.length)];
     
-    // Fill the rest with random characters (minimum 12 characters total)
-    const remainingLength = Math.max(8, 12 - password.length);
+    // Fill the rest with random characters (minimum 16 characters total for HIPAA compliance)
+    const remainingLength = Math.max(12, 16 - password.length);
     for (let i = 0; i < remainingLength; i++) {
       password += allChars[Math.floor(Math.random() * allChars.length)];
     }

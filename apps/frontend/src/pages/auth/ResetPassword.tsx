@@ -47,10 +47,16 @@ const ResetPassword: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
+    } else if (formData.password.length < 12) {
+      newErrors.password = 'Password must be at least 12 characters long for HIPAA compliance';
+    } else if (formData.password.length > 128) {
+      newErrors.password = 'Password must be no more than 128 characters long';
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)';
+    } else if (/(.)\1{2,}/.test(formData.password)) {
+      newErrors.password = 'Password cannot contain more than 2 consecutive identical characters';
+    } else if (/123|abc|qwe|asd|zxc/i.test(formData.password)) {
+      newErrors.password = 'Password cannot contain sequential characters (123, abc, etc.)';
     }
 
     if (!formData.confirmPassword) {
@@ -109,14 +115,20 @@ const ResetPassword: React.FC = () => {
     if (!password) return { score: 0, color: 'text-gray-400' };
     
     let score = 0;
-    if (password.length >= 8) score++;
+    // HIPAA-compliant scoring
+    if (password.length >= 12) score++;
+    if (password.length >= 16) score++; // Bonus for longer passwords
     if (/[a-z]/.test(password)) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/\d/.test(password)) score++;
     if (/[@$!%*?&]/.test(password)) score++;
+    
+    // Penalty for weak patterns
+    if (/(.)\1{2,}/.test(password)) score = Math.max(0, score - 1);
+    if (/123|abc|qwe|asd|zxc/i.test(password)) score = Math.max(0, score - 1);
 
     const colors = ['text-red-500', 'text-orange-500', 'text-yellow-500', 'text-blue-500', 'text-green-500'];
-    return { score, color: colors[score - 1] || 'text-gray-400' };
+    return { score, color: colors[Math.min(score - 1, 4)] || 'text-gray-400' };
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
