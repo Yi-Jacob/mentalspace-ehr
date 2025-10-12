@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { Request } from 'express';
+import { Request as ExpressRequest } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -14,7 +14,7 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials or account locked' })
-  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+  async login(@Body() loginDto: LoginDto, @Req() req: ExpressRequest) {
     const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] as string;
     const userAgent = req.headers['user-agent'];
     
@@ -41,12 +41,21 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
+  async refreshToken(@Body() body: { refreshToken: string }) {
+    return this.authService.refreshToken(body.refreshToken);
+  }
+
   @Post('logout')
   @ApiOperation({ summary: 'User logout' })
   @ApiResponse({ status: 200, description: 'Logout successful' })
-  async logout(@Headers('authorization') authHeader?: string) {
+  async logout(@Headers('authorization') authHeader?: string, @Req() req?: ExpressRequest) {
     // Extract token from Authorization header (Bearer token)
     const token = authHeader?.replace('Bearer ', '');
-    return this.authService.logout(token);
+    const userId = (req as any)?.user?.id;
+    return this.authService.logout(token, userId);
   }
 } 

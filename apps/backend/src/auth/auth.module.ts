@@ -9,6 +9,7 @@ import { DatabaseModule } from '../database/database.module';
 import { AccountLockoutService } from './account-lockout.service';
 import { AuditModule } from '../audit/audit.module';
 import { AccountManagementController } from './account-management.controller';
+import { JwtSecurityService } from './jwt-security.service';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { AccountManagementController } from './account-management.controller';
     }),
   ],
   controllers: [AuthController, AccountManagementController],
-  providers: [AuthService, JwtStrategy, AccountLockoutService],
-  exports: [AuthService, AccountLockoutService],
+  providers: [AuthService, JwtStrategy, AccountLockoutService, JwtSecurityService],
+  exports: [AuthService, AccountLockoutService, JwtSecurityService],
 })
 export class AuthModule {} 

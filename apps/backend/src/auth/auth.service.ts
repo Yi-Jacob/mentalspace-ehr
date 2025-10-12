@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import { BCRYPT_SALT_ROUNDS } from '../common/constants';
 import { AccountLockoutService } from './account-lockout.service';
 import { AuditLogService } from '../audit/audit-log.service';
+import { JwtSecurityService } from './jwt-security.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
     private accountLockoutService: AccountLockoutService,
     private auditLogService: AuditLogService,
+    private jwtSecurityService: JwtSecurityService,
   ) {}
 
   private async getAuthSettings() {
@@ -92,15 +94,9 @@ export class AuthService {
 
     // Extract roles from userRoles
     const roles = user.userRoles.map(userRole => userRole.role);
-    
-    const payload = { 
-      email: user.email, 
-      sub: user.id,
-      roles: roles
-    };
 
-    // Get auth settings for JWT expiration
-    const authSettings = await this.getAuthSettings();
+    // Generate secure token pair (access + refresh)
+    const tokenPair = await this.jwtSecurityService.generateTokenPair(user.id, user.email, roles);
 
     // Log successful login
     await this.auditLogService.log({
@@ -110,13 +106,15 @@ export class AuthService {
       action: 'LOGIN',
       resource: 'User',
       resourceId: user.id,
-      description: 'Successful login',
+      description: 'Successful login with secure token pair',
       ipAddress,
       userAgent
     });
 
     return {
-      access_token: this.jwtService.sign(payload, { expiresIn: authSettings.jwtExpiresIn }),
+      access_token: tokenPair.accessToken,
+      refresh_token: tokenPair.refreshToken,
+      expires_in: tokenPair.expiresIn,
       user: {
         id: user.id,
         email: user.email,
@@ -240,11 +238,19 @@ export class AuthService {
     };
   }
 
-  async logout(token?: string) {
+  async refreshToken(refreshToken: string) {
+    return this.jwtSecurityService.refreshAccessToken(refreshToken);
+  }
+
+  async logout(token?: string, userId?: string) {
+    // If we have userId, revoke all refresh tokens for the user
+    if (userId) {
+      await this.jwtSecurityService.revokeAllUserTokens(userId);
+    }
     
-      return {
-        message: 'Logged out successfully',
-        timestamp: new Date().toISOString(),
-      }
+    return {
+      message: 'Logged out successfully',
+      timestamp: new Date().toISOString(),
+    };
   }
 } 

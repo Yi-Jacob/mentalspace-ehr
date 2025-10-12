@@ -117,12 +117,13 @@ const AuthenticationSettingsTab: React.FC = () => {
                 <SelectValue placeholder="Select expiration time" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="15m">15 Minutes</SelectItem>
+                <SelectItem value="30m">30 Minutes</SelectItem>
                 <SelectItem value="1h">1 Hour</SelectItem>
                 <SelectItem value="6h">6 Hours</SelectItem>
                 <SelectItem value="12h">12 Hours</SelectItem>
                 <SelectItem value="24h">24 Hours</SelectItem>
                 <SelectItem value="7d">7 Days</SelectItem>
-                <SelectItem value="30d">30 Days</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-sm text-gray-600">

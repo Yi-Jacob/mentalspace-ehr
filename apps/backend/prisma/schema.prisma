@@ -26,6 +26,7 @@ model User {
   failedLoginAttempts           Int                         @default(0) @map("failed_login_attempts")
   accountLockedUntil            DateTime?                   @map("account_locked_until")
   lastFailedLogin               DateTime?                   @map("last_failed_login")
+  refreshTokens                 RefreshToken[]
   waitlistEntries               AppointmentWaitlist[]
   userRoles                     UserRole[]
   claims                        Claim[]                      @relation("ClaimProvider")
@@ -1208,4 +1209,24 @@ model Notification {
   @@index([isViewed], map: "idx_notification_is_viewed")
   @@index([createdAt], map: "idx_notification_created_at")
   @@map("notifications")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  tokenId     String    @unique @map("token_id")
+  userId      String    @map("user_id")
+  token       String    // Partial token for identification
+  expiresAt   DateTime  @map("expires_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId], map: "idx_refresh_token_user_id")
+  @@index([tokenId], map: "idx_refresh_token_token_id")
+  @@index([isActive], map: "idx_refresh_token_is_active")
+  @@index([expiresAt], map: "idx_refresh_token_expires_at")
+  @@map("refresh_tokens")
 }
