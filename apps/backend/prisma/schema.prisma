@@ -1098,20 +1098,24 @@ model ClientFile {
 }
 
 model File {
-  id          String    @id @default(uuid())
-  fileName    String    @map("file_name")
-  fileUrl     String    @map("file_url")
-  fileSize    Int?      @map("file_size")
-  mimeType    String?   @map("mime_type")
-  sharable    String    @default("not_sharable") // 'sharable' | 'not_sharable'
-  accessLevel String    @default("admin") // 'admin' | 'clinician' | 'billing'
-  isForPatient Boolean  @default(false) @map("is_for_patient")
-  isForStaff  Boolean   @default(false) @map("is_for_staff")
-  clientId    String?   @map("client_id")
-  userId      String?   @map("user_id")
-  createdBy   String    @map("created_by")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @default(now()) @map("updated_at")
+  id                String    @id @default(uuid())
+  fileName          String    @map("file_name")
+  fileUrl           String    @map("file_url")
+  fileSize          Int?      @map("file_size")
+  mimeType          String?   @map("mime_type")
+  fileHash          String?   @map("file_hash") // SHA-256 hash for integrity
+  hashAlgorithm     String?   @map("hash_algorithm") // Hash algorithm used
+  integrityVerified Boolean   @default(false) @map("integrity_verified")
+  lastVerified      DateTime? @map("last_verified")
+  sharable          String    @default("not_sharable") // 'sharable' | 'not_sharable'
+  accessLevel       String    @default("admin") // 'admin' | 'clinician' | 'billing'
+  isForPatient      Boolean   @default(false) @map("is_for_patient")
+  isForStaff        Boolean   @default(false) @map("is_for_staff")
+  clientId          String?   @map("client_id")
+  userId            String?   @map("user_id")
+  createdBy         String    @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @map("updated_at")
   
   client      Client?   @relation("FileClient", fields: [clientId], references: [id])
   user        User?     @relation("FileUser", fields: [userId], references: [id])

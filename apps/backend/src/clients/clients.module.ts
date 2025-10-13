@@ -11,9 +11,10 @@ import { DatabaseModule } from '../database/database.module';
 import { EmailService } from '../common/email.service';
 import { S3Service } from '../common/s3.service';
 import { AuthModule } from '../auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, AuditModule],
   controllers: [ClientsController, ClientFilesController, UploadController],
   providers: [
     ClientsService,

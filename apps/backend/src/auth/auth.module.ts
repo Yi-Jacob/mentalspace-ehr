@@ -19,7 +19,7 @@ import { JwtSecurityService } from './jwt-security.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'fallback-secret'),
+        secret: configService.get<string>('JWT_SECRET') || (() => { throw new Error('JWT_SECRET environment variable is required'); })(),
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRES_IN', '24h'), // Default, overridden by practice settings in AuthService
         },
