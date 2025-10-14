@@ -30,7 +30,6 @@ interface OneSectionNoteEditLayoutProps {
   signedAt?: string;
   showBackButton?: boolean;
   showFinalizationSection?: boolean;
-  showBottomActionButtons?: boolean;
   customHeaderActions?: React.ReactNode;
   finalizeButtonColor?: 'orange' | 'indigo' | 'teal' | 'gray';
   backButtonText?: string;
@@ -56,7 +55,6 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
   signedAt,
   showBackButton = true,
   showFinalizationSection = true,
-  showBottomActionButtons = true,
   customHeaderActions,
   finalizeButtonColor = 'orange',
   backButtonText = 'Back to Notes',
@@ -161,7 +159,7 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
         <Button
           onClick={handleFinalizeWithValidation}
           disabled={isLoading}
-          className={getFinalizeButtonClass()}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
         >
           {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
         </Button>
@@ -224,19 +222,8 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
           )}
 
           {/* Bottom Action Buttons */}
-          {showBottomActionButtons && (
             <div className="flex justify-between mt-8 pt-6 border-t">
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handleBackToNotes}
-                  className="flex items-center space-x-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  {backButtonText}
-                </Button>
-              </div>
-              
+              <div className="flex space-x-2"/>
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
@@ -248,13 +235,12 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
                 <Button
                   onClick={handleFinalizeWithValidation}
                   disabled={isLoading}
-                  className={getFinalizeButtonClass()}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
                 </Button>
               </div>
             </div>
-          )}
         </CardContent>
       </Card>
       

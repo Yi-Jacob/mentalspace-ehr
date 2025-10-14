@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ClientInfo } from '@/types/noteType';
+import { formatDateOfBirth } from '@/utils/dateUtils';
 
 interface ClientInfoDisplayProps {
   clientData?: ClientInfo;
@@ -34,7 +35,7 @@ const ClientInfoDisplay: React.FC<ClientInfoDisplayProps> = ({
         </div>
         <div>
           <label className="text-sm font-medium text-gray-600 block mb-1">Date of Birth</label>
-          <p className="text-gray-900">{clientData.dateOfBirth || 'Not provided'}</p>
+          <p className="text-gray-900">{ formatDateOfBirth(clientData.dateOfBirth) || 'Not provided'}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-600 block mb-1">Address</label>

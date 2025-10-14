@@ -132,25 +132,19 @@ export const useUnifiedNote = <T extends BaseFormData>(
       return await executeWithRetry(async () => {
         const finalData = { ...formData, ...data };
         
-        if (!isDraft) {
-          // If finalizing, first save the content, then sign the note
-          const updateData = {
-            content: finalData,
-          };
-          
-          await noteService.saveDraft(noteId, updateData);
-          const signedNote = await noteService.signNote(noteId);
-          
-          return { isDraft: false, isFinalized: true, note: signedNote };
-        } else {
-          // Regular save (draft or content update)
-          const updateData = {
-            content: finalData,
-          };
-          
-          const updatedNote = await noteService.saveDraft(noteId, updateData);
-          return { isDraft, isFinalized: false, note: updatedNote };
-        }
+        // Use unified update method with sign flag
+        const updateData = {
+          content: finalData,
+          sign: !isDraft, // Sign if not a draft
+        };
+        
+        const updatedNote = await noteService.updateNote(noteId, updateData);
+        
+        return { 
+          isDraft, 
+          isFinalized: !isDraft, 
+          note: updatedNote 
+        };
       }, 'Save Note');
     },
     onSuccess: ({ isDraft, isFinalized }) => {

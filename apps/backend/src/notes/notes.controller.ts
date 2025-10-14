@@ -59,17 +59,12 @@ export class NotesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a note' })
+  @ApiOperation({ summary: 'Update a note (with optional signing)' })
   @ApiResponse({ status: 200, description: 'Note updated successfully', type: NoteEntity })
-  async update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto): Promise<NoteEntity> {
-    return this.notesService.updateNote(id, updateNoteDto);
-  }
-
-  @Patch(':id/save-draft')
-  @ApiOperation({ summary: 'Save note as draft' })
-  @ApiResponse({ status: 200, description: 'Note saved as draft successfully', type: NoteEntity })
-  async saveDraft(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto, @Request() req): Promise<NoteEntity> {
-    return this.notesService.saveDraft(id, updateNoteDto, req.user.id);
+  async update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto, @Request() req): Promise<NoteEntity> {
+    // Pass the authenticated user's ID when signing is requested
+    const signedBy = updateNoteDto.sign ? req.user.id : undefined;
+    return this.notesService.updateNote(id, updateNoteDto, signedBy);
   }
 
   @Delete(':id')
@@ -77,15 +72,6 @@ export class NotesController {
   @ApiResponse({ status: 200, description: 'Note deleted successfully' })
   async remove(@Param('id') id: string): Promise<void> {
     return this.notesService.deleteNote(id);
-  }
-
-
-  @Patch(':id/sign')
-  @ApiOperation({ summary: 'Sign a note' })
-  @ApiResponse({ status: 200, description: 'Note signed successfully', type: NoteEntity })
-  async signNote(@Param('id') id: string, @Request() req): Promise<NoteEntity> {
-    // Use the authenticated user's ID from the JWT token
-    return this.notesService.signNote(id, req.user.id);
   }
 
   @Patch(':id/co-sign')

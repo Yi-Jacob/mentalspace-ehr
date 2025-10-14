@@ -51,7 +51,6 @@ const ContactNoteForm = () => {
       signedBy={formData.signedBy}
       signedAt={formData.signedAt}
       showFinalizationSection={false}
-      showBottomActionButtons={false}
       finalizeButtonColor="teal"
       noteType="contact_note"
       onAIFill={handleAIFill}

@@ -79,7 +79,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
     
     // Check for incomplete sections
     if (!allSectionsComplete) {
-      const incompleteSectionNames = incompleteSections.map(section => section.title).join(', ');
+      const incompleteSectionNames = incompleteSections.map(section => section.name).join(', ');
       missingFields.push(`Incomplete sections: ${incompleteSectionNames}`);
     }
 
@@ -231,7 +231,7 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
               <Button
                 onClick={handleFinalize}
                 disabled={isLoading}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 {isLoading ? 'Finalizing...' : 'Finalize & Sign Treatment Plan'}
               </Button>

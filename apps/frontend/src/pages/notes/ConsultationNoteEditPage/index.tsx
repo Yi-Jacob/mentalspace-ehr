@@ -102,7 +102,6 @@ const ConsultationNoteForm = () => {
       signedBy={formData.signedBy}
       signedAt={formData.signedAt}
       showFinalizationSection={false}
-      showBottomActionButtons={false}
       finalizeButtonColor="indigo"
       noteType="consultation_note"
       onAIFill={handleAIFill}

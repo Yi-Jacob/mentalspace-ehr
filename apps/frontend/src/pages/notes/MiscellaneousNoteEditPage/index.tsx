@@ -76,7 +76,6 @@ const MiscellaneousNoteForm = () => {
       signedBy={formData.signedBy}
       signedAt={formData.signedAt}
       showFinalizationSection={false}
-      showBottomActionButtons={false}
       finalizeButtonColor="gray"
       noteType="miscellaneous_note"
       onAIFill={handleAIFill}

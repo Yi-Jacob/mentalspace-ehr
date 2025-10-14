@@ -113,7 +113,7 @@ const CancellationNoteForm = () => {
     try {
       const updateData = {
         content: formData as any,
-        status: 'draft' as 'draft',
+        sign: false, // Save as draft
       };
 
       if (noteId) {
@@ -167,7 +167,7 @@ const CancellationNoteForm = () => {
     try {
       const updateData = {
         content: formData as any,
-        status: 'accepted' as 'accepted',
+        sign: true, // Sign the note
       };
 
       if (noteId) {

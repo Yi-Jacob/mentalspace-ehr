@@ -32,22 +32,20 @@ export class NoteService {
     return response.data;
   }
 
-  // Update existing note
-  async updateNote(id: string, data: UpdateNoteRequest): Promise<Note> {
+  // Update existing note (unified method for saving and signing)
+  async updateNote(id: string, data: UpdateNoteRequest & { sign?: boolean }): Promise<Note> {
     const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}`, data);
     return response.data;
   }
 
-  // Save note as draft
+  // Save note as draft (convenience method)
   async saveDraft(id: string, data: UpdateNoteRequest): Promise<Note> {
-    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/save-draft`, data);
-    return response.data;
+    return this.updateNote(id, { ...data, sign: false });
   }
 
-  // Sign note
-  async signNote(id: string): Promise<Note> {
-    const response = await apiClient.patch<Note>(`${this.baseUrl}/${id}/sign`, {});
-    return response.data;
+  // Sign note (convenience method)
+  async signNote(id: string, data?: UpdateNoteRequest): Promise<Note> {
+    return this.updateNote(id, { ...data, sign: true });
   }
 
   // Co-sign note

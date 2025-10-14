@@ -268,7 +268,7 @@ export class NotesService {
     };
   }
 
-  async updateNote(id: string, updateNoteDto: UpdateNoteDto): Promise<NoteEntity> {
+  async updateNote(id: string, updateNoteDto: UpdateNoteDto, signedBy?: string): Promise<NoteEntity> {
     const existingNote = await this.prisma.clinicalNote.findUnique({
       where: { id },
     });
@@ -285,16 +285,45 @@ export class NotesService {
       throw new BadRequestException('Cannot update an accepted note. Create an addendum instead.');
     }
 
+    // If signing is requested, validate the note can be signed
+    if (updateNoteDto.sign) {
+      if (existingNote.status !== NoteStatus.DRAFT) {
+        throw new BadRequestException('Only draft notes can be signed');
+      }
+      if (!signedBy) {
+        throw new BadRequestException('Signer ID is required when signing a note');
+      }
+    }
+
     // Get the next version number
     const nextVersion = (existingNote.version || 1) + 1;
 
+    // Prepare update data
+    const updateData: any = {
+      ...updateNoteDto,
+      version: nextVersion,
+      updatedAt: new Date(),
+    };
+
+    // Remove the sign flag from the update data as it's not a database field
+    delete updateData.sign;
+
+    // If signing, add signing fields and determine next status
+    if (updateNoteDto.sign && signedBy) {
+      // Check if the provider has supervisors (is a supervisee)
+      const supervisorIds = await this.getSupervisorIds(existingNote.providerId);
+      
+      // Determine the next status based on whether provider has supervisors
+      const nextStatus = supervisorIds.length > 0 ? NoteStatus.PENDING_CO_SIGN : NoteStatus.ACCEPTED;
+
+      updateData.status = nextStatus;
+      updateData.signedBy = signedBy;
+      updateData.signedAt = new Date();
+    }
+
     const note = await this.prisma.clinicalNote.update({
       where: { id },
-      data: {
-        ...updateNoteDto,
-        version: nextVersion,
-        updatedAt: new Date(),
-      },
+      data: updateData,
       include: {
         client: {
           select: {
@@ -352,7 +381,7 @@ export class NotesService {
     // Determine what fields have changed
     const fieldChanges = this.noteHistoryService.determineFieldChanges(
       { content: existingNote.content, status: existingNote.status, title: existingNote.title },
-      { content: updateNoteDto.content, status: updateNoteDto.status, title: updateNoteDto.title }
+      { content: updateNoteDto.content, status: updateData.status, title: updateNoteDto.title }
     );
 
     // Create version history entry
@@ -360,115 +389,46 @@ export class NotesService {
       noteId: note.id,
       version: nextVersion,
       content: updateNoteDto.content || existingNote.content,
-      status: updateNoteDto.status || existingNote.status,
+      status: updateData.status || existingNote.status,
       title: updateNoteDto.title || existingNote.title,
       ...fieldChanges,
     });
 
-    return this.mapToEntity(note);
-  }
+    // Create notifications for note signing if signed
+    if (updateNoteDto.sign && signedBy) {
+      try {
+        // Get supervisor details for notifications
+        const supervisorIds = await this.getSupervisorIds(existingNote.providerId);
+        const supervisors = await this.prisma.user.findMany({
+          where: { id: { in: supervisorIds } },
+          select: { id: true, firstName: true, lastName: true }
+        });
 
-  async saveDraft(id: string, updateNoteDto: UpdateNoteDto, providerId: string): Promise<NoteEntity> {
-    const existingNote = await this.prisma.clinicalNote.findUnique({
-      where: { id },
-    });
+        const noteTitle = note.title;
+        const clientName = `${note.client.firstName} ${note.client.lastName}`;
+        const providerName = `${note.provider.firstName} ${note.provider.lastName}`;
 
-    if (!existingNote) {
-      throw new NotFoundException(`Note with ID ${id} not found`);
-    }
-
-    if (existingNote.status === NoteStatus.LOCKED) {
-      throw new BadRequestException('Cannot update a locked note');
-    }
-
-    if (existingNote.status === NoteStatus.ACCEPTED) {
-      throw new BadRequestException('Cannot update an accepted note. Create an addendum instead.');
-    }
-
-    // Get the next version number
-    const nextVersion = (existingNote.version || 1) + 1;
-
-    const note = await this.prisma.clinicalNote.update({
-      where: { id },
-      data: {
-        ...updateNoteDto,
-        status: NoteStatus.DRAFT,
-        providerId,
-        version: nextVersion,
-        updatedAt: new Date(),
-      },
-      include: {
-        client: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            dateOfBirth: true,
-            email: true,
-            address1: true,
-            address2: true,
-            city: true,
-            state: true,
-            zipCode: true,
-            genderIdentity: true,
-          }
-        },
-        provider: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        signer: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        coSigner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        locker: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        unlocker: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
+        // Notify supervisors if note needs co-signature
+        if (supervisors.length > 0) {
+          const notifications = supervisors.map(supervisor => 
+            this.notificationService.createNoteNotification(
+              supervisor.id,
+              note.id,
+              `Clinical note "${noteTitle}" for ${clientName} by ${providerName} requires your co-signature`,
+              'signed'
+            )
+          );
+          await Promise.all(notifications);
         }
+      } catch (error) {
+        console.error('Error creating note signing notifications:', error);
+        // Don't fail the note signing if notifications fail
       }
-    });
-
-    // Determine what fields have changed
-    const fieldChanges = this.noteHistoryService.determineFieldChanges(
-      { content: existingNote.content, status: existingNote.status, title: existingNote.title },
-      { content: updateNoteDto.content, status: updateNoteDto.status, title: updateNoteDto.title }
-    );
-
-    // Create version history entry
-    await this.noteHistoryService.createHistoryEntry({
-      noteId: note.id,
-      version: nextVersion,
-      content: updateNoteDto.content || existingNote.content,
-      status: updateNoteDto.status || existingNote.status,
-      title: updateNoteDto.title || existingNote.title,
-      ...fieldChanges,
-    });
+    }
 
     return this.mapToEntity(note);
   }
+
 
   async deleteNote(id: string): Promise<void> {
     const existingNote = await this.prisma.clinicalNote.findUnique({

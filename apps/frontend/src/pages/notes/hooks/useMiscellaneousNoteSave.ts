@@ -46,7 +46,7 @@ export const useMiscellaneousNoteSave = (noteId?: string) => {
     try {
       const updateData = {
         content: formData as any,
-        status: (isDraft ? 'draft' : 'accepted') as 'draft' | 'accepted',
+        sign: !isDraft, // Sign if not a draft
       };
 
       await noteService.updateNote(noteId, updateData);
