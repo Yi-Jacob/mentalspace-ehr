@@ -149,52 +149,6 @@ const StaffDetailPage = () => {
               </div>
             </div>
           </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg border p-6">
-            <h3 className="font-semibold text-lg mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={handleEditStaff}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => {/* TODO: Implement view performance */}}
-              >
-                <Award className="h-4 w-4 mr-2" />
-                View Performance
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => {/* TODO: Implement view schedule */}}
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                View Schedule
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => {/* TODO: Implement view clients */}}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                View Clients
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     </PageLayout>

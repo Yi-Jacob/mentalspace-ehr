@@ -15,8 +15,6 @@ import ProviderCompensationModal from '@/pages/compliance/ProviderCompensationCo
 import ProviderCompensationHeader from '@/pages/compliance/ProviderCompensationConfig/components/ProviderCompensationHeader';
 
 import ProviderCompensationEmptyState from '@/pages/compliance/ProviderCompensationConfig/components/ProviderCompensationEmptyState';
-import SessionMultipliers from '@/pages/compliance/ProviderCompensationConfig/components/SessionMultipliers';
-import { StaffMember } from '@/types/staffType';
 
 const ProviderCompensationConfig: React.FC = () => {
   const { user } = useAuth();
@@ -47,13 +45,6 @@ const ProviderCompensationConfig: React.FC = () => {
     queryKey: ['provider-compensations', effectiveProviderId],
     queryFn: async () => {
       return complianceService.getProviderCompensations(undefined, effectiveProviderId);
-    },
-  });
-
-  const { data: sessionMultipliers } = useQuery({
-    queryKey: ['session-multipliers', effectiveProviderId],
-    queryFn: async () => {
-      return complianceService.getSessionMultipliers(effectiveProviderId);
     },
   });
 
@@ -343,9 +334,6 @@ const ProviderCompensationConfig: React.FC = () => {
             />
           }
         />
-
-        {/* Session Multipliers */}
-        <SessionMultipliers sessionMultipliers={sessionMultipliers || []} />
       </div>
 
       {/* Configuration Modal */}

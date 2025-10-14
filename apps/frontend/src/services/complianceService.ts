@@ -221,16 +221,6 @@ export class ComplianceService {
     return response.data;
   }
 
-  // Get session multipliers
-  async getSessionMultipliers(providerId?: string): Promise<any[]> {
-    const params = new URLSearchParams();
-    if (providerId) params.append('providerId', providerId);
-    
-    const url = `${this.baseUrl}/session-multipliers${params.toString() ? `?${params.toString()}` : ''}`;
-    const response = await apiClient.get<any[]>(url);
-    return response.data;
-  }
-
   // Get payment calculations with filters
   async getPaymentCalculations(status?: string, period?: string): Promise<PaymentCalculation[]> {
     const params = new URLSearchParams();

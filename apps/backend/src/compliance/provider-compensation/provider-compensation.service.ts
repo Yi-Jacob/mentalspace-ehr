@@ -127,21 +127,6 @@ export class ProviderCompensationService {
     });
   }
 
-  async getSessionMultipliers(providerId?: string) {
-    const where: any = {};
-
-    if (providerId) {
-      where.providerId = providerId;
-    }
-
-    return this.prisma.sessionRateMultiplier.findMany({
-      where,
-      orderBy: {
-        sessionType: 'asc',
-      },
-    });
-  }
-
   async approveCompensation(id: string, reviewedBy: string, reviewNotes?: string) {
     const compensation = await this.getProviderCompensationById(id);
     
