@@ -27,6 +27,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     env:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+      JWT_REFRESH_EXPIRES_IN: ${{ secrets.JWT_REFRESH_EXPIRES_IN }}
       VITE_API_TIMEOUT: ${{ secrets.VITE_API_TIMEOUT }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -76,6 +78,8 @@ jobs:
         echo "NODE_ENV=production" > apps/backend/.env
         echo "DATABASE_URL=${DATABASE_URL}" >> apps/backend/.env
         echo "JWT_SECRET=${JWT_SECRET}" >> apps/backend/.env
+        echo "JWT_EXPIRES_IN=${JWT_EXPIRES_IN}" >> apps/backend/.env
+        echo "JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}" >> apps/backend/.env
         echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> apps/backend/.env
         echo "DEFAULT_PASSWORD=${DEFAULT_PASSWORD}" >> apps/backend/.env
         echo "EMAIL_FROM=${EMAIL_FROM}" >> apps/backend/.env
@@ -88,7 +92,6 @@ jobs:
         echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> apps/backend/.env
         echo "GOOGLE_WORKSPACE_DOMAIN=${GOOGLE_WORKSPACE_DOMAIN}" >> apps/backend/.env
         echo "GOOGLE_CALENDAR_ID=${GOOGLE_CALENDAR_ID}" >> apps/backend/.env
-        echo "JWT_EXPIRES_IN=24h" >> apps/backend/.env
         echo "PORT=7000" >> apps/backend/.env
         chmod 600 apps/backend/.env
         
