@@ -25,7 +25,11 @@ const TimeTracking: React.FC = () => {
     date.setDate(date.getDate() - 7); // One week ago
     return date.toISOString().split('T')[0];
   });
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(() => {
+    const date = new Date();
+    date.setHours(23, 59, 59, 999); // One week ago
+    return date.toISOString().split('T')[0];
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   

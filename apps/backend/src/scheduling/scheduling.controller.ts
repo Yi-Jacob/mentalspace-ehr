@@ -79,8 +79,9 @@ export class SchedulingController {
   }
 
   @Post('conflicts/check')
-  checkConflicts(@Body() checkConflictsDto: CheckConflictsDto) {
-    return this.schedulingService.checkConflicts(checkConflictsDto);
+  checkConflicts(@Body() checkConflictsDto: CheckConflictsDto, @Request() req: any) {
+    const providerId = req.user?.id;
+    return this.schedulingService.checkConflicts(checkConflictsDto, providerId);
   }
 
   @Post('waitlist')

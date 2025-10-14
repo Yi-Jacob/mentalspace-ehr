@@ -37,7 +37,6 @@ export const useConflictDetection = ({
       try {
         const result = await schedulingService.checkConflicts({
           appointmentId,
-          providerId: providerId || 'temp', // Will be replaced by backend with actual provider ID
           clientId,
           startTime,
           endTime,

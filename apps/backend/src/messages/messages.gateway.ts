@@ -39,6 +39,7 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       const token = client.handshake.auth.token || client.handshake.headers.authorization?.replace('Bearer ', '');
       
       if (!token) {
+        console.log('🔌 WebSocket: No token provided, disconnecting client');
         client.disconnect();
         return;
       }
@@ -50,9 +51,17 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       client.userId = payload.sub; // Use 'sub' field for userId
       client.user = payload;
 
+      console.log(`✅ WebSocket: Client connected successfully (userId: ${client.userId})`);
 
     } catch (error) {
-      console.error('🟢 WebSocket connection error:', error);
+      // Handle specific JWT errors more gracefully
+      if (error.name === 'TokenExpiredError') {
+        console.log('⏰ WebSocket: Token expired, disconnecting client');
+      } else if (error.name === 'JsonWebTokenError') {
+        console.log('🔑 WebSocket: Invalid token format, disconnecting client');
+      } else {
+        console.error('🟢 WebSocket connection error:', error);
+      }
       client.disconnect();
     }
   }

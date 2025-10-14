@@ -852,8 +852,8 @@ export class SchedulingService {
     return { count: 0 };
   }
 
-  async checkConflicts(checkConflictsDto: CheckConflictsDto) {
-    const { appointmentId, providerId, clientId, startTime, endTime } = checkConflictsDto;
+  async checkConflicts(checkConflictsDto: CheckConflictsDto, providerId: string) {
+    const { appointmentId, clientId, startTime, endTime } = checkConflictsDto;
 
     // Calculate end time from start time and duration for existing appointments
     const conflicts = await this.prisma.appointment.findMany({

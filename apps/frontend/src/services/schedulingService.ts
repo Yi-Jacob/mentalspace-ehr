@@ -78,7 +78,6 @@ export interface QueryAppointmentsParams {
 
 export interface ConflictCheckParams {
   appointmentId?: string;
-  providerId: string;
   clientId: string;
   startTime: string;
   endTime: string;

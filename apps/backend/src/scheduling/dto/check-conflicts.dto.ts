@@ -6,9 +6,6 @@ export class CheckConflictsDto {
   appointmentId?: string;
 
   @IsUUID()
-  providerId: string;
-
-  @IsUUID()
   clientId: string;
 
   @IsDateString()
