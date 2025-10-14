@@ -36,7 +36,7 @@ export const useConsultationNoteForm = (noteData?: any) => {
       setFormData(prev => ({
         ...prev,
         ...contentData,
-        clientId: noteData.client_id
+        clientId: noteData.client.id
       }));
     }
   }, [noteData]);
@@ -57,9 +57,38 @@ export const useConsultationNoteForm = (noteData?: any) => {
     }) && formData.confidentialityAgreement && formData.consentObtained;
   };
 
+  const getValidationErrors = () => {
+    const required = [
+      { field: 'clientId', label: 'Client' },
+      { field: 'consultationDate', label: 'Consultation Date' },
+      { field: 'consultationType', label: 'Consultation Type' },
+      { field: 'consultationPurpose', label: 'Consultation Purpose' },
+      { field: 'consultationDuration', label: 'Consultation Duration' },
+      { field: 'presentingConcerns', label: 'Presenting Concerns' }
+    ];
+    
+    const errors = required
+      .filter(({ field }) => {
+        const value = formData[field as keyof ConsultationNoteFormData];
+        return value === undefined || value === '' || value === 0;
+      })
+      .map(({ label }) => `${label} is required`);
+
+    if (!formData.confidentialityAgreement) {
+      errors.push('Confidentiality agreement must be confirmed');
+    }
+
+    if (!formData.consentObtained) {
+      errors.push('Consent must be obtained');
+    }
+
+    return errors;
+  };
+
   return {
     formData,
     updateFormData,
     validateForm,
+    getValidationErrors,
   };
 };

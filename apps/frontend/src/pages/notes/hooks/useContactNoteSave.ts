@@ -42,10 +42,7 @@ export const useContactNoteSave = (noteId?: string) => {
     try {
       const updateData = {
         content: formData as any,
-        status: (isDraft ? 'draft' : 'signed') as 'draft' | 'signed',
-        ...(isDraft ? {} : {
-          signedBy: formData.signature
-        })
+        status: (isDraft ? 'draft' : 'accepted') as 'draft' | 'accepted',
       };
 
       await noteService.updateNote(noteId, updateData);

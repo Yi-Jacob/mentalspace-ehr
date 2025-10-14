@@ -20,7 +20,7 @@ const ContactNoteForm = () => {
   const { noteId } = useParams();
   
   const { data: noteData } = useContactNoteData(noteId);
-  const { formData, updateFormData, validateForm } = useContactNoteForm(noteData);
+  const { formData, updateFormData, validateForm, getValidationErrors } = useContactNoteForm(noteData);
   const { isLoading, handleSave } = useContactNoteSave(noteId);
 
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
@@ -43,6 +43,7 @@ const ContactNoteForm = () => {
       onSaveDraft={handleSaveDraft}
       onFinalize={handleFinalize}
       validateForm={validateForm}
+      getValidationErrors={getValidationErrors}
       isLoading={isLoading}
       isFinalized={formData.isFinalized}
       signature={formData.signature}

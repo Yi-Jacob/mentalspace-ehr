@@ -7,6 +7,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   signOut: () => Promise<void>;
+  forceLogout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,6 +16,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const forceLogout = () => {
+    // Immediate logout without backend call - used for 401 errors
+    setUser(null);
+    setError(null);
+    setLoading(false);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -40,9 +48,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
 
+    // Listen for force logout events (from 401 errors)
+    const handleForceLogout = () => {
+      if (mounted) {
+        forceLogout();
+      }
+    };
+
+    window.addEventListener('auth:force-logout', handleForceLogout);
+
     // Cleanup function
     return () => {
       mounted = false;
+      window.removeEventListener('auth:force-logout', handleForceLogout);
     };
   }, []);
 
@@ -67,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     error,
     signOut,
+    forceLogout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

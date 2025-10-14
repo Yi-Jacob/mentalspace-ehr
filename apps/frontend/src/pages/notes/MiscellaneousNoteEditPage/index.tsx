@@ -15,14 +15,13 @@ import { useMiscellaneousNoteData } from '../hooks/useMiscellaneousNoteData';
 import { useMiscellaneousNoteForm } from '../hooks/useMiscellaneousNoteForm';
 import { useMiscellaneousNoteSave } from '../hooks/useMiscellaneousNoteSave';
 import OneSectionNoteEditLayout from '@/pages/notes/components/layout/OneSectionNoteEditLayout';
-import { MiscellaneousNoteFormData } from '@/types/noteType';
 import { NOTE_CATEGORIES, URGENCY_LEVELS } from '@/types/enums/notesEnum';
 
 const MiscellaneousNoteForm = () => {
   const { noteId } = useParams();
   
   const { data: noteData } = useMiscellaneousNoteData(noteId);
-  const { formData, updateFormData, validateForm } = useMiscellaneousNoteForm(noteData);
+  const { formData, updateFormData, validateForm, getValidationErrors } = useMiscellaneousNoteForm(noteData);
   const { isLoading, handleSave } = useMiscellaneousNoteSave(noteId);
 
   const handleSaveDraft = () => handleSave(formData, true, validateForm);
@@ -69,6 +68,7 @@ const MiscellaneousNoteForm = () => {
       onSaveDraft={handleSaveDraft}
       onFinalize={handleFinalize}
       validateForm={validateForm}
+      getValidationErrors={getValidationErrors}
       isLoading={isLoading}
       isFinalized={formData.isFinalized}
       signature={formData.signature}

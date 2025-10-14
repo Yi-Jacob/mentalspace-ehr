@@ -120,7 +120,7 @@ class AuthService {
   }
 
   // Remove user from localStorage
-  private removeUser(): void {
+  removeUser(): void {
     localStorage.removeItem('user');
   }
 }

@@ -34,7 +34,7 @@ export const useContactNoteForm = (noteData?: any) => {
       setFormData(prev => ({
         ...prev,
         ...contentData,
-        clientId: noteData.client_id
+        clientId: noteData.client.id
       }));
     }
   }, [noteData]);
@@ -55,9 +55,28 @@ export const useContactNoteForm = (noteData?: any) => {
     });
   };
 
+  const getValidationErrors = () => {
+    const required = [
+      { field: 'clientId', label: 'Client' },
+      { field: 'contactDate', label: 'Contact Date' },
+      { field: 'contactType', label: 'Contact Type' },
+      { field: 'contactInitiator', label: 'Contact Initiator' },
+      { field: 'contactDuration', label: 'Contact Duration' },
+      { field: 'contactSummary', label: 'Contact Summary' }
+    ];
+    
+    return required
+      .filter(({ field }) => {
+        const value = formData[field as keyof ContactNoteFormData];
+        return value === undefined || value === '' || value === 0;
+      })
+      .map(({ label }) => `${label} is required`);
+  };
+
   return {
     formData,
     updateFormData,
     validateForm,
+    getValidationErrors,
   };
 };

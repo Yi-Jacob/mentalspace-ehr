@@ -84,6 +84,21 @@ const CancellationNoteForm = () => {
     return required.every(field => formData[field as keyof CancellationNoteFormData]);
   };
 
+  const getValidationErrors = () => {
+    const required = [
+      { field: 'clientId', label: 'Client' },
+      { field: 'sessionDate', label: 'Session Date' },
+      { field: 'sessionTime', label: 'Session Time' },
+      { field: 'cancellationReason', label: 'Cancellation Reason' },
+      { field: 'cancellationInitiator', label: 'Cancellation Initiator' },
+      { field: 'notificationMethod', label: 'Notification Method' }
+    ];
+    
+    return required
+      .filter(({ field }) => !formData[field as keyof CancellationNoteFormData])
+      .map(({ label }) => `${label} is required`);
+  };
+
   const handleAIFill = (generatedFormData: any) => {
     // Merge with existing form data, preserving clientId
     const mergedData = {
@@ -152,7 +167,7 @@ const CancellationNoteForm = () => {
     try {
       const updateData = {
         content: formData as any,
-        status: 'signed' as 'signed',
+        status: 'accepted' as 'accepted',
       };
 
       if (noteId) {
@@ -163,7 +178,7 @@ const CancellationNoteForm = () => {
           content: formData as any,
           clientId: formData.clientId,
           noteType: 'cancellation_note',
-          status: 'signed' as 'signed',
+          status: 'accepted' as 'accepted',
         });
       }
 
@@ -193,6 +208,7 @@ const CancellationNoteForm = () => {
       onSaveDraft={handleSaveDraft}
       onFinalize={handleFinalize}
       validateForm={validateForm}
+      getValidationErrors={getValidationErrors}
       isLoading={isLoading}
       isFinalized={formData.isFinalized}
       signature={formData.signature}

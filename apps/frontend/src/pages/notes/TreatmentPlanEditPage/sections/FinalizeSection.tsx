@@ -75,19 +75,24 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
   const incompleteSections = sectionCompletionStatus.filter(section => !section.isComplete);
 
   const handleFinalize = async () => {
+    const missingFields = [];
+    
+    // Check for incomplete sections
     if (!allSectionsComplete) {
-      toast({
-        title: "Incomplete Sections",
-        description: "Please complete all required sections before finalizing.",
-        variant: "destructive",
-      });
-      return;
+      const incompleteSectionNames = incompleteSections.map(section => section.title).join(', ');
+      missingFields.push(`Incomplete sections: ${incompleteSectionNames}`);
     }
 
+    // Check for signature
     if (!formData.signature) {
+      missingFields.push('Electronic signature is required');
+    }
+
+    // If there are missing fields, show detailed error
+    if (missingFields.length > 0) {
       toast({
-        title: "Signature Required",
-        description: "Please provide your signature before finalizing.",
+        title: "Missing Required Information",
+        description: `Please complete the following before finalizing:\n• ${missingFields.join('\n• ')}`,
         variant: "destructive",
       });
       return;
@@ -225,8 +230,8 @@ const FinalizeSection: React.FC<FinalizeSectionProps> = ({
               </Button>
               <Button
                 onClick={handleFinalize}
-                disabled={!allSectionsComplete || !formData.signature || isLoading}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+                disabled={isLoading}
+                className="bg-green-600 hover:bg-green-700"
               >
                 {isLoading ? 'Finalizing...' : 'Finalize & Sign Treatment Plan'}
               </Button>

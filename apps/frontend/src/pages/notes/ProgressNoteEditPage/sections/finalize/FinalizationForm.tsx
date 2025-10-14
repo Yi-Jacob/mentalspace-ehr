@@ -86,8 +86,8 @@ const FinalizationForm: React.FC<FinalizationFormProps> = ({
         </Button>
         <Button
           onClick={onFinalize}
-          disabled={!allSectionsComplete || !formData.signature || isLoading}
-          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+          disabled={isLoading}
+          className="bg-green-600 hover:bg-green-700"
         >
           {isLoading ? 'Finalizing...' : 'Finalize & Sign'}
         </Button>

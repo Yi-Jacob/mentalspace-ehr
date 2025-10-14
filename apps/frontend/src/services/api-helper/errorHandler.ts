@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios';
+import { authService } from '../authService';
 
 export interface ApiError {
   message: string;
@@ -19,6 +20,12 @@ class ErrorHandler {
       const data = error.response.data as { message?: string } | undefined;
       apiError.message = data?.message || error.message || 'An unexpected error occurred';
       apiError.details = error.response.data;
+
+      // Handle 401 Unauthorized errors - automatic logout
+      if (error.response.status === 401) {
+        console.warn('Authentication token expired or invalid. Logging out...');
+        this.handleAuthenticationError();
+      }
     } else if (error.request) {
       // Network error or timeout
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
@@ -38,6 +45,18 @@ class ErrorHandler {
     console.error('API Error:', apiError);
 
     return Promise.reject(apiError);
+  }
+
+  private handleAuthenticationError() {
+    // Clear authentication data
+    authService.removeToken();
+    authService.removeUser();
+    
+    // Dispatch a custom event to notify the auth context
+    window.dispatchEvent(new CustomEvent('auth:force-logout'));
+    
+    // Redirect to login page
+    window.location.href = '/auth/login';
   }
 
   isNetworkError(error: any): boolean {

@@ -7,6 +7,7 @@ import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { Alert, AlertDescription } from '@/components/basic/alert';
 import { AlertTriangle, CheckCircle, ArrowLeft, Bot } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import ClientInfoDisplay from '@/pages/notes/components/shared/ClientInfoDisplay';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -20,6 +21,7 @@ interface OneSectionNoteEditLayoutProps {
   onSaveDraft: () => Promise<void> | void;
   onFinalize: () => Promise<void> | void;
   validateForm: () => boolean;
+  getValidationErrors?: () => string[];
   isLoading: boolean;
   isFinalized?: boolean;
   signature?: string;
@@ -45,6 +47,7 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
   onSaveDraft,
   onFinalize,
   validateForm,
+  getValidationErrors,
   isLoading,
   isFinalized = false,
   signature = '',
@@ -61,6 +64,7 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
   onAIFill,
 }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const clientName = clientData 
@@ -75,6 +79,37 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
 
   const handleBackToNotes = () => {
     navigate('/notes');
+  };
+
+  const handleFinalizeWithValidation = () => {
+    const missingFields = [];
+    
+    // Check form validation
+    if (!validateForm()) {
+      if (getValidationErrors) {
+        missingFields.push(...getValidationErrors());
+      } else {
+        missingFields.push('Please complete all required fields');
+      }
+    }
+
+    // Check signature if finalization section is shown
+    if (showFinalizationSection && !signature) {
+      missingFields.push('Electronic signature is required');
+    }
+
+    // If there are missing fields, show detailed error
+    if (missingFields.length > 0) {
+      toast({
+        title: "Missing Required Information",
+        description: `Please complete the following before finalizing:\n• ${missingFields.join('\n• ')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // If validation passes, proceed with finalization
+    onFinalize();
   };
 
   const getFinalizeButtonClass = () => {
@@ -124,8 +159,8 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
           Save as Draft
         </Button>
         <Button
-          onClick={onFinalize}
-          disabled={!validateForm() || (showFinalizationSection && !signature) || isLoading}
+          onClick={handleFinalizeWithValidation}
+          disabled={isLoading}
           className={getFinalizeButtonClass()}
         >
           {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
@@ -209,6 +244,13 @@ const OneSectionNoteEditLayout: React.FC<OneSectionNoteEditLayoutProps> = ({
                   disabled={isLoading}
                 >
                   {isLoading ? 'Saving...' : 'Save Draft'}
+                </Button>
+                <Button
+                  onClick={handleFinalizeWithValidation}
+                  disabled={isLoading}
+                  className={getFinalizeButtonClass()}
+                >
+                  {isLoading ? 'Finalizing...' : 'Finalize & Sign Note'}
                 </Button>
               </div>
             </div>

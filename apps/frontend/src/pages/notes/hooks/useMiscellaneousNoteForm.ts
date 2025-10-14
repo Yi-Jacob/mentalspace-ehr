@@ -33,7 +33,7 @@ export const useMiscellaneousNoteForm = (noteData?: any) => {
       setFormData(prev => ({
         ...prev,
         ...contentData,
-        clientId: noteData.client_id
+        clientId: noteData.client.id
       }));
     }
   }, [noteData]);
@@ -53,9 +53,27 @@ export const useMiscellaneousNoteForm = (noteData?: any) => {
     });
   };
 
+  const getValidationErrors = () => {
+    const required = [
+      { field: 'clientId', label: 'Client' },
+      { field: 'eventDate', label: 'Event Date' },
+      { field: 'noteCategory', label: 'Note Category' },
+      { field: 'noteTitle', label: 'Note Title' },
+      { field: 'noteDescription', label: 'Note Description' }
+    ];
+    
+    return required
+      .filter(({ field }) => {
+        const value = formData[field as keyof MiscellaneousNoteFormData];
+        return value === undefined || value === '';
+      })
+      .map(({ label }) => `${label} is required`);
+  };
+
   return {
     formData,
     updateFormData,
     validateForm,
+    getValidationErrors,
   };
 };
