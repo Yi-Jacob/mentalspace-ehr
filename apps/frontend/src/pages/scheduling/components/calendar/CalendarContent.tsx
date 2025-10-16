@@ -4,7 +4,7 @@ import { CardContent } from '@/components/basic/card';
 import DayView from '../calendar-views/DayView';
 import WeekView from '../calendar-views/WeekView';
 import MonthView from '../calendar-views/MonthView';
-import { Appointment } from '@/services/schedulingService';
+import { Appointment } from '@/types/scheduleType';
 import { CalendarViewType } from '../../types/calendar';
 
 interface CalendarContentProps {

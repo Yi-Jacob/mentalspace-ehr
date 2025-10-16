@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { cn } from '@/utils/utils';
 import CalendarAppointmentCard from '../CalendarAppointmentCard';
-import { Appointment } from '@/services/schedulingService';
+import { Appointment } from '@/types/scheduleType';
 
 
 
@@ -16,9 +16,20 @@ interface DayViewProps {
 }
 
 const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting, onAppointmentClick }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
   const dayAppointments = appointments?.filter(apt => 
     isSameDay(new Date(apt.startTime), currentDate)
   ) || [];
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Create 15-minute time slots for the day (96 slots total: 24 hours * 4)
   const timeSlots = Array.from({ length: 96 }, (_, i) => {
@@ -62,6 +73,23 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlot
     }
   };
 
+  // Helper function to get current time line position
+  const getCurrentTimeLinePosition = () => {
+    if (!isSameDay(currentTime, currentDate)) {
+      return null; // Don't show line if not current day
+    }
+
+    const currentQuarterHour = (currentTime.getHours() * 4) + (currentTime.getMinutes() / 15);
+    const topPosition = (currentQuarterHour / 96) * 100; // Percentage from top
+    
+    return {
+      top: `${topPosition}%`,
+      time: format(currentTime, 'HH:mm')
+    };
+  };
+
+  const currentTimeLine = getCurrentTimeLinePosition();
+
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto">
@@ -90,6 +118,20 @@ const DayView: React.FC<DayViewProps> = ({ currentDate, appointments, onTimeSlot
                 onClick={() => onTimeSlotClick(currentDate, hour)}
               />
             ))}
+
+            {/* Current time line */}
+            {currentTimeLine && (
+              <div
+                className="absolute left-0 right-0 z-30 pointer-events-none"
+                style={{ top: currentTimeLine.top }}
+              >
+                <div className="flex items-center h-0.5 bg-red-500 shadow-sm">
+                  <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-r-md shadow-md font-medium">
+                    {currentTimeLine.time}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Render appointments absolutely positioned */}
             {dayAppointments.map((appointment) => {

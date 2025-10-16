@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
-import { Appointment } from '@/services/schedulingService';
+import { Appointment } from '@/types/scheduleType';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -45,8 +45,8 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, appointments, onTime
           return (
             <div
               key={day.toISOString()}
-              className={`border-r border-b border-gray-200 flex flex-col relative hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'
-                } ${isToday ? 'bg-blue-50' : ''}`}
+              className={`border-r border-b border-gray-200 flex flex-col relative hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${isToday ? 'bg-blue-50 border-blue-200' : !isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'
+                }`}
               style={{ height: 'calc((100vh - 200px) / 6)' }} // Divide available height by ~6 rows
               onClick={() => onTimeSlotClick(day, 9)} // Default to 9 AM when clicking on a day
             >

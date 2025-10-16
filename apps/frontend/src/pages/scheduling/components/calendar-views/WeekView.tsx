@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { cn } from '@/utils/utils';
-import { Appointment } from '@/services/schedulingService';
+import { Appointment } from '@/types/scheduleType';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -12,11 +12,22 @@ interface WeekViewProps {
 }
 
 const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSlotClick, onAttendMeeting, onAppointmentClick }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({
     start: weekStart,
     end: endOfWeek(currentDate, { weekStartsOn: 1 })
   });
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Helper function to get appointment position and size
   const getAppointmentPosition = (appointment: Appointment) => {
@@ -52,6 +63,21 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSl
       default:
         return 'bg-blue-100 border-blue-400';
     }
+  };
+
+  // Helper function to get current time line position for a specific day
+  const getCurrentTimeLinePosition = (day: Date) => {
+    if (!isSameDay(currentTime, day)) {
+      return null; // Don't show line if not current day
+    }
+
+    const currentQuarterHour = (currentTime.getHours() * 4) + (currentTime.getMinutes() / 15);
+    const topPosition = currentQuarterHour * 24; // pixels from top of day
+    
+    return {
+      top: `${topPosition}px`,
+      time: format(currentTime, 'HH:mm')
+    };
   };
 
   return (
@@ -97,6 +123,7 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSl
             const dayAppointments = appointments?.filter(apt =>
               isSameDay(new Date(apt.startTime), day)
             ) || [];
+            const currentTimeLine = getCurrentTimeLinePosition(day);
 
             return (
               <div key={day.toISOString()} className="relative">
@@ -108,6 +135,20 @@ const WeekView: React.FC<WeekViewProps> = ({ currentDate, appointments, onTimeSl
                     onClick={() => onTimeSlotClick(day, hour)}
                   />
                 ))}
+
+                {/* Current time line */}
+                {currentTimeLine && (
+                  <div
+                    className="absolute left-0 right-0 z-30 pointer-events-none"
+                    style={{ top: currentTimeLine.top }}
+                  >
+                    <div className="flex items-center h-0.5 bg-red-500 shadow-sm">
+                      <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-r-md shadow-md font-medium">
+                        {currentTimeLine.time}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Appointments positioned absolutely */}
                 {dayAppointments.map(appointment => {

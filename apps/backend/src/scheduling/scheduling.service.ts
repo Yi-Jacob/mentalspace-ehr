@@ -486,9 +486,6 @@ export class SchedulingService {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         clientId: clientId,
-        startTime: {
-          gte: new Date(), // Only future appointments
-        },
         status: {
           notIn: [AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW], // Exclude cancelled/no-show
         },
