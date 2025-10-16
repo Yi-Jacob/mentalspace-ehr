@@ -55,10 +55,11 @@ export class ComplianceService {
       },
     });
 
-    // Get session completions
-    const sessionCompletions = await this.prisma.sessionCompletion.findMany({
+    // Get appointments with sessions
+    const sessionCompletions = await this.prisma.appointment.findMany({
       where: {
-        sessionDate: {
+        hasSession: true,
+        startTime: {
           gte: thirtyDaysAgo,
         },
       },
@@ -69,7 +70,7 @@ export class ComplianceService {
             lastName: true,
           },
         },
-        client: {
+        clients: {
           select: {
             firstName: true,
             lastName: true,
@@ -77,7 +78,7 @@ export class ComplianceService {
         },
       },
       orderBy: {
-        sessionDate: 'desc',
+        startTime: 'desc',
       },
     });
 
@@ -165,11 +166,12 @@ export class ComplianceService {
     });
 
     // Get unsigned sessions
-    const unsignedSessions = await this.prisma.sessionCompletion.findMany({
+    const unsignedSessions = await this.prisma.appointment.findMany({
       where: {
+        hasSession: true,
         isNoteSigned: false,
         isLocked: false,
-        sessionDate: {
+        startTime: {
           gte: sevenDaysAgo,
         },
       },
@@ -180,7 +182,7 @@ export class ComplianceService {
             lastName: true,
           },
         },
-        client: {
+        clients: {
           select: {
             firstName: true,
             lastName: true,
@@ -188,7 +190,7 @@ export class ComplianceService {
         },
       },
       orderBy: {
-        sessionDate: 'desc',
+        startTime: 'desc',
       },
     });
 
@@ -229,10 +231,11 @@ export class ComplianceService {
     });
 
     // Get session completions for the user
-    const sessionCompletions = await this.prisma.sessionCompletion.findMany({
+    const sessionCompletions = await this.prisma.appointment.findMany({
       where: {
         providerId: userId,
-        sessionDate: {
+        hasSession: true,
+        startTime: {
           gte: thirtyDaysAgo,
         },
       },
@@ -330,9 +333,10 @@ export class ComplianceService {
         },
       }),
       
-      this.prisma.sessionCompletion.findMany({
+      this.prisma.appointment.findMany({
         where: {
-          sessionDate: {
+          hasSession: true,
+          startTime: {
             gte: startDate,
             lte: endDate,
           },

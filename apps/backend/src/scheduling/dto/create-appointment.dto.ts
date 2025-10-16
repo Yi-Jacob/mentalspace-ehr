@@ -92,6 +92,10 @@ export class CreateAppointmentDto {
   isTelehealth?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  hasSession?: boolean;
+
+  @IsOptional()
   @IsUUID()
   createdBy?: string;
 

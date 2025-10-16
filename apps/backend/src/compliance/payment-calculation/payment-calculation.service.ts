@@ -99,18 +99,19 @@ export class PaymentCalculationService {
 
     // Calculate based on compensation type
     if (compensationConfig.compensationType === 'session_based') {
-      // Session-based calculation - get sessions from SessionCompletion table
-      const sessionCompletions = await this.prisma.sessionCompletion.findMany({
+      // Session-based calculation - get sessions from Appointment table
+      const sessionCompletions = await this.prisma.appointment.findMany({
         where: {
           providerId,
-          sessionDate: {
+          hasSession: true,
+          startTime: {
             gte: targetPayPeriod,
             lt: new Date(targetPayPeriod.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days later
           },
           isNoteSigned: true, // Only signed notes count for payment
         },
         include: {
-          client: {
+          clients: {
             select: {
               firstName: true,
               lastName: true,
@@ -118,12 +119,12 @@ export class PaymentCalculationService {
           },
         },
         orderBy: {
-          sessionDate: 'asc',
+          startTime: 'asc',
         },
       });
 
       totalSessions = sessionCompletions.length;
-      totalHours = sessionCompletions.reduce((sum, session) => sum + (session.durationMinutes / 60), 0);
+      totalHours = sessionCompletions.reduce((sum, session) => sum + (session.duration / 60), 0);
 
       // Calculate payment for each session
       sessions = sessionCompletions.map(session => {
@@ -132,10 +133,10 @@ export class PaymentCalculationService {
 
         return {
           id: session.id,
-          clientName: `${session.client.firstName} ${session.client.lastName}`,
-          sessionDate: session.sessionDate,
-          sessionType: session.sessionType,
-          durationMinutes: session.durationMinutes,
+          clientName: `${session.clients.firstName} ${session.clients.lastName}`,
+          sessionDate: session.startTime,
+          sessionType: session.appointmentType,
+          durationMinutes: session.duration,
           calculatedAmount,
           isNoteSigned: session.isNoteSigned,
           noteSignedAt: session.noteSignedAt,
@@ -224,11 +225,11 @@ export class PaymentCalculationService {
     let baseAmount = config.baseSessionRate || 0;
     
     // Apply session type multipliers if available
-    const sessionMultiplier = this.getSessionMultiplier(session.sessionType, session.durationMinutes);
+    const sessionMultiplier = this.getSessionMultiplier(session.appointmentType, session.duration);
     baseAmount *= sessionMultiplier;
 
     // Apply duration-based proration
-    const durationMultiplier = this.getDurationMultiplier(session.durationMinutes);
+    const durationMultiplier = this.getDurationMultiplier(session.duration);
     baseAmount *= durationMultiplier;
 
     return baseAmount;
@@ -424,9 +425,10 @@ export class PaymentCalculationService {
     });
 
     // Mark sessions as paid
-    await this.prisma.sessionCompletion.updateMany({
+    await this.prisma.appointment.updateMany({
       where: {
         providerId,
+        hasSession: true,
         payPeriodWeek: calculation.payPeriodWeek,
         isNoteSigned: true,
       },
@@ -539,9 +541,10 @@ export class PaymentCalculationService {
   async getPaymentComplianceStatus(providerId: string, payPeriodWeek?: Date) {
     const targetPayPeriod = payPeriodWeek || this.calculatePayPeriodWeek(new Date());
     
-    const sessions = await this.prisma.sessionCompletion.findMany({
+    const sessions = await this.prisma.appointment.findMany({
       where: {
         providerId,
+        hasSession: true,
         payPeriodWeek: targetPayPeriod,
       },
     });

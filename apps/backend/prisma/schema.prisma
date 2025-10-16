@@ -43,9 +43,6 @@ model User {
   conversationParticipants      ConversationParticipant[]    @relation("ConversationParticipant")
   messageReadReceipts           MessageReadReceipt[]         @relation("MessageReadReceipt")
   timeTracking                  TimeTracking[]               @relation("TimeTrackingUser")
-  sessionCompletions            SessionCompletion[]          @relation("SessionCompletionProvider")
-  deadlineExceptions            DeadlineExceptionRequest[]   @relation("DeadlineExceptionProvider")
-  deadlineExceptionReviews      DeadlineExceptionRequest[]   @relation("DeadlineExceptionReviewer")
   timeEntries                   TimeEntry[]                  @relation("TimeEntryUser")
   timeEntryApprovals            TimeEntry[]                  @relation("TimeEntryApprovedBy")
   paymentCalculations           PaymentCalculation[]         @relation("PaymentCalculationUser")
@@ -236,7 +233,6 @@ model Client {
   claims                 Claim[]
   clinicalNotes          ClinicalNote[]
   timeTracking           TimeTracking[]
-  sessionCompletions     SessionCompletion[]
   payments               Payment[]
   insuranceVerifications InsuranceVerification[]
   insurances             ClientInsurance[]
@@ -266,6 +262,17 @@ model Appointment {
   googleMeetLink     String?        @map("google_meet_link")
   googleEventId      String?        @map("google_event_id")
   recurringRuleId    String?        @map("recurring_rule_id")
+  hasSession         Boolean        @default(false) @map("has_session")
+  isNoteSigned       Boolean        @default(false) @map("is_note_signed")
+  noteSignedAt       DateTime?      @map("note_signed_at")
+  isLocked           Boolean        @default(false) @map("is_locked")
+  lockedAt           DateTime?      @map("locked_at")
+  calculatedAmount   Float?         @map("calculated_amount")
+  payPeriodWeek      DateTime?      @map("pay_period_week")
+  isPaid             Boolean        @default(false) @map("is_paid")
+  supervisorOverrideBy     String?  @map("supervisor_override_by")
+  supervisorOverrideReason String?  @map("supervisor_override_reason")
+  supervisorOverrideAt     DateTime? @map("supervisor_override_at")
   createdBy          String?        @map("created_by")
   cancelledBy        String?        @map("cancelled_by")
   cancelledDate      DateTime?      @map("cancelled_date")
@@ -930,50 +937,6 @@ model StatementLineItem {
   @@map("statement_line_items")
 }
 
-model SessionCompletion {
-  id                       String   @id @default(uuid())
-  appointmentId            String   @map("appointment_id")
-  providerId               String   @map("provider_id")
-  clientId                 String   @map("client_id")
-  sessionType              String   @map("session_type")
-  durationMinutes          Int      @map("duration_minutes")
-  sessionDate              DateTime @default(now()) @map("session_date")
-  noteId                   String?  @map("note_id")
-  isNoteSigned             Boolean? @map("is_note_signed")
-  noteSignedAt             DateTime @default(now()) @map("note_signed_at")
-  isLocked                 Boolean? @map("is_locked")
-  lockedAt                 DateTime @default(now()) @map("locked_at")
-  calculatedAmount         Float?   @map("calculated_amount")
-  payPeriodWeek            DateTime @default(now()) @map("pay_period_week")
-  isPaid                   Boolean? @map("is_paid")
-  supervisorOverrideBy     String?  @map("supervisor_override_by")
-  supervisorOverrideReason String?  @map("supervisor_override_reason")
-  supervisorOverrideAt     DateTime @default(now()) @map("supervisor_override_at")
-  createdAt                DateTime @default(now()) @map("created_at")
-  updatedAt                DateTime @default(now()) @map("updated_at")
-  provider                 User     @relation("SessionCompletionProvider", fields: [providerId], references: [id])
-  client                   Client   @relation(fields: [clientId], references: [id])
-
-  @@map("session_completions")
-}
-
-model DeadlineExceptionRequest {
-  id                      String   @id @default(uuid())
-  providerId              String   @map("provider_id")
-  sessionCompletionId     String   @map("session_completion_id")
-  requestedExtensionUntil DateTime @default(now()) @map("requested_extension_until")
-  reason                  String
-  status                  String?  @map("status")
-  reviewedBy              String?  @map("reviewed_by")
-  reviewedAt              DateTime @default(now()) @map("reviewed_at")
-  reviewNotes             String?  @map("review_notes")
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @default(now()) @map("updated_at")
-  provider                User     @relation("DeadlineExceptionProvider", fields: [providerId], references: [id])
-  reviewedByUser          User?    @relation("DeadlineExceptionReviewer", fields: [reviewedBy], references: [id])
-
-  @@map("deadline_exception_requests")
-}
 
 model ProviderSchedule {
   id             String    @id @default(uuid())

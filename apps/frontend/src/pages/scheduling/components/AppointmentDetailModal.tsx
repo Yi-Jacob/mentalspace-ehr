@@ -148,7 +148,7 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
           client_id: appointment.clientId || appointment.client_id || '',
           description: appointment.title || '',
           cptCode: appointment.cptCode || '',
-          noteId: appointment.noteId || '',
+          noteId: appointment.noteId || null,
           isTelehealth: appointment.isTelehealth || false
         });
       }

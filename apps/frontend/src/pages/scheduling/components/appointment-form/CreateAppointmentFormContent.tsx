@@ -20,6 +20,7 @@ interface AppointmentFormData {
   room_number: string;
   noteId: string;
   isTelehealth: boolean;
+  hasSession: boolean;
   recurring_period: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
   recurring_rule_id?: string;
 }
@@ -90,6 +91,8 @@ const CreateAppointmentFormContent: React.FC<CreateAppointmentFormContentProps> 
         onNoteIdChange={(value) => updateFormData('noteId', value)}
         isTelehealth={formData.isTelehealth}
         onTelehealthChange={(value) => updateFormData('isTelehealth', value)}
+        hasSession={formData.hasSession}
+        onHasSessionChange={(value) => updateFormData('hasSession', value)}
       />
 
       {/* Date & Time */}

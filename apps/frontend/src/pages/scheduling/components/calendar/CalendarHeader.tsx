@@ -2,8 +2,7 @@ import React from 'react';
 import { Button } from '@/components/basic/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getCalendarTitle } from '../utils/calendarUtils';
-
-type CalendarViewType = 'day' | 'week' | 'month';
+import { CalendarViewType } from '../../types/calendar';
 
 interface CalendarHeaderProps {
   currentDate: Date;

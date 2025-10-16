@@ -11,7 +11,7 @@ export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
 
   @IsOptional()
   @IsDateString()
-  cancelledAt?: string;
+  cancelledDate?: string;
 
   @IsOptional()
   @IsString()
@@ -19,19 +19,7 @@ export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
 
   @IsOptional()
   @IsString()
-  cancellationReason?: string;
-
-  @IsOptional()
-  @IsString()
-  noShowReason?: string;
-
-  @IsOptional()
-  @IsDateString()
-  checkedInAt?: string;
-
-  @IsOptional()
-  @IsDateString()
-  completedAt?: string;
+  cancelledReason?: string;
 
   // Recurring appointment fields for editing
   @IsOptional()

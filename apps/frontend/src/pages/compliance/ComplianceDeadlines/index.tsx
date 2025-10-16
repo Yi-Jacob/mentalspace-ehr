@@ -9,7 +9,7 @@ import { Button } from '@/components/basic/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Badge } from '@/components/basic/badge';
 import { Table, TableColumn } from '@/components/basic/table';
-import { sessionCompletionService, SessionCompletion } from '@/services/sessionCompletionService';
+import { schedulingService, Appointment } from '@/services/schedulingService';
 import { format, addDays, isAfter, isBefore, differenceInHours } from 'date-fns';
 
 const ComplianceDeadlines: React.FC = () => {
@@ -20,7 +20,11 @@ const ComplianceDeadlines: React.FC = () => {
   // Get sessions with deadlines
   const { data: sessions, isLoading, error } = useQuery({
     queryKey: ['session-deadlines', statusFilter, providerFilter],
-    queryFn: () => sessionCompletionService.getSessionsWithDeadlines(providerFilter === 'all' ? undefined : providerFilter),
+    queryFn: () => schedulingService.getAppointments({ 
+      status: 'Completed',
+      hasSession: true,
+      providerId: providerFilter === 'all' ? undefined : providerFilter
+    }),
   });
 
   // Filter sessions based on status
@@ -31,7 +35,7 @@ const ComplianceDeadlines: React.FC = () => {
 
   // Mark session as completed (note signed)
   const markAsCompletedMutation = useMutation({
-    mutationFn: (sessionId: string) => sessionCompletionService.markSessionAsCompleted(sessionId),
+    mutationFn: (sessionId: string) => schedulingService.signNote(sessionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['session-deadlines'] });
     },
@@ -71,7 +75,7 @@ const ComplianceDeadlines: React.FC = () => {
   } : null;
 
   // Define columns for the table
-  const columns: TableColumn<SessionCompletion>[] = [
+  const columns: TableColumn<Appointment>[] = [
     {
       key: 'providerName',
       header: 'Provider',
@@ -87,7 +91,7 @@ const ComplianceDeadlines: React.FC = () => {
       header: 'Client',
       accessor: (item) => (
         <span className="font-medium">
-          {item.client ? `${item.client.firstName} ${item.client.lastName}` : 'Unknown'}
+          {item.clients ? `${item.clients.firstName} ${item.clients.lastName}` : 'Unknown'}
         </span>
       ),
       sortable: true,
@@ -97,18 +101,18 @@ const ComplianceDeadlines: React.FC = () => {
       header: 'Session Type',
       accessor: (item) => (
         <Badge variant="outline" className="text-xs">
-          {item.sessionType}
+          {item.appointmentType}
         </Badge>
       ),
       sortable: true,
     },
     {
-      key: 'sessionDate',
+      key: 'startTime',
       header: 'Session Date',
       accessor: (item) => (
         <div>
-          <div className="font-medium">{formatDate(item.sessionDate)}</div>
-          <div className="text-xs text-gray-500">{formatTime(item.sessionDate)}</div>
+          <div className="font-medium">{formatDate(item.startTime)}</div>
+          <div className="text-xs text-gray-500">{formatTime(item.startTime)}</div>
         </div>
       ),
       sortable: true,

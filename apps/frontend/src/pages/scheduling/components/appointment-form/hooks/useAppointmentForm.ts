@@ -127,6 +127,7 @@ export const useAppointmentForm = ({
         roomNumber: formData.room_number || undefined,
         noteId: formData.noteId || undefined,
         isTelehealth: formData.isTelehealth,
+        hasSession: formData.hasSession || false,
         ...recurringData
       };
       

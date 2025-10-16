@@ -1,180 +1,19 @@
 import { apiClient } from './api-helper/client';
-import { AppointmentTypeValue } from '@/types/scheduleType';
-
-export interface Appointment {
-  id: string;
-  clientId: string;
-  providerId: string;
-  appointmentType: AppointmentTypeValue;
-  cptCode?: string;
-  title?: string;
-  description?: string;
-  startTime: string;
-  duration: number;
-  status: string;
-  location?: string;
-  roomNumber?: string;
-  noteId?: string;
-  isTelehealth: boolean;
-  googleMeetLink?: string;
-  recurringRuleId?: string;
-  createdAt: string;
-  updatedAt: string;
-  clients: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-  note?: {
-    id: string;
-    title: string;
-    noteType: string;
-    status: string;
-  };
-}
-
-export interface CreateAppointmentData {
-  clientId: string;
-  appointmentType: AppointmentTypeValue;
-  title?: string;
-  description?: string;
-  cptCode?: string;
-  startTime: string;
-  duration: number;
-  location?: string;
-  roomNumber?: string;
-  noteId?: string;
-  isTelehealth?: boolean;
-  // Recurring appointment fields
-  recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  recurringTimeSlots?: TimeSlot[];
-  isBusinessDayOnly?: boolean;
-}
-
-export interface UpdateAppointmentData {
-  id: string;
-  title?: string;
-  description?: string;
-  cptCode?: string;
-  startTime?: string;
-  duration?: number;
-  location?: string;
-  roomNumber?: string;
-  noteId?: string;
-  isTelehealth?: boolean;
-  status?: string;
-}
-
-export interface QueryAppointmentsParams {
-  clientId?: string;
-  providerId?: string;
-  status?: string;
-  appointmentType?: AppointmentTypeValue;
-  startDate?: string;
-  endDate?: string;
-  search?: string;
-  viewType?: 'day' | 'week' | 'month';
-}
-
-export interface ConflictCheckParams {
-  appointmentId?: string;
-  clientId: string;
-  startTime: string;
-  endTime: string;
-}
-
-export interface ConflictResult {
-  conflicts: Appointment[];
-  hasConflicts: boolean;
-}
-
-export interface WaitlistEntry {
-  id: string;
-  clientId: string;
-  providerId: string;
-  preferredDate: string;
-  preferredTimeStart?: string;
-  notes?: string;
-  isTelehealth: boolean;
-  createdAt: string;
-  isFulfilled: boolean;
-  clients?: {
-    firstName: string;
-    lastName: string;
-  };
-  users?: {
-    firstName: string;
-    lastName: string;
-  };
-}
-
-export interface CreateWaitlistData {
-  clientId: string;
-  providerId: string;
-  preferredDate: string;
-  preferredTimeStart?: string;
-  notes?: string;
-  isTelehealth?: boolean;
-}
-
-export interface ProviderSchedule {
-  id: string;
-  providerId: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  breakStartTime?: string;
-  breakEndTime?: string;
-  effectiveFrom: string;
-  effectiveUntil?: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateScheduleData {
-  providerId?: string; // Made optional since it's set in backend
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  isAvailable?: boolean;
-  breakStartTime?: string;
-  breakEndTime?: string;
-  effectiveFrom?: string;
-  effectiveUntil?: string;
-  status?: string;
-}
-
-export interface CreateScheduleExceptionData {
-  providerId?: string; // Made optional since it's set in backend
-  exceptionDate: string;
-  startTime?: string;
-  endTime?: string;
-  isUnavailable?: boolean;
-  reason?: string;
-}
-
-export interface ScheduleException {
-  id: string;
-  providerId: string;
-  exceptionDate: string;
-  startTime?: string;
-  endTime?: string;
-  isUnavailable?: boolean;
-  reason?: string;
-  approvedBy?: string;
-  approvedAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface TimeSlot {
-  time: string;
-  dayOfWeek?: number; // 0-6 (Sunday-Saturday)
-  dayOfMonth?: number; // 1-31
-  month?: number; // 1-12
-}
+import {
+  Appointment,
+  CreateAppointmentData,
+  UpdateAppointmentData,
+  QueryAppointmentsParams,
+  ConflictCheckParams,
+  ConflictResult,
+  WaitlistEntry,
+  CreateWaitlistData,
+  ProviderSchedule,
+  CreateScheduleData,
+  CreateScheduleExceptionData,
+  ScheduleException,
+  TimeSlot
+} from '@/types/scheduleType';
 
 class SchedulingService {
   // Appointment methods
@@ -292,6 +131,30 @@ class SchedulingService {
 
   async deleteScheduleException(id: string): Promise<{ message: string }> {
     const response = await apiClient.delete<{ message: string }>(`/scheduling/schedules/exceptions/${id}`);
+    return response.data;
+  }
+
+  // Session management methods
+  async signNote(appointmentId: string, signedBy?: string): Promise<Appointment> {
+    const response = await apiClient.post<Appointment>(`/scheduling/appointments/${appointmentId}/sign-note`, { 
+      signedBy: signedBy || 'current-user' 
+    });
+    return response.data;
+  }
+
+  async lockSession(appointmentId: string, lockedBy?: string, reason?: string): Promise<Appointment> {
+    const response = await apiClient.post<Appointment>(`/scheduling/appointments/${appointmentId}/lock-session`, { 
+      lockedBy: lockedBy || 'current-user',
+      reason: reason || 'Session locked by provider'
+    });
+    return response.data;
+  }
+
+  async supervisorOverride(appointmentId: string, overrideBy?: string, reason?: string): Promise<Appointment> {
+    const response = await apiClient.post<Appointment>(`/scheduling/appointments/${appointmentId}/supervisor-override`, { 
+      overrideBy: overrideBy || 'current-user',
+      reason: reason || 'Session unlocked by supervisor'
+    });
     return response.data;
   }
 }

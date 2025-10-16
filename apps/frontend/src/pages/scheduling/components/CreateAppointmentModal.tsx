@@ -2,7 +2,6 @@
 import React from 'react';
 import { Dialog, DialogContent } from '@/components/basic/dialog';
 import PageHeader from '@/components/basic/PageHeader';
-import PageLayout from '@/components/basic/PageLayout';
 import { useAppointmentForm } from './appointment-form/hooks/useAppointmentForm';
 import { useConflictDetection } from './hooks/useConflictDetection';
 import CreateAppointmentFormContent from './appointment-form/CreateAppointmentFormContent';

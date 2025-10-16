@@ -47,7 +47,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       case AppointmentStatus.IN_PROGRESS:
         return 'secondary';
       case AppointmentStatus.COMPLETED:
-        return 'default';
+        return 'secondary';
       case AppointmentStatus.CANCELLED:
         return 'destructive';
       case AppointmentStatus.NO_SHOW:

@@ -5,8 +5,7 @@ import DayView from '../calendar-views/DayView';
 import WeekView from '../calendar-views/WeekView';
 import MonthView from '../calendar-views/MonthView';
 import { Appointment } from '@/services/schedulingService';
-
-type CalendarViewType = 'day' | 'week' | 'month';
+import { CalendarViewType } from '../../types/calendar';
 
 interface CalendarContentProps {
   viewType: CalendarViewType;

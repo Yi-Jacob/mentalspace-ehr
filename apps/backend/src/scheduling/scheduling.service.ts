@@ -398,6 +398,10 @@ export class SchedulingService {
       where.appointmentType = query.appointmentType;
     }
 
+    if (query.hasSession !== undefined) {
+      where.hasSession = query.hasSession;
+    }
+
     if (query.startDate && query.endDate) {
       where.startTime = {
         gte: new Date(query.startDate),
@@ -573,12 +577,8 @@ export class SchedulingService {
 
     // Handle status-specific timestamps
     if (updateAppointmentDto.status) {
-      if (updateAppointmentDto.status === AppointmentStatus.COMPLETED) {
-        updateData.completedAt = new Date();
-      } else if (updateAppointmentDto.status === AppointmentStatus.CHECKED_IN) {
-        updateData.checkedInAt = new Date();
-      } else if (updateAppointmentDto.status === AppointmentStatus.CANCELLED) {
-        updateData.cancelledAt = new Date();
+      if (updateAppointmentDto.status === AppointmentStatus.CANCELLED) {
+        updateData.cancelledDate = new Date();
       }
     }
 
@@ -708,12 +708,8 @@ export class SchedulingService {
     };
 
     // Add timestamp fields for specific statuses
-    if (status === AppointmentStatus.COMPLETED) {
-      updateData.completedAt = new Date();
-    } else if (status === AppointmentStatus.CHECKED_IN) {
-      updateData.checkedInAt = new Date();
-    } else if (status === AppointmentStatus.CANCELLED) {
-      updateData.cancelledAt = new Date();
+    if (status === AppointmentStatus.CANCELLED) {
+      updateData.cancelledDate = new Date();
     }
 
     return this.prisma.appointment.update({
@@ -1155,5 +1151,170 @@ export class SchedulingService {
     });
 
     return { message: 'Schedule exception deleted successfully' };
+  }
+
+  // Session management methods
+  async signNote(appointmentId: string, signedBy: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        clients: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
+    }
+
+    if (!appointment.hasSession) {
+      throw new BadRequestException('This appointment does not have session tracking enabled');
+    }
+
+    if (appointment.isNoteSigned) {
+      throw new BadRequestException('Note is already signed');
+    }
+
+    if (appointment.isLocked) {
+      throw new BadRequestException('Session is locked and cannot be signed');
+    }
+
+    return this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        isNoteSigned: true,
+        noteSignedAt: new Date(),
+      },
+      include: {
+        clients: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
+  async lockSession(appointmentId: string, lockedBy: string, reason?: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        clients: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
+    }
+
+    if (!appointment.hasSession) {
+      throw new BadRequestException('This appointment does not have session tracking enabled');
+    }
+
+    if (appointment.isLocked) {
+      throw new BadRequestException('Session is already locked');
+    }
+
+    return this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        isLocked: true,
+        lockedAt: new Date(),
+      },
+      include: {
+        clients: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
+  async supervisorOverride(appointmentId: string, overrideBy: string, reason: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        clients: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException(`Appointment with ID ${appointmentId} not found`);
+    }
+
+    if (!appointment.hasSession) {
+      throw new BadRequestException('This appointment does not have session tracking enabled');
+    }
+
+    return this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        supervisorOverrideBy: overrideBy,
+        supervisorOverrideReason: reason,
+        supervisorOverrideAt: new Date(),
+        isLocked: false, // Unlock the session
+      },
+      include: {
+        clients: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        provider: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
   }
 } 

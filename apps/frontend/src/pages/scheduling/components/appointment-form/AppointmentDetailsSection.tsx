@@ -48,6 +48,10 @@ interface AppointmentDetailsSectionProps {
   // Telehealth
   isTelehealth: boolean;
   onTelehealthChange: (isTelehealth: boolean) => void;
+  
+  // Has Session
+  hasSession: boolean;
+  onHasSessionChange: (hasSession: boolean) => void;
 }
 
 const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
@@ -72,7 +76,9 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
   noteId,
   onNoteIdChange,
   isTelehealth,
-  onTelehealthChange
+  onTelehealthChange,
+  hasSession,
+  onHasSessionChange
 }) => {
   const appointmentTypes = getAppointmentTypeOptions();
 
@@ -280,6 +286,24 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
             />
             <Label htmlFor="isTelehealth" className="text-sm text-gray-600">
               This is a telehealth appointment
+            </Label>
+          </div>
+        </div>
+
+        {/* Has Session */}
+        <div className="space-y-2">
+          <Label className="flex items-center space-x-2 text-gray-700 font-medium">
+            <FileText className="h-4 w-4 text-green-500" />
+            <span>Session Management</span>
+          </Label>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="hasSession"
+              checked={hasSession}
+              onCheckedChange={(checked) => onHasSessionChange(checked as boolean)}
+            />
+            <Label htmlFor="hasSession" className="text-sm text-gray-600">
+              This appointment requires session notes and compliance tracking
             </Label>
           </div>
         </div>
