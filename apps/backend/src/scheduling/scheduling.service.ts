@@ -27,7 +27,7 @@ export class SchedulingService {
   ) {}
 
   async createAppointment(createAppointmentDto: CreateAppointmentDto, userId: string) {
-    const { clientId, startTime, duration, recurringPattern, recurringTimeSlots, recurringEndDate, isBusinessDayOnly } = createAppointmentDto;
+    const { clientId, startTime, duration, recurringPattern, hasSession, recurringTimeSlots, recurringEndDate, isBusinessDayOnly } = createAppointmentDto;
     
     // Set provider ID from JWT token if not provided
     const providerId = createAppointmentDto.providerId || userId;
@@ -108,6 +108,7 @@ export class SchedulingService {
         location: createAppointmentDto.location,
         roomNumber: createAppointmentDto.roomNumber,
         noteId: createAppointmentDto.noteId,
+        hasSession: hasSession || false,
         isTelehealth: createAppointmentDto.isTelehealth ?? false,
         googleMeetLink,
         googleEventId,

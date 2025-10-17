@@ -16,6 +16,7 @@ interface AppointmentData {
   noteId?: string | null;
   isTelehealth?: boolean;
   startTime: string;
+  hasSession?: boolean;
   duration: number;
   // Recurring appointment fields
   recurringPattern?: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -44,6 +45,7 @@ export const useAppointmentMutation = (onSuccess: () => void, waitlistEntryId?: 
         roomNumber: appointmentData.roomNumber || undefined,
         noteId: appointmentData.noteId || undefined,
         isTelehealth: appointmentData.isTelehealth,
+        hasSession: appointmentData.hasSession || false,
         startTime: appointmentData.startTime,
         duration: appointmentData.duration,
         recurringPattern: appointmentData.recurringPattern,
