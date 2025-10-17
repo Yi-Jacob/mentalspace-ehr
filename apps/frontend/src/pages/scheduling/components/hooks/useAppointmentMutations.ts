@@ -151,10 +151,6 @@ export const useAppointmentMutations = () => {
       if (status === AppointmentStatus.COMPLETED) {
         updateData.completed_at = new Date().toISOString();
       }
-      
-      if (status === AppointmentStatus.CHECKED_IN) {
-        updateData.checked_in_at = new Date().toISOString();
-      }
 
       if (status === AppointmentStatus.CANCELLED) {
         updateData.cancelled_at = new Date().toISOString();

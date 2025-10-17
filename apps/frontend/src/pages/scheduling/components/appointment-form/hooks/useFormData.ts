@@ -49,7 +49,7 @@ export const useFormData = ({
     duration_minutes: 60,
     location: '',
     room_number: '',
-    noteId: '',
+    noteId: null,
     isTelehealth: defaultIsTelehealth || false,
     hasSession: false,
     recurring_period: 'none'
@@ -93,7 +93,7 @@ export const useFormData = ({
       duration_minutes: 60,
       location: '',
       room_number: '',
-      noteId: '',
+      noteId: null,
       isTelehealth: false,
       hasSession: false,
       recurring_period: 'none'

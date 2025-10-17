@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/basic/card';
 import { addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import CreateAppointmentModal from './components/CreateAppointmentModal';
 import AppointmentDetailModal from './components/AppointmentDetailModal';
@@ -23,6 +23,7 @@ import AskMeetingModal from './components/AskMeetingModal';
 const CalendarView = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const {
     currentDate,
     setCurrentDate,
@@ -43,7 +44,7 @@ const CalendarView = () => {
   // Calendar view state
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   const [showAskMeetingModal, setShowAskMeetingModal] = useState(false);
 
   // Enable real-time updates
@@ -88,7 +89,7 @@ const CalendarView = () => {
   };
 
   const handleAppointmentClick = (appointment: any) => {
-    setSelectedAppointment(appointment);
+    setSelectedAppointmentId(appointment.id);
     setShowEditModal(true);
   };
 
@@ -98,6 +99,7 @@ const CalendarView = () => {
   const handleWaitlistClick = () => {
     navigate('/scheduling/waitlist');
   };
+
 
   return (
     <PageLayout variant="gradient">
@@ -171,14 +173,14 @@ const CalendarView = () => {
         <AppointmentDetailModal
           open={showEditModal}
           onOpenChange={setShowEditModal}
-          appointment={selectedAppointment}
+          appointmentId={selectedAppointmentId}
           onAttendMeeting={handleAttendMeeting}
         />
 
         <DeleteAppointmentDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
-          appointment={selectedAppointment}
+          appointment={selectedAppointmentId ? { id: selectedAppointmentId } : null}
         />
 
         <AskMeetingModal

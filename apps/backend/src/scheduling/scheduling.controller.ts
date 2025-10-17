@@ -78,6 +78,15 @@ export class SchedulingController {
     return this.schedulingService.remove(id);
   }
 
+  @Post('appointments/:id/create-note')
+  createAndLinkNote(
+    @Param('id') appointmentId: string,
+    @Body() body: { noteType: string; title: string; content: string },
+    @Request() req: { user: AuthenticatedUser }
+  ) {
+    return this.schedulingService.createAndLinkNote(appointmentId, body, req.user.id);
+  }
+
   @Post('conflicts/check')
   checkConflicts(@Body() checkConflictsDto: CheckConflictsDto, @Request() req: any) {
     const providerId = req.user?.id;
@@ -156,21 +165,5 @@ export class SchedulingController {
   @Delete('schedules/exceptions/:id')
   deleteScheduleException(@Param('id') id: string, @Request() req) {
     return this.schedulingService.deleteScheduleException(id, req.user.id);
-  }
-
-  // Session management endpoints
-  @Post('appointments/:id/sign-note')
-  signNote(@Param('id') id: string, @Body() body: { signedBy: string }) {
-    return this.schedulingService.signNote(id, body.signedBy);
-  }
-
-  @Post('appointments/:id/lock-session')
-  lockSession(@Param('id') id: string, @Body() body: { lockedBy: string; reason?: string }) {
-    return this.schedulingService.lockSession(id, body.lockedBy, body.reason);
-  }
-
-  @Post('appointments/:id/supervisor-override')
-  supervisorOverride(@Param('id') id: string, @Body() body: { overrideBy: string; reason: string }) {
-    return this.schedulingService.supervisorOverride(id, body.overrideBy, body.reason);
   }
 } 

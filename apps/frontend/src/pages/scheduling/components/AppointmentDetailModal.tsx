@@ -2,78 +2,36 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/basic/dialog';
 import { format } from 'date-fns';
-import { useAppointmentMutations } from './hooks/useAppointmentMutations';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useConflictDetection } from './hooks/useConflictDetection';
 import EditRecurringRuleModal from './edit-appointment-modal/EditRecurringRuleModal';
-import { AppointmentTypeValue, AppointmentStatusValue, getAppointmentTypeOptions, getAppointmentStatusOptions } from '@/types/scheduleType';
-import { AppointmentType } from '@/types/enums/scheduleEnum';
+import { AppointmentTypeValue, getAppointmentTypeOptions, Appointment } from '@/types/scheduleType';
+import { AppointmentType, AppointmentStatus } from '@/types/enums/scheduleEnum';
 import { Button } from '@/components/basic/button';
-import { Calendar, Settings, User, Save, Video, Edit, X } from 'lucide-react';
+import { Calendar, Settings, User, Save, Video, Edit, X, CheckCircle, XCircle, Clock, Play, FileText, Plus } from 'lucide-react';
 import { Input } from '@/components/basic/input';
 import { Label } from '@/components/basic/label';
 import { DateInput } from '@/components/basic/date-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { Textarea } from '@/components/basic/textarea';
 import { Checkbox } from '@/components/basic/checkbox';
-import NoteSelectionSection from './appointment-form/NoteSelectionSection';
-import { CPT_CODES_BY_TYPE } from '@/types/enums/notesEnum';
+import { Badge } from '@/components/basic/badge';
+import { CPT_CODES_BY_TYPE, NOTE_TYPES } from '@/types/enums/notesEnum';
+import { useToast } from '@/hooks/use-toast';
+import { schedulingService } from '@/services/schedulingService';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-interface Appointment {
-  id: string;
-  title?: string;
-  clientId?: string;
-  providerId?: string;
-  appointmentType?: AppointmentTypeValue;
-  cptCode?: string;
-  startTime?: string;
-  duration?: number;
-  status?: string;
-  location?: string;
-  roomNumber?: string;
-  noteId?: string;
-  isTelehealth?: boolean;
-  googleMeetLink?: string;
-  recurringRuleId?: string;
-  clients?: {
-    firstName: string;
-    lastName: string;
-  };
-  note?: {
-    id: string;
-    title: string;
-    noteType: string;
-    status: string;
-  };
-  recurringRule?: {
-    id: string;
-    recurringPattern: string;
-    startDate: string;
-    endDate?: string;
-    timeSlots: any[];
-    isBusinessDayOnly: boolean;
-  };
-  // Fallback fields for backward compatibility
-  client_id?: string;
-  provider_id?: string;
-  appointment_type?: AppointmentTypeValue;
-  start_time?: string;
-  end_time?: string;
-  room_number?: string;
-  first_name?: string;
-  last_name?: string;
-}
 
 interface AppointmentDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  appointment: Appointment | null;
+  appointmentId: string | null;
   onAttendMeeting?: (meetLink: string) => void;
 }
 
 interface FormData {
   title: string;
   appointment_type: string;
-  status: string;
   location: string;
   room_number: string;
   date: string;
@@ -84,19 +42,21 @@ interface FormData {
   cptCode: string;
   noteId: string;
   isTelehealth: boolean;
+  paymentMethod: string;
+  isPaid: boolean;
+  calculatedAmount: number;
 }
 
 const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
   open,
   onOpenChange,
-  appointment,
+  appointmentId,
   onAttendMeeting
 }) => {
-  const [isEditMode, setIsEditMode] = useState(false);
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<FormData>({
     title: '',
     appointment_type: '',
-    status: '',
     location: '',
     room_number: '',
     date: '',
@@ -105,8 +65,21 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     client_id: '',
     description: '',
     cptCode: '',
-    noteId: '',
-    isTelehealth: false
+    noteId: null,
+    isTelehealth: false,
+    paymentMethod: '',
+    isPaid: false,
+    calculatedAmount: 0
+  });
+
+  const [showNoteTypeSelector, setShowNoteTypeSelector] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch appointment data internally
+  const { data: appointment, isLoading: isLoadingAppointment } = useQuery({
+    queryKey: ['appointment', appointmentId],
+    queryFn: () => schedulingService.getAppointment(appointmentId!),
+    enabled: !!appointmentId && open,
   });
 
   const [showEditRecurringModal, setShowEditRecurringModal] = useState(false);
@@ -122,15 +95,23 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     recurringEndDate?: string;
   } | null>(null);
 
-  const { updateAppointment } = useAppointmentMutations();
-
-  // Get appointment type and status options from enums
+  // Get appointment type options from enums
   const appointmentTypeOptions = getAppointmentTypeOptions();
-  const appointmentStatusOptions = getAppointmentStatusOptions();
+
+  // Payment method options
+  const paymentMethodOptions = [
+    { value: 'insurance_in_network_electronic', label: 'Insurance - In Network - Electronic' },
+    { value: 'insurance_in_network_paper', label: 'Insurance - In Network - Paper' },
+    { value: 'insurance_in_network_external', label: 'Insurance - In Network - External' },
+    { value: 'insurance_out_network_electronic', label: 'Insurance - Out of Network - Electronic' },
+    { value: 'insurance_out_network_paper', label: 'Insurance - Out of Network - Paper' },
+    { value: 'insurance_out_network_external', label: 'Insurance - Out of Network - External' },
+    { value: 'direct_payment', label: 'Direct - Cash, Check, or Credit/Debit Card' }
+  ];
 
   useEffect(() => {
     if (appointment) {
-      const startTime = appointment.startTime || appointment.start_time;
+      const startTime = appointment.startTime;
       const duration = appointment.duration || 60;
       
       if (startTime) {
@@ -138,18 +119,20 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
         
         setFormData({
           title: appointment.title || '',
-          appointment_type: appointment.appointmentType || appointment.appointment_type || '',
-          status: appointment.status || 'Scheduled',
+          appointment_type: appointment.appointmentType || '',
           location: appointment.location || '',
-          room_number: appointment.roomNumber || appointment.room_number || '',
+          room_number: appointment.roomNumber || '',
           date: format(startDate, 'yyyy-MM-dd'),
           start_time: format(startDate, 'HH:mm'),
           duration: duration,
-          client_id: appointment.clientId || appointment.client_id || '',
+          client_id: appointment.clientId || '',
           description: appointment.title || '',
           cptCode: appointment.cptCode || '',
           noteId: appointment.noteId || null,
-          isTelehealth: appointment.isTelehealth || false
+          isTelehealth: appointment.isTelehealth || false,
+          paymentMethod: appointment.paymentMethod || '',
+          isPaid: appointment.isPaid || false,
+          calculatedAmount: appointment.calculatedAmount || 0
         });
       }
     }
@@ -185,8 +168,8 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
   const { data: conflictData } = useConflictDetection({
     appointmentId: appointment?.id,
-    providerId: appointment?.providerId || appointment?.provider_id || '',
-    clientId: appointment?.clientId || appointment?.client_id || '',
+    providerId: appointment?.providerId || '',
+    clientId: appointment?.clientId || '',
     startTime: startDateTime,
     endTime: endDateTime
   });
@@ -240,24 +223,137 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     });
   };
 
+  // Helper function to determine if session was held
+  const hasSessionBeenHeld = (appointment: Appointment) => {
+    return appointment.note !== null && appointment.note !== undefined;
+  };
+
+  // Helper function to get session status
+  const getSessionStatus = (appointment: Appointment) => {
+    const now = new Date();
+    const appointmentDate = new Date(appointment.startTime || '');
+    
+    if (appointmentDate > now) {
+      return 'upcoming';
+    } else if (hasSessionBeenHeld(appointment)) {
+      return 'completed';
+    } else {
+      return 'missed';
+    }
+  };
+
+  // Helper function to get action button for current status
+  const getActionButton = (currentStatus: string) => {
+    switch (currentStatus) {
+      case AppointmentStatus.SCHEDULED:
+        return {
+          label: 'Confirm',
+          icon: <CheckCircle className="h-4 w-4" />,
+          status: AppointmentStatus.CONFIRMED,
+          variant: 'default' as const
+        };
+      case AppointmentStatus.CONFIRMED:
+        return {
+          label: 'Start Session',
+          icon: <Play className="h-4 w-4" />,
+          status: AppointmentStatus.IN_PROGRESS,
+          variant: 'default' as const
+        };
+      case AppointmentStatus.IN_PROGRESS:
+        return {
+          label: 'Complete',
+          icon: <CheckCircle className="h-4 w-4" />,
+          status: AppointmentStatus.COMPLETED,
+          variant: 'default' as const
+        };
+      case AppointmentStatus.CANCELLED:
+      case AppointmentStatus.NO_SHOW:
+        return {
+          label: 'Activate Appointment',
+          icon: <CheckCircle className="h-4 w-4" />,
+          status: AppointmentStatus.SCHEDULED,
+          variant: 'default' as const
+        };
+      default:
+        return null;
+    }
+  };
+
+  // Handle status change
+  const handleStatusChange = async (newStatus: string) => {
+    if (!appointment) return;
+
+    try {
+      await schedulingService.updateAppointmentStatus(appointment.id, newStatus);
+      toast({
+        title: "Status Updated",
+        description: `Appointment status changed to ${newStatus.replace('_', ' ')}`,
+      });
+      
+      // Refresh appointment data to show updated state
+      queryClient.invalidateQueries({ queryKey: ['appointment', appointmentId] });
+    } catch (error) {
+      console.error('Error updating appointment status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update appointment status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle create note
+  const handleCreateNote = async (noteType: string) => {
+    if (!appointment) return;
+
+    try {
+      const noteTypeConfig = NOTE_TYPES.find(nt => nt.type === noteType);
+      const title = `${noteTypeConfig?.title || noteType} - ${clientName}`;
+      const content = `Note created for appointment on ${format(new Date(appointment.startTime || ''), 'MMM d, yyyy')}`;
+
+      await schedulingService.createAndLinkNote(appointment.id, {
+        noteType,
+        title,
+        content,
+      });
+      
+      toast({
+        title: "Note Created",
+        description: `Created ${noteTypeConfig?.title || noteType} note and linked to appointment`,
+      });
+      
+      setShowNoteTypeSelector(false);
+      
+      // Refresh appointment data to show updated state
+      queryClient.invalidateQueries({ queryKey: ['appointment', appointmentId] });
+    } catch (error) {
+      console.error('Error creating note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create note",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSave = async () => {
     if (!appointment) return;
 
     try {
       const updateData: any = {
-        id: appointment.id,
         title: formData.title,
-        appointment_type: formData.appointment_type as any,
-        status: formData.status as AppointmentStatusValue,
+        appointmentType: formData.appointment_type as any,
         location: formData.location,
-        room_number: formData.room_number,
-        start_time: startDateTime,
+        roomNumber: formData.room_number,
+        startTime: startDateTime,
         duration: formData.duration,
-        client_id: formData.client_id,
         description: formData.description,
         cptCode: formData.cptCode,
         noteId: formData.noteId,
-        isTelehealth: formData.isTelehealth
+        isTelehealth: formData.isTelehealth,
+        paymentMethod: formData.paymentMethod,
+        isPaid: formData.isPaid,
+        calculatedAmount: formData.calculatedAmount
       };
 
       // If recurring rule data was updated, include it in the request
@@ -268,17 +364,10 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
         updateData.recurringEndDate = recurringRuleData.recurringEndDate;
       }
 
-      const result = await updateAppointment.mutateAsync(updateData);
+      await schedulingService.updateAppointment(appointment.id, updateData);
       
-      // Check if this was a recurring rule update
-      if (result?.updatedRecurringRule) {
-        // For recurring rule updates, the appointment was deleted and recreated
-        // so we just close the modal - the toast will show the success message
-        onOpenChange(false);
-      } else {
-        // For regular appointment updates, close the modal normally
-        onOpenChange(false);
-      }
+      // Refresh appointment data to show updated state
+      queryClient.invalidateQueries({ queryKey: ['appointment', appointmentId] });
     } catch (error) {
       console.error('Error updating appointment:', error);
     }
@@ -289,11 +378,10 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     setRecurringRuleData(recurringData);
   };
 
-  const handleCancelEdit = () => {
-    setIsEditMode(false);
+  const handleCancel = () => {
     // Reset form data to original appointment data
     if (appointment) {
-      const startTime = appointment.startTime || appointment.start_time;
+      const startTime = appointment.startTime;
       const duration = appointment.duration || 60;
       
       if (startTime) {
@@ -301,61 +389,76 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
         
         setFormData({
           title: appointment.title || '',
-          appointment_type: appointment.appointmentType || appointment.appointment_type || '',
-          status: appointment.status || 'Scheduled',
+          appointment_type: appointment.appointmentType || '',
           location: appointment.location || '',
-          room_number: appointment.roomNumber || appointment.room_number || '',
+          room_number: appointment.roomNumber || '',
           date: format(startDate, 'yyyy-MM-dd'),
           start_time: format(startDate, 'HH:mm'),
           duration: duration,
-          client_id: appointment.clientId || appointment.client_id || '',
+          client_id: appointment.clientId || '',
           description: appointment.title || '',
           cptCode: appointment.cptCode || '',
-          noteId: appointment.noteId || '',
-          isTelehealth: appointment.isTelehealth || false
+          noteId: appointment.noteId || null,
+          isTelehealth: appointment.isTelehealth || false,
+          paymentMethod: appointment.paymentMethod || '',
+          isPaid: appointment.isPaid || false,
+          calculatedAmount: appointment.calculatedAmount || 0
         });
       }
     }
   };
 
-  // Helper function to render display value or input based on mode
+  // Helper function to render input field
   const renderField = (
     label: string,
-    value: string,
-    inputComponent: React.ReactNode,
-    defaultValue: string = ''
+    inputComponent: React.ReactNode
   ) => {
-    if (isEditMode) {
-      return (
-        <div>
-          <Label>{label}</Label>
-          {inputComponent}
-        </div>
-      );
-    }
-    
     return (
-      <div className="space-y-1">
-        <Label className="text-sm font-medium text-gray-500">{label}</Label>
-        <div className="text-base font-semibold text-gray-900">
-          {value || defaultValue || 'Not specified'}
-        </div>
+      <div>
+        <Label>{label}</Label>
+        {inputComponent}
       </div>
     );
   };
 
-  const clientName = appointment?.clients 
+  const clientName = appointment?.clients
     ? `${appointment.clients.firstName} ${appointment.clients.lastName}`
-    : appointment?.first_name && appointment?.last_name
-    ? `${appointment.first_name} ${appointment.last_name}`
     : 'Unknown Client';
 
-  const isRecurringAppointment = appointment?.recurringRuleId && appointment?.recurringRule;
+  const isRecurringAppointment = appointment?.recurringRuleId && appointment?.recurringRule !== undefined;
   
   // Check if appointment is in a state that should not be editable
   const isCompletedOrCancelled = appointment?.status === 'COMPLETED' || appointment?.status === 'CANCELLED';
   const canEdit = !isCompletedOrCancelled;
 
+  // Show loading state while fetching appointment data
+  if (isLoadingAppointment) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30" hideCloseButton>
+          <div className="flex items-center justify-center h-64">
+            <LoadingSpinner message="Loading appointment details..." />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show error state if appointment not found
+  if (!appointment) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50/30" hideCloseButton>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Appointment Not Found</h3>
+              <p className="text-gray-600">The requested appointment could not be loaded.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <>
@@ -369,16 +472,16 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {isEditMode ? 'Edit Appointment' : 'Appointment Details'}
+                  Edit Appointment
                 </h2>
                 <p className="text-sm text-gray-600">
-                  {isEditMode ? 'Update appointment details and settings' : 'View appointment information'}
+                  Update appointment details and settings
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               {/* Attend Meeting Button */}
-              {!isEditMode && appointment?.isTelehealth && appointment?.googleMeetLink && onAttendMeeting && (
+              {appointment?.isTelehealth && appointment?.googleMeetLink && onAttendMeeting && (
                 <Button
                   type="button"
                   size="sm"
@@ -390,39 +493,80 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                 </Button>
               )}
               
-              {isEditMode ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancelEdit}
-                  className="flex items-center space-x-2"
-                >
-                  <X className="h-4 w-4" />
-                  <span>Cancel Edit</span>
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditMode(true)}
-                  disabled={!canEdit}
-                  className="flex items-center space-x-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  <span>Edit</span>
-                </Button>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCancel}
+                className="flex items-center space-x-2"
+              >
+                <X className="h-4 w-4" />
+                <span>Cancel</span>
+              </Button>
             </div>
           </div>
 
           <div className="space-y-6">
+            {/* Current Status Display */}
+            {appointment && (
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800">Current Status</h3>
+                      <p className="text-sm text-gray-600">Appointment status and workflow state</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge 
+                      className={`px-3 py-1 text-sm font-medium ${
+                        appointment.status === AppointmentStatus.SCHEDULED ? 'bg-blue-100 text-blue-800' :
+                        appointment.status === AppointmentStatus.CONFIRMED ? 'bg-green-100 text-green-800' :
+                        appointment.status === AppointmentStatus.IN_PROGRESS ? 'bg-purple-100 text-purple-800' :
+                        appointment.status === AppointmentStatus.COMPLETED ? 'bg-gray-100 text-gray-800' :
+                        appointment.status === AppointmentStatus.CANCELLED ? 'bg-red-100 text-red-800' :
+                        appointment.status === AppointmentStatus.NO_SHOW ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {appointment.status?.replace('_', ' ') || 'Unknown'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Client Info Display */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
-              <div className="flex items-center space-x-2 mb-2">
-                <User className="h-4 w-4 text-blue-600" />
-                <h3 className="font-medium text-blue-800">Client</h3>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <User className="h-4 w-4 text-blue-600" />
+                  <h3 className="font-medium text-blue-800">Client</h3>
+                </div>
+                {/* Session Status Indicator */}
+                {appointment && (
+                  <div className="flex items-center space-x-2">
+                    {getSessionStatus(appointment) === 'completed' && (
+                      <div className="flex items-center space-x-1 text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-xs font-medium">Session Held</span>
+                      </div>
+                    )}
+                    {getSessionStatus(appointment) === 'missed' && (
+                      <div className="flex items-center space-x-1 text-red-600">
+                        <XCircle className="h-4 w-4" />
+                        <span className="text-xs font-medium">No Session</span>
+                      </div>
+                    )}
+                    {getSessionStatus(appointment) === 'upcoming' && (
+                      <div className="flex items-center space-x-1 text-blue-600">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-xs font-medium">Upcoming</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <p className="text-blue-900 font-medium">{clientName}</p>
             </div>
@@ -435,19 +579,17 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                     <Calendar className="h-5 w-5 text-purple-600" />
                     <h4 className="font-semibold text-purple-800">Recurring Appointment</h4>
                   </div>
-                  {isEditMode && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowEditRecurringModal(true)}
-                      className="flex items-center space-x-2 border-purple-300 text-purple-700 hover:bg-purple-50"
-                      disabled={!canEdit}
-                    >
-                      <Settings className="h-4 w-4" />
-                      <span>Edit Recurring Rule</span>
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowEditRecurringModal(true)}
+                    className="flex items-center space-x-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+                    disabled={!canEdit}
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Edit Recurring Rule</span>
+                  </Button>
                 </div>
                 
                 {appointment.recurringRule && (
@@ -501,7 +643,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                 <div className="space-y-4">
                   {renderField(
                     'Title',
-                    formData.title || appointment?.title || '',
                     <Input
                       id="title"
                       value={formData.title}
@@ -512,7 +653,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
                   {renderField(
                     'Appointment Type',
-                    appointmentTypeOptions.find(opt => opt.value === formData.appointment_type)?.label || '',
                     <Select
                       value={formData.appointment_type}
                       onValueChange={(value) => handleFormDataChange('appointment_type', value)}
@@ -532,7 +672,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
                   {renderField(
                     'CPT Code',
-                    cptCodeOptions.find(opt => opt.value === formData.cptCode)?.label || '',
                     <Select
                       value={formData.cptCode}
                       onValueChange={(value) => handleFormDataChange('cptCode', value)}
@@ -550,29 +689,9 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                     </Select>
                   )}
 
-                  {renderField(
-                    'Status',
-                    appointmentStatusOptions.find(opt => opt.value === formData.status)?.label || '',
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) => handleFormDataChange('status', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {appointmentStatusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
 
                   {renderField(
                     'Description',
-                    formData.description || appointment?.title || '',
                     <Textarea
                       id="description"
                       value={formData.description}
@@ -594,7 +713,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                 <div className="space-y-4">
                   {renderField(
                     'Date',
-                    formData.date ? format(new Date(formData.date), 'MMM d, yyyy') : '',
                     <DateInput
                       id="date"
                       label="Date"
@@ -606,7 +724,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
                   {renderField(
                     'Start Time',
-                    formData.start_time ? format(new Date(`2000-01-01T${formData.start_time}`), 'h:mm a') : '',
                     <Input
                       id="start_time"
                       type="time"
@@ -617,7 +734,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
                   {renderField(
                     'Duration',
-                    formData.duration === 60 ? '1 hour' : `${formData.duration} minutes`,
                     <Select
                       value={formData.duration.toString()}
                       onValueChange={(value) => handleFormDataChange('duration', parseInt(value))}
@@ -636,16 +752,14 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                     </Select>
                   )}
 
-                  {!isEditMode && (
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium text-gray-500">End Time</Label>
-                      <div className="text-base font-semibold text-gray-900">
-                        {formData.date && formData.start_time ? 
-                          format(new Date(`${formData.date}T${formData.start_time}`).getTime() + formData.duration * 60000, 'h:mm a') 
-                          : 'Not set'}
-                      </div>
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium text-gray-500">End Time</Label>
+                    <div className="text-base font-semibold text-gray-900">
+                      {formData.date && formData.start_time ? 
+                        format(new Date(`${formData.date}T${formData.start_time}`).getTime() + formData.duration * 60000, 'h:mm a') 
+                        : 'Not set'}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
@@ -659,7 +773,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                 <div className="space-y-4">
                   {renderField(
                     'Location',
-                    formData.location || appointment?.location || '',
                     <Input
                       id="location"
                       value={formData.location}
@@ -670,7 +783,6 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
                   {renderField(
                     'Room Number',
-                    formData.room_number || appointment?.roomNumber || appointment?.room_number || '',
                     <Input
                       id="room_number"
                       value={formData.room_number}
@@ -679,85 +791,187 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                     />
                   )}
 
-                  {/* Note Selection */}
-                  {isEditMode ? (
-                    <NoteSelectionSection
-                      clientId={formData.client_id}
-                      value={formData.noteId}
-                      onChange={(value) => handleFormDataChange('noteId', value)}
-                    />
-                  ) : (
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium text-gray-500">Associated Note</Label>
-                      <div className="text-base font-semibold text-gray-900">
-                        {appointment?.note?.title || 'No note attached'}
+                  {/* Note Section */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center space-x-2 text-gray-700 font-medium">
+                      <FileText className="h-4 w-4 text-blue-500" />
+                      <span>Associated Note</span>
+                    </Label>
+                    {appointment?.note ? (
+                      <div className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                        <span className="text-sm font-medium">{appointment.note.title}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {appointment.note.noteType.replace('_', ' ')}
+                        </Badge>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="text-sm text-gray-500 italic">No note attached</div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowNoteTypeSelector(true)}
+                      disabled={appointment?.status !== AppointmentStatus.COMPLETED || appointment?.noteId !== null}
+                      className="flex items-center space-x-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Create Note</span>
+                    </Button>
+                  </div>
 
                   {/* Telehealth */}
-                  {isEditMode ? (
-                    <div className="space-y-2">
-                      <Label className="flex items-center space-x-2 text-gray-700 font-medium">
-                        <Video className="h-4 w-4 text-blue-500" />
-                        <span>Telehealth Appointment</span>
+                  <div className="space-y-2">
+                    <Label className="flex items-center space-x-2 text-gray-700 font-medium">
+                      <Video className="h-4 w-4 text-blue-500" />
+                      <span>Telehealth Appointment</span>
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="isTelehealth"
+                        checked={formData.isTelehealth}
+                        onCheckedChange={(checked) => handleFormDataChange('isTelehealth', checked as boolean)}
+                      />
+                      <Label htmlFor="isTelehealth" className="text-sm text-gray-600">
+                        This is a telehealth appointment
                       </Label>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="isTelehealth"
-                          checked={formData.isTelehealth}
-                          onCheckedChange={(checked) => handleFormDataChange('isTelehealth', checked as boolean)}
-                        />
-                        <Label htmlFor="isTelehealth" className="text-sm text-gray-600">
-                          This is a telehealth appointment
-                        </Label>
-                      </div>
                     </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium text-gray-500 flex items-center space-x-2">
-                        <Video className="h-4 w-4 text-blue-500" />
-                        <span>Appointment Type</span>
-                      </Label>
-                      <div className="text-base font-semibold text-gray-900">
-                        {formData.isTelehealth || appointment?.isTelehealth ? 'Telehealth Appointment' : 'In-Person Appointment'}
-                      </div>
-                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Section */}
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-2 h-6 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full" />
+                  <h3 className="text-lg font-semibold text-gray-800">Billing</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {renderField(
+                    'Amount Asked from Patient',
+                    <Input
+                      id="calculatedAmount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.calculatedAmount}
+                      onChange={(e) => handleFormDataChange('calculatedAmount', parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      disabled={appointment?.status !== AppointmentStatus.COMPLETED}
+                    />
                   )}
+
+                  {renderField(
+                    'Payment Method',
+                    <Select
+                      value={formData.paymentMethod}
+                      onValueChange={(value) => handleFormDataChange('paymentMethod', value)}
+                      disabled={appointment?.status !== AppointmentStatus.COMPLETED}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentMethodOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label className="flex items-center space-x-2 text-gray-700 font-medium">
+                      <span>Payment Status</span>
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="isPaid"
+                        checked={formData.isPaid}
+                        onCheckedChange={(checked) => handleFormDataChange('isPaid', checked as boolean)}
+                        disabled={appointment?.status !== AppointmentStatus.COMPLETED}
+                      />
+                      <Label htmlFor="isPaid" className="text-sm text-gray-600">
+                        Payment received
+                      </Label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            {isEditMode && (
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={updateAppointment.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {updateAppointment.isPending ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Saving...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Save className="h-4 w-4" />
-                      <span>Save Changes</span>
-                    </div>
+            {appointment && (
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-2 h-6 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full" />
+                  <h3 className="text-lg font-semibold text-gray-800">Actions</h3>
+                </div>
+                
+                <div className="flex flex-wrap gap-3">
+                  {/* Cancel Button - only show if not already cancelled or no-show */}
+                  {appointment.status !== AppointmentStatus.CANCELLED && appointment.status !== AppointmentStatus.NO_SHOW && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleStatusChange(AppointmentStatus.CANCELLED)}
+                      className="flex items-center space-x-2"
+                    >
+                      <X className="h-4 w-4" />
+                      <span>Cancel</span>
+                    </Button>
                   )}
-                </Button>
+
+                  {/* No Show Button - only show if not already cancelled or no-show */}
+                  {appointment.status !== AppointmentStatus.CANCELLED && appointment.status !== AppointmentStatus.NO_SHOW && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleStatusChange(AppointmentStatus.NO_SHOW)}
+                      className="flex items-center space-x-2"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      <span>No Show</span>
+                    </Button>
+                  )}
+
+                  {/* Sequence Action Button */}
+                  {getActionButton(appointment.status || '') && (
+                    <Button
+                      type="button"
+                      onClick={() => handleStatusChange(getActionButton(appointment.status || '')!.status)}
+                      className="flex items-center space-x-2"
+                    >
+                      {getActionButton(appointment.status || '')!.icon}
+                      <span>{getActionButton(appointment.status || '')!.label}</span>
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSave}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <div className="flex items-center space-x-2">
+                  <Save className="h-4 w-4" />
+                  <span>Save Changes</span>
+                </div>
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -769,9 +983,51 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
           onOpenChange={setShowEditRecurringModal}
           startTime={appointment?.startTime}
           onRecurringRuleUpdated={handleRecurringRuleUpdated}
-          existingRule={appointment.recurringRule}
+          existingRule={appointment?.recurringRule}
         />
       )}
+
+      {/* Note Type Selector Modal */}
+      <Dialog open={showNoteTypeSelector} onOpenChange={setShowNoteTypeSelector}>
+        <DialogContent className="max-w-md">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Create Note</h3>
+              <p className="text-sm text-gray-600">Select the type of note to create and link to this appointment</p>
+            </div>
+            
+            <div className="space-y-2">
+              {NOTE_TYPES.map((noteType) => (
+                <Button
+                  key={noteType.type}
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4"
+                  onClick={() => handleCreateNote(noteType.type)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full ${noteType.color} flex items-center justify-center`}>
+                      <noteType.icon className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium">{noteType.title}</div>
+                      <div className="text-xs text-gray-500">{noteType.description}</div>
+                    </div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowNoteTypeSelector(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

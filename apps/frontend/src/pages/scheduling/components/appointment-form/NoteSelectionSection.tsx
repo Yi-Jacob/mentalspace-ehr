@@ -57,7 +57,7 @@ const NoteSelectionSection: React.FC<NoteSelectionSectionProps> = ({
     <div className="space-y-2">
       <Label className="flex items-center space-x-2 text-gray-700 font-medium">
         <FileText className="h-4 w-4 text-blue-500" />
-        <span>Associated Note</span>
+        
       </Label>
       <SelectField
         label=""

@@ -134,29 +134,12 @@ class SchedulingService {
     return response.data;
   }
 
-  // Session management methods
-  async signNote(appointmentId: string, signedBy?: string): Promise<Appointment> {
-    const response = await apiClient.post<Appointment>(`/scheduling/appointments/${appointmentId}/sign-note`, { 
-      signedBy: signedBy || 'current-user' 
-    });
+  // Note management
+  async createAndLinkNote(appointmentId: string, noteData: { noteType: string; title: string; content: string }): Promise<{ note: any; appointment: any }> {
+    const response = await apiClient.post<{ note: any; appointment: any }>(`/scheduling/appointments/${appointmentId}/create-note`, noteData);
     return response.data;
   }
 
-  async lockSession(appointmentId: string, lockedBy?: string, reason?: string): Promise<Appointment> {
-    const response = await apiClient.post<Appointment>(`/scheduling/appointments/${appointmentId}/lock-session`, { 
-      lockedBy: lockedBy || 'current-user',
-      reason: reason || 'Session locked by provider'
-    });
-    return response.data;
-  }
-
-  async supervisorOverride(appointmentId: string, overrideBy?: string, reason?: string): Promise<Appointment> {
-    const response = await apiClient.post<Appointment>(`/scheduling/appointments/${appointmentId}/supervisor-override`, { 
-      overrideBy: overrideBy || 'current-user',
-      reason: reason || 'Session unlocked by supervisor'
-    });
-    return response.data;
-  }
 }
 
 export const schedulingService = new SchedulingService(); 

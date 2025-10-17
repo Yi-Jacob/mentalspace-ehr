@@ -32,7 +32,7 @@ export const getAppointmentStatusOptions = () => {
   return [
     { value: AppointmentStatus.SCHEDULED, label: 'Scheduled' },
     { value: AppointmentStatus.CONFIRMED, label: 'Confirmed' },
-    { value: AppointmentStatus.CHECKED_IN, label: 'Checked In' },
+    { value: AppointmentStatus.IN_PROGRESS, label: 'In Progress' },
     { value: AppointmentStatus.COMPLETED, label: 'Completed' },
     { value: AppointmentStatus.CANCELLED, label: 'Cancelled' },
     { value: AppointmentStatus.NO_SHOW, label: 'No Show' },
@@ -56,16 +56,9 @@ export interface Appointment {
   noteId?: string;
   isTelehealth: boolean;
   hasSession: boolean;
-  isNoteSigned: boolean;
-  noteSignedAt?: string;
-  isLocked: boolean;
-  lockedAt?: string;
   calculatedAmount?: number;
-  payPeriodWeek?: string;
+  paymentMethod?: string;
   isPaid: boolean;
-  supervisorOverrideBy?: string;
-  supervisorOverrideReason?: string;
-  supervisorOverrideAt?: string;
   googleMeetLink?: string;
   recurringRuleId?: string;
   createdAt: string;
@@ -75,11 +68,24 @@ export interface Appointment {
     firstName: string;
     lastName: string;
   };
+  provider: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
   note?: {
     id: string;
     title: string;
     noteType: string;
     status: string;
+  };
+  recurringRule?: {
+    id: string;
+    recurringPattern: string;
+    startDate: string;
+    endDate?: string;
+    timeSlots: any[];
+    isBusinessDayOnly: boolean;
   };
 }
 

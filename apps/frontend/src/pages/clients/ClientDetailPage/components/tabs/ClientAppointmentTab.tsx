@@ -21,7 +21,7 @@ const ClientAppointmentTab: React.FC<ClientAppointmentTabProps> = ({ clientId, c
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -91,7 +91,7 @@ const ClientAppointmentTab: React.FC<ClientAppointmentTabProps> = ({ clientId, c
   };
 
   const handleAppointmentClick = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
+    setSelectedAppointmentId(appointment.id);
     setIsDetailModalOpen(true);
   };
 
@@ -373,12 +373,10 @@ const ClientAppointmentTab: React.FC<ClientAppointmentTabProps> = ({ clientId, c
         onOpenChange={(open) => {
           setIsDetailModalOpen(open);
           if (!open) {
-            setSelectedAppointment(null);
-            // Refresh appointments when modal closes (in case appointment was updated)
-            fetchClientAppointments();
+            setSelectedAppointmentId(null);
           }
         }}
-        appointment={selectedAppointment}
+        appointmentId={selectedAppointmentId}
         onAttendMeeting={handleAttendMeeting}
       />
     </div>

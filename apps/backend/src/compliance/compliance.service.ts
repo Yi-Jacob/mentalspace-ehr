@@ -92,8 +92,6 @@ export class ComplianceService {
     const pendingTimeEntries = timeEntries.filter(t => !t.isApproved).length;
 
     const totalSessions = sessionCompletions.length;
-    const signedSessions = sessionCompletions.filter(s => s.isNoteSigned).length;
-    const lockedSessions = sessionCompletions.filter(s => s.isLocked).length;
 
     return {
       deadlines: {
@@ -111,9 +109,6 @@ export class ComplianceService {
       },
       sessionCompletions: {
         total: totalSessions,
-        signed: signedSessions,
-        locked: lockedSessions,
-        pending: totalSessions - signedSessions - lockedSessions,
         recent: sessionCompletions.slice(0, 5),
       },
     };
@@ -169,8 +164,6 @@ export class ComplianceService {
     const unsignedSessions = await this.prisma.appointment.findMany({
       where: {
         hasSession: true,
-        isNoteSigned: false,
-        isLocked: false,
         startTime: {
           gte: sevenDaysAgo,
         },
@@ -381,9 +374,6 @@ export class ComplianceService {
     // Calculate metrics
     const totalPayroll = paymentData.reduce((sum, payment) => sum + parseFloat(payment.grossAmount.toString()), 0);
     const totalSessions = sessionData.length;
-    const signedSessions = sessionData.filter(s => s.isNoteSigned).length;
-    const complianceRate = totalSessions > 0 ? (signedSessions / totalSessions) * 100 : 0;
-
     // Group data for charts
     const dailyPayroll = paymentData.reduce((acc: any, payment) => {
       const date = payment.createdAt.toISOString().split('T')[0];
@@ -414,9 +404,6 @@ export class ComplianceService {
       }
       
       acc[providerId].totalSessions += 1;
-      if (session.isNoteSigned) {
-        acc[providerId].signedSessions += 1;
-      }
       if (session.calculatedAmount) {
         acc[providerId].earnings += parseFloat(session.calculatedAmount.toString());
       }
@@ -432,8 +419,6 @@ export class ComplianceService {
     return {
       totalPayroll,
       totalSessions,
-      signedSessions,
-      complianceRate,
       payrollTrend,
       providerPerformance,
       paymentData,

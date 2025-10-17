@@ -21,7 +21,7 @@ const SessionCompletionTracking: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<AppointmentTypeFilter>('all');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
 
   const { updateAppointmentStatus } = useAppointmentMutations();
 
@@ -49,12 +49,12 @@ const SessionCompletionTracking: React.FC = () => {
 
   // List view handlers
   const handleEditAppointment = (appointment: any) => {
-    setSelectedAppointment(appointment);
+    setSelectedAppointmentId(appointment.id);
     setShowEditModal(true);
   };
 
   const handleDeleteAppointment = (appointment: any) => {
-    setSelectedAppointment(appointment);
+    setSelectedAppointmentId(appointment.id);
     setShowDeleteDialog(true);
   };
 
@@ -104,14 +104,14 @@ const SessionCompletionTracking: React.FC = () => {
       <AppointmentDetailModal
         open={showEditModal}
         onOpenChange={setShowEditModal}
-        appointment={selectedAppointment}
+        appointmentId={selectedAppointmentId}
         onAttendMeeting={handleAttendMeeting}
       />
 
       <DeleteAppointmentDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        appointment={selectedAppointment}
+        appointment={selectedAppointmentId ? { id: selectedAppointmentId } : null}
       />
     </PageLayout>
   );

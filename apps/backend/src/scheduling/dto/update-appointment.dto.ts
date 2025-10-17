@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateAppointmentDto } from './create-appointment.dto';
-import { IsOptional, IsEnum, IsDateString, IsString, IsArray, ValidateNested, IsBoolean } from 'class-validator';
+import { AppointmentType, CreateAppointmentDto } from './create-appointment.dto';
+import { IsOptional, IsEnum, IsDateString, IsString, IsArray, ValidateNested, IsBoolean, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AppointmentStatus, AppointmentType, RecurringPattern, TimeSlotDto } from './create-appointment.dto';
+import { AppointmentStatus, RecurringPattern, TimeSlotDto } from './create-appointment.dto';
 
 export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
   @IsOptional()
@@ -39,4 +39,44 @@ export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
   @IsOptional()
   @IsBoolean()
   isBusinessDayOnly?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  calculatedAmount?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isPaid?: boolean;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
+
+  @IsOptional()
+  @IsEnum(AppointmentType)  
+  appointmentType?: AppointmentType;
+
+  @IsOptional()
+  @IsString()
+  cptCode?: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  roomNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsDateString()
+  startTime?: string;
 } 

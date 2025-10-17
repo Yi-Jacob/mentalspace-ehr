@@ -46,12 +46,10 @@ const AppointmentFilters: React.FC<AppointmentFiltersProps> = ({
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value={AppointmentStatus.SCHEDULED}>Scheduled</SelectItem>
               <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmed</SelectItem>
-              <SelectItem value={AppointmentStatus.CHECKED_IN}>Checked In</SelectItem>
               <SelectItem value={AppointmentStatus.IN_PROGRESS}>In Progress</SelectItem>
               <SelectItem value={AppointmentStatus.COMPLETED}>Completed</SelectItem>
               <SelectItem value={AppointmentStatus.CANCELLED}>Cancelled</SelectItem>
               <SelectItem value={AppointmentStatus.NO_SHOW}>No Show</SelectItem>
-              <SelectItem value={AppointmentStatus.RESCHEDULED}>Rescheduled</SelectItem>
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={onTypeFilterChange}>

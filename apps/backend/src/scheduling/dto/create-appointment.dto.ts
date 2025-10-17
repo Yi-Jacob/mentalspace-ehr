@@ -5,7 +5,7 @@ export enum AppointmentStatus {
   PENDING = 'Pending',
   SCHEDULED = 'Scheduled',
   CONFIRMED = 'Confirmed',
-  CHECKED_IN = 'Checked In',
+  IN_PROGRESS = 'In Progress',
   CANCELLED = 'Cancelled',
   COMPLETED = 'Completed',
   NO_SHOW = 'No Show',
@@ -94,6 +94,14 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsBoolean()
   hasSession?: boolean;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPaid?: boolean;
 
   @IsOptional()
   @IsUUID()

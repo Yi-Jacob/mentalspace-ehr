@@ -10,7 +10,6 @@ import { getAppointmentTypeOptions } from '@/types/scheduleType';
 import { AppointmentTypeValue } from '@/types/scheduleType';
 import { AppointmentType } from '@/types/enums/scheduleEnum';
 import { CPT_CODES_BY_TYPE } from '@/types/enums/notesEnum';
-import NoteSelectionSection from './NoteSelectionSection';
 
 interface AppointmentDetailsSectionProps {
   // Appointment Type
@@ -264,13 +263,6 @@ const AppointmentDetailsSection: React.FC<AppointmentDetailsSectionProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Note Selection */}
-        <NoteSelectionSection
-          clientId={clientId}
-          value={noteId}
-          onChange={onNoteIdChange}
-        />
 
         {/* Telehealth */}
         <div className="space-y-2">

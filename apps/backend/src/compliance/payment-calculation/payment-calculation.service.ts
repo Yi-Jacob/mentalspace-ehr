@@ -108,7 +108,6 @@ export class PaymentCalculationService {
             gte: targetPayPeriod,
             lt: new Date(targetPayPeriod.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days later
           },
-          isNoteSigned: true, // Only signed notes count for payment
         },
         include: {
           clients: {
@@ -138,8 +137,6 @@ export class PaymentCalculationService {
           sessionType: session.appointmentType,
           durationMinutes: session.duration,
           calculatedAmount,
-          isNoteSigned: session.isNoteSigned,
-          noteSignedAt: session.noteSignedAt,
         };
       });
 
@@ -429,8 +426,6 @@ export class PaymentCalculationService {
       where: {
         providerId,
         hasSession: true,
-        payPeriodWeek: calculation.payPeriodWeek,
-        isNoteSigned: true,
       },
       data: {
         isPaid: true,
@@ -545,14 +540,11 @@ export class PaymentCalculationService {
       where: {
         providerId,
         hasSession: true,
-        payPeriodWeek: targetPayPeriod,
       },
     });
 
     const totalSessions = sessions.length;
-    const signedSessions = sessions.filter(s => s.isNoteSigned).length;
-    const unsignedSessions = sessions.filter(s => !s.isNoteSigned && !s.isLocked).length;
-    const lockedSessions = sessions.filter(s => s.isLocked).length;
+    const signedSessions = sessions.filter(s => s.status === 'Completed').length;
 
     const deadline = this.getNoteDeadline(targetPayPeriod);
     const isDeadlinePassed = new Date() > deadline;
@@ -561,8 +553,6 @@ export class PaymentCalculationService {
       payPeriodWeek: targetPayPeriod,
       totalSessions,
       signedSessions,
-      unsignedSessions,
-      lockedSessions,
       completionRate: totalSessions > 0 ? (signedSessions / totalSessions) * 100 : 0,
       deadline,
       isDeadlinePassed,
