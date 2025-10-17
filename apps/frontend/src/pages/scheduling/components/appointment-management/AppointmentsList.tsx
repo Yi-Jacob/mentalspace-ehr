@@ -10,7 +10,6 @@ interface AppointmentsListProps {
   appointments: any[] | undefined;
   isLoading: boolean;
   onEditAppointment: (appointment: any) => void;
-  onDeleteAppointment: (appointment: any) => void;
   onStatusChange: (appointmentId: string, newStatus: string) => void;
   onAttendMeeting?: (meetLink: string) => void;
 }
@@ -19,7 +18,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   appointments,
   isLoading,
   onEditAppointment,
-  onDeleteAppointment,
   onStatusChange,
   onAttendMeeting
 }) => {
@@ -244,12 +242,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           onClick: (appointment) => onStatusChange(appointment.id, AppointmentStatus.COMPLETED),
           variant: 'ghost',
           disabled: (appointment) => appointment.status === AppointmentStatus.COMPLETED
-        },
-        {
-          label: 'Delete',
-          icon: <Trash2 className="w-3 h-3" />,
-          onClick: onDeleteAppointment,
-          variant: 'ghost'
         }
       ]}
     />

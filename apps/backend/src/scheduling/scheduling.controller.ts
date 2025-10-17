@@ -73,11 +73,6 @@ export class SchedulingController {
     return this.schedulingService.updateStatus(id, status);
   }
 
-  @Delete('appointments/:id')
-  remove(@Param('id') id: string) {
-    return this.schedulingService.remove(id);
-  }
-
   @Post('appointments/:id/create-note')
   createAndLinkNote(
     @Param('id') appointmentId: string,

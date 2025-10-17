@@ -56,11 +56,6 @@ class SchedulingService {
     return response.data;
   }
 
-  async deleteAppointment(id: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/scheduling/appointments/${id}`);
-    return response.data;
-  }
-
   // Conflict detection
   async checkConflicts(params: ConflictCheckParams): Promise<ConflictResult> {
     const response = await apiClient.post<ConflictResult>('/scheduling/conflicts/check', params);

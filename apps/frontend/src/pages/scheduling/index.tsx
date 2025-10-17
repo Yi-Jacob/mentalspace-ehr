@@ -6,7 +6,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { schedulingService } from '@/services/schedulingService';
 import CreateAppointmentModal from './components/CreateAppointmentModal';
 import AppointmentDetailModal from './components/AppointmentDetailModal';
-import DeleteAppointmentDialog from './components/DeleteAppointmentDialog';
 import { useCalendarNavigation } from './components/hooks/useCalendarNavigation';
 import { useAppointmentModal } from './components/hooks/useAppointmentModal';
 import { useRealtimeAppointments } from './components/hooks/useRealtimeAppointments';
@@ -43,7 +42,6 @@ const CalendarView = () => {
 
   // Calendar view state
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   const [showAskMeetingModal, setShowAskMeetingModal] = useState(false);
 
@@ -175,12 +173,6 @@ const CalendarView = () => {
           onOpenChange={setShowEditModal}
           appointmentId={selectedAppointmentId}
           onAttendMeeting={handleAttendMeeting}
-        />
-
-        <DeleteAppointmentDialog
-          open={showDeleteDialog}
-          onOpenChange={setShowDeleteDialog}
-          appointment={selectedAppointmentId ? { id: selectedAppointmentId } : null}
         />
 
         <AskMeetingModal

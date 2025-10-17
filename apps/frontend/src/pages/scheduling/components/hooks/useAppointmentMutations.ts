@@ -103,33 +103,6 @@ export const useAppointmentMutations = () => {
     },
   });
 
-  const deleteAppointment = useMutation({
-    mutationFn: async (appointmentId: string) => {
-      
-      if (!appointmentId) {
-        throw new Error('Appointment ID is required');
-      }
-
-      await schedulingService.deleteAppointment(appointmentId);
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Success',
-        description: 'Appointment deleted successfully',
-      });
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      queryClient.invalidateQueries({ queryKey: ['appointments-management'] });
-    },
-    onError: (error: any) => {
-      console.error('Error deleting appointment:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete appointment',
-        variant: 'destructive',
-      });
-    },
-  });
-
   const updateAppointmentStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AppointmentStatusValue }) => {
       
@@ -178,7 +151,6 @@ export const useAppointmentMutations = () => {
 
   return {
     updateAppointment,
-    deleteAppointment,
     updateAppointmentStatus,
   };
 };

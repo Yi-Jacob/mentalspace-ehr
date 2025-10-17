@@ -9,7 +9,6 @@ import { List } from 'lucide-react';
 import AppointmentFilters from '../../scheduling/components/appointment-management/AppointmentFilters';
 import AppointmentsList from '../../scheduling/components/appointment-management/AppointmentsList';
 import AppointmentDetailModal from '../../scheduling/components/AppointmentDetailModal';
-import DeleteAppointmentDialog from '../../scheduling/components/DeleteAppointmentDialog';
 import { useAppointmentMutations } from '../../scheduling/components/hooks/useAppointmentMutations';
 
 type AppointmentTypeFilter = AppointmentTypeValue | 'all';
@@ -20,7 +19,6 @@ const SessionCompletionTracking: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<AppointmentTypeFilter>('all');
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
 
   const { updateAppointmentStatus } = useAppointmentMutations();
@@ -43,6 +41,8 @@ const SessionCompletionTracking: React.FC = () => {
         params.search = searchTerm;
       }
 
+      params.hasSession = true;
+
       return await schedulingService.getAppointments(params);
     },
   });
@@ -51,11 +51,6 @@ const SessionCompletionTracking: React.FC = () => {
   const handleEditAppointment = (appointment: any) => {
     setSelectedAppointmentId(appointment.id);
     setShowEditModal(true);
-  };
-
-  const handleDeleteAppointment = (appointment: any) => {
-    setSelectedAppointmentId(appointment.id);
-    setShowDeleteDialog(true);
   };
 
   const handleStatusChange = (appointmentId: string, newStatus: string) => {
@@ -95,7 +90,6 @@ const SessionCompletionTracking: React.FC = () => {
           appointments={appointments}
           isLoading={isLoading}
           onEditAppointment={handleEditAppointment}
-          onDeleteAppointment={handleDeleteAppointment}
           onStatusChange={handleStatusChange}
           onAttendMeeting={handleAttendMeeting}
         />
@@ -106,12 +100,6 @@ const SessionCompletionTracking: React.FC = () => {
         onOpenChange={setShowEditModal}
         appointmentId={selectedAppointmentId}
         onAttendMeeting={handleAttendMeeting}
-      />
-
-      <DeleteAppointmentDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        appointment={selectedAppointmentId ? { id: selectedAppointmentId } : null}
       />
     </PageLayout>
   );

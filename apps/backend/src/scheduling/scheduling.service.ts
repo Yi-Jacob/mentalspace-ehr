@@ -724,16 +724,6 @@ export class SchedulingService {
     });
   }
 
-  async remove(id: string) {
-    const appointment = await this.findOne(id);
-    
-    await this.prisma.appointment.delete({
-      where: { id },
-    });
-
-    return { message: 'Appointment deleted successfully' };
-  }
-
   // Recurring rule management methods
   private async updateRecurringRule(
     ruleId: string,
