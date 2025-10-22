@@ -3,10 +3,11 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/basic/card';
 import { InfoDisplay, InfoSection } from '@/components/basic/InfoDisplay';
 import { LoadingState } from '@/components/basic/loading-state';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Bot } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { noteService } from '@/services/noteService';
+import { useAIChatbot } from '@/components/ai-chatbot';
 import NoteViewLayout from '../components/layout/NoteViewLayout';
 import ProgressNoteView from './components/ProgressNoteView';
 import IntakeAssessmentView from './components/IntakeAssessmentView';
@@ -15,10 +16,12 @@ import ContactNoteView from './components/ContactNoteView';
 import ConsultationNoteView from './components/ConsultationNoteView';
 import CancellationNoteView from './components/CancellationNoteView';
 import MiscellaneousNoteView from './components/MiscellaneousNoteView';
+import { Button } from '@/components/basic/button';
 import { NOTE_TYPES } from '@/types/enums/notesEnum';
 
 const NoteViewPage = () => {
   const { noteId } = useParams();
+  const { openChatWithNote } = useAIChatbot();
   
   const { data: noteData, isLoading } = useQuery({
     queryKey: ['note', noteId],
@@ -43,6 +46,18 @@ const NoteViewPage = () => {
 
   // Get note type configuration
   const noteTypeConfig = NOTE_TYPES.find(type => type.type === noteData.noteType);
+
+  const handleChatWithNote = () => {
+    const clientName = noteData.client ? `${noteData.client.firstName} ${noteData.client.lastName}` : 'Unknown Client';
+    const noteContent = typeof noteData.content === 'string' ? noteData.content : JSON.stringify(noteData.content);
+    
+    openChatWithNote({
+      noteId: noteData.id,
+      noteType: noteData.noteType,
+      clientName: clientName,
+      noteContent: noteContent
+    });
+  };
   
   // Render the appropriate view component based on note type
   const renderNoteContent = () => {
@@ -78,6 +93,7 @@ const NoteViewPage = () => {
       noteType={noteData.noteType}
       icon={noteTypeConfig?.icon}
       title={noteTypeConfig?.title || 'Note'}
+      onChatWithNote={handleChatWithNote}
     >
       {/* Render the specific note type content */}
       {renderNoteContent()}

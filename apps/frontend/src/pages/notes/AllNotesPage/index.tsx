@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Plus, Edit, Trash2, Eye, Lock, Unlock, UserCheck } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, Eye, Lock, Unlock, UserCheck, Bot } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
@@ -15,6 +15,7 @@ import { Badge } from '@/components/basic/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/basic/select';
 import { noteService } from '@/services/noteService';
 import { Note } from '@/types/noteType';
+import { useAIChatbot } from '@/components/ai-chatbot';
 
 type FilterNoteStatus = 'all' | Note['status'];
 type FilterNoteType = 'all' | Note['noteType'];
@@ -40,6 +41,7 @@ const formatDate = (dateString: string): string => {
 
 const NotesList = () => {
   const navigate = useNavigate();
+  const { openChatWithNote } = useAIChatbot();
   const [statusFilter, setStatusFilter] = useState<FilterNoteStatus>('all');
   const [typeFilter, setTypeFilter] = useState<FilterNoteType>('all');
   const notesPerPage = 8;
@@ -116,6 +118,18 @@ const NotesList = () => {
 
   const handleCreateNote = () => {
     navigate('/notes/create-note');
+  };
+
+  const handleChatWithNote = (note: Note) => {
+    const clientName = note.client ? `${note.client.firstName} ${note.client.lastName}` : 'Unknown Client';
+    const noteContent = typeof note.content === 'string' ? note.content : JSON.stringify(note.content);
+    
+    openChatWithNote({
+      noteId: note.id,
+      noteType: note.noteType,
+      clientName: clientName,
+      noteContent: noteContent
+    });
   };
 
   // Define table columns
@@ -214,6 +228,12 @@ const NotesList = () => {
       label: 'View',
       icon: <Eye className="h-4 w-4" />,
       onClick: (note: Note) => handleView(note.id),
+      variant: 'ghost' as const,
+    },
+    {
+      label: 'AI Chat',
+      icon: <Bot className="h-4 w-4" />,
+      onClick: (note: Note) => handleChatWithNote(note),
       variant: 'ghost' as const,
     },
     {

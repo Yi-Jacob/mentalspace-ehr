@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/basic/button';
 import { Badge } from '@/components/basic/badge';
-import { ArrowLeft, Edit, History, LucideIcon } from 'lucide-react';
+import { ArrowLeft, Edit, History, Bot, LucideIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import PageLayout from '@/components/basic/PageLayout';
 import PageHeader from '@/components/basic/PageHeader';
@@ -15,6 +15,7 @@ interface NoteViewLayoutProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  onChatWithNote?: () => void;
 }
 
 const NoteViewLayout: React.FC<NoteViewLayoutProps> = ({
@@ -23,7 +24,8 @@ const NoteViewLayout: React.FC<NoteViewLayoutProps> = ({
   icon: Icon,
   title,
   children,
-  className = ''
+  className = '',
+  onChatWithNote
 }) => {
   const navigate = useNavigate();
 
@@ -111,6 +113,16 @@ const NoteViewLayout: React.FC<NoteViewLayoutProps> = ({
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Notes
             </Button>
+            {onChatWithNote && (
+              <Button 
+                variant="outline"
+                onClick={onChatWithNote}
+                className="hover:bg-purple-50 transition-colors border-purple-300 hover:border-purple-400 text-purple-700"
+              >
+                <Bot className="w-4 h-4 mr-2" />
+                AI Chat
+              </Button>
+            )}
             <Button 
               variant="outline"
               onClick={() => navigate(getEditPath())}
